@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sign In | VAWC-Response</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed": "#ffd9e3",
+              "surface-variant": "#eae0e3",
+              "outline": "#867276",
+              "on-error-container": "#93000a",
+              "surface": "#fff8f8",
+              "on-tertiary": "#ffffff",
+              "on-error": "#ffffff",
+              "on-primary-fixed": "#3f0019",
+              "on-secondary-fixed": "#340d1e",
+              "tertiary-container": "#00855e",
+              "secondary-container": "#ffbdd2",
+              "surface-container-high": "#f0e5e8",
+              "inverse-primary": "#ffb1c3",
+              "tertiary": "#00694a",
+              "primary": "#953f58",
+              "on-secondary-container": "#7b495b",
+              "inverse-on-surface": "#f9eef1",
+              "surface-bright": "#fff8f8",
+              "tertiary-fixed": "#80f9c5",
+              "on-tertiary-fixed-variant": "#005138",
+              "on-primary": "#ffffff",
+              "secondary-fixed-dim": "#f6b5ca",
+              "on-primary-fixed-variant": "#7b2a43",
+              "on-secondary": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "inverse-surface": "#352f31",
+              "primary-fixed-dim": "#ffb1c3",
+              "on-tertiary-container": "#f5fff7",
+              "tertiary-fixed-dim": "#62dcaa",
+              "surface-dim": "#e2d7da",
+              "on-primary-container": "#fffbff",
+              "surface-tint": "#98415a",
+              "secondary": "#824f62",
+              "error": "#ba1a1a",
+              "on-background": "#1f1a1c",
+              "on-surface": "#1f1a1c",
+              "on-tertiary-fixed": "#002114",
+              "background": "#fff8f8",
+              "surface-container": "#f6ebee",
+              "primary-fixed": "#ffd9e0",
+              "primary-container": "#b45770",
+              "outline-variant": "#d9c0c4",
+              "on-secondary-fixed-variant": "#67384a",
+              "on-surface-variant": "#544246",
+              "surface-container-highest": "#eae0e3",
+              "surface-container-low": "#fcf1f4",
+              "error-container": "#ffdad6"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .signature-gradient {
+        background: linear-gradient(135deg, #953f58 0%, #b45770 100%);
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+      }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+<!-- Top Navigation Placeholder (TopAppBar Component) -->
+<header class="w-full top-0 sticky no-border bg-gradient-to-b from-[#fff8f8] to-transparent z-50">
+<div class="flex justify-between items-center px-8 py-6 w-full max-w-7xl mx-auto">
+<div class="text-xl font-bold text-[#953f58] tracking-tighter">VAWC-Response</div>
+<div class="flex items-center gap-4 text-[#953f58]">
+<span class="material-symbols-outlined cursor-pointer hover:opacity-80 transition-opacity" data-icon="help">help</span>
+</div>
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center px-4 py-12 md:px-20 lg:px-28">
+<!-- Main Form Container -->
+<div class="w-full max-w-md">
+<!-- Form Card -->
+<div class="bg-[#FDF8F0] rounded-xl p-8 md:p-12 shadow-[0_40px_100px_-20px_rgba(149,63,88,0.06)] border border-outline-variant/10">
+<!-- Logo & Brand -->
+<div class="flex flex-col items-center mb-10">
+<div class="w-16 h-16 bg-primary-fixed rounded-full flex items-center justify-center mb-6 overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="minimalist logo design with a soft rose gold circle and clean typography on a light pink background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiPtkzESZ8MZOp1uewEQX-B6nE6tmQM99eILG_i7lFo0ceS4igGjEZZdiMG_Dak2Gi5J4HN-dVF1TtQdGV5LNiNx0Zw_ErSM7E4Pfxl8aTkxrE0sZM-qxgLv8Rc8pcDNg3hf0OYPVQCvR2qLVs0xAydaCnZSl2duAq3fn7HSYwZQ90oCqbYBKmweodtxvUC8HPwnPEwnPyxtNfbtVfsLA0QE4U_2U8tRHrqz1Q76St_HKhyiDaIuteLcosS0Uem5-Xwd3arhb5_HQ"/>
+</div>
+<h1 class="text-3xl font-bold tracking-tighter text-[#8B3050] mb-2">VAWC-Response</h1>
+<p class="text-on-surface-variant text-center leading-relaxed">Your safety matters. Sign in to continue.</p>
+</div>
+<!-- Input Group -->
+<form class="space-y-6">
+<div>
+<label class="block text-sm font-semibold text-on-surface mb-2 ml-1">Mobile Number or Email</label>
+<div class="relative">
+<input class="w-full h-14 bg-surface-container-high border-none rounded-md px-5 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-secondary-fixed-dim transition-all outline-none" placeholder="Enter your contact info" type="text"/>
+<span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-outline" data-icon="contact_mail">contact_mail</span>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-2 ml-1">
+<label class="block text-sm font-semibold text-on-surface">Password</label>
+<a class="text-sm font-medium text-[#C96882] hover:opacity-80 transition-opacity" href="#">Forgot Password?</a>
+</div>
+<div class="relative">
+<input class="w-full h-14 bg-surface-container-high border-none rounded-md px-5 text-on-surface placeholder:text-outline focus:ring-2 focus:ring-secondary-fixed-dim transition-all outline-none" placeholder="••••••••" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<!-- CTA Button -->
+<button class="w-full h-[60px] signature-gradient text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:scale-[0.98] active:scale-95 transition-all duration-200 mt-4" type="submit">
+                        Sign In
+                    </button>
+<!-- Secondary Link -->
+<div class="text-center mt-8">
+<p class="text-on-surface-variant text-sm">
+                            Don't have an account? 
+                            <a class="font-bold text-primary ml-1 hover:underline decoration-secondary-fixed-dim underline-offset-4" href="#">Sign Up</a>
+</p>
+</div>
+</form>
+</div>
+<!-- Accessibility Note -->
+<div class="mt-8 text-center px-4">
+<p class="text-xs text-outline leading-loose">
+                    This is a secure space. Your data is encrypted and handled with the highest confidentiality standards.
+                </p>
+</div>
+</div>
+</main>
+<!-- Emergency FAB (From Design System Guidelines) -->
+<div class="fixed bottom-8 right-8 z-[100]">
+<button class="bg-tertiary/80 backdrop-blur-md text-white px-6 py-4 rounded-full flex items-center gap-3 shadow-2xl shadow-tertiary/30 hover:bg-tertiary transition-all">
+<span class="material-symbols-outlined" data-icon="close" data-weight="fill" style="font-variation-settings: 'FILL' 1;">close</span>
+<span class="font-bold text-sm tracking-wide">QUICK EXIT</span>
+</button>
+</div>
+<!-- Footer Component -->
+<footer class="w-full py-12 border-t border-[#d9c0c4]/15 bg-surface mt-auto">
+<div class="flex flex-col items-center justify-center space-y-4 px-8">
+<p class="text-sm font-['Inter'] text-[#544246] dark:text-[#d9c0c4] text-center">© 2024 VAWC-Response. Your safety is our priority.</p>
+<div class="flex flex-wrap justify-center gap-6">
+<a class="text-sm font-['Inter'] text-[#544246] hover:text-[#953f58] transition-colors" href="#">Privacy Policy</a>
+<a class="text-sm font-['Inter'] text-[#544246] hover:text-[#953f58] transition-colors" href="#">Safety Tips</a>
+<a class="text-sm font-['Inter'] text-[#544246] hover:text-[#953f58] transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+</footer>
+</body></html>

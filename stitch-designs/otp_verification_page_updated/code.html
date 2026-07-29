@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Verify Your Number - VAWC-Response</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "secondary-fixed": "#ffd9e3",
+                        "surface-variant": "#eae0e3",
+                        "outline": "#867276",
+                        "on-error-container": "#93000a",
+                        "surface": "#fff8f8",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#3f0019",
+                        "on-secondary-fixed": "#340d1e",
+                        "tertiary-container": "#00855e",
+                        "secondary-container": "#ffbdd2",
+                        "surface-container-high": "#f0e5e8",
+                        "inverse-primary": "#ffb1c3",
+                        "tertiary": "#00694a",
+                        "primary": "#953f58",
+                        "on-secondary-container": "#7b495b",
+                        "inverse-on-surface": "#f9eef1",
+                        "surface-bright": "#fff8f8",
+                        "tertiary-fixed": "#80f9c5",
+                        "on-tertiary-fixed-variant": "#005138",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#f6b5ca",
+                        "on-primary-fixed-variant": "#7b2a43",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-surface": "#352f31",
+                        "primary-fixed-dim": "#ffb1c3",
+                        "on-tertiary-container": "#f5fff7",
+                        "tertiary-fixed-dim": "#62dcaa",
+                        "surface-dim": "#e2d7da",
+                        "on-primary-container": "#fffbff",
+                        "surface-tint": "#98415a",
+                        "secondary": "#824f62",
+                        "error": "#ba1a1a",
+                        "on-background": "#1f1a1c",
+                        "on-surface": "#1f1a1c",
+                        "on-tertiary-fixed": "#002114",
+                        "background": "#fff8f8",
+                        "surface-container": "#f6ebee",
+                        "primary-fixed": "#ffd9e0",
+                        "primary-container": "#b45770",
+                        "outline-variant": "#d9c0c4",
+                        "on-secondary-fixed-variant": "#67384a",
+                        "on-surface-variant": "#544246",
+                        "surface-container-highest": "#eae0e3",
+                        "surface-container-low": "#fcf1f4",
+                        "error-container": "#ffdad6"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fff8f8;
+        }
+        .otp-input:focus {
+            box-shadow: 0 0 0 4px #f6b5ca;
+        }
+        .rose-gradient {
+            background: linear-gradient(135deg, #953f58 0%, #b45770 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-on-surface">
+<!-- Top Navigation Anchor (Manual suppression of global nav for transactional flow) -->
+<header class="w-full top-0 sticky no-border bg-gradient-to-b from-[#fff8f8] to-transparent z-50">
+<div class="flex justify-between items-center px-8 py-6 w-full max-w-7xl mx-auto">
+<a class="flex items-center gap-2 text-primary font-semibold hover:opacity-80 transition-opacity" href="#">
+<span class="material-symbols-outlined">arrow_back</span>
+<span>Back</span>
+</a>
+<div class="text-xl font-bold text-primary tracking-tighter">VAWC-Response</div>
+<div class="w-10"></div> <!-- Spacer for balance -->
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center px-6 py-12">
+<div class="w-full max-w-md">
+<!-- Centered Editorial Card -->
+<div class="bg-surface-container-lowest rounded-lg p-10 md:p-12 shadow-[0_40px_60px_-15px_rgba(149,63,88,0.06)] border border-outline-variant/15">
+<div class="space-y-8">
+<!-- Heading & Context -->
+<div class="text-center space-y-4">
+<h1 class="text-3xl md:text-4xl font-bold text-primary tracking-tight">Verify Your Number</h1>
+<p class="text-on-surface-variant leading-relaxed">A 6-digit code was sent to your mobile number. Please enter it below.</p>
+<div class="inline-block px-4 py-2 bg-tertiary-container/10 rounded-full">
+<span class="text-tertiary font-bold tracking-widest text-lg">+63 9** *** 4521</span>
+</div>
+</div>
+<!-- OTP Inputs Cluster -->
+<div class="grid grid-cols-6 gap-2 sm:gap-4 justify-center py-4">
+<input aria-label="Digit 1" class="otp-input w-full aspect-square text-center text-2xl font-bold bg-surface-container-high text-primary border-none rounded-xl focus:ring-0 transition-all outline-none" maxlength="1" type="text"/>
+<input aria-label="Digit 2" class="otp-input w-full aspect-square text-center text-2xl font-bold bg-surface-container-high text-primary border-none rounded-xl focus:ring-0 transition-all outline-none" maxlength="1" type="text"/>
+<input aria-label="Digit 3" class="otp-input w-full aspect-square text-center text-2xl font-bold bg-surface-container-high text-primary border-none rounded-xl focus:ring-0 transition-all outline-none" maxlength="1" type="text"/>
+<input aria-label="Digit 4" class="otp-input w-full aspect-square text-center text-2xl font-bold bg-surface-container-high text-primary border-none rounded-xl focus:ring-0 transition-all outline-none" maxlength="1" type="text"/>
+<input aria-label="Digit 5" class="otp-input w-full aspect-square text-center text-2xl font-bold bg-surface-container-high text-primary border-none rounded-xl focus:ring-0 transition-all outline-none" maxlength="1" type="text"/>
+<input aria-label="Digit 6" class="otp-input w-full aspect-square text-center text-2xl font-bold bg-surface-container-high text-primary border-none rounded-xl focus:ring-0 transition-all outline-none" maxlength="1" type="text"/>
+</div>
+<!-- Primary Action -->
+<div class="pt-2">
+<button class="w-full h-14 rose-gradient text-white font-semibold rounded-xl text-lg hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span>Verify</span>
+</button>
+</div>
+<!-- Resend Logic -->
+<div class="text-center">
+<p class="text-on-surface-variant text-sm font-medium">
+                            Didn't receive the code? 
+                            <span class="text-primary cursor-not-allowed opacity-60">Resend available in 0:45</span>
+</p>
+</div>
+</div>
+</div>
+<!-- Accessibility/Safety Note -->
+<div class="mt-8 text-center px-4">
+<p class="text-on-surface-variant/70 text-xs leading-relaxed italic">
+                    If you do not have access to this device, please use our 24/7 emergency hotline by clicking the green button below.
+                </p>
+</div>
+</div>
+</main>
+<!-- Emergency "Quick Exit" / Hotline FAB -->
+<div class="fixed bottom-8 right-8 z-[100]">
+<button class="flex items-center gap-3 bg-tertiary/80 backdrop-blur-md text-on-tertiary px-6 py-4 rounded-full shadow-2xl hover:bg-tertiary transition-colors group">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">emergency_home</span>
+<span class="font-bold tracking-wide uppercase text-sm">Quick Exit</span>
+</button>
+</div>
+<!-- Footer - Simplified for Transactional Flow -->
+<footer class="w-full py-12 border-t border-[#d9c0c4]/15 bg-surface">
+<div class="flex flex-col items-center justify-center space-y-4 px-8">
+<p class="text-sm font-['Inter'] text-on-surface-variant text-center">© 2024 The Sanctuary Archive. Your safety is our priority.</p>
+<div class="flex gap-6">
+<a class="text-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="text-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Safety Tips</a>
+<a class="text-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+</footer>
+</body></html>

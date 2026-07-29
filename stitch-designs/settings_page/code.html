@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-variant": "#eae0e3",
+              "inverse-on-surface": "#f9eef1",
+              "primary": "#953f58",
+              "on-tertiary-fixed-variant": "#005138",
+              "on-tertiary": "#ffffff",
+              "on-surface-variant": "#544246",
+              "on-primary": "#ffffff",
+              "outline": "#867276",
+              "tertiary-fixed-dim": "#62dcaa",
+              "background": "#fff8f8",
+              "on-secondary-fixed": "#340d1e",
+              "surface-container-high": "#f0e5e8",
+              "on-secondary-container": "#7b495b",
+              "on-primary-fixed": "#3f0019",
+              "error-container": "#ffdad6",
+              "surface": "#fff8f8",
+              "on-primary-container": "#fffbff",
+              "on-secondary": "#ffffff",
+              "surface-container": "#f6ebee",
+              "on-surface": "#1f1a1c",
+              "primary-fixed": "#ffd9e0",
+              "on-error": "#ffffff",
+              "tertiary": "#00694a",
+              "on-tertiary-fixed": "#002114",
+              "on-error-container": "#93000a",
+              "inverse-surface": "#352f31",
+              "surface-tint": "#98415a",
+              "error": "#ba1a1a",
+              "on-primary-fixed-variant": "#7b2a43",
+              "secondary": "#824f62",
+              "surface-container-highest": "#eae0e3",
+              "secondary-fixed": "#ffd9e3",
+              "surface-dim": "#e2d7da",
+              "on-secondary-fixed-variant": "#67384a",
+              "on-background": "#1f1a1c",
+              "tertiary-container": "#00855e",
+              "primary-fixed-dim": "#ffb1c3",
+              "surface-container-lowest": "#ffffff",
+              "secondary-container": "#ffbdd2",
+              "on-tertiary-container": "#f5fff7",
+              "surface-bright": "#fff8f8",
+              "inverse-primary": "#ffb1c3",
+              "primary-container": "#b45770",
+              "surface-container-low": "#fcf1f4",
+              "tertiary-fixed": "#80f9c5",
+              "outline-variant": "#d9c0c4",
+              "secondary-fixed-dim": "#f6b5ca"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-grid {
+            display: grid;
+            grid-template-columns: 1fr minmax(auto, 800px) 1fr;
+        }
+        .editorial-content {
+            grid-column: 2;
+        }
+        body {
+            background-color: #fff8f8;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-[#fff8f8] dark:bg-slate-900 docked full-width top-0 z-50 transition-colors duration-300">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-[#953f58] dark:text-[#f6b5ca]">VAWC-Response Brgy. Palanginan, Iba, Zambales</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex gap-8 items-center">
+<a class="text-[#544246] dark:text-slate-400 hover:bg-[#fcf1f4] dark:hover:bg-slate-800 transition-colors duration-300 px-4 py-2 rounded-lg font-['Inter'] antialiased tracking-tight text-lg" href="#">Home</a>
+<a class="text-[#544246] dark:text-slate-400 hover:bg-[#fcf1f4] dark:hover:bg-slate-800 transition-colors duration-300 px-4 py-2 rounded-lg font-['Inter'] antialiased tracking-tight text-lg" href="#">Report Now</a>
+<a class="text-[#544246] dark:text-slate-400 hover:bg-[#fcf1f4] dark:hover:bg-slate-800 transition-colors duration-300 px-4 py-2 rounded-lg font-['Inter'] antialiased tracking-tight text-lg" href="#">My Reports</a>
+</nav>
+<button class="material-symbols-outlined text-[#953f58] dark:text-[#f6b5ca] text-3xl">account_circle</button>
+</div>
+</div>
+</header>
+<main class="editorial-grid pt-12 pb-32 min-h-screen">
+<div class="editorial-content px-6 md:px-0">
+<!-- Page Header -->
+<div class="mb-14">
+<h1 class="text-[#953f58] font-headline font-bold text-4xl tracking-tighter mb-4">Settings</h1>
+<p class="text-on-surface-variant font-body text-lg max-w-md">Manage your sanctuary and personalize your safety experience.</p>
+</div>
+<!-- Settings Layout: Asymmetric Bento Style -->
+<div class="grid grid-cols-1 gap-10">
+<!-- Account Section Card -->
+<section class="bg-surface-container-low p-8 rounded-lg shadow-sm border-none">
+<h2 class="text-on-surface font-headline font-semibold text-xl mb-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">security</span>
+                        Security &amp; Privacy
+                    </h2>
+<div class="space-y-4">
+<!-- Language Option -->
+<button class="w-full flex items-center justify-between p-6 bg-surface-container-lowest rounded-xl hover:bg-surface-container-high transition-all duration-300 group">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">language</span>
+</div>
+<div class="text-left">
+<p class="text-on-surface font-semibold text-lg">Language</p>
+<p class="text-on-surface-variant text-sm">English (United States)</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+<!-- Notifications Option -->
+<button class="w-full flex items-center justify-between p-6 bg-surface-container-lowest rounded-xl hover:bg-surface-container-high transition-all duration-300 group">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">notifications_active</span>
+</div>
+<div class="text-left">
+<p class="text-on-surface font-semibold text-lg">Notifications</p>
+<p class="text-on-surface-variant text-sm">Alerts, reporting updates</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+<!-- Change Password Option -->
+<button class="w-full flex items-center justify-between p-6 bg-surface-container-lowest rounded-xl hover:bg-surface-container-high transition-all duration-300 group">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">lock_reset</span>
+</div>
+<div class="text-left">
+<p class="text-on-surface font-semibold text-lg">Change Password</p>
+<p class="text-on-surface-variant text-sm">Update your secure access</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- Help & Information Section -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="bg-surface-container p-8 rounded-lg">
+<span class="material-symbols-outlined text-primary mb-4 text-3xl">contact_support</span>
+<h3 class="text-on-surface font-semibold text-xl mb-2">Help Center</h3>
+<p class="text-on-surface-variant mb-6 text-sm">Find answers to common questions about reporting and safety protocols.</p>
+<a class="inline-flex items-center text-primary font-bold hover:gap-2 transition-all" href="#">Visit FAQ <span class="material-symbols-outlined ml-1">arrow_forward</span></a>
+</div>
+<div class="bg-surface-container p-8 rounded-lg">
+<span class="material-symbols-outlined text-primary mb-4 text-3xl">verified_user</span>
+<h3 class="text-on-surface font-semibold text-xl mb-2">Privacy Policy</h3>
+<p class="text-on-surface-variant mb-6 text-sm">How we protect your data and ensure your reports remain confidential.</p>
+<a class="inline-flex items-center text-primary font-bold hover:gap-2 transition-all" href="#">Read Policy <span class="material-symbols-outlined ml-1">arrow_forward</span></a>
+</div>
+</section>
+<!-- Logout Section (Separated) -->
+<div class="mt-8 pt-8 border-t-0 flex justify-center">
+<button class="w-full md:w-auto min-w-[300px] h-[64px] rounded-xl flex items-center justify-center gap-3 bg-[#8B3050] text-white font-bold text-lg hover:opacity-90 active:scale-95 transition-all shadow-xl shadow-[#8B3050]/20">
+<span class="material-symbols-outlined">logout</span>
+                        Log Out
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- SideNavBar (Account Shortcut) -->
+<aside class="hidden lg:block fixed right-4 top-24 w-64 z-50 p-4 bg-[#ffffff] dark:bg-slate-900 rounded-[2rem] overflow-hidden shadow-xl shadow-[#953f58]/5 transition-all duration-300">
+<div class="px-4 py-6 border-b border-surface-container">
+<h3 class="text-[#953f58] font-bold text-lg">Account</h3>
+<p class="text-on-surface-variant text-sm">Manage your sanctuary</p>
+</div>
+<nav class="p-2 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-[#544246] hover:bg-[#f6ebee] hover:translate-x-1 transition-all rounded-xl font-['Inter'] text-base" href="#">
+<span class="material-symbols-outlined">person</span>
+                My Profile
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-[#953f58] text-white rounded-xl font-['Inter'] text-base" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#544246] hover:bg-[#f6ebee] hover:translate-x-1 transition-all rounded-xl font-['Inter'] text-base" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+                Contact Us
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-error hover:bg-error-container hover:translate-x-1 transition-all rounded-xl font-['Inter'] text-base border-t border-surface-container mt-2" href="#">
+<span class="material-symbols-outlined text-error">logout</span>
+                Log Out
+            </a></nav>
+</aside>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-50 rounded-t-[3rem] shadow-[0_-4px_20px_rgba(149,63,88,0.06)]">
+<a class="flex flex-col items-center justify-center text-[#544246] dark:text-slate-400 px-6 py-2 hover:text-[#953f58] transition-all" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#f6ebee] dark:bg-[#953f58]/20 text-[#953f58] rounded-full px-6 py-2" href="#">
+<span class="material-symbols-outlined">add_alert</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Report Now</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#544246] dark:text-slate-400 px-6 py-2 hover:text-[#953f58] transition-all" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">My Reports</span>
+</a>
+</nav>
+<!-- Emergency Quick Exit FAB -->
+<button class="fixed bottom-6 right-6 md:bottom-10 md:right-10 w-16 h-16 rounded-full bg-tertiary text-white flex items-center justify-center shadow-2xl shadow-tertiary/40 z-[60] backdrop-blur-sm opacity-90 active:scale-90 transition-all">
+<span class="material-symbols-outlined text-3xl">close</span>
+<span class="sr-only">Quick Exit</span>
+</button>
+</body></html>

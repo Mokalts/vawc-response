@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VAWC-Response | Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-variant": "#eae0e3",
+              "inverse-on-surface": "#f9eef1",
+              "primary": "#953f58",
+              "on-tertiary-fixed-variant": "#005138",
+              "on-tertiary": "#ffffff",
+              "on-surface-variant": "#544246",
+              "on-primary": "#ffffff",
+              "outline": "#867276",
+              "tertiary-fixed-dim": "#62dcaa",
+              "background": "#fff8f8",
+              "on-secondary-fixed": "#340d1e",
+              "surface-container-high": "#f0e5e8",
+              "on-secondary-container": "#7b495b",
+              "on-primary-fixed": "#3f0019",
+              "error-container": "#ffdad6",
+              "surface": "#fff8f8",
+              "on-primary-container": "#fffbff",
+              "on-secondary": "#ffffff",
+              "surface-container": "#f6ebee",
+              "on-surface": "#1f1a1c",
+              "primary-fixed": "#ffd9e0",
+              "on-error": "#ffffff",
+              "tertiary": "#00694a",
+              "on-tertiary-fixed": "#002114",
+              "on-error-container": "#93000a",
+              "inverse-surface": "#352f31",
+              "surface-tint": "#98415a",
+              "error": "#ba1a1a",
+              "on-primary-fixed-variant": "#7b2a43",
+              "secondary": "#824f62",
+              "surface-container-highest": "#eae0e3",
+              "secondary-fixed": "#ffd9e3",
+              "surface-dim": "#e2d7da",
+              "on-secondary-fixed-variant": "#67384a",
+              "on-background": "#1f1a1c",
+              "tertiary-container": "#00855e",
+              "primary-fixed-dim": "#ffb1c3",
+              "surface-container-lowest": "#ffffff",
+              "secondary-container": "#ffbdd2",
+              "on-tertiary-container": "#f5fff7",
+              "surface-bright": "#fff8f8",
+              "inverse-primary": "#ffb1c3",
+              "primary-container": "#b45770",
+              "surface-container-low": "#fcf1f4",
+              "tertiary-fixed": "#80f9c5",
+              "outline-variant": "#d9c0c4",
+              "secondary-fixed-dim": "#f6b5ca"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #fff8f8;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #953f58 0%, #b45770 100%);
+        }
+        .glass-nav {
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-[#fff8f8] fixed top-0 left-0 right-0 z-50">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
+<h1 class="text-2xl font-bold tracking-tighter text-[#953f58]">VAWC-Response <span class="block text-sm font-medium text-on-surface-variant opacity-80">Brgy. Palanginan, Iba, Zambales</span></h1>
+<div class="flex items-center gap-4">
+<div class="relative group">
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors duration-300 text-primary flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+<div class="absolute right-0 mt-2 w-48 bg-surface-container-lowest rounded-xl shadow-xl border border-outline-variant/20 py-2 hidden group-hover:block z-[100]">
+<a class="flex items-center gap-3 px-4 py-2 text-on-surface hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="person">person</span>
+<span class="text-sm font-medium">My Profile</span>
+</a>
+<div class="my-1 border-t border-outline-variant/10"></div>
+<a class="flex items-center gap-3 px-4 py-2 text-error hover:bg-error-container/20 transition-colors" href="#">
+<span class="material-symbols-outlined text-sm" data-icon="logout">logout</span>
+<span class="text-sm font-bold">Log Out</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="pt-24 pb-32 px-6 md:px-20 max-w-7xl mx-auto space-y-12">
+<!-- Welcome Hero Section -->
+<section class="space-y-4">
+<h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-primary leading-tight">
+                You are not alone.<br/>We are here to help.
+            </h2>
+<p class="text-on-surface-variant text-lg md:text-xl font-medium max-w-2xl">
+                This is a safe place to report incidents and seek support. Your safety and privacy are our absolute priority.
+            </p>
+</section>
+<!-- Bento Grid Feature Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Primary CTA Card -->
+<div class="md:col-span-8 group relative overflow-hidden rounded-lg bg-surface-container-lowest p-8 shadow-sm flex flex-col justify-between min-h-[320px]">
+<div class="relative z-10">
+<span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed text-xs font-bold uppercase tracking-wider mb-6">
+                        Immediate Action
+                    </span>
+<h3 class="text-3xl font-bold text-primary mb-4">Start a Secure Report</h3>
+<p class="text-on-surface-variant max-w-md">Our guided reporting tool ensures your information is captured accurately and shared only with verified responders.</p>
+</div>
+<div class="relative z-10 mt-8">
+<button class="hero-gradient text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform active:scale-95">
+                        File a Report Now
+                    </button>
+</div>
+<!-- Abstract Decorative Background -->
+<div class="absolute top-0 right-0 w-64 h-64 -mr-16 -mt-16 bg-primary-fixed-dim/20 rounded-full blur-3xl group-hover:bg-primary-fixed-dim/30 transition-colors"></div>
+</div>
+<!-- Awareness Tip Card -->
+<div class="md:col-span-4 rounded-lg bg-surface-container p-8 flex flex-col justify-between border border-outline-variant/15">
+<div>
+<div class="w-12 h-12 rounded-2xl bg-tertiary-container flex items-center justify-center text-on-tertiary-container mb-6">
+<span class="material-symbols-outlined" data-icon="lightbulb">lightbulb</span>
+</div>
+<h4 class="text-xl font-bold text-on-surface mb-3">Awareness Tip</h4>
+<p class="text-on-surface-variant text-base leading-relaxed">
+                        Under RA 9262, you have the right to a Protection Order which can be issued as soon as a report is filed to ensure your safety.
+                    </p>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/10">
+<a class="text-primary font-bold inline-flex items-center gap-2 hover:underline" href="#">
+                        Learn more about your rights
+                        <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Support Resources Banner -->
+<div class="md:col-span-12 rounded-lg bg-surface-container-low p-8 flex flex-col md:flex-row items-center gap-8">
+<div class="w-full md:w-1/3 rounded-lg overflow-hidden h-48">
+<img alt="Supportive counselor" class="w-full h-full object-cover grayscale-[0.2]" data-alt="A warm, professional female counselor in a soft-lit, calm office setting with indoor plants, looking empathetic and supportive" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJTMEExdAO6T6dkP6ejdOrdgnxijyv1RRGYZ4XBbuvajn5P62_T-mikh3uHfgVocLksuX9U0hg0jXG7EU5ptvBWdNMQZCddisl4XjTZbzem9sA6Y25mc1OzIw-fJvWWntMjzFZNmilWB5ALC0W72Ng4LuRWv9cWZiGyE2J3LzuqFAxTNUsa-RR3Fh8zeTbS-o2iLvwQgUCgKavRWYWzve40PhtKlklRLWOct2rt9TWNv8pX0DAnWxMDjTdU6jjUtbadf3WTtE8oHg"/>
+</div>
+<div class="flex-1 space-y-4">
+<h4 class="text-2xl font-bold text-primary">Need someone to talk to?</h4>
+<p class="text-on-surface-variant text-lg">Our certified counselors are available 24/7 for confidential emotional support and guidance on your next steps.</p>
+<div class="flex flex-wrap gap-4 pt-2">
+<button class="bg-surface-container-lowest text-primary px-6 py-3 rounded-xl font-bold border border-outline-variant/20 hover:bg-surface-variant transition-colors">
+                            Chat with Support
+                        </button>
+<button class="bg-tertiary text-white px-6 py-3 rounded-xl font-bold shadow-md shadow-tertiary/10 hover:opacity-90 transition-opacity">
+                            Call Hotline
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Emergency Quick Exit FAB -->
+<button class="fixed bottom-28 right-8 z-[60] bg-tertiary text-white p-5 rounded-full shadow-2xl flex items-center gap-2 hover:scale-105 active:scale-95 transition-all glass-nav opacity-90">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-bold text-sm">QUICK EXIT</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-50 rounded-t-[3rem] shadow-[0_-4px_20px_rgba(149,63,88,0.06)]">
+<!-- Home Tab (Active) -->
+<a class="flex flex-col items-center justify-center bg-[#f6ebee] text-[#953f58] rounded-full px-6 py-2 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="text-sm font-medium tracking-wide font-['Inter'] mt-1">Home</span>
+</a>
+<!-- Report Now (Center Action) -->
+<a class="flex flex-col items-center justify-center -mt-12 bg-primary text-white p-4 rounded-full shadow-xl shadow-primary/30 transition-all active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined text-3xl" data-icon="add_alert">add_alert</span>
+</a>
+<!-- My Reports Tab -->
+<a class="flex flex-col items-center justify-center text-[#544246] px-6 py-2 hover:text-[#953f58] transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="text-sm font-medium tracking-wide font-['Inter'] mt-1">My Reports</span>
+</a>
+</nav>
+</body></html>

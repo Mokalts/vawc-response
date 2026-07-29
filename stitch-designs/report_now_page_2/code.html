@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Report Now - VAWC-Response</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-variant": "#eae0e3",
+                        "inverse-on-surface": "#f9eef1",
+                        "primary": "#953f58",
+                        "on-tertiary-fixed-variant": "#005138",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#544246",
+                        "on-primary": "#ffffff",
+                        "outline": "#867276",
+                        "tertiary-fixed-dim": "#62dcaa",
+                        "background": "#fff8f8",
+                        "on-secondary-fixed": "#340d1e",
+                        "surface-container-high": "#f0e5e8",
+                        "on-secondary-container": "#7b495b",
+                        "on-primary-fixed": "#3f0019",
+                        "error-container": "#ffdad6",
+                        "surface": "#fff8f8",
+                        "on-primary-container": "#fffbff",
+                        "on-secondary": "#ffffff",
+                        "surface-container": "#f6ebee",
+                        "on-surface": "#1f1a1c",
+                        "primary-fixed": "#ffd9e0",
+                        "on-error": "#ffffff",
+                        "tertiary": "#00694a",
+                        "on-tertiary-fixed": "#002114",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#352f31",
+                        "surface-tint": "#98415a",
+                        "error": "#ba1a1a",
+                        "on-primary-fixed-variant": "#7b2a43",
+                        "secondary": "#824f62",
+                        "surface-container-highest": "#eae0e3",
+                        "secondary-fixed": "#ffd9e3",
+                        "surface-dim": "#e2d7da",
+                        "on-secondary-fixed-variant": "#67384a",
+                        "on-background": "#1f1a1c",
+                        "tertiary-container": "#00855e",
+                        "primary-fixed-dim": "#ffb1c3",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#ffbdd2",
+                        "on-tertiary-container": "#f5fff7",
+                        "surface-bright": "#fff8f8",
+                        "inverse-primary": "#ffb1c3",
+                        "primary-container": "#b45770",
+                        "surface-container-low": "#fcf1f4",
+                        "tertiary-fixed": "#80f9c5",
+                        "outline-variant": "#d9c0c4",
+                        "secondary-fixed-dim": "#f6b5ca"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #fff8f8; }
+        .glass-nav { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .hero-gradient { background: linear-gradient(135deg, #953f58 0%, #b45770 100%); }
+        .safe-shadow { box-shadow: 0 40px 60px -15px rgba(149, 63, 88, 0.06); }
+        .tertiary-gradient { background: linear-gradient(135deg, #00694a 0%, #00855e 100%); }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Top Navigation -->
+<header class="bg-[#fff8f8] dark:bg-slate-900 font-['Inter'] antialiased tracking-tight text-lg docked full-width top-0 z-50 sticky">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-[#953f58] dark:text-[#f6b5ca]">VAWC-Response</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-[#544246] dark:text-slate-400 hover:text-[#953f58] transition-colors duration-300" href="#">Home</a>
+<a class="text-[#953f58] font-semibold border-b-2 border-[#953f58]" href="#">Report Now</a>
+<a class="text-[#544246] dark:text-slate-400 hover:text-[#953f58] transition-colors duration-300" href="#">My Reports</a>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#953f58] text-3xl">account_circle</span>
+</div>
+</div>
+</header>
+<main class="max-w-4xl mx-auto px-6 pt-12 pb-32">
+<!-- Progress Indicator -->
+<div class="mb-12">
+<h1 class="text-4xl font-extrabold text-[#953f58] tracking-tight mb-4">Submit a Report</h1>
+<div class="flex items-center gap-2 w-full h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-1/4 rounded-full"></div>
+<div class="h-full bg-surface-container-high w-1/4 rounded-full"></div>
+<div class="h-full bg-surface-container-high w-1/4 rounded-full"></div>
+<div class="h-full bg-surface-container-high w-1/4 rounded-full"></div>
+</div>
+<div class="flex justify-between mt-3">
+<span class="text-sm font-semibold text-primary">Statement</span>
+<span class="text-sm font-medium text-on-surface-variant">Review</span>
+</div>
+</div>
+<form class="space-y-14">
+<!-- Section 1: Statement -->
+<section class="bg-[#E0F5EE] rounded-lg p-8 md:p-12 safe-shadow">
+<div class="flex items-start gap-6 mb-8">
+<div class="bg-tertiary-container text-white p-4 rounded-xl">
+<span class="material-symbols-outlined text-2xl">edit_note</span>
+</div>
+<div>
+<h2 class="text-2xl font-bold text-on-tertiary-fixed-variant tracking-tight">Write your statement</h2>
+<p class="text-on-surface-variant mt-1">Your privacy is our priority. Please share only what you feel comfortable with.</p>
+</div>
+</div>
+<div class="relative">
+<textarea class="w-full bg-surface-container-lowest border-none rounded-lg p-6 text-lg focus:ring-4 focus:ring-secondary-fixed-dim placeholder:text-outline-variant resize-none shadow-sm" placeholder="Describe what happened in your own words…" rows="6"></textarea>
+</div>
+</section>
+<!-- Section 2: Attach Photos -->
+<section class="bg-[#E0F5EE] rounded-lg p-8 md:p-12 safe-shadow">
+<div class="flex items-start gap-6 mb-8">
+<div class="bg-tertiary-container text-white p-4 rounded-xl">
+<span class="material-symbols-outlined text-2xl">add_a_photo</span>
+</div>
+<div>
+<h2 class="text-2xl font-bold text-on-tertiary-fixed-variant tracking-tight">Attach photos</h2>
+<p class="text-on-surface-variant mt-1">Visual evidence can help strengthen your report. (Optional)</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<button class="flex items-center justify-center gap-3 h-20 rounded-xl bg-surface-container-lowest text-primary font-bold text-lg hover:bg-surface-variant transition-all border-2 border-dashed border-primary/20" type="button">
+<span class="material-symbols-outlined">photo_camera</span>
+                        Take a Photo
+                    </button>
+<button class="flex items-center justify-center gap-3 h-20 rounded-xl bg-surface-container-lowest text-primary font-bold text-lg hover:bg-surface-variant transition-all border-2 border-dashed border-primary/20" type="button">
+<span class="material-symbols-outlined">gallery_thumbnail</span>
+                        Upload from Gallery
+                    </button>
+</div>
+</section>
+<!-- Section 3: Share Location -->
+<section class="bg-[#E0F5EE] rounded-lg p-8 md:p-12 safe-shadow">
+<div class="flex items-start gap-6 mb-8">
+<div class="bg-tertiary-container text-white p-4 rounded-xl">
+<span class="material-symbols-outlined text-2xl">location_on</span>
+</div>
+<div>
+<h2 class="text-2xl font-bold text-on-tertiary-fixed-variant tracking-tight">Share your location</h2>
+<p class="text-on-surface-variant mt-1">This helps us dispatch responders to the correct vicinity.</p>
+</div>
+</div>
+<button class="w-full h-24 rounded-xl bg-[#1FA87A] text-white flex flex-col items-center justify-center gap-1 hover:opacity-90 active:scale-95 transition-all shadow-lg" type="button">
+<span class="material-symbols-outlined text-3xl">my_location</span>
+<span class="font-bold text-lg">Share My Location</span>
+</button>
+<div class="mt-6 rounded-lg overflow-hidden border border-outline-variant/30 h-48 bg-surface-container relative">
+<img class="w-full h-full object-cover opacity-60" data-alt="Stylized minimalist digital map view of an urban neighborhood with soft pastel green and beige tones" data-location="Manila" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCeD_9Inj1y1ONBdAUkKFws39YdIPT4Nsr09kffN5Dev2yDYoFbm9uZUf5mIWBW-1DLKja320JpvWNBj1w9YZQiNLxB0pxSisY2DVuAzKcHFmVY6DIxmqfx3_-Ar5o-adptS93srrPNsmpcSZTW_4R041oglXv3aMe6CccC_h4duEDm79JfPGC11phtDX4yRXhoslYV6cg5gv5_v_oF5SZ5FyRf9o8_4PE2kwn3ZskqsnG-0-nJR1juNYW_fvB8BUG01ox_ut4BmpA"/>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="bg-white/80 backdrop-blur px-4 py-2 rounded-full text-xs font-semibold text-tertiary shadow-sm">Map Preview Loaded</div>
+</div>
+</div>
+</section>
+<!-- Section 4: Review and Submit -->
+<section class="bg-surface-container rounded-lg p-8 md:p-12">
+<div class="flex items-start gap-6 mb-8">
+<div class="bg-primary text-white p-4 rounded-xl">
+<span class="material-symbols-outlined text-2xl">verified</span>
+</div>
+<div>
+<h2 class="text-2xl font-bold text-primary tracking-tight">Review and Submit</h2>
+<p class="text-on-surface-variant mt-1">Please ensure all details are accurate before submitting.</p>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-lg p-6 mb-10 space-y-4">
+<div class="flex justify-between items-center pb-4 border-b border-outline-variant/20">
+<span class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">Statement</span>
+<span class="text-primary text-sm font-bold">Draft saved</span>
+</div>
+<div class="flex justify-between items-center pb-4 border-b border-outline-variant/20">
+<span class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">Attachments</span>
+<span class="text-on-surface-variant text-sm">None added</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-sm font-semibold uppercase tracking-wider text-on-surface-variant">Location</span>
+<span class="text-on-surface-variant text-sm">Waiting for permission...</span>
+</div>
+</div>
+<button class="w-full h-20 rounded-xl bg-[#C96882] text-white text-xl font-bold shadow-xl hover:bg-[#b45770] active:scale-95 transition-all flex items-center justify-center gap-3" type="submit">
+                    Submit Report
+                    <span class="material-symbols-outlined">send</span>
+</button>
+<p class="text-center text-sm text-on-surface-variant mt-6 italic">By submitting, you agree that this information will be used to provide you with protective services.</p>
+</section>
+</form>
+</main>
+<!-- Floating Emergency Exit -->
+<div class="fixed bottom-32 right-6 z-50">
+<button class="bg-tertiary text-white w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:opacity-90 active:scale-90 transition-all" title="Quick Exit">
+<span class="material-symbols-outlined text-3xl">logout</span>
+</button>
+</div>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-50 rounded-t-[3rem] shadow-[0_-4px_20px_rgba(149,63,88,0.06)] md:hidden">
+<a class="flex flex-col items-center justify-center text-[#544246] dark:text-slate-400 px-6 py-2 hover:text-[#953f58] transition-all" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-[#f6ebee] dark:bg-[#953f58]/20 text-[#953f58] rounded-full px-6 py-2" href="#">
+<span class="material-symbols-outlined">add_alert</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Report Now</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#544246] dark:text-slate-400 px-6 py-2 hover:text-[#953f58] transition-all" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">My Reports</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,36 @@
+:root {
+  /* ───── VAWC Philippines official palette ───── */
+
+  /* Primary — Orange (Hope & Action) */
+  --vawc-orange:       #F47920;
+  --vawc-orange-light: #FF9A4D;
+  --vawc-orange-tint:  #FFF3E0;
+  --vawc-orange-dark:  #C45E10;
+
+  /* Secondary — Purple (Justice & Dignity) */
+  --vawc-purple:       #7B2D8B;
+  --vawc-purple-light: #9B4DAB;
+  --vawc-purple-tint:  #F3E5F5;
+  --vawc-purple-deep:  #4A1259;
+
+  /* Neutrals & semantic */
+  --vawc-white:    #FFFFFF;
+  --vawc-surface:  #F8F6FA;
+  --vawc-success:  #2E7D32;
+  --vawc-danger:   #C62828;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--vawc-surface);
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}

@@ -1,0 +1,48 @@
+:root {
+    /* Primary — violet */
+    --primary:        #F47920;
+    --primary-dark:   #C45E10;
+    --primary-bg:     #FFF3E0;
+    --primary-border: #FFE4CC;
+
+    /* Secondary — orange */
+    --secondary:      #F47920;
+    --secondary-dark: #C45E10;
+    --secondary-bg:   #FFF3E0;
+
+    /* Status */
+    --success:        #059669;
+    --danger:         #E11D48;
+    --warning:        #D97706;
+
+    /* Neutrals */
+    --text:           #0F172A;
+    --text-body:      #475569;
+    --text-muted:     #94A3B8;
+    --bg:             #FFF3E0;
+    --gray:           #BFBAB4;
+
+    /* Legacy aliases (for any leftover var() calls — point at new tokens) */
+    --blush-bg:   var(--primary-bg);
+    --light-rose: var(--primary-border);
+    --deep-rose:  var(--primary-dark);
+    --teal-bg:   #E0F5EE;
+    --light-teal:#7DD4BB;
+    --mid-teal:  #1FA87A;
+    --deep-teal: #0A5A42;
+    --off-white: #FDF8F0;
+    --sand:      #F0E0C0;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--primary-bg);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    color: var(--text);
+}

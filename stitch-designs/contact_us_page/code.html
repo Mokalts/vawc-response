@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Contact Us - VAWC-Response</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-variant": "#eae0e3",
+              "inverse-on-surface": "#f9eef1",
+              "primary": "#953f58",
+              "on-tertiary-fixed-variant": "#005138",
+              "on-tertiary": "#ffffff",
+              "on-surface-variant": "#544246",
+              "on-primary": "#ffffff",
+              "outline": "#867276",
+              "tertiary-fixed-dim": "#62dcaa",
+              "background": "#fff8f8",
+              "on-secondary-fixed": "#340d1e",
+              "surface-container-high": "#f0e5e8",
+              "on-secondary-container": "#7b495b",
+              "on-primary-fixed": "#3f0019",
+              "error-container": "#ffdad6",
+              "surface": "#fff8f8",
+              "on-primary-container": "#fffbff",
+              "on-secondary": "#ffffff",
+              "surface-container": "#f6ebee",
+              "on-surface": "#1f1a1c",
+              "primary-fixed": "#ffd9e0",
+              "on-error": "#ffffff",
+              "tertiary": "#00694a",
+              "on-tertiary-fixed": "#002114",
+              "on-error-container": "#93000a",
+              "inverse-surface": "#352f31",
+              "surface-tint": "#98415a",
+              "error": "#ba1a1a",
+              "on-primary-fixed-variant": "#7b2a43",
+              "secondary": "#824f62",
+              "surface-container-highest": "#eae0e3",
+              "secondary-fixed": "#ffd9e3",
+              "surface-dim": "#e2d7da",
+              "on-secondary-fixed-variant": "#67384a",
+              "on-background": "#1f1a1c",
+              "tertiary-container": "#00855e",
+              "primary-fixed-dim": "#ffb1c3",
+              "surface-container-lowest": "#ffffff",
+              "secondary-container": "#ffbdd2",
+              "on-tertiary-container": "#f5fff7",
+              "surface-bright": "#fff8f8",
+              "inverse-primary": "#ffb1c3",
+              "primary-container": "#b45770",
+              "surface-container-low": "#fcf1f4",
+              "tertiary-fixed": "#80f9c5",
+              "outline-variant": "#d9c0c4",
+              "secondary-fixed-dim": "#f6b5ca"
+            },
+            fontFamily: {
+              "headline": ["Inter"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .glass-nav { backdrop-filter: blur(20px); }
+        .rose-gradient { background: linear-gradient(135deg, #953f58 0%, #b45770 100%); }
+    </style>
+</head>
+<body class="bg-background text-on-surface antialiased min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="bg-[#fff8f8] dark:bg-slate-900 sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-8 py-4 max-w-7xl mx-auto">
+<div class="text-2xl font-bold tracking-tighter text-[#953f58] dark:text-[#f6b5ca]">VAWC-Response Brgy. Palanginan, Iba, Zambales</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex gap-8 items-center">
+<a class="text-[#544246] dark:text-slate-400 hover:text-[#953f58] transition-colors duration-300" href="#">Home</a>
+<a class="text-[#544246] dark:text-slate-400 hover:text-[#953f58] transition-colors duration-300" href="#">My Reports</a>
+<a class="text-[#953f58] font-semibold border-b-2 border-[#953f58]" href="#">Contact Us</a>
+</nav>
+<div class="flex items-center space-x-2 p-2 rounded-full hover:bg-[#fcf1f4] dark:hover:bg-slate-800 transition-colors duration-300 cursor-pointer">
+<span class="material-symbols-outlined text-[#953f58] dark:text-[#f6b5ca]" data-icon="account_circle">account_circle</span>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-4xl mx-auto px-8 py-12 md:py-20">
+<!-- Hero Section -->
+<section class="mb-16">
+<h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-primary mb-6">How can we support you?</h1>
+<p class="text-lg text-on-surface-variant max-w-2xl leading-relaxed">
+                You are not alone. Our team and local authorities are available 24/7 to provide guidance, protection, and support.
+            </p>
+</section>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Global Hotline Card -->
+<div class="bg-surface-container p-10 rounded-lg flex flex-col justify-between hover:translate-y-[-4px] transition-transform duration-300 shadow-sm">
+<div>
+<div class="w-14 h-14 rounded-full bg-primary-fixed flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="phone_in_talk">phone_in_talk</span>
+</div>
+<h2 class="text-2xl font-bold text-on-surface mb-2">National Hotline</h2>
+<p class="text-on-surface-variant mb-8">Direct line for urgent VAWC concerns and legal guidance.</p>
+</div>
+<a class="rose-gradient text-white text-center py-5 rounded-xl font-bold text-xl shadow-lg shadow-primary/20 active:scale-95 transition-all" href="tel:911">
+                    Call 911
+                </a>
+</div>
+<!-- Barangay Contact Card -->
+<div class="bg-surface-container-lowest p-10 rounded-lg flex flex-col justify-between border border-outline-variant/15 hover:translate-y-[-4px] transition-transform duration-300 shadow-sm">
+<div>
+<div class="w-14 h-14 rounded-full bg-secondary-fixed flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-secondary text-3xl" data-icon="location_on">location_on</span>
+</div>
+<h2 class="text-2xl font-bold text-on-surface mb-2">Local Barangay</h2>
+<p class="text-on-surface-variant mb-2 font-semibold">Brgy. San Lorenzo Desk</p>
+<p class="text-on-surface-variant mb-8">Immediate local response and shelter coordination.</p>
+</div>
+<a class="bg-surface-container text-primary text-center py-5 rounded-xl font-bold text-xl hover:bg-surface-variant active:scale-95 transition-all" href="tel:0288101234">
+                    02-8810-1234
+                </a>
+</div>
+</div>
+<!-- Emergency Section -->
+<section class="mt-12 bg-[#E0F5EE] p-10 md:p-14 rounded-lg relative overflow-hidden">
+<div class="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-8">
+<div class="bg-tertiary-container text-on-tertiary-container p-4 rounded-2xl">
+<span class="material-symbols-outlined text-4xl" data-icon="emergency_home" style="font-variation-settings: 'FILL' 1;">emergency_home</span>
+</div>
+<div class="flex-1">
+<h3 class="text-2xl font-bold text-on-tertiary-fixed mb-3">Emergency Note</h3>
+<p class="text-on-tertiary-fixed-variant leading-relaxed text-lg">
+                        If you are in immediate physical danger, please use the <strong>Quick Exit</strong> button or call local emergency services immediately. Your safety is our absolute priority. Our responders are trained to act with discretion and care.
+                    </p>
+</div>
+</div>
+<!-- Decorative Grain/Texture (Pseudo-element approach via CSS but simplified here) -->
+<div class="absolute top-0 right-0 w-64 h-64 bg-tertiary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+</section>
+<!-- Help Centers (Asymmetric Layout Item) -->
+<section class="mt-20">
+<div class="flex flex-col md:flex-row gap-12 items-center">
+<div class="md:w-1/2">
+<img alt="Supportive counselor" class="rounded-lg shadow-2xl w-full h-[400px] object-cover" data-alt="Professional woman counselor in a soft-lit warm office setting looking supportively at the camera with kindness" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJ4l6yC18kK0GqS8GaJD2_g6hUUWHpQirUbntVse9c8ok27ojoRguG8i-O6GOY53HnD4Ob4TRwW3dJJHUVNre8koBHEy_XT7dsnqKPbPnDCQ_1lTqYw8J5uyyQKsTp1xNyC421i4U1bZm_pacNkl3gucRyj2qjYSKd5oc6UO-qCGH2OFQUGZRwAl3818IrqANPn18jeOgJgvh_D1iSGDQ8rC7qmXPMpez7mjfkKhjzYeqZK2TdWbFDfFGVKqtsPA4v03IcpMOdTpo"/>
+</div>
+<div class="md:w-1/2 space-y-6">
+<h3 class="text-3xl font-bold text-primary tracking-tight">Visit a Women's Desk</h3>
+<p class="text-on-surface-variant leading-relaxed">
+                        Every police station in the country has a dedicated Women and Children Protection Desk (WCPD). These are safe spaces staffed by trained female officers ready to assist you.
+                    </p>
+<div class="space-y-4 pt-4">
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-tertiary" data-icon="verified_user">verified_user</span>
+<span class="font-medium">Confidential reporting</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-tertiary" data-icon="medical_services">medical_services</span>
+<span class="font-medium">Medical referral support</span>
+</div>
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-tertiary" data-icon="gavel">gavel</span>
+<span class="font-medium">Legal aid assistance</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- SideNavBar (Account Dropdown Mock) - Hidden by default -->
+<aside class="hidden fixed right-4 top-16 w-64 z-50 p-4 bg-[#ffffff] dark:bg-slate-900 rounded-[2rem] shadow-xl shadow-[#953f58]/5 overflow-hidden">
+<div class="mb-6 px-4">
+<h4 class="text-[#953f58] font-bold text-lg">Account</h4>
+<p class="text-sm text-on-surface-variant">Manage your sanctuary</p>
+</div>
+<nav class="space-y-2">
+<a class="flex items-center gap-4 p-3 text-[#544246] hover:bg-[#f6ebee] rounded-xl transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span>My Profile</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-[#544246] hover:bg-[#f6ebee] rounded-xl transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-4 p-3 bg-[#953f58] text-white rounded-xl transition-transform hover:translate-x-1" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+<span>Contact Us</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-error hover:bg-error-container/20 rounded-xl transition-transform hover:translate-x-1 mt-4 border-t border-outline-variant/20 pt-6" href="#"><span class="material-symbols-outlined" data-icon="logout">logout</span><span>Log Out</span></a></nav>
+</aside>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-6 pb-8 pt-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-50 rounded-t-[3rem] shadow-[0_-4px_20px_rgba(149,63,88,0.06)]">
+<button class="flex flex-col items-center justify-center text-[#544246] dark:text-slate-400 px-6 py-2 hover:text-[#953f58] transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#544246] dark:text-slate-400 px-6 py-2 hover:text-[#953f58] transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="add_alert">add_alert</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Report Now</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#544246] dark:text-slate-400 px-6 py-2 hover:text-[#953f58] transition-all active:scale-90 duration-200">
+<span class="material-symbols-outlined" data-icon="Description">description</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">My Reports</span>
+</button>
+</nav>
+<!-- Emergency Quick Exit FAB -->
+<button class="fixed bottom-8 right-8 z-[60] bg-tertiary/80 backdrop-blur-md text-white px-8 py-4 rounded-full flex items-center gap-3 shadow-2xl shadow-tertiary/30 hover:bg-tertiary transition-all active:scale-95 group">
+<span class="material-symbols-outlined font-bold" data-icon="logout">logout</span>
+<span class="font-bold tracking-wide uppercase text-sm">Quick Exit</span>
+</button>
+</body></html>
