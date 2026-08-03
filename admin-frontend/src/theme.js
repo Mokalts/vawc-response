@@ -6,17 +6,17 @@
 
 // ─── Color Tokens ─────────────────────────────────────────────────────────────
 export const COLORS = {
-  // Primary - violet
-  primary:        "#7B2D8B",   // violet-700, deep brand
-  primaryLight:   "#9B4DAB",   // violet-600, accent
-  primaryBg:      "#F3E5F5",   // violet-50
-  primaryBorder:  "#E1BEE7",   // violet-200
+  // Primary - orange (brand, main actions, active states)
+  primary:        "#F47920",   // orange-500, primary brand
+  primaryLight:   "#FF9A4D",   // orange light, accent
+  primaryBg:      "#FFF3E0",   // orange-50
+  primaryBorder:  "#FFCC99",   // orange-200
 
-  // Secondary - orange (highlights, active, urgent CTAs)
-  secondary:      "#F47920",   // orange-500
-  secondaryDark:  "#C45E10",   // orange-600
-  secondaryBg:    "#FFF3E0",   // orange-50
-  secondaryBorder:"#FFCC99",   // orange-200
+  // Secondary - violet (accents, secondary actions, super-admin)
+  secondary:      "#7B2D8B",   // violet-700
+  secondaryDark:  "#4A1259",   // violet-deep
+  secondaryBg:    "#F3E5F5",   // violet-50
+  secondaryBorder:"#E1BEE7",   // violet-200
 
   // Pink - VAWC / RA 9262 awareness
   pink:           "#EC4899",   // pink-500
@@ -135,7 +135,7 @@ export const BTN = {
     background: COLORS.primary, color: COLORS.white,
     fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: TEXT.font,
     display: "inline-flex", alignItems: "center", gap: 7,
-    boxShadow: "0 1px 3px rgba(74,18,89,0.25)",
+    boxShadow: "0 1px 3px rgba(196,94,16,0.25)",
   },
   secondary: {
     padding: "8px 16px", borderRadius: RADIUS.md,
@@ -252,9 +252,9 @@ export const GLOBAL_CSS = `
 
   /* Input focus */
   .adm-input:focus {
-    border-color: ${COLORS.primaryLight} !important;
+    border-color: ${COLORS.primary} !important;
     background: ${COLORS.white} !important;
-    box-shadow: 0 0 0 3px rgba(123,45,139,0.15);
+    box-shadow: 0 0 0 3px rgba(244,121,32,0.15);
   }
 
   /* Animations */

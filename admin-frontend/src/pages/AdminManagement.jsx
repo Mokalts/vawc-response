@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminLayout } from "../components/Sidebar";
+import { confirmDialog } from "../components/ConfirmDialog";
 import api from "../api/api";
 
 
@@ -57,7 +58,7 @@ const CSS = `
   .adm-action.danger:hover { border-color: #EF4444 !important; color: #991B1B !important; background: #FEF2F2 !important; }
   .adm-action.success:hover { border-color: #10B981 !important; color: #065F46 !important; background: #ECFDF5 !important; }
   .adm-primary-btn { transition: all 0.15s ease !important; }
-  .adm-primary-btn:hover { background: #7B2D8B !important; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(123,45,139,0.3) !important; }
+  .adm-primary-btn:hover { background: #A34D0D !important; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(196,94,16,0.3) !important; }
   .adm-accordion-chevron { transition: transform 0.2s ease; }
   @media (max-width: 1024px) {
     .adm-table-wrap { overflow-x: auto; }
@@ -326,7 +327,7 @@ export default function AdminManagement() {
 
   // ── Victim actions ──────────────────────────────────────────────────
   const handleArchiveVictim = async (u) => {
-    if (!window.confirm(`Archive ${u.first_name} ${u.last_name}'s account? It can be recovered within 30 days.`)) return;
+    if (!(await confirmDialog({ title: "Archive account?", message: `${u.first_name} ${u.last_name}'s account will be archived. It can be recovered within 30 days.`, confirmLabel: "Archive" }))) return;
     try {
       await api.patch(`/admin/users/${u.id}/archive`);
       setVictims(p => p.filter(x => x.id !== u.id));
@@ -353,7 +354,7 @@ export default function AdminManagement() {
 
   // TEMPORARY: permanently delete an archived victim account (Super Admin).
   const handleForceDeleteVictim = async (u) => {
-    if (!window.confirm(`Permanently delete ${u.first_name} ${u.last_name}'s account and ALL their data (cases, reports)?\n\nThis CANNOT be undone.`)) return;
+    if (!(await confirmDialog({ title: "Permanently delete account?", message: `${u.first_name} ${u.last_name}'s account and ALL their data (cases, reports) will be erased. This cannot be undone.`, confirmLabel: "Delete Permanently", danger: true }))) return;
     try {
       await api.delete(`/admin/users/${u.id}/force`);
       setDeletedVictims(p => p.filter(x => x.id !== u.id));
@@ -364,7 +365,7 @@ export default function AdminManagement() {
   };
 
   const handleCleanupUnverified = async () => {
-    if (!window.confirm("Permanently delete ALL unverified accounts older than 90 days? This cannot be undone.")) return;
+    if (!(await confirmDialog({ title: "Purge unverified accounts?", message: "All unverified accounts older than 90 days will be permanently deleted. This cannot be undone.", confirmLabel: "Purge", danger: true }))) return;
     try {
       const res = await api.delete("/admin/users/cleanup-unverified");
       showToast(res.data.message || "Cleanup complete.");
@@ -1162,7 +1163,7 @@ const FormField = ({ label, children }) => (
 const S2 = {
   input:      { width: "100%", boxSizing: "border-box", padding: "9px 12px", borderRadius: 8, border: "1.5px solid #E2E8F0", fontSize: 13.5, color: "#0F172A", fontFamily: "'DM Sans',sans-serif", outline: "none", marginBottom: 8 },
   btnGhost:   { padding: "9px 16px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#475569", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" },
-  btnPrimary: { padding: "9px 18px", borderRadius: 8, border: "none", background: "#7B2D8B", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" },
+  btnPrimary: { padding: "9px 18px", borderRadius: 8, border: "none", background: "#C45E10", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" },
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────

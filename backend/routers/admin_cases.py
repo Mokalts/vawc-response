@@ -4,6 +4,7 @@ from sqlalchemy import desc
 from pydantic import BaseModel
 from database import get_db
 from models.case import Case
+from models.case_message import CaseMessage
 from models.report import Report, ReportStatus
 from models.user import User
 from models.admin import Admin
@@ -120,6 +121,17 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
         "has_status_update":   c.has_status_update,
         "admin_message":       c.admin_message,
         "admin_message_at":    c.admin_message_at,
+        "messages": [
+            {
+                "id":         m.id,
+                "message":    m.message,
+                "sent_email": m.sent_email,
+                "sent_sms":   m.sent_sms,
+                "sent_by":    (m.admin.username if m.admin else None),
+                "created_at": m.created_at,
+            }
+            for m in sorted(c.messages, key=lambda x: x.created_at, reverse=True)
+        ],
         "is_deleted":          c.is_deleted,
         "delete_reason":       c.delete_reason,
         "deleted_at":          c.deleted_at,
@@ -577,15 +589,29 @@ def send_case_message(
     if not msg:
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
 
+    now = datetime.utcnow()
     case.admin_message     = msg
-    case.admin_message_at  = datetime.utcnow()
+    case.admin_message_at  = now
     case.has_status_update = True  # surfaces the notification on the victim side
-    case.updated_at        = datetime.utcnow()
-    db.commit()
+    case.updated_at        = now
 
     victim = case.user
     victim_email = getattr(victim, "email", None)
     victim_phone = getattr(victim, "phone_number", None)
+    will_email = bool(payload.send_email and victim_email)
+    will_sms   = bool(payload.send_sms and victim_phone)
+
+    # Append to the immutable message log (audit trail)
+    db.add(CaseMessage(
+        case_id    = case.id,
+        admin_id   = current_admin.id,
+        message    = msg,
+        sent_email = will_email,
+        sent_sms   = will_sms,
+        created_at = now,
+    ))
+    db.commit()
+
     sent = []
 
     if payload.send_email and victim_email:
@@ -605,19 +631,35 @@ def send_case_message(
     return {"message": f"Message saved and sent via {channels}.", "admin_message": msg}
 
 
-# ── DELETE /admin/cases/{case_id}/message — Super Admin removes the message ────
-@router.delete("/{case_id}/message")
+# ── DELETE /admin/cases/{case_id}/messages/{message_id} — remove a log entry ───
+@router.delete("/{case_id}/messages/{message_id}")
 def delete_case_message(
     case_id: int,
+    message_id: int,
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(require_super_admin),
 ):
-    case = db.query(Case).filter(Case.id == case_id, Case.is_deleted == False).first()
-    if not case:
-        raise HTTPException(status_code=404, detail="Case not found.")
-    case.admin_message    = None
-    case.admin_message_at = None
+    m = db.query(CaseMessage).filter(
+        CaseMessage.id == message_id, CaseMessage.case_id == case_id
+    ).first()
+    if not m:
+        raise HTTPException(status_code=404, detail="Message not found.")
+    db.delete(m)
     db.commit()
+
+    # keep the case's "latest message" pointer consistent
+    case = db.query(Case).filter(Case.id == case_id).first()
+    if case:
+        latest = (
+            db.query(CaseMessage)
+            .filter(CaseMessage.case_id == case_id)
+            .order_by(CaseMessage.created_at.desc())
+            .first()
+        )
+        case.admin_message    = latest.message if latest else None
+        case.admin_message_at = latest.created_at if latest else None
+        db.commit()
+
     return {"message": "Message deleted."}
 
 

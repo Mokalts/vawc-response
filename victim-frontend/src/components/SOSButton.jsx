@@ -33,11 +33,10 @@ if (!document.getElementById('vawc-sos-css')) {
 
 // ─── Hotlines + nearest station (edit values for production) ────────────────
 const HOTLINES = [
-    { label: 'PNP Emergency Hotline',  dial: '911',           display: '911',              desc: 'Nationwide police emergency response',     priority: true },
-    { label: 'WCPD - Iba, Zambales',   dial: '+639175995449', display: '0917 599 5449',    desc: 'Women & Children Protection Desk',         priority: true },
-    { label: 'Barangay Palanginan',    dial: '+63475112345',  display: '(047) 511-2345',   desc: 'Local barangay response' },
-    { label: 'DSWD Hotline',           dial: '1343',          display: '1343',             desc: '24/7 violence & trafficking hotline' },
-    { label: 'PNP-WCPC National',      dial: '+6287230401',   display: '(02) 8723-0401',   desc: 'PNP Women & Children Protection Center' },
+    { label: 'PNP Hotline - Iba, Zambales',      dial: '911',           display: '911',            desc: 'Police emergency response (Iba, Zambales & nationwide)', priority: true },
+    { label: 'VAWC Desk - Barangay Palanginan',  dial: '+639286673772', display: '0928 667 3772',  desc: 'Ms. Maria Theresa M. De Leon - Admin Assistant, Sanitation & Welfare Service (VAWC)', priority: true },
+    { label: 'DSWD Hotline',                     dial: '1343',          display: '1343',           desc: '24/7 violence & trafficking hotline' },
+    { label: 'Test Number (Semaphore)',          dial: '+639085267335', display: '0908 526 7335',  desc: 'For system testing purposes only - not an official hotline.', test: true },
 ];
 
 const NEAREST_STATION = {
@@ -118,7 +117,7 @@ function SOSButton({ variant = 'block' }) {
                                         </div>
                                         <div style={{ minWidth: 0, flex: 1 }}>
                                             <p style={S.cardLabel}>{h.label}</p>
-                                            <p style={S.cardDesc}>{h.desc}</p>
+                                            <p style={{ ...S.cardDesc, ...(h.test ? { color: '#C45E10', fontStyle: 'italic', fontWeight: 600 } : {}) }}>{h.desc}</p>
                                         </div>
                                     </div>
                                     <span className="sos-call" style={S.callBtn}>

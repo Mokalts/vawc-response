@@ -26,7 +26,7 @@ if (!document.getElementById('vawc-verify-css')) {
         @keyframes pulse    { 0%,100%{box-shadow:0 0 0 0 rgba(123,45,139,0.4)} 70%{box-shadow:0 0 0 10px rgba(123,45,139,0)} }
         @keyframes fadeIn   { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
         .verify-btn { transition: all 0.18s ease !important; }
-        .verify-btn:hover:not([disabled]) { background: #7B2D8B !important; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(123,45,139,0.35) !important; }
+        .verify-btn:hover:not([disabled]) { background: #A34D0D !important; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(196,94,16,0.35) !important; }
         .verify-modal-btn { transition: all 0.15s ease !important; }
         .verify-modal-btn:hover { transform: translateY(-1px); }
     `;

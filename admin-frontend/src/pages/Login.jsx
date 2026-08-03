@@ -10,6 +10,17 @@ if (!document.getElementById('vawc-font')) {
     link.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(link);
 }
+if (!document.getElementById('vawc-admin-login-css')) {
+    const s = document.createElement('style'); s.id = 'vawc-admin-login-css';
+    s.textContent = `
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .al-input:focus { border-color: #F47920 !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.12) !important; }
+        .al-pwwrap:focus-within { border-color: #F47920 !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.12); }
+        .al-btn:hover:not([disabled]) { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 10px 24px rgba(196,94,16,0.32) !important; }
+        .al-btn { transition: all 0.18s ease; }
+    `;
+    document.head.appendChild(s);
+}
 
 const EyeOpen = () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -87,13 +98,14 @@ function Login() {
                 <div style={S.field}>
                     <label style={S.label}>Username</label>
                     <input
+                        className="al-input"
                         type="text"
                         name="username"
                         placeholder="Enter your username"
                         value={formData.username}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
-                        style={{ ...S.input, borderColor: error ? '#FDA4AF' : '#E2E8F0' }}
+                        style={{ ...S.input, borderColor: error ? '#FDA4AF' : '#FFE4CC' }}
                         autoComplete="username"
                     />
                 </div>
@@ -101,7 +113,7 @@ function Login() {
                 {/* Password */}
                 <div style={S.field}>
                     <label style={S.label}>Password</label>
-                    <div style={{ ...S.pwWrap, borderColor: error ? '#FDA4AF' : '#E2E8F0' }}>
+                    <div className="al-pwwrap" style={{ ...S.pwWrap, borderColor: error ? '#FDA4AF' : '#FFE4CC' }}>
                         <input
                             type={showPassword ? 'text' : 'password'}
                             name="password"
@@ -133,6 +145,7 @@ function Login() {
                 {/* Submit */}
                 <button
                     type="button"
+                    className="al-btn"
                     style={{ ...S.submitBtn, opacity: loading ? 0.75 : 1 }}
                     onClick={handleSubmit}
                     disabled={loading}
@@ -159,39 +172,40 @@ function Login() {
     );
 }
 
+const FF = "'DM Sans', sans-serif";
 const S = {
-    page: { minHeight: '100vh', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'DM Sans', sans-serif" },
+    page: { minHeight: '100vh', background: 'linear-gradient(180deg, #FFF9F3 0%, #FFF3E0 55%, #FFE9D6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: FF },
 
     // Form card
-    formCard: { backgroundColor: '#fff', borderRadius: 12, padding: '40px', width: '100%', maxWidth: '420px', boxShadow: '0 4px 24px rgba(15,23,42,0.08)' },
-    formHeader: { textAlign: 'center', marginBottom: '28px' },
-    logoWrap: { width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: '0 0 0 4px rgba(123,45,139,0.12)', overflow: 'hidden', padding: 4, boxSizing: 'border-box' },
-    formTitle: { fontSize: '22px', fontWeight: '700', color: '#0F172A', marginBottom: '6px', fontFamily: "'DM Sans', sans-serif" },
-    formSub: { fontSize: '13px', color: '#94A3B8', fontFamily: "'DM Sans', sans-serif" },
+    formCard: { backgroundColor: '#fff', borderRadius: 22, padding: '36px 30px', width: '100%', maxWidth: '420px', boxShadow: '0 12px 36px rgba(244,121,32,0.13)', border: '1px solid #FFF0E1' },
+    formHeader: { textAlign: 'center', marginBottom: '26px' },
+    logoWrap: { width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', border: '3px solid #FFCC99', boxShadow: '0 6px 20px rgba(244,121,32,0.18)', overflow: 'hidden', padding: 4, boxSizing: 'border-box' },
+    formTitle: { fontSize: '24px', fontWeight: '800', color: '#C45E10', marginBottom: '4px', fontFamily: FF, letterSpacing: '-0.5px' },
+    formSub: { fontSize: '13px', fontWeight: '600', color: '#9B4DAB', fontFamily: FF },
 
     // Form
     field: { marginBottom: '18px' },
-    label: { display: 'block', fontSize: '12px', fontWeight: '600', color: '#475569', marginBottom: '7px', textTransform: 'uppercase', letterSpacing: '0.6px', fontFamily: "'DM Sans', sans-serif" },
-    input: { width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: 8, border: '1.5px solid #E2E8F0', fontSize: '14px', color: '#0F172A', backgroundColor: '#F8FAFC', outline: 'none', fontFamily: "'DM Sans', sans-serif" },
-    pwWrap: { display: 'flex', alignItems: 'center', border: '1.5px solid #E2E8F0', borderRadius: 8, backgroundColor: '#F8FAFC', overflow: 'hidden' },
-    pwInput: { flex: 1, padding: '12px 14px', border: 'none', fontSize: '14px', color: '#0F172A', backgroundColor: 'transparent', outline: 'none', fontFamily: "'DM Sans', sans-serif" },
+    label: { display: 'block', fontSize: '11px', fontWeight: '700', color: '#C45E10', marginBottom: '7px', textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: FF },
+    input: { width: '100%', boxSizing: 'border-box', padding: '13px 15px', borderRadius: 12, border: '1.5px solid #FFE4CC', fontSize: '14px', color: '#0F172A', backgroundColor: '#FFFBF7', outline: 'none', fontFamily: FF },
+    pwWrap: { display: 'flex', alignItems: 'center', border: '1.5px solid #FFE4CC', borderRadius: 12, backgroundColor: '#FFFBF7', overflow: 'hidden' },
+    pwInput: { flex: 1, padding: '13px 15px', border: 'none', fontSize: '14px', color: '#0F172A', backgroundColor: 'transparent', outline: 'none', fontFamily: FF },
     eyeBtn: { padding: '0 14px', background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', display: 'flex', alignItems: 'center' },
 
     // Error
-    errorBox: { display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 8, padding: '10px 14px', marginBottom: '16px' },
+    errorBox: { display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 12, padding: '10px 14px', marginBottom: '16px' },
     errorDot: { width: '6px', height: '6px', borderRadius: 8, backgroundColor: '#FB7185', flexShrink: 0 },
-    errorText: { fontSize: '13px', color: '#BE123C', fontFamily: "'DM Sans', sans-serif" },
+    errorText: { fontSize: '13px', color: '#BE123C', fontFamily: FF },
 
-    // Submit
-    submitBtn: { width: '100%', padding: '13px', backgroundColor: '#7B2D8B', color: '#fff', fontSize: '15px', fontWeight: '600', border: 'none', borderRadius: 8, cursor: 'pointer', marginBottom: '20px', fontFamily: "'DM Sans', sans-serif" },
+    // Submit — orange primary
+    submitBtn: { width: '100%', padding: '14px', background: 'linear-gradient(135deg, #F47920 0%, #E8641C 100%)', color: '#fff', fontSize: '15px', fontWeight: '700', border: 'none', borderRadius: 12, cursor: 'pointer', marginBottom: '20px', fontFamily: FF, boxShadow: '0 8px 20px rgba(196,94,16,0.28)' },
     loadingRow: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' },
     spinner: { width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' },
 
-    // Notice
-    notice: { display: 'flex', gap: '10px', backgroundColor: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 4, padding: '12px 14px', marginBottom: '24px' },
+    // Notice — violet secondary accent
+    notice: { display: 'flex', gap: '10px', backgroundColor: '#F3E5F5', border: '1px solid #E1BEE7', borderRadius: 12, padding: '12px 14px', marginBottom: '22px' },
     noticeIcon: { fontSize: '14px', flexShrink: 0 },
-    noticeText: { fontSize: '12.5px', color: '#64748B', lineHeight: '1.6', fontFamily: "'DM Sans', sans-serif" },
-    footerText: { textAlign: 'center', fontSize: '11px', color: '#CBD5E1', fontFamily: "'DM Sans', sans-serif" },
+    noticeText: { fontSize: '12.5px', color: '#7B2D8B', lineHeight: '1.6', fontFamily: FF },
+    footerText: { textAlign: 'center', fontSize: '11px', color: '#CBD5E1', fontFamily: FF },
 };
 
 // Spinner keyframes

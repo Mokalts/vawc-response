@@ -41,3 +41,4 @@ class Case(Base):
     user       = relationship("User", back_populates="cases")
     handled_by = relationship("Admin", back_populates="handled_cases")
     reports    = relationship("Report", back_populates="case", cascade="all, delete-orphan")
+    messages   = relationship("CaseMessage", back_populates="case", cascade="all, delete-orphan", order_by="CaseMessage.created_at")

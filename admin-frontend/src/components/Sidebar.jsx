@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/api';
 import { COLORS, TEXT, GLOBAL_CSS } from '../theme';
+import { ConfirmHost } from './ConfirmDialog';
 
 // ─── Inject global styles once ────────────────────────────────────────────────
 if (!document.getElementById('vawc-global-css')) {
@@ -267,6 +268,7 @@ export function AdminLayout({ children }) {
                 <TopBar />
                 <main style={S.main}>{children}</main>
             </div>
+            <ConfirmHost />
         </div>
     );
 }
@@ -290,18 +292,18 @@ const S = {
     avatar: { width: 34, height: 34, borderRadius: '50%', background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font },
     avatarSuper: { width: 34, height: 34, borderRadius: '50%', background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondaryDark})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font, boxShadow: '0 0 0 2px rgba(244,121,32,0.25)' },
     adminName: { fontSize: 13, fontWeight: 600, color: '#E2E8F0', fontFamily: TEXT.font, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-    rolePill: { display: 'inline-flex', alignItems: 'center', marginTop: 3, fontSize: 10, fontWeight: 700, color: COLORS.primaryLight, backgroundColor: 'rgba(123,45,139,0.12)', padding: '2px 8px', borderRadius: 9999, fontFamily: TEXT.font, letterSpacing: '0.3px' },
+    rolePill: { display: 'inline-flex', alignItems: 'center', marginTop: 3, fontSize: 10, fontWeight: 700, color: '#E1BEE7', backgroundColor: 'rgba(123,45,139,0.12)', padding: '2px 8px', borderRadius: 9999, fontFamily: TEXT.font, letterSpacing: '0.3px' },
     rolePillSuper: { display: 'inline-flex', alignItems: 'center', marginTop: 3, fontSize: 10, fontWeight: 800, color: '#fff', background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondaryDark})`, padding: '3px 9px', borderRadius: 9999, fontFamily: TEXT.font, letterSpacing: '0.4px', textTransform: 'uppercase', boxShadow: '0 1px 3px rgba(196,94,16,0.3)' },
 
     nav: { flex: 1, padding: '12px 10px 0' },
     navSection: { fontSize: 10, fontWeight: 700, color: '#C4A6D1', letterSpacing: '1.2px', textTransform: 'uppercase', padding: '6px 10px 10px', fontFamily: TEXT.font },
     navBtn: { position: 'relative', display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 8, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', marginBottom: 2 },
     navBtnActive: { backgroundColor: 'rgba(244,121,32,0.18)' },
-    navActiveBar: { position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: 2, backgroundColor: COLORS.secondary },
+    navActiveBar: { position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: 2, backgroundColor: COLORS.primary },
     navIconWrap: { width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#5C1F6E', flexShrink: 0 },
-    navIconActive: { backgroundColor: COLORS.secondary },
+    navIconActive: { backgroundColor: COLORS.primary },
     navLabel: { fontSize: 13.5, fontFamily: TEXT.font },
-    badge: { marginLeft: 'auto', minWidth: 18, height: 18, borderRadius: 9, background: COLORS.secondary, color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px', fontFamily: TEXT.font },
+    badge: { marginLeft: 'auto', minWidth: 18, height: 18, borderRadius: 9, background: COLORS.primary, color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px', fontFamily: TEXT.font },
 
     logoutBtn: { display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 8, border: 'none', backgroundColor: 'transparent', cursor: 'pointer' },
     logoutLabel: { fontSize: 13.5, fontWeight: 600, color: '#FFCC99', fontFamily: TEXT.font },

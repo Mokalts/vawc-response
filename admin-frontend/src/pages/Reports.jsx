@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "../components/Sidebar";
+import { confirmDialog } from "../components/ConfirmDialog";
 import api from "../api/api";
 
 const STATUS_CONFIG = {
@@ -159,7 +160,7 @@ export default function Reports() {
 
   // TEMPORARY: permanent hard-delete of a soft-deleted case (Super Admin only).
   const handleForceDelete = async (id, caseNumber) => {
-    if (!window.confirm(`Permanently delete case ${caseNumber}?\n\nThis CANNOT be undone. The case and all its reports will be erased from the database.`)) return;
+    if (!(await confirmDialog({ title: "Permanently delete case?", message: `Case ${caseNumber} and all its reports will be erased from the database. This cannot be undone.`, confirmLabel: "Delete Permanently", danger: true }))) return;
     setForceDeletingId(id);
     try { await api.delete(`/admin/cases/${id}/force`); showToast(`Case ${caseNumber} permanently deleted.`); fetchDeleted(); }
     catch (e) { showToast(e.response?.data?.detail || "Failed to permanently delete.", false); }

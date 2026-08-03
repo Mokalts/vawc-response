@@ -7,6 +7,7 @@ from slowapi.errors import RateLimitExceeded
 from database import engine
 from models import User, Report, OTP
 from models.case import Case
+from models.case_message import CaseMessage
 from models.admin import Admin
 from database import Base
 from routers import auth, reports, cases, users, upload, admin_auth, admin_cases, admin_dashboard, admin_users

@@ -78,13 +78,12 @@ def send_sms(phone_number: str, message: str) -> bool:
         return False
     try:
         payload = {
-            "apikey":  api_key,
-            "number":  _normalize_ph_number(phone_number),
-            "message": message,
+            "apikey":     api_key,
+            "number":     _normalize_ph_number(phone_number),
+            "message":    message,
+            # Semaphore requires an active sender name; "SEMAPHORE" is the default.
+            "sendername": (getattr(settings, "SMS_SENDER", "") or "").strip() or "SEMAPHORE",
         }
-        sender = getattr(settings, "SMS_SENDER", "") or ""
-        if sender:
-            payload["sendername"] = sender
 
         resp = requests.post(SEMAPHORE_URL, data=payload, timeout=15)
         if resp.status_code in (200, 201):

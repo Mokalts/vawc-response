@@ -81,6 +81,14 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
         "has_status_update":   c.has_status_update,
         "admin_message":       c.admin_message,
         "admin_message_at":    c.admin_message_at,
+        "messages": [
+            {
+                "id":         m.id,
+                "message":    m.message,
+                "created_at": m.created_at,
+            }
+            for m in sorted(c.messages, key=lambda x: x.created_at, reverse=True)
+        ],
         "is_deleted":          c.is_deleted,
         "delete_reason":       c.delete_reason,
         "deleted_at":          c.deleted_at,

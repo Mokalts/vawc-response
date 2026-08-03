@@ -262,17 +262,21 @@ function CaseDetailModal({ cas, onClose, onStatusRead }) {
                         </div>
                     )}
 
-                    {/* Message from the barangay (e.g., hearing schedule / venue) */}
-                    {cas.admin_message && (
+                    {/* Messages from the barangay (log — e.g., hearing schedule / venue) */}
+                    {cas.messages && cas.messages.length > 0 && (
                         <div style={{backgroundColor:'#F3E5F5',borderRadius:12,padding:'14px 15px',border:'1.5px solid #E1BEE7'}}>
-                            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                            <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
                                 <IcoBell c="#7B2D8B"/>
-                                <p style={{margin:0,fontSize:13.5,fontWeight:800,color:'#4A1259',fontFamily:"'DM Sans',sans-serif"}}>Message from the Barangay</p>
+                                <p style={{margin:0,fontSize:13.5,fontWeight:800,color:'#4A1259',fontFamily:"'DM Sans',sans-serif"}}>Messages from the Barangay ({cas.messages.length})</p>
                             </div>
-                            <p style={{margin:0,fontSize:13.5,color:'#4A1259',lineHeight:1.65,whiteSpace:'pre-line',fontFamily:"'DM Sans',sans-serif"}}>{cas.admin_message}</p>
-                            {cas.admin_message_at && (
-                                <p style={{margin:'8px 0 0',fontSize:11,color:'#9B4DAB',fontFamily:"'DM Sans',sans-serif"}}>Sent {fmtDate(cas.admin_message_at)}</p>
-                            )}
+                            <div style={{display:'flex',flexDirection:'column',gap:10}}>
+                                {cas.messages.map(m => (
+                                    <div key={m.id} style={{backgroundColor:'#fff',borderRadius:8,padding:'10px 12px',border:'1px solid #E1BEE7'}}>
+                                        <p style={{margin:0,fontSize:13.5,color:'#4A1259',lineHeight:1.6,whiteSpace:'pre-line',fontFamily:"'DM Sans',sans-serif"}}>{m.message}</p>
+                                        <p style={{margin:'6px 0 0',fontSize:11,color:'#9B4DAB',fontFamily:"'DM Sans',sans-serif"}}>{fmtDate(m.created_at)}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     )}
 

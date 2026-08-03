@@ -13,9 +13,9 @@ if (!document.getElementById('dash-css')) {
         @keyframes popIn     { from{opacity:0;transform:scale(0.96) translateY(10px)}to{opacity:1;transform:scale(1)translateY(0)} }
         @keyframes slideRight{ from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)} }
         @keyframes pulse-ring{
-            0%  {box-shadow:0 0 0 0 rgba(123,45,139,0.4);}
-            70% {box-shadow:0 0 0 9px rgba(123,45,139,0);}
-            100%{box-shadow:0 0 0 0 rgba(123,45,139,0);}
+            0%  {box-shadow:0 0 0 0 rgba(244,121,32,0.4);}
+            70% {box-shadow:0 0 0 9px rgba(244,121,32,0);}
+            100%{box-shadow:0 0 0 0 rgba(244,121,32,0);}
         }
         .dash-row { cursor:pointer; }
         .dash-row:hover td { background:#F8FAFC !important; }
@@ -23,7 +23,7 @@ if (!document.getElementById('dash-css')) {
         .period-btn { transition:all 0.15s ease; }
         .period-btn:hover:not(.p-active) { color:#475569 !important; }
         .new-card { animation:pulse-ring 2.2s ease-out infinite; transition:transform 0.18s ease,box-shadow 0.18s ease; cursor:pointer; }
-        .new-card:hover { transform:translateY(-2px) !important; box-shadow:0 8px 24px rgba(123,45,139,0.22) !important; }
+        .new-card:hover { transform:translateY(-2px) !important; box-shadow:0 8px 24px rgba(196,94,16,0.24) !important; }
         .confirm-btn:hover:not([disabled]) { background:#065F46 !important; color:#fff !important; }
         .confirm-btn { transition:all 0.15s ease; }
         .nr-row:hover { background:#F8FAFC !important; }
@@ -227,7 +227,7 @@ function NewReportsModal({ onClose, onConfirmed }) {
                 {/* Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 24px 14px', borderBottom: '1px solid #F1F5F9', flexShrink: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ width: 34, height: 34, borderRadius: 4, background: '#7B2D8B', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: 34, height: 34, borderRadius: 4, background: '#C45E10', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <IcoBell color="#fff" size={16} />
                         </div>
                         <div>
@@ -710,7 +710,7 @@ const S = {
     dateInput: { padding: '8px 10px', borderRadius: 4, border: '1.5px solid #E2E8F0', fontSize: 13, color: '#0F172A', fontFamily: FF, outline: 'none' },
 
     statCard: { backgroundColor: '#fff', borderRadius: 4, padding: '18px 20px', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(15,23,42,0.05)', display: 'flex', flexDirection: 'column', gap: 12 },
-    newCard: { borderRadius: 4, padding: '18px 20px', border: '2px solid #9B4DAB', background: 'linear-gradient(135deg,#7B2D8B,#9B4DAB)', boxShadow: '0 4px 14px rgba(123,45,139,0.22)', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'pointer' },
+    newCard: { borderRadius: 4, padding: '18px 20px', border: '2px solid #F47920', background: 'linear-gradient(135deg,#F47920,#C45E10)', boxShadow: '0 4px 14px rgba(196,94,16,0.24)', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'pointer' },
     statNum: { margin: '0 0 2px', fontSize: 26, fontWeight: 800, color: '#0F172A', fontFamily: FF, letterSpacing: '-0.5px' },
     statLabel: { margin: 0, fontSize: 12.5, fontWeight: 500, color: '#64748B', fontFamily: FF },
     statMeta: { display: 'flex', alignItems: 'center', gap: 5, paddingTop: 10, borderTop: '1px solid #F1F5F9' },

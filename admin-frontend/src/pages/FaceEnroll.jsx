@@ -27,7 +27,7 @@ if (!document.getElementById('vawc-enroll-css')) {
             100% { top: 20%; opacity: 0.8; }
         }
         .enroll-start-btn { transition: all 0.18s ease !important; }
-        .enroll-start-btn:hover:not([disabled]) { background: #7B2D8B !important; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(123,45,139,0.35) !important; }
+        .enroll-start-btn:hover:not([disabled]) { background: #A34D0D !important; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(196,94,16,0.35) !important; }
         .enroll-save-btn  { transition: all 0.18s ease !important; }
         .enroll-save-btn:hover:not([disabled])  { background: #047857 !important; transform: translateY(-1px); }
     `;

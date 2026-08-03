@@ -150,7 +150,7 @@ function Home() {
                             A safe and confidential space to report incidents and seek support under Republic Act 9262.
                         </p>
                         <button className="vh-hero-btn" style={S.heroBtn} onClick={() => navigate('/report')}>
-                            Report an Incident <IcoArrow c="#C45E10" />
+                            Report an Incident <IcoArrow c="#4A1259" />
                         </button>
                     </div>
                 </section>
@@ -229,13 +229,13 @@ const S = {
     content:     { padding: '18px 18px', display: 'flex', flexDirection: 'column', gap: 16 },
 
     // Hero
-    hero:        { position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, #F8933C 0%, #E8641C 100%)', borderRadius: 24, padding: '26px 22px', boxShadow: '0 10px 30px rgba(232,100,28,0.28)' },
+    hero:        { position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, #7B2D8B 0%, #4A1259 100%)', borderRadius: 24, padding: '26px 22px', boxShadow: '0 10px 30px rgba(74,18,89,0.3)' },
     heroBlob:    { position: 'absolute', top: -40, right: -30, width: 150, height: 150, borderRadius: '50%', background: 'rgba(255,255,255,0.14)', animation: 'floatBlob 6s ease-in-out infinite' },
     heroBlob2:   { position: 'absolute', bottom: -50, left: -20, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.09)' },
     heroHello:   { display: 'inline-block', fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.92)', marginBottom: 8, fontFamily: FF },
     heroTitle:   { fontSize: 25, fontWeight: 800, color: '#fff', margin: '0 0 8px', fontFamily: FF, letterSpacing: '-0.5px' },
     heroText:    { fontSize: 13.5, color: 'rgba(255,255,255,0.9)', lineHeight: 1.6, margin: '0 0 18px', fontFamily: FF, maxWidth: 340 },
-    heroBtn:     { display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 20px', backgroundColor: '#fff', color: '#C45E10', fontSize: 14, fontWeight: 800, border: 'none', borderRadius: 9999, cursor: 'pointer', fontFamily: FF, boxShadow: '0 4px 14px rgba(0,0,0,0.12)' },
+    heroBtn:     { display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 20px', backgroundColor: '#fff', color: '#4A1259', fontSize: 14, fontWeight: 800, border: 'none', borderRadius: 9999, cursor: 'pointer', fontFamily: FF, boxShadow: '0 4px 14px rgba(0,0,0,0.18)' },
 
     // Reassurance chips
     chipRow:     { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 },

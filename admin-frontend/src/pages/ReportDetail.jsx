@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AdminLayout } from "../components/Sidebar";
+import { confirmDialog } from "../components/ConfirmDialog";
 import api from "../api/api";
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
@@ -15,6 +16,10 @@ const CSS = `
   .rd-status-opt:hover { border-color:currentColor !important; }
   .rd-map:hover { border-color:#9B4DAB !important; color:#7B2D8B !important; background:#F3E5F5 !important; }
   .rd-map { transition:all 0.15s ease !important; }
+  .msg-log-body::-webkit-scrollbar { width:7px; }
+  .msg-log-body::-webkit-scrollbar-track { background:#F5F0F7; border-radius:9999px; }
+  .msg-log-body::-webkit-scrollbar-thumb { background:#D9C2E0; border-radius:9999px; }
+  .msg-log-body::-webkit-scrollbar-thumb:hover { background:#9B4DAB; }
 `;
 
 const STATUS_CONFIG = {
@@ -236,7 +241,7 @@ const CaseTimeline = ({ cas, onUpdateStatus, onReferToPolice }) => {
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
           {!isResolved && (
             <button className="rd-btn" onClick={onUpdateStatus}
-              style={{ width: "100%", padding: "10px 0", borderRadius: 8, border: "none", background: "#7B2D8B", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'DM Sans',sans-serif" }}>
+              style={{ width: "100%", padding: "10px 0", borderRadius: 8, border: "none", background: "#C45E10", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'DM Sans',sans-serif" }}>
               <IcoCheck size={14} color="#fff" /> {isReferred ? "Change Status (Revert)" : "Update Status"}
             </button>
           )}
@@ -299,9 +304,10 @@ export default function ReportDetail() {
   const [lightbox, setLightbox] = useState(null);
   const [messageText, setMessageText] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
-  const [deletingMessage, setDeletingMessage] = useState(false);
   const [sendEmail, setSendEmail] = useState(true);
   const [sendSms, setSendSms] = useState(false);
+  const [showMessageLogs, setShowMessageLogs] = useState(false);
+  const [deletingMsgId, setDeletingMsgId] = useState(null);
 
   const currentAdmin = (() => { try { return JSON.parse(localStorage.getItem("admin_user") || localStorage.getItem("admin") || "{}"); } catch { return {}; } })();
   const isSuperAdmin = !!currentAdmin.is_super_admin;
@@ -315,23 +321,34 @@ export default function ReportDetail() {
     setSendingMessage(true);
     try {
       const res = await api.patch(`/admin/cases/${id}/message`, { message: msg, send_email: sendEmail, send_sms: sendSms });
-      setCas(c => ({ ...c, admin_message: msg, admin_message_at: new Date().toISOString() }));
+      const nowIso = new Date().toISOString();
+      setCas(c => ({
+        ...c,
+        admin_message: msg,
+        admin_message_at: nowIso,
+        messages: [
+          { id: `tmp-${Date.now()}`, message: msg, sent_email: sendEmail, sent_sms: sendSms, sent_by: currentAdmin.username, created_at: nowIso },
+          ...(c.messages || []),
+        ],
+      }));
       setMessageText("");
       showToast(res.data?.message || "Message sent to the victim.");
     } catch (err) { showToast(err.response?.data?.detail || "Failed to send message.", false); }
     finally { setSendingMessage(false); }
   };
 
-  const handleDeleteMessage = async () => {
-    if (!window.confirm("Delete this message? The victim will no longer see it.")) return;
-    setDeletingMessage(true);
+  const handleDeleteLogMessage = async (messageId) => {
+    if (!(await confirmDialog({ title: "Delete message?", message: "The victim will no longer see this message.", confirmLabel: "Delete", danger: true }))) return;
+    setDeletingMsgId(messageId);
     try {
-      await api.delete(`/admin/cases/${id}/message`);
-      setCas(c => ({ ...c, admin_message: null, admin_message_at: null }));
-      setMessageText("");
+      await api.delete(`/admin/cases/${id}/messages/${messageId}`);
+      setCas(c => {
+        const remaining = (c.messages || []).filter(m => m.id !== messageId);
+        return { ...c, messages: remaining, admin_message: remaining[0]?.message || null, admin_message_at: remaining[0]?.created_at || null };
+      });
       showToast("Message deleted.");
     } catch (err) { showToast(err.response?.data?.detail || "Failed to delete message.", false); }
-    finally { setDeletingMessage(false); }
+    finally { setDeletingMsgId(null); }
   };
 
   const fetchCase = useCallback(async () => {
@@ -584,7 +601,7 @@ export default function ReportDetail() {
                         <button
                           onClick={async (e) => {
                             e.stopPropagation();
-                            if (!window.confirm(`Delete Report ${idx + 1}? This cannot be undone.`)) return;
+                            if (!(await confirmDialog({ title: `Delete Report ${idx + 1}?`, message: "This report will be removed. This cannot be undone.", confirmLabel: "Delete", danger: true }))) return;
                             try {
                               await api.delete(`/admin/cases/${id}/reports/${r.id}`);
                               setCas(c => ({ ...c, reports: c.reports.filter(rep => rep.id !== r.id) }));
@@ -725,23 +742,11 @@ export default function ReportDetail() {
                 <p style={{ margin: "0 0 10px", fontSize: 12.5, color: "#94A3B8", lineHeight: 1.5, fontFamily: "'DM Sans',sans-serif" }}>
                   Send a note to the victim at any stage - e.g. an update, or the schedule and venue of the hearing. They are notified by email and in their portal.
                 </p>
-                {cas.admin_message && (
-                  <div style={{ background: "#F3E5F5", border: "1px solid #E1BEE7", borderRadius: 8, padding: "10px 12px", marginBottom: 10 }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                      <p style={{ margin: 0, fontSize: 10.5, fontWeight: 700, color: "#7B2D8B", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "'DM Sans',sans-serif" }}>Last sent</p>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        <button onClick={() => setMessageText(cas.admin_message)} disabled={deletingMessage}
-                          style={{ padding: "3px 10px", borderRadius: 6, border: "1.5px solid #E1BEE7", background: "#fff", color: "#7B2D8B", fontSize: 11.5, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-                          Edit
-                        </button>
-                        <button onClick={handleDeleteMessage} disabled={deletingMessage}
-                          style={{ padding: "3px 10px", borderRadius: 6, border: "1.5px solid #FECACA", background: "#FEF2F2", color: "#991B1B", fontSize: 11.5, fontWeight: 600, cursor: deletingMessage ? "not-allowed" : "pointer", opacity: deletingMessage ? 0.6 : 1, fontFamily: "'DM Sans',sans-serif" }}>
-                          {deletingMessage ? "Deleting…" : "Delete"}
-                        </button>
-                      </div>
-                    </div>
-                    <p style={{ margin: 0, fontSize: 13, color: "#4A1259", lineHeight: 1.5, whiteSpace: "pre-wrap", fontFamily: "'DM Sans',sans-serif" }}>{cas.admin_message}</p>
-                  </div>
+                {cas.messages && cas.messages.length > 0 && (
+                  <button className="rd-btn" onClick={() => setShowMessageLogs(true)}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", marginBottom: 10, padding: "9px 0", borderRadius: 8, border: "1.5px solid #E1BEE7", background: "#F3E5F5", color: "#7B2D8B", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                    <IcoClip size={13} color="#7B2D8B" /> Open message logs ({cas.messages.length})
+                  </button>
                 )}
                 <textarea value={messageText} onChange={e => setMessageText(e.target.value)} rows={4}
                   style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid #E2E8F0", borderRadius: 8, padding: "10px 12px", fontSize: 13, fontFamily: "'DM Sans',sans-serif", color: "#0F172A", outline: "none", resize: "vertical" }} />
@@ -763,8 +768,8 @@ export default function ReportDetail() {
                 )}
 
                 <button className="rd-btn" onClick={handleSendMessage} disabled={sendingMessage || !messageText.trim() || (!sendEmail && !sendSms)}
-                  style={{ width: "100%", marginTop: 7, padding: "10px 0", borderRadius: 8, border: "none", background: (messageText.trim() && (sendEmail || sendSms)) ? "#7B2D8B" : "#E2E8F0", color: (messageText.trim() && (sendEmail || sendSms)) ? "#fff" : "#94A3B8", fontSize: 13.5, fontWeight: 600, cursor: (sendingMessage || !messageText.trim() || (!sendEmail && !sendSms)) ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif" }}>
-                  {sendingMessage ? "Sending…" : (cas.admin_message ? "Update Message" : "Send Message")}
+                  style={{ width: "100%", marginTop: 7, padding: "10px 0", borderRadius: 8, border: "none", background: (messageText.trim() && (sendEmail || sendSms)) ? "#C45E10" : "#E2E8F0", color: (messageText.trim() && (sendEmail || sendSms)) ? "#fff" : "#94A3B8", fontSize: 13.5, fontWeight: 600, cursor: (sendingMessage || !messageText.trim() || (!sendEmail && !sendSms)) ? "not-allowed" : "pointer", fontFamily: "'DM Sans',sans-serif" }}>
+                  {sendingMessage ? "Sending…" : "Send Message"}
                 </button>
               </Card>
             )}
@@ -795,6 +800,71 @@ export default function ReportDetail() {
       {showStatusModal && <StatusModal current={cas.status} onClose={() => setShowStatusModal(false)} onSave={handleStatusSave} saving={statusSaving} />}
       {showDeleteConfirm && <DeleteModal caseId={cas.case_number} loading={actionLoading} onConfirm={handleDelete} onClose={() => setShowDeleteConfirm(false)} />}
       {showRecover && <ConfirmModal title="Recover Case" message={`Restore case ${cas.case_number}?`} confirmLabel="Recover" danger={false} loading={actionLoading} onConfirm={handleRecover} onClose={() => setShowRecover(false)} />}
+
+      {showMessageLogs && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(15,23,42,0.55)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={() => setShowMessageLogs(false)}>
+          <div style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 500, maxHeight: "85vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 64px rgba(15,23,42,0.3)", fontFamily: "'DM Sans',sans-serif", overflow: "hidden", animation: "slideDown 0.22s ease" }} onClick={e => e.stopPropagation()}>
+
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "18px 22px", borderBottom: "1px solid #F1F5F9", background: "linear-gradient(135deg, #FBF3FC 0%, #F3E5F5 100%)" }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg, #9B4DAB, #4A1259)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px rgba(74,18,89,0.28)" }}>
+                <IcoClip size={18} color="#fff" />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#4A1259", letterSpacing: "-0.2px" }}>Message Logs</p>
+                <p style={{ margin: "1px 0 0", fontSize: 12, color: "#9B4DAB", fontWeight: 500 }}>
+                  {(cas.messages || []).length} message{(cas.messages || []).length !== 1 ? "s" : ""} sent to the victim
+                </p>
+              </div>
+              <button onClick={() => setShowMessageLogs(false)} style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(255,255,255,0.7)", border: "1px solid #E1BEE7", cursor: "pointer", color: "#7B2D8B", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg width="16" height="16" fill="none" viewBox="0 0 20 20"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" /></svg>
+              </button>
+            </div>
+
+            {/* Body — minimalist scrollable list */}
+            <div className="msg-log-body" style={{ overflowY: "auto", padding: "16px 20px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+              {(cas.messages || []).length === 0 ? (
+                <div style={{ textAlign: "center", padding: "36px 0" }}>
+                  <IcoClip size={30} color="#E1BEE7" />
+                  <p style={{ margin: "10px 0 0", fontSize: 13, color: "#94A3B8" }}>No messages yet.</p>
+                </div>
+              ) : (cas.messages || []).map((m, i) => {
+                const isTmp = String(m.id).startsWith("tmp-");
+                const isLatest = i === 0;
+                return (
+                  <div key={m.id} style={{ background: "#fff", border: "1px solid #EEE6F1", borderRadius: 12, padding: "12px 14px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 7 }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
+                        <span style={{ fontSize: 11, color: "#94A3B8", fontWeight: 500 }}>{fmt(m.created_at)}</span>
+                        {isLatest && <span style={{ fontSize: 9, fontWeight: 800, color: "#C45E10", background: "#FFF3E0", padding: "2px 7px", borderRadius: 9999, textTransform: "uppercase", letterSpacing: "0.05em" }}>Latest</span>}
+                      </span>
+                      <button onClick={() => handleDeleteLogMessage(m.id)} disabled={deletingMsgId === m.id || isTmp}
+                        title={isTmp ? "Reload the page to delete a just-sent message" : "Delete this message"}
+                        style={{ width: 26, height: 26, borderRadius: 8, border: "none", background: "transparent", cursor: (deletingMsgId === m.id || isTmp) ? "not-allowed" : "pointer", opacity: (deletingMsgId === m.id || isTmp) ? 0.35 : 1, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <IcoTrash size={15} color="#DC2626" />
+                      </button>
+                    </div>
+                    <p style={{ margin: "0 0 9px", fontSize: 13.5, color: "#1E1B29", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{m.message}</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      {m.sent_email && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#065F46", background: "#ECFDF5", border: "1px solid #A7F3D0", padding: "2px 8px", borderRadius: 9999 }}>
+                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#10B981" }} /> Email
+                        </span>
+                      )}
+                      {m.sent_sms && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#C45E10", background: "#FFF3E0", border: "1px solid #FFCC99", padding: "2px 8px", borderRadius: 9999 }}>
+                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#F47920" }} /> SMS
+                        </span>
+                      )}
+                      {m.sent_by && <span style={{ fontSize: 10.5, color: "#94A3B8" }}>by {m.sent_by}</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }
