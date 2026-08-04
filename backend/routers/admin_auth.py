@@ -29,12 +29,13 @@ def compute_face_distance(descriptor1: list, descriptor2: list) -> float:
 
 
 def set_auth_cookie(response: Response, token: str):
+    from core.config import settings
     response.set_cookie(
         key="admin_token",
         value=token,
         httponly=True,
-        samesite="lax",
-        secure=False,        # Set to True when HTTPS is live
+        samesite=settings.COOKIE_SAMESITE,   # "none" for cross-site prod, "lax" local
+        secure=settings.COOKIE_SECURE,        # True required when SameSite=None (HTTPS)
         max_age=60 * 60 * 8, # 8 hours
     )
 
@@ -154,11 +155,12 @@ def admin_login(
 # ---------------------------------------------------------------------------
 @router.post("/logout")
 def admin_logout(response: Response):
+    from core.config import settings
     response.delete_cookie(
         key="admin_token",
         httponly=True,
-        samesite="lax",
-        secure=False,  # Match the set_cookie settings
+        samesite=settings.COOKIE_SAMESITE,  # Match the set_cookie settings
+        secure=settings.COOKIE_SECURE,
     )
     return {"message": "Logged out successfully."}
 

@@ -14,6 +14,10 @@ from routers import auth, reports, cases, users, upload, admin_auth, admin_cases
 
 Base.metadata.create_all(bind=engine)
 
+# Bootstrap the first super admin from env vars (no-op once one exists).
+from seed import seed_super_admin
+seed_super_admin()
+
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(
