@@ -170,10 +170,7 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
 
 def _send_status_email(victim_email: str, victim_name: str, case_number: str, status: str, status_display: str):
     try:
-        import smtplib
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.text import MIMEText
-        from core.config import settings
+        from utils.otp_helper import send_html_email
 
         extra_msg = STATUS_EMAIL_MSG.get(status, "Your case status has been updated.")
 
@@ -201,15 +198,8 @@ def _send_status_email(victim_email: str, victim_name: str, case_number: str, st
         </div>
         """
 
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"[VAWC-Response] Case {case_number} — Status Updated: {status_display}"
-        msg["From"]    = settings.GMAIL_USER
-        msg["To"]      = victim_email
-        msg.attach(MIMEText(html, "html"))
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(settings.GMAIL_USER, settings.GMAIL_APP_PASSWORD)
-            server.sendmail(settings.GMAIL_USER, victim_email, msg.as_string())
+        subject = f"[VAWC-Response] Case {case_number} — Status Updated: {status_display}"
+        send_html_email(victim_email, subject, html)
 
     except Exception as e:
         print(f"[Email] Failed to send status update email: {e}")
@@ -533,10 +523,7 @@ def update_incident_type(
 # ── Message / hearing-notice email ────────────────────────────────────────────
 def _send_message_email(victim_email: str, victim_name: str, case_number: str, message: str):
     try:
-        import smtplib
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.text import MIMEText
-        from core.config import settings
+        from utils.otp_helper import send_html_email
 
         safe_msg = (message or "").replace("\n", "<br/>")
         html = f"""
@@ -561,14 +548,8 @@ def _send_message_email(victim_email: str, victim_name: str, case_number: str, m
           </div>
         </div>
         """
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"[VAWC-Response] New message on Case {case_number}"
-        msg["From"]    = settings.GMAIL_USER
-        msg["To"]      = victim_email
-        msg.attach(MIMEText(html, "html"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(settings.GMAIL_USER, settings.GMAIL_APP_PASSWORD)
-            server.sendmail(settings.GMAIL_USER, victim_email, msg.as_string())
+        subject = f"[VAWC-Response] New message on Case {case_number}"
+        send_html_email(victim_email, subject, html)
     except Exception as e:
         print(f"[Email] Failed to send case message email: {e}")
 

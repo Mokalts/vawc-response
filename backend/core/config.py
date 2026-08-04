@@ -17,6 +17,13 @@ class Settings(BaseSettings):
     GMAIL_USER: str = ""
     GMAIL_APP_PASSWORD: str = ""
 
+    # Brevo (HTTP email API) — used in production where SMTP ports are blocked
+    # (e.g. Render). When BREVO_API_KEY is set, OTP emails are sent via Brevo's
+    # HTTPS API instead of Gmail SMTP. Locally, leave it empty to use SMTP.
+    BREVO_API_KEY: str = ""
+    BREVO_SENDER_EMAIL: str = ""   # Verified sender in Brevo (e.g. vawcresponse1@gmail.com)
+    BREVO_SENDER_NAME: str = "VAWC-Response"
+
     ENCRYPTION_KEY: str = ""  # Fernet key for encrypting report data
 
     ABSTRACT_API_KEY: str = ""  # AbstractAPI email validation key
