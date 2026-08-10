@@ -59,6 +59,8 @@ app.include_router(cases.router)
 app.include_router(admin_cases.router)
 app.include_router(admin_users.router)
 
-@app.get("/", tags=["Health"])
+# Accept both GET and HEAD so uptime monitors (which use HEAD by default) get a
+# 200 instead of a 405 — keeps the free instance awake without false "down" alerts.
+@app.api_route("/", methods=["GET", "HEAD"], tags=["Health"])
 def root():
     return {"message": "VAWC-Response API is running."}
