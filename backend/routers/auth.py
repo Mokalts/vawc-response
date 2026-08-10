@@ -135,8 +135,12 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
     verify_token = create_verify_token(user.id)
     verify_link = f"{FRONTEND_URL}/verify?token={verify_token}"
 
+    # OTP email is on the critical path (user waits for it), so send synchronously.
     send_otp_email(user.email, code, verify_link=verify_link)
-    send_otp_sms(user.phone_number, code)
+    # SMS is a secondary channel — run it in the background so a slow SMS
+    # provider never delays the registration response.
+    import threading
+    threading.Thread(target=send_otp_sms, args=(user.phone_number, code), daemon=True).start()
 
     return user
 
