@@ -6,7 +6,7 @@ from models.case import Case
 from models.report import ReportStatus, Report
 from models.user import User
 from models.admin import Admin
-from core.admin_dependencies import get_current_admin_full_access
+from core.admin_dependencies import get_current_admin_full_access, require_super_admin
 from core.encryption import decrypt
 from core.masking import mask_last_initial, mask_name
 from datetime import datetime
@@ -82,6 +82,48 @@ def _full_name(user) -> str:
     last   = getattr(user, "last_name",   "") or ""
     parts  = [p for p in [first, middle, last] if p.strip()]
     return " ".join(parts) if parts else "—"
+
+
+# Cases at (or past) these statuses count as "Settled" on the monthly report;
+# everything still in progress is "Pending".
+_SETTLED_STATUSES = {"resolved", "cfa_issued", "endorsed", "referred_to_police"}
+
+
+@router.get("/monthly-report")
+def monthly_report(
+    year:  int = Query(...),
+    month: int = Query(..., ge=1, le=12),
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(require_super_admin),
+):
+    """Rows for the Lupon Tagapamayapa Monthly Accomplishment Report.
+    Super-admin only (returns full, unmasked complainant/respondent names)."""
+    start = datetime(year, month, 1)
+    end   = datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1)
+
+    cases = db.query(Case).filter(
+        Case.is_deleted == False,
+        Case.created_at >= start,
+        Case.created_at <  end,
+    ).order_by(Case.created_at.asc()).all()
+
+    rows = []
+    for c in cases:
+        title = ""
+        if c.reports:
+            first_r = sorted(c.reports, key=lambda r: r.created_at)[0]
+            title = first_r.incident_type or ""
+        status_val = c.status.value if c.status else ""
+        rows.append({
+            "case_number": c.case_number,
+            "date":        c.created_at.isoformat() if c.created_at else None,
+            "complainant": _full_name(c.user),
+            "respondent":  decrypt(c.offender_name),
+            "title":       title,
+            "remark":      "Settled" if status_val in _SETTLED_STATUSES else "Pending",
+        })
+
+    return {"year": year, "month": month, "rows": rows}
 
 
 @router.get("/dashboard")

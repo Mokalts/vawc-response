@@ -53,6 +53,12 @@ const IcoReports = ({ size = 16, color = 'currentColor' }) => (
         <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </IcoMulti>
 );
+const IcoMonthly = ({ size = 16, color = 'currentColor' }) => (
+    <IcoMulti size={size}>
+        <rect x="3" y="4" width="18" height="18" rx="2" stroke={color} strokeWidth="1.8" />
+        <path d="M16 2v4M8 2v4M3 10h18M8 14h4M8 18h6" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
+    </IcoMulti>
+);
 const IcoAdmins = ({ size = 16, color = 'currentColor' }) => (
     <IcoMulti size={size}>
         <circle cx="9" cy="7" r="4" stroke={color} strokeWidth="1.8" />
@@ -73,6 +79,7 @@ const IcoChevron = ({ size = 12, color = 'currentColor' }) => (
 const NAV = [
     { label: 'Dashboard', path: '/dashboard', icon: IcoDashboard, superOnly: false },
     { label: 'Profiles', path: '/reports', icon: IcoReports, superOnly: false },
+    { label: 'Monthly Report', path: '/monthly-report', icon: IcoMonthly, superOnly: true },
     { label: 'Admin Management', path: '/admin-management', icon: IcoAdmins, superOnly: true },
 ];
 
