@@ -291,6 +291,8 @@ export default function AdminManagement() {
   const [editingVictim,   setEditingVictim]   = useState(null);  // {id, ...} when modal open
   const [resettingPw,     setResettingPw]     = useState(null);  // {id, first_name, last_name} when modal open
   const [resettingAdminPw, setResettingAdminPw] = useState(null); // admin whose password is being reset
+  const [editingAdmin,     setEditingAdmin]     = useState(null); // admin whose name is being edited
+  const [currentAdmin,     setCurrentAdmin]     = useState(null); // logged-in admin (for the super admin's own row)
 
   const fetchVictimData = useCallback(async () => {
     setVictimsLoading(true);
@@ -400,6 +402,17 @@ export default function AdminManagement() {
   }, []);
 
   useEffect(() => { fetchAdmins(); }, [fetchAdmins]);
+
+  useEffect(() => {
+    api.get("/admin/auth/me").then(r => setCurrentAdmin(r.data)).catch(() => {});
+  }, []);
+
+  const onNameSaved = (updated) => {
+    setAdmins(p => p.map(a => a.id === updated.id ? { ...a, ...updated } : a));
+    if (currentAdmin && updated.id === currentAdmin.id) setCurrentAdmin(c => ({ ...c, ...updated }));
+    setEditingAdmin(null);
+    showToast("Name updated.");
+  };
 
   const confirmMap = {
     deactivate: { title: "Deactivate Account", msg: (a) => `${a.first_name} ${a.last_name} will no longer be able to log in.`,                                              label: "Deactivate", danger: false },
@@ -626,6 +639,28 @@ export default function AdminManagement() {
                 </tr>
               </thead>
               <tbody>
+                {currentAdmin?.is_super_admin && !search && (
+                  <tr className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)", background: "var(--adm-muted)" }}>
+                    <td style={{ padding: "12px 16px", width: 52 }}>
+                      <div style={{ ...S.avatar, background: "linear-gradient(135deg,#FFCC99,#C45E10)", color: "#fff" }}>{initials(currentAdmin)}</div>
+                    </td>
+                    <td style={S.td}>
+                      <p style={S.adminName}>{[currentAdmin.first_name, currentAdmin.middle_name, currentAdmin.last_name].filter(Boolean).join(" ")}
+                        <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: "#C45E10", background: "var(--adm-primary-bg)", border: "1px solid #FFCC99", padding: "1px 7px", borderRadius: 9999 }}>Super Admin (You)</span>
+                      </p>
+                      <p style={S.adminEmail}>{currentAdmin.email}</p>
+                    </td>
+                    <td style={S.td}><span style={S.monoTag}>{currentAdmin.username}</span></td>
+                    <td style={{ ...S.td, color: "#64748B" }}>{currentAdmin.employee_id}</td>
+                    <td style={S.td}><ActiveBadge active={currentAdmin.is_active !== false} /></td>
+                    <td style={S.td}><FaceBadge enrolled={currentAdmin.is_face_enrolled} /></td>
+                    <td style={{ ...S.td, textAlign: "right" }} className="adm-actions-cell">
+                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                        <ActionBtn label="Edit Name" onClick={() => setEditingAdmin(currentAdmin)} />
+                      </div>
+                    </td>
+                  </tr>
+                )}
                 {loading ? (
                   Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
                 ) : visibleAdmins.length === 0 ? (
@@ -663,6 +698,7 @@ export default function AdminManagement() {
                       <td style={S.td}><FaceBadge enrolled={a.is_face_enrolled} /></td>
                       <td style={{ ...S.td, textAlign: "right" }} className="adm-actions-cell">
                         <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", flexWrap: "wrap" }}>
+                          <ActionBtn label="Edit Name" onClick={() => setEditingAdmin(a)} />
                           {a.is_active
                             ? <ActionBtn label="Deactivate" onClick={() => setConfirm({ type: "deactivate", admin: a, loading: false })} />
                             : <ActionBtn label="Reactivate" variant="success" onClick={() => setConfirm({ type: "reactivate", admin: a, loading: false })} />
@@ -990,7 +1026,55 @@ export default function AdminManagement() {
           onError={(msg) => showToast(msg, false)}
         />
       )}
+
+      {editingAdmin && (
+        <EditAdminNameModal
+          admin={editingAdmin}
+          onClose={() => setEditingAdmin(null)}
+          onSaved={onNameSaved}
+          onError={(msg) => showToast(msg, false)}
+        />
+      )}
     </AdminLayout>
+  );
+}
+
+// ─── Edit Admin Name Modal ──────────────────────────────────────────────────
+function EditAdminNameModal({ admin, onClose, onSaved, onError }) {
+  const [form, setForm] = useState({
+    first_name:  admin.first_name || "",
+    middle_name: admin.middle_name || "",
+    last_name:   admin.last_name || "",
+  });
+  const [saving, setSaving] = useState(false);
+  const handleChange = (k) => (e) => setForm(p => ({ ...p, [k]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.first_name.trim() || !form.last_name.trim()) { onError("First name and last name are required."); return; }
+    setSaving(true);
+    try {
+      const res = await api.patch(`/admin/auth/admins/${admin.id}/name`, form);
+      onSaved(res.data);
+    } catch (err) {
+      onError(err.response?.data?.detail || "Failed to update name.");
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }} onClick={onClose}>
+      <form onSubmit={handleSubmit} onClick={e => e.stopPropagation()} style={{ background: "var(--adm-card)", borderRadius: 12, maxWidth: 440, width: "100%", padding: 24, fontFamily: "'Lexend',sans-serif", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+        <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "var(--adm-text)" }}>Edit Name</h2>
+        <p style={{ margin: "0 0 18px", fontSize: 12.5, color: "var(--adm-text-muted)" }}>Updates the name shown on records and printed documents (e.g. "Handled By").</p>
+        <FormField label="First Name *"><input required value={form.first_name} onChange={handleChange("first_name")} style={S2.input} /></FormField>
+        <FormField label="Middle Name"><input value={form.middle_name} onChange={handleChange("middle_name")} style={S2.input} /></FormField>
+        <FormField label="Last Name *"><input required value={form.last_name} onChange={handleChange("last_name")} style={S2.input} /></FormField>
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
+          <button type="button" onClick={onClose} style={S2.btnGhost}>Cancel</button>
+          <button type="submit" disabled={saving} style={{ ...S2.btnPrimary, opacity: saving ? 0.7 : 1 }}>{saving ? "Saving…" : "Save"}</button>
+        </div>
+      </form>
+    </div>
   );
 }
 

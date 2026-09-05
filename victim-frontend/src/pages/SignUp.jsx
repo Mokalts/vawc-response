@@ -102,12 +102,32 @@ function SignUp() {
     const [loading,      setLoading]      = useState(false);
     const [error,        setError]        = useState('');
     const [isMinor,      setIsMinor]      = useState(false);
-    const [form, setForm] = useState({
+    const SIGNUP_DRAFT_KEY = 'vawc_signup_draft';
+    const blankForm = {
         first_name:'', middle_name:'', last_name:'', birthdate:'', sex:'',
         phone_number:'', email:'', street:'', purok:'', landmark:'',
         guardian_name:'', guardian_relationship:'',
         password:'', confirm_password:'',
+    };
+    const [form, setForm] = useState(() => {
+        try {
+            const saved = JSON.parse(localStorage.getItem(SIGNUP_DRAFT_KEY)) || {};
+            // Passwords are never persisted; always start blank.
+            return { ...blankForm, ...saved, password:'', confirm_password:'' };
+        } catch { return blankForm; }
     });
+
+    // Auto-save registration progress (never the password) so it survives a
+    // back/refresh/close. Cleared once the account is submitted for verification.
+    useEffect(() => {
+        const t = setTimeout(() => {
+            try {
+                const { password, confirm_password, ...safe } = form;
+                localStorage.setItem(SIGNUP_DRAFT_KEY, JSON.stringify(safe));
+            } catch {}
+        }, 600);
+        return () => clearTimeout(t);
+    }, [form]);
 
     const handleChange = e => {
         setForm(p => ({ ...p, [e.target.name]: e.target.value }));
@@ -156,12 +176,14 @@ function SignUp() {
             });
             localStorage.setItem("pending_phone", form.phone_number);
             localStorage.setItem("pending_email",  form.email);
+            try { localStorage.removeItem(SIGNUP_DRAFT_KEY); } catch {}
             navigate('/otp');
         } catch (err) {
             const data = err.response?.data;
             if (err.response?.status === 409 && data?.code === "PENDING_VERIFICATION") {
                 localStorage.setItem("pending_phone", data.phone_number);
                 localStorage.setItem("pending_email",  data.email);
+                try { localStorage.removeItem(SIGNUP_DRAFT_KEY); } catch {}
                 navigate('/otp', { state:{ pendingVerification:true } }); return;
             }
             setError(data?.detail || "Registration failed. Please try again.");

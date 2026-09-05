@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import BottomNavbar from '../components/BottomNavbar';
@@ -27,6 +27,9 @@ if (!document.getElementById('vawc-rn-css')) {
 
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 const MIN_CHARS = 10;
+const MAX_PHOTOS = 5;              // cap per report to control cloud storage
+const MAX_MB = 10;                 // per-photo size limit (matches backend)
+const ALLOWED_IMG = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const IcoArrow  = ({ dir='left', c='#C45E10' }) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d={dir==='left'?"M15 18l-6-6 6-6":"M9 18l6-6-6-6"} stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
@@ -47,15 +50,21 @@ const STEPS = [
     { id:4, short:'Review'   },
 ];
 
+// ── Draft auto-save (text only; photos are never persisted for safety) ─────────
+const DRAFT_KEY = 'vawc_report_draft';
+const loadDraft = () => { try { return JSON.parse(localStorage.getItem(DRAFT_KEY)) || {}; } catch { return {}; } };
+const clearDraft = () => { try { localStorage.removeItem(DRAFT_KEY); } catch {} };
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 function ReportNow() {
     const navigate = useNavigate();
+    const draft0 = loadDraft();
     const [step,          setStep]          = useState(1);
-    const [statement,     setStatement]     = useState('');
+    const [statement,     setStatement]     = useState(draft0.statement || '');
     const [imageFiles,    setImageFiles]    = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
-    const [location,      setLocation]      = useState(null);
-    const [address,       setAddress]       = useState('');
+    const [location,      setLocation]      = useState(draft0.location || null);
+    const [address,       setAddress]       = useState(draft0.address || '');
     const [locationErr,   setLocationErr]   = useState('');
     const [loading,       setLoading]       = useState(false);
     const [submitErr,     setSubmitErr]     = useState('');
@@ -63,22 +72,62 @@ function ReportNow() {
     const [mergeInfo,     setMergeInfo]     = useState(null);   // duplicate case found
     const [showMerge,     setShowMerge]     = useState(false);  // show merge modal
     const [forceNew,      setForceNew]      = useState(false);
-    const [offenderName,  setOffenderName]  = useState('');
-    const [incidentDate,  setIncidentDate]  = useState('');
+    const [offenderName,  setOffenderName]  = useState(draft0.offenderName || '');
+    const [incidentDate,  setIncidentDate]  = useState(draft0.incidentDate || '');
+    const [photoErr,      setPhotoErr]      = useState('');
+    const [draftSaved,    setDraftSaved]    = useState(false);
 
     const canNext1 = statement.trim().length >= MIN_CHARS && offenderName.trim().length >= 2 && incidentDate !== '';
 
+    // Auto-save the text draft (debounced) so a back/refresh/close does not lose it.
+    // Photos are intentionally NOT persisted. Cleared on successful submit or discard.
+    useEffect(() => {
+        const hasContent = statement.trim() || offenderName.trim() || incidentDate || address;
+        if (!hasContent) return;
+        const t = setTimeout(() => {
+            try {
+                localStorage.setItem(DRAFT_KEY, JSON.stringify({ statement, offenderName, incidentDate, address, location, savedAt: Date.now() }));
+                setDraftSaved(true);
+            } catch {}
+        }, 600);
+        return () => clearTimeout(t);
+    }, [statement, offenderName, incidentDate, address, location]);
+
+    const discardDraft = () => {
+        clearDraft();
+        setStatement(''); setOffenderName(''); setIncidentDate(''); setAddress(''); setLocation(null);
+        setImageFiles([]); setImagePreviews([]); setPhotoErr(''); setDraftSaved(false); setStep(1);
+    };
+
     const handleImageUpload = (e) => {
-        const files = Array.from(e.target.files);
-        if (!files.length) return;
-        setImageFiles(p => [...p, ...files]);
-        setImagePreviews(p => [...p, ...files.map(f => URL.createObjectURL(f))]);
+        const picked = Array.from(e.target.files);
         e.target.value = '';
+        if (!picked.length) return;
+
+        const accepted = [];
+        let err = '';
+        for (const f of picked) {
+            if (imageFiles.length + accepted.length >= MAX_PHOTOS) {
+                err = `You can attach up to ${MAX_PHOTOS} photos per report.`;
+                break;
+            }
+            const type = (f.type || '').toLowerCase();
+            const isImg = type.startsWith('image/') || ALLOWED_IMG.includes(type);
+            if (!isImg) { err = 'Only photo files (JPEG, PNG, WEBP, HEIC) are allowed.'; continue; }
+            if (f.size > MAX_MB * 1024 * 1024) { err = `Each photo must be ${MAX_MB}MB or smaller.`; continue; }
+            accepted.push(f);
+        }
+        if (accepted.length) {
+            setImageFiles(p => [...p, ...accepted]);
+            setImagePreviews(p => [...p, ...accepted.map(f => URL.createObjectURL(f))]);
+        }
+        setPhotoErr(err);
     };
 
     const removeImage = (i) => {
         setImageFiles(p => p.filter((_,idx) => idx !== i));
         setImagePreviews(p => p.filter((_,idx) => idx !== i));
+        setPhotoErr('');
     };
 
     const checkDuplicate = async () => {
@@ -115,6 +164,7 @@ function ReportNow() {
                 address:       address || null,
                 force_new:     isForceNew,
             });
+            clearDraft();
             setSuccess(true);
         } catch (err) {
             setSubmitErr(err.response?.data?.detail || "Failed to submit report. Please try again.");
@@ -238,6 +288,17 @@ function ReportNow() {
                     <p style={{ fontSize:12, color:'var(--text-muted)', textAlign:'center', marginTop:4, fontFamily:"'Lexend', sans-serif" }}>
                         Step {step} of {STEPS.length}
                     </p>
+                    {draftSaved && (
+                        <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:10, marginTop:8 }}>
+                            <span style={{ display:'inline-flex', alignItems:'center', gap:5, fontSize:11.5, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
+                                <IcoCheck c="#059669" size={13} /> Draft saved on this device
+                            </span>
+                            <button onClick={discardDraft}
+                                style={{ background:'none', border:'none', color:'#BE123C', fontSize:11.5, fontWeight:600, cursor:'pointer', textDecoration:'underline', fontFamily:"'Lexend', sans-serif" }}>
+                                Discard
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -337,23 +398,34 @@ function ReportNow() {
                                     <p style={S.cardSub}>Optional - mga patunay</p>
                                 </div>
                             </div>
-                            <p style={S.hint}>Attach photos as evidence. This is optional but can help authorities assess your report.</p>
-                            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
-                                {isMobile && (
-                                    <label className="vrn-btn-hover" style={S.uploadSolid}>
-                                        <IcoCamera /><span>Take a Photo</span>
-                                        <input type="file" accept="image/*" capture="environment" style={{ display:'none' }} onChange={handleImageUpload} />
+                            <p style={S.hint}>Attach photos as evidence. This is optional but can help authorities assess your report. Up to {MAX_PHOTOS} photos, {MAX_MB}MB each.</p>
+                            {imageFiles.length >= MAX_PHOTOS ? (
+                                <div style={{ padding:'12px 14px', borderRadius:4, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)' }}>
+                                    <p style={{ fontSize:13, color:'var(--text-body)', margin:0, fontFamily:"'Lexend', sans-serif" }}>
+                                        Maximum of {MAX_PHOTOS} photos attached. Remove one to add another.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                                    {isMobile && (
+                                        <label className="vrn-btn-hover" style={S.uploadSolid}>
+                                            <IcoCamera /><span>Take a Photo</span>
+                                            <input type="file" accept="image/*" capture="environment" style={{ display:'none' }} onChange={handleImageUpload} />
+                                        </label>
+                                    )}
+                                    <label className="vrn-upload-hover vrn-btn-hover" style={S.uploadOutline}>
+                                        <IcoImage /><span>Upload from Gallery</span>
+                                        <input type="file" accept="image/*" multiple style={{ display:'none' }} onChange={handleImageUpload} />
                                     </label>
-                                )}
-                                <label className="vrn-upload-hover vrn-btn-hover" style={S.uploadOutline}>
-                                    <IcoImage /><span>Upload from Gallery</span>
-                                    <input type="file" accept="image/*" multiple style={{ display:'none' }} onChange={handleImageUpload} />
-                                </label>
-                            </div>
+                                </div>
+                            )}
+                            {photoErr && (
+                                <p role="alert" style={{ fontSize:12.5, color:'#BE123C', marginTop:10, fontFamily:"'Lexend', sans-serif" }}>{photoErr}</p>
+                            )}
                             {imagePreviews.length > 0 && (
                                 <div style={{ marginTop:16 }}>
                                     <p style={{ fontSize:12, fontWeight:600, color:'var(--text-muted)', marginBottom:10, fontFamily:"'Lexend', sans-serif" }}>
-                                        {imagePreviews.length} photo{imagePreviews.length!==1?'s':''} attached
+                                        {imagePreviews.length} of {MAX_PHOTOS} photo{imagePreviews.length!==1?'s':''} attached
                                     </p>
                                     <div style={{ display:'flex', flexWrap:'wrap', gap:10 }}>
                                         {imagePreviews.map((src, i) => (

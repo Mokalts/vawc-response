@@ -475,6 +475,36 @@ def reset_admin_password(
 
 
 # ---------------------------------------------------------------------------
+# Super Admin: Edit an admin's name (own name included; not another super admin)
+# ---------------------------------------------------------------------------
+@router.patch("/admins/{admin_id}/name", response_model=AdminResponse)
+def update_admin_name(
+    admin_id: int,
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(require_super_admin),
+):
+    admin = db.query(Admin).filter(Admin.id == admin_id, Admin.is_deleted == False).first()
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found.")
+    if admin.is_super_admin and admin.id != current_admin.id:
+        raise HTTPException(status_code=403, detail="Cannot edit another Super Admin's name.")
+
+    first  = (payload.get("first_name")  or "").strip()
+    middle = (payload.get("middle_name") or "").strip()
+    last   = (payload.get("last_name")   or "").strip()
+    if not first or not last:
+        raise HTTPException(status_code=400, detail="First name and last name are required.")
+
+    admin.first_name  = first
+    admin.middle_name = middle or None
+    admin.last_name   = last
+    db.commit()
+    db.refresh(admin)
+    return admin
+
+
+# ---------------------------------------------------------------------------
 # Super Admin: Soft Delete Admin
 # ---------------------------------------------------------------------------
 @router.delete("/admins/{admin_id}")

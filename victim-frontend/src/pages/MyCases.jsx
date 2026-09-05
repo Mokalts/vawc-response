@@ -46,9 +46,11 @@ const STATUS_MAP = {
     submitted:             { label:'Submitted',               bg:'var(--border-soft)', color:'var(--text-body)', dot:'#64748B' },
     awaiting_onsite_visit: { label:'Awaiting Onsite Visit',   bg:'#FFFBEB', color:'#92400E', dot:'#F59E0B' },
     under_process:         { label:'Under Process',           bg:'#ECFEFF', color:'#0E7490', dot:'#06B6D4' },
-    summon_issued:         { label:'Summon Letter Issued',     bg:'#F3E5F5', color:'#7B2D8B', dot:'#9B4DAB' },
-    summon_acknowledged:   { label:'Summon Acknowledged',      bg:'#F0FDF4', color:'#166534', dot:'#22C55E' },
+    summon_issued:         { label:'Summons Issued',           bg:'#F3E5F5', color:'#7B2D8B', dot:'#9B4DAB' },
+    summon_acknowledged:   { label:'Respondent Appeared',      bg:'#F0FDF4', color:'#166534', dot:'#22C55E' },
     resolved:              { label:'Resolved',                 bg:'#ECFDF5', color:'#065F46', dot:'#059669' },
+    cfa_issued:            { label:'CFA Issued',               bg:'#FFFBEB', color:'#92400E', dot:'#D97706' },
+    endorsed:              { label:'Endorsed',                 bg:'var(--surface-tint)', color:'var(--accent-text)', dot:'#F47920' },
     referred_to_police:    { label:'Referred to Authorities',  bg:'var(--surface-tint)', color:'var(--accent-text)', dot:'#F47920' },
 };
 const getSt   = (s) => STATUS_MAP[s] || { label:s||'Unknown', bg:'var(--border-soft)', color:'var(--text-body)', dot:'#64748B' };
@@ -61,9 +63,14 @@ const STATUS_STEPS = [
     { key:'submitted',             label:'Submitted' },
     { key:'awaiting_onsite_visit', label:'Awaiting Onsite Visit' },
     { key:'under_process',         label:'Under Process' },
-    { key:'summon_issued',         label:'Summon Letter Issued' },
-    { key:'summon_acknowledged',   label:'Summon Acknowledged' },
-    { key:'resolved',              label:'Resolved' },
+    { key:'summon_issued',         label:'Summons Issued' },
+    { key:'summon_acknowledged',   label:'Respondent Appeared' },
+];
+// Terminal states (a case ends at exactly one of these).
+const ENDPOINT_STEPS = [
+    { key:'resolved',   label:'Resolved' },
+    { key:'cfa_issued', label:'CFA Issued' },
+    { key:'endorsed',   label:'Endorsed' },
 ];
 
 // ─── Skeleton ──────────────────────────────────────────────────────────────────
@@ -76,27 +83,62 @@ const Skel = () => (
 );
 
 // ─── Status Timeline ──────────────────────────────────────────────────────────
-function StatusTimeline({ currentStatus }) {
-    const isReferred = currentStatus === 'referred_to_police';
-    const steps = isReferred
-        ? [...STATUS_STEPS.slice(0,3), { key:'referred_to_police', label:'Referred to Authorities' }]
-        : STATUS_STEPS;
-    const currentIdx = steps.findIndex(s => s.key === currentStatus);
+const fmtWeekDate = (d) => d ? new Date(d).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}) : null;
+
+function SummonWeeks({ tracking }) {
+    const weeks = (tracking || []).filter(w => w && (w.date || w.note));
+    if (!weeks.length) return null;
+    return (
+        <div style={{marginLeft:30,marginTop:-8,marginBottom:16,padding:'10px 12px',borderRadius:8,background:'var(--surface-tint)',border:'1px solid var(--border-soft)'}}>
+            <p style={{margin:'0 0 6px',fontSize:11,fontWeight:700,color:'var(--accent-text)',fontFamily:"'Lexend',sans-serif"}}>Follow-up progress</p>
+            {weeks.sort((a,b)=>a.week-b.week).map(w=>(
+                <div key={w.week} style={{display:'flex',gap:8,marginBottom:4,fontSize:11.5,color:'var(--text-body)',fontFamily:"'Lexend',sans-serif"}}>
+                    <span style={{fontWeight:700,color:'#7B2D8B',minWidth:46}}>Week {w.week}</span>
+                    <span>{[fmtWeekDate(w.date), w.note].filter(Boolean).join(' — ') || '-'}</span>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function StatusTimeline({ currentStatus, summonTracking }) {
+    const isEndpoint = ENDPOINT_STEPS.some(e => e.key === currentStatus);
+    const linearIdx = STATUS_STEPS.findIndex(s => s.key === currentStatus);
     return (
         <div style={{display:'flex',flexDirection:'column',gap:0}}>
-            {steps.map((step,idx)=>{
-                const done=idx<=currentIdx, current=idx===currentIdx;
+            {STATUS_STEPS.map((step,idx)=>{
+                const done=isEndpoint ? true : idx<=linearIdx, current=!isEndpoint && idx===linearIdx;
+                const st = getSt(step.key);
+                return (
+                    <React.Fragment key={step.key}>
+                        <div style={{display:'flex',alignItems:'flex-start',gap:10}}>
+                            <div style={{display:'flex',flexDirection:'column',alignItems:'center',flexShrink:0}}>
+                                <div style={{width:20,height:20,borderRadius: '50%',background:current?st.dot:done?'#059669':'var(--border)',display:'flex',alignItems:'center',justifyContent:'center',border:current?`2px solid ${st.dot}`:'none'}}>
+                                    {done&&!current&&<svg width="10" height="10" fill="none" viewBox="0 0 20 20"><path d="M4 10l5 5 7-9" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                    {current&&<div style={{width:7,height:7,borderRadius: '50%',background:'var(--surface)'}}/>}
+                                </div>
+                                <div style={{width:2,height:18,background:done&&!current?'#059669':'var(--border)',marginTop:2}}/>
+                            </div>
+                            <p style={{margin:'2px 0 18px',fontSize:13,fontWeight:current?700:500,color:current?st.color:done?'#059669':'#64748B',fontFamily:"'Lexend',sans-serif"}}>
+                                {step.label}
+                                {current&&<span style={{marginLeft:6,fontSize:10.5,background:'var(--surface-tint)',color:'var(--accent-text)',padding:'2px 7px',borderRadius: 9999,fontWeight:700}}>Current</span>}
+                            </p>
+                        </div>
+                        {step.key==='summon_issued' && (done||current) && <SummonWeeks tracking={summonTracking} />}
+                    </React.Fragment>
+                );
+            })}
+            {ENDPOINT_STEPS.map((step)=>{
+                const current = step.key===currentStatus;
                 const st = getSt(step.key);
                 return (
                     <div key={step.key} style={{display:'flex',alignItems:'flex-start',gap:10}}>
-                        <div style={{display:'flex',flexDirection:'column',alignItems:'center',flexShrink:0}}>
-                            <div style={{width:20,height:20,borderRadius: '50%',background:current?st.dot:done?'#059669':'var(--border)',display:'flex',alignItems:'center',justifyContent:'center',border:current?`2px solid ${st.dot}`:'none'}}>
-                                {done&&!current&&<svg width="10" height="10" fill="none" viewBox="0 0 20 20"><path d="M4 10l5 5 7-9" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                        <div style={{flexShrink:0}}>
+                            <div style={{width:20,height:20,borderRadius: '50%',background:current?st.dot:'var(--border)',display:'flex',alignItems:'center',justifyContent:'center',border:current?`2px solid ${st.dot}`:'none'}}>
                                 {current&&<div style={{width:7,height:7,borderRadius: '50%',background:'var(--surface)'}}/>}
                             </div>
-                            {idx<steps.length-1&&<div style={{width:2,height:18,background:done&&!current?'#059669':'var(--border)',marginTop:2}}/>}
                         </div>
-                        <p style={{margin:'2px 0 18px',fontSize:13,fontWeight:current?700:500,color:current?st.color:done?'#059669':'#64748B',fontFamily:"'Lexend',sans-serif"}}>
+                        <p style={{margin:'2px 0 10px',fontSize:13,fontWeight:current?700:400,color:current?st.color:'#94A3B8',fontFamily:"'Lexend',sans-serif"}}>
                             {step.label}
                             {current&&<span style={{marginLeft:6,fontSize:10.5,background:'var(--surface-tint)',color:'var(--accent-text)',padding:'2px 7px',borderRadius: 9999,fontWeight:700}}>Current</span>}
                         </p>
@@ -303,7 +345,7 @@ function CaseDetailModal({ cas, onClose, onStatusRead }) {
                             <span style={{width:8,height:8,borderRadius: '50%',backgroundColor:st.dot,flexShrink:0}}/>
                             {cas.status_display||st.label}
                         </span>
-                        <StatusTimeline currentStatus={cas.status}/>
+                        <StatusTimeline currentStatus={cas.status} summonTracking={cas.summon_tracking}/>
                     </div>
 
                     {/* Onsite verification notice - victim must appear in person */}

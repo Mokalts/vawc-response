@@ -26,15 +26,19 @@ const STATUS_CONFIG = {
   submitted: { label: "Submitted", color: "#BE185D", bg: "#FDF2F8", dot: "#EC4899" },
   awaiting_onsite_visit: { label: "Awaiting Onsite Visit", color: "#D97706", bg: "#FFFBEB", dot: "#F59E0B" },
   under_process: { label: "Under Process", color: "#0E7490", bg: "#ECFEFF", dot: "#06B6D4" },
-  summon_issued: { label: "Summon Letter Issued", color: "#C45E10", bg: "#FFF3E0", dot: "#F47920" },
-  summon_acknowledged: { label: "Summon Acknowledged", color: "#9B4DAB", bg: "#F3E5F5", dot: "#9B4DAB" },
+  summon_issued: { label: "Summons Issued", color: "#C45E10", bg: "#FFF3E0", dot: "#F47920" },
+  summon_acknowledged: { label: "Respondent Appeared", color: "#9B4DAB", bg: "#F3E5F5", dot: "#9B4DAB" },
   resolved: { label: "Resolved", color: "#059669", bg: "#ECFDF5", dot: "#10B981" },
+  cfa_issued: { label: "CFA Issued", color: "#B45309", bg: "#FFFBEB", dot: "#D97706" },
+  endorsed: { label: "Endorsed", color: "#DC2626", bg: "#FEF2F2", dot: "#EF4444" },
   referred_to_police: { label: "Referred to Authorities", color: "#DC2626", bg: "#FEF2F2", dot: "#EF4444" },
 };
 const sCfg = (s) => STATUS_CONFIG[s] || { label: s || "Unknown", color: "#64748B", bg: "var(--adm-border)", dot: "#CBD5E1" };
-const ALL_STATUSES = Object.keys(STATUS_CONFIG).filter(s => s !== 'submitted');
+// Picker excludes 'submitted' (initial) and legacy 'referred_to_police'.
+const ALL_STATUSES = ["awaiting_onsite_visit", "under_process", "summon_issued", "summon_acknowledged", "resolved", "cfa_issued", "endorsed"];
 
 const TIMELINE_STEPS = ["submitted", "awaiting_onsite_visit", "under_process", "summon_issued", "summon_acknowledged"];
+const ENDPOINT_STATES = ["resolved", "cfa_issued", "endorsed"];
 const INCIDENT_TYPES = ["Physical Abuse", "Sexual Abuse", "Psychological Abuse", "Economic Abuse", "Other"];
 
 const fmt = (d) => !d ? "-" : new Date(d).toLocaleString("en-PH", { month: "long", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
@@ -72,10 +76,14 @@ const Card = ({ title, icon, children, style = {}, headerRight }) => (
   </div>
 );
 
-const InfoRow = ({ label, value, mono, muted }) => (
+const InfoRow = ({ label, value, mono, muted, highlight }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
     <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>{label}</span>
-    <span style={{ fontSize: 13.5, color: muted ? "#94A3B8" : "var(--adm-text)", fontWeight: 500, fontStyle: muted ? "italic" : "normal", fontFamily: mono ? "monospace" : "'Lexend',sans-serif" }}>{value || "-"}</span>
+    {highlight ? (
+      <span style={{ alignSelf: "flex-start", background: "var(--adm-primary-bg)", color: "#C45E10", fontWeight: 700, fontSize: 13, padding: "3px 12px", borderRadius: 9999, border: "1px solid #FFCC99", fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap" }}>{value || "-"}</span>
+    ) : (
+      <span style={{ fontSize: 13.5, color: muted ? "#94A3B8" : "var(--adm-text)", fontWeight: 500, fontStyle: muted ? "italic" : "normal", fontFamily: mono ? "monospace" : "'Lexend',sans-serif" }}>{value || "-"}</span>
+    )}
   </div>
 );
 
@@ -193,40 +201,93 @@ const DeleteModal = ({ caseId, onClose, onConfirm, loading }) => {
   );
 };
 
-const CaseTimeline = ({ cas, onUpdateStatus, onReferToPolice }) => {
-  const isReferred = cas.status === "referred_to_police";
-  const isResolved = cas.status === "resolved";
+const ENDPOINT_ICON = {
+  resolved: <IcoCheck size={10} color="#059669" />,
+  cfa_issued: <IcoPrint size={10} color="#D97706" />,
+  endorsed: <IcoShield size={10} color="#DC2626" />,
+};
+const ENDPOINT_NOTE = {
+  resolved:   { title: "Case Resolved",  body: "Successfully settled at the barangay level.", color: "#059669", bg: "#ECFDF5", border: "#A7F3D0", sub: "#065F46" },
+  cfa_issued: { title: "CFA Issued",      body: "Certificate to File Action issued, the barangay has done its part. Print it from Print Documents.", color: "#B45309", bg: "#FFFBEB", border: "#FDE68A", sub: "#92400E" },
+  endorsed:   { title: "Endorsed",        body: "Endorsement Letter issued to WCPD / Prosecutor for further action. Print it from Print Documents.", color: "#DC2626", bg: "#FEF2F2", border: "#FECACA", sub: "#991B1B" },
+};
+
+const SummonWeekTracker = ({ cas, onSave }) => {
+  const seed = () => [1, 2, 3].map(n => {
+    const found = (cas.summon_tracking || []).find(w => w.week === n) || {};
+    return { week: n, date: found.date || "", note: found.note || "" };
+  });
+  const [weeks, setWeeks] = useState(seed);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  React.useEffect(() => { setWeeks(seed()); setSaved(false); /* eslint-disable-next-line */ }, [cas.id, JSON.stringify(cas.summon_tracking)]);
+  const setField = (i, k, v) => { setWeeks(w => w.map((x, idx) => idx === i ? { ...x, [k]: v } : x)); setSaved(false); };
+  const doSave = async () => {
+    setSaving(true);
+    try { await onSave(weeks.filter(w => w.date || w.note)); setSaved(true); }
+    finally { setSaving(false); }
+  };
+  return (
+    <div style={{ marginTop: 4, marginBottom: 12, marginLeft: 32, padding: "12px 14px", borderRadius: 8, background: "var(--adm-muted)", border: "1px solid var(--adm-border)" }}>
+      <p style={{ margin: "0 0 4px", fontSize: 11.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>Warrant officer 3-week tracking</p>
+      <p style={{ margin: "0 0 10px", fontSize: 11, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>Record each week's attempt to serve the summons (date + short note).</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {weeks.map((w, i) => (
+          <div key={w.week} style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: "#C45E10", minWidth: 52, fontFamily: "'Lexend',sans-serif" }}>Week {w.week}</span>
+            <input type="date" value={w.date} onChange={e => setField(i, "date", e.target.value)}
+              style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 12, fontFamily: "'Lexend',sans-serif" }} />
+            <input type="text" value={w.note} placeholder="Note (e.g. attempted, not home)" onChange={e => setField(i, "note", e.target.value)}
+              style={{ flex: 1, minWidth: 140, padding: "6px 8px", borderRadius: 6, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 12, fontFamily: "'Lexend',sans-serif" }} />
+          </div>
+        ))}
+      </div>
+      <button className="rd-btn" onClick={doSave} disabled={saving}
+        style={{ marginTop: 10, padding: "7px 14px", borderRadius: 7, border: "none", background: saved ? "#059669" : "#C45E10", color: "#fff", fontSize: 12, fontWeight: 600, cursor: saving ? "default" : "pointer", display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Lexend',sans-serif", opacity: saving ? 0.7 : 1 }}>
+        {saving ? <Spinner size={12} /> : saved ? <IcoCheck size={13} color="#fff" /> : null}
+        {saving ? "Saving..." : saved ? "Saved" : "Save tracking"}
+      </button>
+    </div>
+  );
+};
+
+const CaseTimeline = ({ cas, onUpdateStatus, onSaveTracking }) => {
+  const isEndpoint = ENDPOINT_STATES.includes(cas.status);
   const isDeleted = cas.is_deleted;
   const currentIdx = TIMELINE_STEPS.indexOf(cas.status);
-  const canQuickRefer = cas.status === "awaiting_onsite_visit" && !isDeleted;
   return (
     <Card title="Case Timeline" icon={<IcoCheck size={16} color="#9B4DAB" />}>
       <div style={{ display: "flex", flexDirection: "column", gap: 0, marginBottom: 4 }}>
         {TIMELINE_STEPS.map((s, i) => {
-          const cfg = sCfg(s), isDone = isReferred ? false : i < currentIdx, isCurrent = !isReferred && i === currentIdx;
+          // At an endpoint, all linear steps read as completed.
+          const cfg = sCfg(s), isDone = isEndpoint ? true : i < currentIdx, isCurrent = !isEndpoint && i === currentIdx;
+          const showTracker = s === "summon_issued" && !isDeleted && (isCurrent || isDone || (cas.summon_tracking || []).length > 0);
           return (
-            <div key={s} style={{ display: "flex", gap: 12, paddingBottom: 14 }}>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-                <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${isCurrent ? cfg.dot : isDone ? cfg.dot : "var(--adm-border)"}`, background: isCurrent ? cfg.dot : isDone ? cfg.bg : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {isDone && !isCurrent && <svg width="9" height="9" fill="none" viewBox="0 0 20 20"><path d="M5 10l4 4 6-8" stroke={cfg.dot} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                  {isCurrent && <div style={{ width: 7, height: 7, borderRadius: '50%', background: "var(--adm-card)" }} />}
+            <React.Fragment key={s}>
+              <div style={{ display: "flex", gap: 12, paddingBottom: 14 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${isCurrent ? cfg.dot : isDone ? cfg.dot : "var(--adm-border)"}`, background: isCurrent ? cfg.dot : isDone ? cfg.bg : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {isDone && !isCurrent && <svg width="9" height="9" fill="none" viewBox="0 0 20 20"><path d="M5 10l4 4 6-8" stroke={cfg.dot} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                    {isCurrent && <div style={{ width: 7, height: 7, borderRadius: '50%', background: "var(--adm-card)" }} />}
+                  </div>
+                  {i < TIMELINE_STEPS.length - 1 && <div style={{ width: 2, flex: 1, minHeight: 14, background: isDone ? cfg.dot : "var(--adm-border)", marginTop: 3 }} />}
                 </div>
-                {i < TIMELINE_STEPS.length - 1 && <div style={{ width: 2, flex: 1, minHeight: 14, background: isDone ? cfg.dot : "var(--adm-border)", marginTop: 3 }} />}
+                <div style={{ paddingTop: 2 }}>
+                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: isCurrent ? 700 : isDone ? 500 : 400, color: isCurrent ? cfg.color : isDone ? "#374151" : "#94A3B8", fontFamily: "'Lexend',sans-serif" }}>{cfg.label}</p>
+                  {isCurrent && <span style={{ fontSize: 10.5, color: cfg.dot, fontWeight: 500, fontFamily: "'Lexend',sans-serif" }}>Current</span>}
+                </div>
               </div>
-              <div style={{ paddingTop: 2 }}>
-                <p style={{ margin: 0, fontSize: 12.5, fontWeight: isCurrent ? 700 : isDone ? 500 : 400, color: isCurrent ? cfg.color : isDone ? "#374151" : "#94A3B8", fontFamily: "'Lexend',sans-serif" }}>{cfg.label}</p>
-                {isCurrent && <span style={{ fontSize: 10.5, color: cfg.dot, fontWeight: 500, fontFamily: "'Lexend',sans-serif" }}>Current</span>}
-              </div>
-            </div>
+              {showTracker && <SummonWeekTracker cas={cas} onSave={onSaveTracking} />}
+            </React.Fragment>
           );
         })}
-        {[{ key: "resolved", icon: <IcoCheck size={10} color="#059669" /> }, { key: "referred_to_police", icon: <IcoShield size={10} color="#DC2626" /> }].map(({ key, icon }) => {
+        {ENDPOINT_STATES.map((key) => {
           const cfg = sCfg(key), isCurrent = cas.status === key;
           return (
             <div key={key} style={{ display: "flex", gap: 12, paddingBottom: 8 }}>
               <div style={{ flexShrink: 0 }}>
                 <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${isCurrent ? cfg.dot : "var(--adm-border)"}`, background: isCurrent ? cfg.bg : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {isCurrent ? icon : <span style={{ width: 6, height: 6, borderRadius: '50%', background: "var(--adm-border)" }} />}
+                  {isCurrent ? ENDPOINT_ICON[key] : <span style={{ width: 6, height: 6, borderRadius: '50%', background: "var(--adm-border)" }} />}
                 </div>
               </div>
               <div style={{ paddingTop: 2 }}>
@@ -239,22 +300,18 @@ const CaseTimeline = ({ cas, onUpdateStatus, onReferToPolice }) => {
       </div>
       {!isDeleted && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
-          {!isResolved && (
-            <button className="rd-btn" onClick={onUpdateStatus}
-              style={{ width: "100%", padding: "10px 0", borderRadius: 8, border: "none", background: "#C45E10", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'Lexend',sans-serif" }}>
-              <IcoCheck size={14} color="#fff" /> {isReferred ? "Change Status (Revert)" : "Update Status"}
-            </button>
-          )}
-          {canQuickRefer && (
-            <button className="rd-btn" onClick={onReferToPolice}
-              style={{ width: "100%", padding: "10px 0", borderRadius: 8, border: "2px solid #EF4444", background: "#FEF2F2", color: "#DC2626", fontSize: 13.5, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'Lexend',sans-serif" }}>
-              <IcoShield size={15} color="#DC2626" /> Refer to Authorities (Serious Case)
-            </button>
-          )}
+          <button className="rd-btn" onClick={onUpdateStatus}
+            style={{ width: "100%", padding: "10px 0", borderRadius: 8, border: "none", background: "#C45E10", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'Lexend',sans-serif" }}>
+            <IcoCheck size={14} color="#fff" /> {isEndpoint ? "Change Status" : "Update Status"}
+          </button>
         </div>
       )}
-      {isReferred && <div style={{ marginTop: 10, padding: "12px 14px", borderRadius: 4, background: "#FEF2F2", border: "1.5px solid #FECACA", display: "flex", gap: 10 }}><IcoShield size={15} color="#DC2626" /><div><p style={{ margin: "0 0 2px", fontSize: 13, fontWeight: 700, color: "#DC2626", fontFamily: "'Lexend',sans-serif" }}>Referred to Authorities</p><p style={{ margin: 0, fontSize: 12, color: "#991B1B", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>Use "Change Status" to revert if needed.</p></div></div>}
-      {isResolved && <div style={{ marginTop: 10, padding: "12px 14px", borderRadius: 4, background: "#ECFDF5", border: "1.5px solid #A7F3D0", display: "flex", gap: 10 }}><IcoCheck size={15} color="#059669" /><div><p style={{ margin: "0 0 2px", fontSize: 13, fontWeight: 700, color: "#059669", fontFamily: "'Lexend',sans-serif" }}>Case Resolved</p><p style={{ margin: 0, fontSize: 12, color: "#065F46", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>Successfully resolved at barangay level.</p></div></div>}
+      {isEndpoint && (() => { const n = ENDPOINT_NOTE[cas.status]; return (
+        <div style={{ marginTop: 10, padding: "12px 14px", borderRadius: 4, background: n.bg, border: `1.5px solid ${n.border}`, display: "flex", gap: 10 }}>
+          {ENDPOINT_ICON[cas.status]}
+          <div><p style={{ margin: "0 0 2px", fontSize: 13, fontWeight: 700, color: n.color, fontFamily: "'Lexend',sans-serif" }}>{n.title}</p><p style={{ margin: 0, fontSize: 12, color: n.sub, lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>{n.body}</p></div>
+        </div>
+      ); })()}
     </Card>
   );
 };
@@ -383,14 +440,12 @@ export default function ReportDetail() {
     finally { setStatusSaving(false); }
   };
 
-  const handleReferToPolice = async () => {
-    setStatusSaving(true);
+  const handleSaveTracking = async (weeks) => {
     try {
-      await api.patch(`/admin/cases/${id}/status`, { status: "referred_to_police" });
-      setCas(c => ({ ...c, status: "referred_to_police" }));
-      showToast("Case referred to authorities.");
-    } catch (err) { showToast(err.response?.data?.detail || "Failed.", false); }
-    finally { setStatusSaving(false); }
+      const res = await api.patch(`/admin/cases/${id}/summon-tracking`, { weeks });
+      setCas(c => ({ ...c, summon_tracking: res.data.summon_tracking || [] }));
+      showToast("Summon tracking saved.");
+    } catch (err) { showToast(err.response?.data?.detail || "Failed to save tracking.", false); throw err; }
   };
 
   const handleIncidentTypeSave = async (reportId) => {
@@ -444,7 +499,9 @@ export default function ReportDetail() {
   );
 
   const victim = cas.victim || {};
-  const reports = cas.reports || [];
+  // Newest report on top; number by chronological filing order (oldest = Report 1).
+  const reports = [...(cas.reports || [])].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  const reportNo = (idx) => reports.length - idx;
   const cfg = sCfg(cas.status);
   const isMinor = victim.is_minor || false;
   const victimName = cas.victim_name || [victim.first_name, victim.middle_name, victim.last_name].filter(Boolean).join(" ") || "-";
@@ -563,7 +620,7 @@ export default function ReportDetail() {
                   <button
                     key={r.id}
                     type="button"
-                    onClick={() => document.getElementById(`report-${idx + 1}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    onClick={() => document.getElementById(`report-${reportNo(idx)}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
                     style={{
                       padding: "6px 12px",
                       borderRadius: 9999,
@@ -579,21 +636,23 @@ export default function ReportDetail() {
                     onMouseEnter={(e) => { e.currentTarget.style.background = "#9B4DAB"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#9B4DAB"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = "#F3E5F5"; e.currentTarget.style.color = "#4A1259"; e.currentTarget.style.borderColor = "#E1BEE7"; }}
                   >
-                    Report {idx + 1}
+                    Report {reportNo(idx)}
                   </button>
                 ))}
               </div>
             )}
 
             {reports.map((r, idx) => (
-              <div key={r.id} id={`report-${idx + 1}`} style={{ scrollMarginTop: 80 }}>
-                <Card title={`Report ${idx + 1} - Testimony`} icon={<IcoClip size={16} color="#9B4DAB" />}
+              <div key={r.id} id={`report-${reportNo(idx)}`} style={{ scrollMarginTop: 80 }}>
+                <Card title={`Report ${reportNo(idx)}`} icon={<IcoClip size={16} color="#9B4DAB" />}
                   headerRight={
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 11.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
-                        {fmt(r.created_at)}
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontFamily: "'Lexend',sans-serif" }}>
+                        <span style={{ background: "var(--adm-primary-bg)", color: "#C45E10", fontWeight: 700, padding: "3px 10px", borderRadius: 9999, border: "1px solid #FFCC99", whiteSpace: "nowrap" }}>
+                          Submitted: {fmt(r.created_at)}
+                        </span>
                         {r.updated_at && new Date(r.updated_at) - new Date(r.created_at) > 60000 && (
-                          <span style={{ marginLeft: 6, fontSize: 10.5, color: "#9B4DAB", fontWeight: 600 }}>
+                          <span style={{ fontSize: 10.5, color: "#9B4DAB", fontWeight: 600 }}>
                             · edited {fmt(r.updated_at)}
                           </span>
                         )}
@@ -706,7 +765,7 @@ export default function ReportDetail() {
                 <InfoRow label="Case Number" value={cas.case_number} mono />
                 <InfoRow label="Current Status" value={cas.status_display || cfg.label} />
                 <InfoRow label="Respondent" value={cas.offender_name} />
-                <InfoRow label="Date Filed" value={fmt(cas.created_at)} />
+                <InfoRow label="Date Submitted" value={fmt(cas.created_at)} highlight />
                 <InfoRow label="Last Updated" value={fmt(cas.updated_at)} />
                 {cas.admin_id && <InfoRow label="Handled By" value={cas.handled_by || `Admin #${cas.admin_id}`} />}
                 <InfoRow label="Total Reports" value={`${reports.length} ${reports.length === 1 ? "testimony" : "testimonies"}`} />
@@ -736,7 +795,7 @@ export default function ReportDetail() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <CaseTimeline cas={cas} onUpdateStatus={() => setShowStatusModal(true)} onReferToPolice={handleReferToPolice} />
+            <CaseTimeline cas={cas} onUpdateStatus={() => setShowStatusModal(true)} onSaveTracking={handleSaveTracking} />
 
             {isSuperAdmin && !cas.is_deleted && (
               <Card title="Message to Victim" icon={<IcoClip size={16} color="#F47920" />}>

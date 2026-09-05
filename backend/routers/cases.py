@@ -19,14 +19,21 @@ STATUS_DISPLAY = {
     "submitted":             "Submitted",
     "awaiting_onsite_visit": "Awaiting Onsite Visit",
     "under_process":         "Under Process",
-    "summon_issued":         "Summon Letter Issued",
-    "summon_acknowledged":   "Summon Acknowledged",
+    "summon_issued":         "Summons Issued",
+    "summon_acknowledged":   "Respondent Appeared",
     "resolved":              "Resolved",
-    "referred_to_police":    "Referred to Police",
+    "cfa_issued":            "CFA Issued",
+    "endorsed":              "Endorsed",
+    "referred_to_police":    "Referred to Authorities",
 }
 
 # Statuses that are "closed" — no merging into these
-CLOSED_STATUSES = {ReportStatus.resolved, ReportStatus.referred_to_police}
+CLOSED_STATUSES = {
+    ReportStatus.resolved,
+    ReportStatus.cfa_issued,
+    ReportStatus.endorsed,
+    ReportStatus.referred_to_police,
+}
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -78,6 +85,7 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
         "offender_name":       decrypt(c.offender_name),
         "status":              raw_status,
         "status_display":      STATUS_DISPLAY.get(raw_status, raw_status),
+        "summon_tracking":     c.summon_tracking or [],
         "has_status_update":   c.has_status_update,
         "admin_message":       c.admin_message,
         "admin_message_at":    c.admin_message_at,

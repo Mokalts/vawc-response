@@ -113,7 +113,7 @@ function SidebarMenu({ isOpen, onClose }) {
 
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, padding: '0 20px 24px' }}>
                     <img src="/barangay-logo.png" alt="Barangay Palanginan Seal"
-                         style={{ width: 42, height: 42, objectFit: 'contain', opacity: 0.95 }}
+                         style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', background: '#fff', border: '1.5px solid #FFCC99', display: 'block' }}
                          onError={(e) => { e.target.style.display = 'none'; }} />
                     <p style={{ ...S.footerNote, padding: 0 }}>Barangay Palanginan, Iba, Zambales</p>
                 </div>

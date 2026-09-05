@@ -37,6 +37,7 @@ function Login() {
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [waking, setWaking] = useState(false);
     const [error, setError] = useState('');
     const [formData, setFormData] = useState({ username: '', password: '' });
 
@@ -47,13 +48,32 @@ function Login() {
     useEffect(() => {
         const base = api.defaults.baseURL;
         if (base) {
-            // Hit /health/db (runs SELECT 1) so BOTH the server and the DB wake up.
-            try { fetch(base + '/health/db', { method: 'GET', mode: 'no-cors', cache: 'no-store' }).catch(() => {}); } catch (e) {}
+            // Hit the ROOT path to wake the server. (An ad blocker / redirect-blocker
+            // extension may flag "/health/db".) The DB wakes on the first login query,
+            // and the login call below retries automatically while it warms up.
+            try { fetch(base + '/', { method: 'GET', mode: 'no-cors', cache: 'no-store' }).catch(() => {}); } catch (e) {}
         }
     }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    // Log in with automatic retry on cold-start. Render's free tier sleeps after
+    // ~15 min idle; the first request can time out at the network level while the
+    // server wakes. A network error (no err.response) is NOT a bad password, so we
+    // wait and retry a few times before giving up.
+    const loginWithRetry = async (payload, attempts = 3) => {
+        for (let i = 0; i < attempts; i++) {
+            try {
+                return await api.post("/admin/auth/login", payload, { timeout: 60000 });
+            } catch (err) {
+                if (err.response) throw err;           // real server answer — don't retry
+                if (i === attempts - 1) throw err;     // out of retries
+                setWaking(true);
+                await new Promise(r => setTimeout(r, 3000));
+            }
+        }
     };
 
     const handleSubmit = async () => {
@@ -62,9 +82,10 @@ function Login() {
             return;
         }
         setLoading(true);
+        setWaking(false);
         setError('');
         try {
-            const res = await api.post("/admin/auth/login", {
+            const res = await loginWithRetry({
                 username: formData.username,
                 password: formData.password,
             });
@@ -78,14 +99,19 @@ function Login() {
                 navigate('/dashboard');
             }
         } catch (err) {
-            const detail = err.response?.data?.detail;
-            if (err.response?.status === 429) {
-                setError(detail || "Too many login attempts. Please wait and try again.");
+            if (!err.response) {
+                setError("Cannot reach the server. It may be waking up (this can take up to a minute on the first try). Please wait a moment and try again.");
             } else {
-                setError(Array.isArray(detail) ? detail.map(e => e.msg).join(', ') : (detail || "Invalid username or password."));
+                const detail = err.response?.data?.detail;
+                if (err.response?.status === 429) {
+                    setError(detail || "Too many login attempts. Please wait and try again.");
+                } else {
+                    setError(Array.isArray(detail) ? detail.map(e => e.msg).join(', ') : (detail || "Invalid username or password."));
+                }
             }
         } finally {
             setLoading(false);
+            setWaking(false);
         }
     };
 
@@ -99,7 +125,7 @@ function Login() {
                 <div style={S.formHeader}>
                     <div style={S.logoWrap}>
                         <img src="/barangay-logo.png" alt="Barangay Palanginan Seal"
-                             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                              onError={(e) => { e.target.style.display = 'none'; }} />
                     </div>
                     <h2 style={S.formTitle}>VAWC-Response</h2>
@@ -165,7 +191,7 @@ function Login() {
                     {loading ? (
                         <span style={S.loadingRow}>
                             <span style={S.spinner} />
-                            Signing in...
+                            {waking ? 'Waking up server...' : 'Signing in...'}
                         </span>
                     ) : 'Sign In'}
                 </button>
@@ -191,7 +217,7 @@ const S = {
     // Form card
     formCard: { backgroundColor: '#fff', borderRadius: 22, padding: '36px 30px', width: '100%', maxWidth: '420px', boxShadow: '0 12px 36px rgba(244,121,32,0.13)', border: '1px solid #FFF0E1' },
     formHeader: { textAlign: 'center', marginBottom: '26px' },
-    logoWrap: { width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', border: '3px solid #FFCC99', boxShadow: '0 6px 20px rgba(244,121,32,0.18)', overflow: 'hidden', padding: 4, boxSizing: 'border-box' },
+    logoWrap: { width: '108px', height: '108px', borderRadius: '50%', backgroundColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', border: '3px solid #FFCC99', boxShadow: '0 6px 20px rgba(244,121,32,0.18)', overflow: 'hidden', padding: 0, boxSizing: 'border-box' },
     formTitle: { fontSize: '24px', fontWeight: '800', color: '#C45E10', marginBottom: '4px', fontFamily: FF, letterSpacing: '-0.5px' },
     formSub: { fontSize: '13px', fontWeight: '600', color: '#9B4DAB', fontFamily: FF },
 

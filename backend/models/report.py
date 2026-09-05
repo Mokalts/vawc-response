@@ -9,10 +9,12 @@ class ReportStatus(str, enum.Enum):
     submitted             = "submitted"
     awaiting_onsite_visit = "awaiting_onsite_visit"
     under_process         = "under_process"
-    summon_issued         = "summon_issued"
-    summon_acknowledged   = "summon_acknowledged"
-    resolved              = "resolved"
-    referred_to_police    = "referred_to_police"
+    summon_issued         = "summon_issued"          # display: "Summons Issued"
+    summon_acknowledged   = "summon_acknowledged"    # display: "Respondent Appeared"
+    resolved              = "resolved"               # endpoint: settled at barangay
+    cfa_issued            = "cfa_issued"             # endpoint: Certificate to File Action
+    endorsed              = "endorsed"               # endpoint: Endorsement Letter to WCPD/Prosecutor
+    referred_to_police    = "referred_to_police"     # legacy (kept for old data)
 
 
 class Report(Base):

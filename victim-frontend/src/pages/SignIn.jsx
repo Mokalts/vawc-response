@@ -67,6 +67,7 @@ function SignIn() {
 
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [waking, setWaking] = useState(false);
     const [error, setError] = useState('');
     const [form, setForm] = useState({ email: '', password: '' });
     const [recovery, setRecovery] = useState(false);
@@ -83,8 +84,11 @@ function SignIn() {
         // so the first sign-in of the day is fast instead of timing out.
         const base = api.defaults.baseURL;
         if (base) {
-            // Hit /health/db (runs SELECT 1) so BOTH the server and the DB wake up.
-            try { fetch(base + '/health/db', { method: 'GET', mode: 'no-cors', cache: 'no-store' }).catch(() => {}); } catch (e) {}
+            // Wake the backend (Render free tier cold-starts after ~15 min idle).
+            // Hit the ROOT path (an ad blocker/redirect-blocker extension may flag
+            // "/health/db"); the DB itself wakes on the first login query, and the
+            // login call below retries automatically while it warms up.
+            try { fetch(base + '/', { method: 'GET', mode: 'no-cors', cache: 'no-store' }).catch(() => {}); } catch (e) {}
         }
     }, []);
 
@@ -105,25 +109,47 @@ function SignIn() {
 
     const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
 
+    // Log in with automatic retry on cold-start. Render's free tier sleeps after
+    // ~15 min idle; the first request can time out at the network level while the
+    // server wakes. A network error (no err.response) is NOT a bad password, so we
+    // wait and retry a few times before giving up.
+    const loginWithRetry = async (payload, attempts = 3) => {
+        for (let i = 0; i < attempts; i++) {
+            try {
+                return await api.post("/auth/login", payload, { timeout: 60000 });
+            } catch (err) {
+                if (err.response) throw err;           // real server answer (401/429/etc.) — don't retry
+                if (i === attempts - 1) throw err;     // out of retries — surface the network error
+                setWaking(true);
+                await new Promise(r => setTimeout(r, 3000));  // give the server time to wake
+            }
+        }
+    };
+
     const handleSubmit = async () => {
         if (!form.email || !form.password) { setError("Please enter your email and password."); return; }
-        setLoading(true); setError(''); setRecovery(false);
+        setLoading(true); setError(''); setRecovery(false); setWaking(false);
         try {
-            const res = await api.post("/auth/login", { email: form.email, password: form.password });
+            const res = await loginWithRetry({ email: form.email, password: form.password });
             localStorage.setItem("token", res.data.access_token);
             localStorage.setItem("user", JSON.stringify(res.data.user));
             navigate('/home');
         } catch (err) {
-            const raw = err.response?.data?.detail;
-            const status = err.response?.status;
-            const detail = Array.isArray(raw) ? raw.map(e => e.msg).join(', ') : raw;
-            if (status === 429) setError(detail || "Too many failed attempts. Please try again later.");
-            else if (detail === "account_deleted") setRecovery("recoverable");
-            else if (detail === "account_permanently_deleted") setRecovery("permanent");
-            else if (detail === "unverified_pending") setRecovery("unverified_pending");
-            else if (detail === "unverified_expired") setRecovery("unverified_expired");
-            else setError(detail || "Invalid email or password.");
-        } finally { setLoading(false); }
+            if (!err.response) {
+                // Network error / timeout — server unreachable, not a credential problem.
+                setError("Cannot reach the server. It may be waking up (this can take up to a minute on the first try). Please wait a moment and try again.");
+            } else {
+                const raw = err.response?.data?.detail;
+                const status = err.response?.status;
+                const detail = Array.isArray(raw) ? raw.map(e => e.msg).join(', ') : raw;
+                if (status === 429) setError(detail || "Too many failed attempts. Please try again later.");
+                else if (detail === "account_deleted") setRecovery("recoverable");
+                else if (detail === "account_permanently_deleted") setRecovery("permanent");
+                else if (detail === "unverified_pending") setRecovery("unverified_pending");
+                else if (detail === "unverified_expired") setRecovery("unverified_expired");
+                else setError(detail || "Invalid email or password.");
+            }
+        } finally { setLoading(false); setWaking(false); }
     };
 
     const handleRecover = async () => {
@@ -201,7 +227,7 @@ function SignIn() {
                 </div>
 
                 <button type="button" className="vi-btn" onClick={handleSubmit} style={{ ...S.submitBtn, opacity: loading ? 0.75 : 1 }} disabled={loading}>
-                    {loading ? <><Spinner /> Signing in…</> : 'Sign In'}
+                    {loading ? <><Spinner /> {waking ? 'Waking up server…' : 'Signing in…'}</> : 'Sign In'}
                 </button>
 
                 {/* Recovery states */}
@@ -256,7 +282,7 @@ function SignIn() {
 const S = {
     page: { minHeight: '100vh', background: 'var(--page-grad)', color: 'var(--text)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'Lexend', sans-serif" },
     brand: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 3, marginBottom: 22, width: '100%', maxWidth: 420 },
-    brandIcon: { width: 76, height: 76, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: 'var(--surface)', border: '3px solid #FFCC99', boxShadow: '0 6px 20px rgba(244,121,32,0.18)', marginBottom: 10 },
+    brandIcon: { width: 104, height: 104, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: '#fff', border: '3px solid #FFCC99', boxShadow: '0 6px 20px rgba(244,121,32,0.18)', marginBottom: 12 },
     brandTitle: { fontSize: 24, fontWeight: 800, color: 'var(--accent-text)', margin: 0, fontFamily: "'Lexend', sans-serif", letterSpacing: '-0.5px' },
     brandSub: { fontSize: 12.5, fontWeight: 600, color: '#B45309', margin: 0, fontFamily: "'Lexend', sans-serif" },
     brandTag: { fontSize: 12.5, color: 'var(--text-muted)', margin: '5px 0 0', fontFamily: "'Lexend', sans-serif" },

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Text, Enum as SAEnum
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Text, JSON, Enum as SAEnum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from database import Base
@@ -24,6 +24,10 @@ class Case(Base):
     )
 
     has_status_update = Column(Boolean, default=False, nullable=False)
+
+    # 3-week warrant-officer compliance tracking under "Summons Issued".
+    # List of up to 3 entries: [{"week": 1, "date": "2026-09-05", "note": "..."}]
+    summon_tracking   = Column(JSON, default=list)
 
     # Free-text message from the Super Admin to the victim (e.g., hearing notice)
     admin_message     = Column(Text, nullable=True)

@@ -296,7 +296,7 @@ const S = {
     topAccent: { height: 3, backgroundColor: COLORS.primary, flexShrink: 0 },
 
     logoArea: { display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 18px' },
-    logoIconWrap: { width: 56, height: 56, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', padding: 0, boxSizing: 'border-box', background: 'transparent', border: 'none' },
+    logoIconWrap: { width: 64, height: 64, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', padding: 0, boxSizing: 'border-box', background: '#fff', border: '2px solid #FFCC99' },
     logoTitle: { fontSize: 13.5, fontWeight: 700, color: '#FFFFFF', fontFamily: TEXT.font, letterSpacing: '0.2px' },
     logoSub: { fontSize: 9.5, color: '#E1BEE7', textTransform: 'uppercase', letterSpacing: '0.8px', marginTop: 2, fontFamily: TEXT.font },
 
@@ -332,7 +332,7 @@ const S = {
 
     // Content
     content: { marginLeft: 252, flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' },
-    main: { flex: 1, padding: '28px 32px', maxWidth: 1400 },
+    main: { flex: 1, padding: '28px 32px', maxWidth: 1400, width: '100%', marginLeft: 'auto', marginRight: 'auto', boxSizing: 'border-box' },
 };
 
 export default Sidebar;

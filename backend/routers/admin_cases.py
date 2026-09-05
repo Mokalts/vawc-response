@@ -22,18 +22,22 @@ STATUS_DISPLAY = {
     "submitted":             "Submitted",
     "awaiting_onsite_visit": "Awaiting Onsite Visit",
     "under_process":         "Under Process",
-    "summon_issued":         "Summon Letter Issued",
-    "summon_acknowledged":   "Summon Acknowledged",
+    "summon_issued":         "Summons Issued",
+    "summon_acknowledged":   "Respondent Appeared",
     "resolved":              "Resolved",
+    "cfa_issued":            "CFA Issued",
+    "endorsed":              "Endorsed",
     "referred_to_police":    "Referred to Authorities",
 }
 
 STATUS_EMAIL_MSG = {
     "awaiting_onsite_visit": "The barangay VAWC officer will be scheduling an onsite visit to follow up on your case.",
     "under_process":         "Your case is now being processed by the barangay VAWC office following your visit.",
-    "summon_issued":         "A summon letter has been issued to the respondent in your case.",
-    "summon_acknowledged":   "The respondent has acknowledged the summon letter.",
+    "summon_issued":         "Summons have been issued to the respondent in your case.",
+    "summon_acknowledged":   "The respondent has appeared before the barangay for your case.",
     "resolved":              "Your case has been successfully resolved at the barangay level.",
+    "cfa_issued":            "A Certificate to File Action has been issued for your case, as it could not be resolved at the barangay level.",
+    "endorsed":              "Your case has been endorsed to the appropriate authorities (WCPD/Prosecutor) for further action.",
     "referred_to_police":    "Your case has been referred to the appropriate authorities for further action.",
 }
 
@@ -46,6 +50,14 @@ VALID_INCIDENT_TYPES = [
 # ── Schemas ───────────────────────────────────────────────────────────────────
 class StatusPayload(BaseModel):
     status: str
+
+class SummonWeek(BaseModel):
+    week: int
+    date: Optional[str] = None
+    note: Optional[str] = None
+
+class SummonTrackingPayload(BaseModel):
+    weeks: list[SummonWeek]
 
 class DeletePayload(BaseModel):
     reason: Optional[str] = None
@@ -106,7 +118,7 @@ def _serialize_case(c: Case, *, include_reports: bool = False, is_super_admin: b
 
 def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
     raw_status = c.status.value if c.status else None
-    handled_by = c.handled_by.username if c.handled_by else None
+    handled_by = c.handled_by.full_name if c.handled_by else None
     unread_reports = [r for r in c.reports if not r.is_read]
 
     data = {
@@ -118,6 +130,7 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
         "offender_name":       decrypt(c.offender_name),
         "status":              raw_status,
         "status_display":      STATUS_DISPLAY.get(raw_status, raw_status),
+        "summon_tracking":     c.summon_tracking or [],
         "has_status_update":   c.has_status_update,
         "admin_message":       c.admin_message,
         "admin_message_at":    c.admin_message_at,
@@ -496,6 +509,34 @@ def update_case_status(
         "status":         case.status.value,
         "status_display": STATUS_DISPLAY.get(case.status.value, case.status.value),
     }
+
+
+# ── PATCH /admin/cases/{case_id}/summon-tracking ──────────────────────────────
+@router.patch("/{case_id}/summon-tracking")
+def update_summon_tracking(
+    case_id: int,
+    payload: SummonTrackingPayload,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Save the 3-week warrant-officer compliance tracking (date + note per week)."""
+    case = db.query(Case).filter(
+        Case.id == case_id, Case.is_deleted == False
+    ).first()
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found.")
+
+    # Keep only weeks 1-3, store as plain dicts.
+    weeks = [
+        {"week": w.week, "date": w.date or None, "note": (w.note or "").strip() or None}
+        for w in payload.weeks if 1 <= w.week <= 3
+    ]
+    weeks.sort(key=lambda w: w["week"])
+    case.summon_tracking = weeks
+    case.updated_at       = datetime.utcnow()
+    db.commit()
+
+    return {"message": "Summon tracking updated.", "summon_tracking": weeks}
 
 
 # ── PATCH /admin/cases/{case_id}/reports/{report_id}/incident-type ────────────

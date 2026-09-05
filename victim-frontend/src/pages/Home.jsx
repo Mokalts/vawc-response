@@ -144,7 +144,7 @@ function Home() {
                 <div style={S.topBarLeft}>
                     <div style={S.logoIcon}>
                         <img src="/barangay-logo.png" alt="Barangay Palanginan Seal"
-                             style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                              onError={(e) => { e.target.style.display = 'none'; }} />
                     </div>
                     <span style={S.appName}>VAWC-Response</span>
@@ -278,7 +278,7 @@ const S = {
     page:        { minHeight: '100vh', background: 'var(--page-grad)', display: 'flex', flexDirection: 'column', paddingBottom: 92, fontFamily: FF, color: 'var(--text)' },
     topBar:      { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '13px 18px', backgroundColor: 'var(--topbar)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 },
     topBarLeft:  { display: 'flex', alignItems: 'center', gap: 10 },
-    logoIcon:    { width: 40, height: 40, borderRadius: '50%', backgroundColor: 'var(--surface)', border: '2px solid #FFCC99', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 3, boxSizing: 'border-box', overflow: 'hidden' },
+    logoIcon:    { width: 46, height: 46, borderRadius: '50%', backgroundColor: '#fff', border: '2px solid #FFCC99', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, boxSizing: 'border-box', overflow: 'hidden' },
     appName:     { fontSize: 17, fontWeight: 700, color: 'var(--accent-text)', fontFamily: FF, letterSpacing: '-0.3px' },
     menuBtn:     { width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--surface-tint)', border: '1px solid var(--border)', color: 'var(--accent-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
     notifBtn:    { position: 'relative', width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--surface)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },

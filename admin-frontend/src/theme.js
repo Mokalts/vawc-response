@@ -50,10 +50,12 @@ export const COLORS = {
   status: {
     submitted:             { label: "Submitted",             color: "#BE185D", bg: "#FDF2F8", border: "#FBCFE8", dot: "#EC4899" },
     awaiting_onsite_visit: { label: "Awaiting Onsite Visit", color: "#92400E", bg: "#FFFBEB", border: "#FDE68A", dot: "#F59E0B" },
-    summon_issued:         { label: "Summon Letter Issued",  color: "#C45E10", bg: "#FFF3E0", border: "#FFCC99", dot: "#F47920" },
-    summon_acknowledged:   { label: "Summon Acknowledged",   color: "#4A1259", bg: "#F3E5F5", border: "#E1BEE7", dot: "#9B4DAB" },
+    summon_issued:         { label: "Summons Issued",        color: "#C45E10", bg: "#FFF3E0", border: "#FFCC99", dot: "#F47920" },
+    summon_acknowledged:   { label: "Respondent Appeared",   color: "#4A1259", bg: "#F3E5F5", border: "#E1BEE7", dot: "#9B4DAB" },
     resolved:              { label: "Resolved",              color: "#065F46", bg: "#ECFDF5", border: "#A7F3D0", dot: "#10B981" },
-    referred_to_police:    { label: "Referred to Police",    color: "#991B1B", bg: "#FEF2F2", border: "#FECACA", dot: "#EF4444" },
+    cfa_issued:            { label: "CFA Issued",            color: "#92400E", bg: "#FFFBEB", border: "#FDE68A", dot: "#D97706" },
+    endorsed:              { label: "Endorsed",              color: "#991B1B", bg: "#FEF2F2", border: "#FECACA", dot: "#EF4444" },
+    referred_to_police:    { label: "Referred to Authorities", color: "#991B1B", bg: "#FEF2F2", border: "#FECACA", dot: "#EF4444" },
   },
 
   // Utility

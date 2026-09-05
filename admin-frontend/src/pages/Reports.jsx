@@ -8,9 +8,11 @@ const STATUS_CONFIG = {
   submitted: { label: "Submitted", color: "#BE185D", bg: "#FDF2F8", dot: "#EC4899" },
   awaiting_onsite_visit: { label: "Awaiting Onsite Visit", color: "#D97706", bg: "#FFFBEB", dot: "#F59E0B" },
   under_process: { label: "Under Process", color: "#0E7490", bg: "#ECFEFF", dot: "#06B6D4" },
-  summon_issued: { label: "Summon Letter Issued", color: "#C45E10", bg: "#FFF3E0", dot: "#F47920" },
-  summon_acknowledged: { label: "Summon Acknowledged", color: "#9B4DAB", bg: "#F3E5F5", dot: "#9B4DAB" },
+  summon_issued: { label: "Summons Issued", color: "#C45E10", bg: "#FFF3E0", dot: "#F47920" },
+  summon_acknowledged: { label: "Respondent Appeared", color: "#9B4DAB", bg: "#F3E5F5", dot: "#9B4DAB" },
   resolved: { label: "Resolved", color: "#059669", bg: "#ECFDF5", dot: "#10B981" },
+  cfa_issued: { label: "CFA Issued", color: "#B45309", bg: "#FFFBEB", dot: "#D97706" },
+  endorsed: { label: "Endorsed", color: "#DC2626", bg: "#FEF2F2", dot: "#EF4444" },
   referred_to_police: { label: "Referred to Authorities", color: "#DC2626", bg: "#FEF2F2", dot: "#EF4444" },
 };
 const sCfg = (s) => STATUS_CONFIG[s] || { label: s || "Unknown", color: "#64748B", bg: "var(--adm-border)", dot: "#CBD5E1" };

@@ -101,6 +101,24 @@ const CSS = `
     .pd-input-long { min-width: 160px; }
     .pd-input:focus { background: #FFF3E0; }
 
+    /* Editable inline name/year fields (look like the surrounding text) */
+    .pd-editname {
+        border: none;
+        border-bottom: 1px dashed #B0B0B0;
+        background: transparent;
+        padding: 0 2px;
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: 700;
+        color: inherit;
+        text-align: center;
+        outline: none;
+        min-width: 200px;
+    }
+    .pd-editname.pd-inline { min-width: 140px; text-align: left; }
+    .pd-editname:focus { background: #FFF3E0; border-bottom-color: #C45E10; }
+    .pd-edityear { width: 3.6em; min-width: 0; text-align: center; }
+
     /* Signatures */
     .pd-sign-row { display: flex; justify-content: flex-end; margin-top: 28px; }
     .pd-sign-col { text-align: center; min-width: 240px; }
@@ -133,6 +151,8 @@ const CSS = `
         /* padding moved here so the document keeps its margins without the browser header/footer */
         .pd-paper { box-shadow: none !important; margin: 0 !important; padding: 0.75in 0.85in !important; max-width: none !important; min-height: 0 !important; }
         .pd-input { border-bottom: 1.5px solid #000 !important; background: transparent !important; }
+        .pd-editname { border-bottom: none !important; background: transparent !important; }
+        .pd-editname.pd-name { text-decoration: underline; }
     }
 `;
 
@@ -171,7 +191,7 @@ const SummonLetter = ({ cas, victim, fields, setFields }) => {
             </p>
 
             <div className="pd-block">
-                <p className="pd-name">{victim.full_name || "-"}</p>
+                <input className="pd-name pd-editname" value={fields.complainantName} onChange={e => setFields({ ...fields, complainantName: e.target.value })} placeholder="complainant name" />
                 <p>{victim.address || "-"}</p>
                 <p className="pd-label">(Complainant/s)</p>
             </div>
@@ -179,7 +199,7 @@ const SummonLetter = ({ cas, victim, fields, setFields }) => {
             <p className="pd-against">-against-</p>
 
             <div className="pd-block">
-                <p className="pd-name">{cas.offender_name || "-"}</p>
+                <input className="pd-name pd-editname" value={fields.respondentName} onChange={e => setFields({ ...fields, respondentName: e.target.value })} placeholder="respondent name" />
                 <input className="pd-input pd-input-long" value={fields.respondentAddress} onChange={e => setFields({ ...fields, respondentAddress: e.target.value })} placeholder="respondent address" style={{ display: "block", width: "60%", textAlign: "left", marginBottom: 4 }} />
                 <p className="pd-label">(Respondent/s)</p>
             </div>
@@ -189,7 +209,7 @@ const SummonLetter = ({ cas, victim, fields, setFields }) => {
             <div className="pd-to">
                 <div className="pd-to-label">TO:</div>
                 <div>
-                    <p className="pd-name">{cas.offender_name || "-"}</p>
+                    <input className="pd-name pd-editname" value={fields.respondentName} onChange={e => setFields({ ...fields, respondentName: e.target.value })} placeholder="respondent name" />
                     <p>{fields.respondentAddress || "(respondent address)"}</p>
                     <p className="pd-label">(Respondent/s)</p>
                 </div>
@@ -198,7 +218,7 @@ const SummonLetter = ({ cas, victim, fields, setFields }) => {
             <p className="pd-para">
                 You are hereby summoned to appear before me in person together with your witnesses on the{" "}
                 <input className="pd-input" value={fields.hearingDay} onChange={e => setFields({ ...fields, hearingDay: e.target.value })} placeholder="day" /> day of{" "}
-                <input className="pd-input" value={fields.hearingMonth} onChange={e => setFields({ ...fields, hearingMonth: e.target.value })} placeholder="month" />, {today.year} at{" "}
+                <input className="pd-input" value={fields.hearingMonth} onChange={e => setFields({ ...fields, hearingMonth: e.target.value })} placeholder="month" />, <input className="pd-input pd-edityear" value={fields.year} onChange={e => setFields({ ...fields, year: e.target.value })} /> at{" "}
                 <input className="pd-input" value={fields.hearingTime} onChange={e => setFields({ ...fields, hearingTime: e.target.value })} placeholder="time" /> o'clock in the{" "}
                 <input className="pd-input" value={fields.hearingPeriod} onChange={e => setFields({ ...fields, hearingPeriod: e.target.value })} placeholder="morning/afternoon" /> then and there to answer to a complaint made before me, a copy of which attached here to for mediation/conciliation of your dispute with the complainant/s.
             </p>
@@ -213,13 +233,13 @@ const SummonLetter = ({ cas, victim, fields, setFields }) => {
 
             <p style={{ marginTop: 14 }}>
                 This <input className="pd-input" value={fields.issueDay} onChange={e => setFields({ ...fields, issueDay: e.target.value })} placeholder="day" /> day of{" "}
-                <input className="pd-input" value={fields.issueMonth} onChange={e => setFields({ ...fields, issueMonth: e.target.value })} placeholder="month" />, {today.year}.
+                <input className="pd-input" value={fields.issueMonth} onChange={e => setFields({ ...fields, issueMonth: e.target.value })} placeholder="month" />, <input className="pd-input pd-edityear" value={fields.year} onChange={e => setFields({ ...fields, year: e.target.value })} />.
             </p>
 
             <div className="pd-sign-row">
                 <div className="pd-sign-col">
                     <div style={{ height: 36 }} />
-                    <p className="pd-sign-name">{OFFICERS.vawc_officer.name}</p>
+                    <p className="pd-sign-name"><input className="pd-editname" value={fields.officerName} onChange={e => setFields({ ...fields, officerName: e.target.value })} placeholder="VAWC officer name" style={{ fontWeight: 700, textAlign: "center" }} /></p>
                     <p className="pd-sign-title">{OFFICERS.vawc_officer.title}</p>
                 </div>
             </div>
@@ -253,7 +273,7 @@ const CertificateFileAction = ({ cas, victim, fields, setFields }) => {
             </p>
 
             <div className="pd-block">
-                <p className="pd-name">{victim.full_name || "-"}</p>
+                <input className="pd-name pd-editname" value={fields.complainantName} onChange={e => setFields({ ...fields, complainantName: e.target.value })} placeholder="complainant name" />
                 <p>{victim.address || "-"}</p>
                 <p className="pd-label">Complainant/s</p>
             </div>
@@ -261,7 +281,7 @@ const CertificateFileAction = ({ cas, victim, fields, setFields }) => {
             <p className="pd-against">-Against-</p>
 
             <div className="pd-block">
-                <p className="pd-name">{cas.offender_name || "-"}</p>
+                <input className="pd-name pd-editname" value={fields.respondentName} onChange={e => setFields({ ...fields, respondentName: e.target.value })} placeholder="respondent name" />
                 <input className="pd-input pd-input-long" value={fields.respondentAddress} onChange={e => setFields({ ...fields, respondentAddress: e.target.value })} placeholder="respondent address" style={{ display: "block", width: "60%", textAlign: "left", marginBottom: 4 }} />
                 <p className="pd-label">Respondent/s</p>
             </div>
@@ -302,7 +322,7 @@ const CertificateFileAction = ({ cas, victim, fields, setFields }) => {
             </ul>
 
             <p>Issued this <input className="pd-input" value={fields.issueDay} onChange={e => setFields({ ...fields, issueDay: e.target.value })} placeholder="day" /> day of{" "}
-                <input className="pd-input" value={fields.issueMonth} onChange={e => setFields({ ...fields, issueMonth: e.target.value })} placeholder="month" />, {today.year}.
+                <input className="pd-input" value={fields.issueMonth} onChange={e => setFields({ ...fields, issueMonth: e.target.value })} placeholder="month" />, <input className="pd-input pd-edityear" value={fields.year} onChange={e => setFields({ ...fields, year: e.target.value })} />.
             </p>
 
             <div className="pd-cfa-signs">
@@ -341,12 +361,12 @@ const EndorsementLetter = ({ cas, victim, fields, setFields }) => {
             <DocHeader office="OFFICE OF THE PUNONG BARANGAY" />
 
             <h2 className="pd-endorsement-title">1<sup>ST</sup> Endorsement</h2>
-            <p className="pd-endorsement-date">{`${fields.endorsementMonth || monthNames[new Date().getMonth()]} ${fields.endorsementDay || new Date().getDate()}, ${today.year}`}</p>
+            <p className="pd-endorsement-date">{`${fields.endorsementMonth || monthNames[new Date().getMonth()]} ${fields.endorsementDay || new Date().getDate()}, ${fields.year}`}</p>
 
             <p className="pd-para" style={{ textIndent: "2em", marginTop: 14 }}>
                 Respectfully endorsed to the <strong>{POLICE_REFERRAL}</strong> the attached blotter on the complaint of{" "}
-                <span className="pd-name">{victim.full_name || "-"}</span> of <span className="pd-name">{victim.address || "-"}</span>{" "}
-                against the respondent <span className="pd-name">{cas.offender_name || "-"}</span> of{" "}
+                <input className="pd-name pd-editname pd-inline" value={fields.complainantName} onChange={e => setFields({ ...fields, complainantName: e.target.value })} placeholder="complainant" /> of <span className="pd-name">{victim.address || "-"}</span>{" "}
+                against the respondent <input className="pd-name pd-editname pd-inline" value={fields.respondentName} onChange={e => setFields({ ...fields, respondentName: e.target.value })} placeholder="respondent" /> of{" "}
                 <input className="pd-input pd-input-long" value={fields.respondentAddress} onChange={e => setFields({ ...fields, respondentAddress: e.target.value })} placeholder="respondent address" />{" "}
                 for <span className="pd-name" style={{ textTransform: "uppercase" }}>{fields.caseFor || "-"}</span>.
             </p>
@@ -354,7 +374,7 @@ const EndorsementLetter = ({ cas, victim, fields, setFields }) => {
             <div style={{ marginTop: 32 }}>
                 <p style={{ margin: 0, fontSize: 12.5 }}>Endorsement Date:</p>
                 <input className="pd-input" value={fields.endorsementDay} onChange={e => setFields({ ...fields, endorsementDay: e.target.value })} placeholder="day" />{" "}
-                <input className="pd-input" value={fields.endorsementMonth} onChange={e => setFields({ ...fields, endorsementMonth: e.target.value })} placeholder="month" />, {today.year}
+                <input className="pd-input" value={fields.endorsementMonth} onChange={e => setFields({ ...fields, endorsementMonth: e.target.value })} placeholder="month" />, <input className="pd-input pd-edityear" value={fields.year} onChange={e => setFields({ ...fields, year: e.target.value })} />
             </div>
 
             <div className="pd-sign-row" style={{ marginTop: 80 }}>
@@ -384,6 +404,10 @@ export default function PrintDocument() {
     const today = todayParts();
     const [fields, setFields] = useState({
         caseFor:           "",
+        respondentName:    "",   // editable; defaults to the case offender name
+        complainantName:   "",   // editable; defaults to the victim's full name
+        officerName:       OFFICERS.vawc_officer.name,  // editable VAWC officer name
+        year:              String(today.year),          // editable year (not fixed)
         respondentAddress: "",
         hearingDay:        "",
         hearingMonth:      "",
@@ -402,10 +426,15 @@ export default function PrintDocument() {
         api.get(`/admin/cases/${caseId}`)
             .then(r => {
                 setCas(r.data);
-                // Auto-fill the "For:" field from incident type if available on any report
+                // Seed the editable name fields from the case (admin can correct typos).
                 const firstReport = (r.data.reports || [])[0];
                 const incidentType = firstReport?.incident_type;
-                if (incidentType) setFields(f => ({ ...f, caseFor: incidentType }));
+                setFields(f => ({
+                    ...f,
+                    respondentName:  f.respondentName  || r.data.offender_name || "",
+                    complainantName: f.complainantName || r.data.victim?.full_name || "",
+                    ...(incidentType ? { caseFor: incidentType } : {}),
+                }));
             })
             .catch(err => setError(err.response?.data?.detail || "Failed to load case."))
             .finally(() => setLoading(false));

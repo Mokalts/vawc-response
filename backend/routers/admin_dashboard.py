@@ -68,10 +68,12 @@ STATUS_DISPLAY = {
     "submitted":             "Submitted",
     "awaiting_onsite_visit": "Awaiting Onsite Visit",
     "under_process":         "Under Process",
-    "summon_issued":         "Summon Letter Issued",
-    "summon_acknowledged":   "Summon Acknowledged",
+    "summon_issued":         "Summons Issued",
+    "summon_acknowledged":   "Respondent Appeared",
     "resolved":              "Resolved",
-    "referred_to_police":    "Referred to Police",
+    "cfa_issued":            "CFA Issued",
+    "endorsed":              "Endorsed",
+    "referred_to_police":    "Referred to Authorities",
 }
 
 def _full_name(user) -> str:
