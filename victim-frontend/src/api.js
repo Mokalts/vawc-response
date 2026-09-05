@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// Backend base URL — set REACT_APP_API_URL at build time for production.
+// Backend base URL, set REACT_APP_API_URL at build time for production.
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000";
 
 const api = axios.create({
@@ -17,7 +17,7 @@ function clearSession() {
 
 // ── Proactive refresh timer ───────────────────────────────────────────────────
 // Victim token uses ACCESS_TOKEN_EXPIRE_MINUTES from settings.
-// Default FastAPI setups are commonly 30min–24hr.
+// Default FastAPI setups are commonly 30min-24hr.
 // We decode the JWT exp claim to know exactly when it expires.
 
 let _refreshTimer = null;

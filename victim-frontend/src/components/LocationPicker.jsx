@@ -42,12 +42,12 @@ if (!document.getElementById('vawc-locpicker-css')) {
     s.textContent = `
         @keyframes lpSpin { to { transform: rotate(360deg); } }
         .lp-method { transition: all 0.15s ease; }
-        .lp-method:hover:not(:disabled) { border-color: #F47920 !important; background: #FFF3E0 !important; }
+        .lp-method:hover:not(:disabled) { border-color: #F47920 !important; background: var(--surface-tint) !important; }
         .lp-method:active:not(:disabled) { transform: scale(0.98); }
         .lp-search-input:focus { border-color: #F47920 !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.12) !important; outline: none; }
-        .lp-suggest:hover { background: #FFF3E0 !important; }
+        .lp-suggest:hover { background: var(--surface-tint) !important; }
         .vawc-marker { background: transparent !important; border: none !important; }
-        .lp-map-wrap .leaflet-container { font-family: 'DM Sans', sans-serif; }
+        .lp-map-wrap .leaflet-container { font-family: 'Lexend', sans-serif; }
     `;
     document.head.appendChild(s);
 }
@@ -219,6 +219,7 @@ function LocationPicker({ location, address, onChange, onClear, error, onError }
                     id="lp-search-input"
                     type="text"
                     className="lp-search-input"
+                    aria-label="Maghanap ng address, kalye, o landmark"
                     placeholder="Type a street, landmark, or barangay…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -249,7 +250,7 @@ function LocationPicker({ location, address, onChange, onClear, error, onError }
                 )}
                 {searchFocused && searchQuery.trim().length >= 3 && !searchLoading && suggestions.length === 0 && (
                     <div style={{ ...S.suggestList, padding: '10px 14px' }}>
-                        <p style={{ margin: 0, fontSize: 12.5, color: '#94A3B8', fontFamily: "'DM Sans', sans-serif" }}>No matches in the Philippines for "{searchQuery}".</p>
+                        <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-muted)', fontFamily: "'Lexend', sans-serif" }}>No matches in the Philippines for "{searchQuery}".</p>
                     </div>
                 )}
             </div>
@@ -284,14 +285,14 @@ function LocationPicker({ location, address, onChange, onClear, error, onError }
                 <div style={S.capturedCard}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
                         <IcoCheck c="#2E7D32" />
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1B4D1E', fontFamily: "'DM Sans', sans-serif" }}>Crime scene location set</p>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1B4D1E', fontFamily: "'Lexend', sans-serif" }}>Crime scene location set</p>
                     </div>
                     {address && (
-                        <p style={{ margin: '0 0 6px', fontSize: 13, color: '#0F172A', lineHeight: 1.55, fontFamily: "'DM Sans', sans-serif" }}>
+                        <p style={{ margin: '0 0 6px', fontSize: 13, color: 'var(--text)', lineHeight: 1.55, fontFamily: "'Lexend', sans-serif" }}>
                             {address}
                         </p>
                     )}
-                    <p style={{ margin: 0, fontSize: 11.5, color: '#475569', fontFamily: 'monospace' }}>
+                    <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-body)', fontFamily: 'monospace' }}>
                         {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
                     </p>
                     <button type="button" onClick={handleClear}
@@ -305,7 +306,7 @@ function LocationPicker({ location, address, onChange, onClear, error, onError }
             {/* ── Error ──────────────────────────────────────────────────── */}
             {error && (
                 <div style={S.errorBox}>
-                    <p style={{ margin: 0, fontSize: 13, color: '#C62828', lineHeight: 1.55, fontFamily: "'DM Sans', sans-serif" }}>{error}</p>
+                    <p style={{ margin: 0, fontSize: 13, color: '#C62828', lineHeight: 1.55, fontFamily: "'Lexend', sans-serif" }}>{error}</p>
                 </div>
             )}
         </div>
@@ -319,42 +320,42 @@ const S = {
     methodBtn:   {
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
         padding: '11px 12px', borderRadius: 10,
-        border: '1.5px solid #E2E8F0', background: '#fff',
-        fontSize: 13, fontWeight: 700, color: '#C45E10',
-        cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+        border: '1.5px solid var(--border)', background: 'var(--surface)',
+        fontSize: 13, fontWeight: 700, color: 'var(--accent-text)',
+        cursor: 'pointer', fontFamily: "'Lexend', sans-serif",
     },
 
     searchWrap:  { position: 'relative', width: '100%' },
     searchInput: {
         width: '100%', boxSizing: 'border-box',
         padding: '11px 14px 11px 38px',
-        borderRadius: 10, border: '1.5px solid #E2E8F0',
-        background: '#fff', fontSize: 14, color: '#0F172A',
-        fontFamily: "'DM Sans', sans-serif", outline: 'none',
+        borderRadius: 10, border: '1.5px solid var(--border)',
+        background: 'var(--surface)', fontSize: 14, color: 'var(--text)',
+        fontFamily: "'Lexend', sans-serif", outline: 'none',
         transition: 'border-color 0.15s, box-shadow 0.15s',
     },
     suggestList: {
         position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
-        background: '#fff', border: '1.5px solid #FFCC99', borderRadius: 10,
+        background: 'var(--surface)', border: '1.5px solid #FFCC99', borderRadius: 10,
         boxShadow: '0 8px 24px rgba(15,23,42,0.12)',
         zIndex: 1000, maxHeight: 240, overflowY: 'auto',
     },
     suggestItem: {
         display: 'flex', alignItems: 'flex-start', gap: 9,
         width: '100%', padding: '10px 14px',
-        border: 'none', borderBottom: '1px solid #F1F5F9',
+        border: 'none', borderBottom: '1px solid var(--border-soft)',
         background: 'transparent', cursor: 'pointer', textAlign: 'left',
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Lexend', sans-serif",
     },
-    suggestText: { fontSize: 12.5, color: '#0F172A', lineHeight: 1.5 },
+    suggestText: { fontSize: 12.5, color: 'var(--text)', lineHeight: 1.5 },
 
-    mapWrap:     { position: 'relative', border: '1.5px solid #E2E8F0', borderRadius: 10, overflow: 'hidden' },
+    mapWrap:     { position: 'relative', border: '1.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' },
     mapHint:     {
         position: 'absolute', bottom: 10, left: 10,
         background: 'rgba(255,255,255,0.92)', padding: '5px 10px', borderRadius: 9999,
         display: 'inline-flex', alignItems: 'center', gap: 6,
-        fontSize: 11.5, fontWeight: 600, color: '#475569',
-        fontFamily: "'DM Sans', sans-serif",
+        fontSize: 11.5, fontWeight: 600, color: 'var(--text-body)',
+        fontFamily: "'Lexend', sans-serif",
         boxShadow: '0 1px 3px rgba(15,23,42,0.1)',
         zIndex: 500,
     },
@@ -369,7 +370,7 @@ const S = {
         background: 'none', border: 'none',
         color: '#C62828', fontSize: 12, fontWeight: 700,
         cursor: 'pointer', padding: 0,
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Lexend', sans-serif",
     },
 
     errorBox: {

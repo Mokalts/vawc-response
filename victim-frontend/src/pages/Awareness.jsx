@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle';
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id = 'vawc-font'; l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(l);
 }
 if (!document.getElementById('vawc-awareness-css')) {
@@ -24,7 +25,7 @@ if (!document.getElementById('vawc-awareness-css')) {
         .tabs-scroll::-webkit-scrollbar-thumb { background: #FFCC99; border-radius: 9999px; }
         .tabs-scroll::-webkit-scrollbar-thumb:hover { background: #F47920; }
         .va-nav-btn { transition: all 0.15s ease; }
-        .va-nav-btn:hover { background: #FFF3E0 !important; }
+        .va-nav-btn:hover { filter: brightness(0.97); }
 
         /* Hero responsive layout */
         .va-hero {
@@ -32,7 +33,7 @@ if (!document.getElementById('vawc-awareness-css')) {
             flex-direction: row;
             gap: 16px;
             align-items: flex-start;
-            border-radius: 4px;
+            border-radius: 18px;
             padding: 20px;
         }
         .va-hero-text {
@@ -96,7 +97,7 @@ const CONTENT = {
     signs: {
         title: 'Recognizing Abuse under RA 9262',
         law: 'Republic Act 9262',
-        color: '#F47920',
+        color: '#C45E10',
         bg: '#FFF3E0',
         border: '#FFE4CC',
         // Place image at: victim-frontend/public/images/awareness/hero-signs.jpg
@@ -138,7 +139,7 @@ const CONTENT = {
     where: {
         title: 'Where to Seek Help',
         law: 'Government & Support Agencies',
-        color: '#059669',
+        color: '#047857',
         bg: '#ECFDF5',
         border: '#A7F3D0',
         // Place image at: victim-frontend/public/images/awareness/hero-where.jpg
@@ -150,7 +151,7 @@ const CONTENT = {
             { heading: 'Barangay VAWC Desk', text: "Your first and most accessible point of contact. Every barangay in the Philippines is required by RA 9262 to have a VAWC desk staffed by a trained official. They can: issue a Barangay Protection Order on the same day; assist in filing a complaint; refer you to other agencies for shelter, legal aid, or counseling; coordinate with police for enforcement of protection orders." },
             { heading: 'PNP Women and Children Protection Desk (WCPD)', text: 'Located at every police station. WCPD officers are specifically trained to handle VAWC cases with sensitivity, privacy, and efficiency. They can: take your statement, document your injuries, and gather evidence; assist you in filing a criminal complaint; coordinate arrest if a protection order is violated; conduct follow-up investigation. Hotline: 1800-188-PNP-107.' },
             { heading: 'Department of Social Welfare and Development (DSWD)', text: 'Provides comprehensive support services including: temporary shelter at Lingap Centers and residential care facilities; psychosocial counseling and trauma-informed care; livelihood assistance and economic empowerment programs; referral to legal aid services; services for children affected by abuse. DSWD Action Center: 8-951-2803.' },
-            { heading: 'Family Courts (Regional Trial Courts)', text: 'Designated Family Courts have exclusive jurisdiction over VAWC cases. They can: issue Temporary and Permanent Protection Orders within 24–72 hours; order the offender to leave the family home; grant temporary custody of children; order payment of support and other relief. You do not need a lawyer to petition for a protection order.' },
+            { heading: 'Family Courts (Regional Trial Courts)', text: 'Designated Family Courts have exclusive jurisdiction over VAWC cases. They can: issue Temporary and Permanent Protection Orders within 24-72 hours; order the offender to leave the family home; grant temporary custody of children; order payment of support and other relief. You do not need a lawyer to petition for a protection order.' },
             { heading: "Public Attorney's Office (PAO)", text: "Provides free legal representation to VAWC victims who cannot afford a private lawyer. Services include: legal counseling and advice; representation in criminal cases; assistance in filing complaints; help in applying for protection orders. PAO offices are available at city and provincial halls nationwide. Hotline: (02) 8929-9436." },
             { heading: 'National Bureau of Investigation (NBI)', text: 'Can assist in cases involving violence, especially where evidence collection is needed. They conduct forensic investigation and assist in cases that require federal-level inquiry. NBI Hotline: 8523-8231.' },
             { heading: 'Commission on Human Rights (CHR)', text: "Monitors the government's compliance with human rights standards, including protection of VAWC victims. Can receive complaints against government officials who fail to provide assistance. CHR Hotline: (02) 294-8704.", highlight: true },
@@ -158,8 +159,8 @@ const CONTENT = {
     },
     orders: {
         title: 'Protection Orders under RA 9262',
-        law: 'Section 8–14, RA 9262',
-        color: '#F47920',
+        law: 'Section 8-14, RA 9262',
+        color: '#C45E10',
         bg: '#FFF3E0',
         border: '#FFCC99',
         // Place image at: victim-frontend/public/images/awareness/hero-orders.jpg
@@ -200,7 +201,7 @@ const CONTENT = {
     laws: {
         title: 'Related Philippine Laws',
         law: 'Legal Framework',
-        color: '#D97706',
+        color: '#B45309',
         bg: '#FFFBEB',
         border: '#FDE68A',
         // Place image at: victim-frontend/public/images/awareness/hero-laws.jpg
@@ -222,7 +223,7 @@ const CONTENT = {
     penalties: {
         title: 'Penalties under RA 9262',
         law: 'Section 6, Republic Act 9262',
-        color: '#DC2626',
+        color: '#C62828',
         bg: '#FEF2F2',
         border: '#FECACA',
         // Place image at: victim-frontend/public/images/awareness/hero-penalties.jpg
@@ -248,39 +249,39 @@ function ContentCard({ item, color, bg, border }) {
     if (item.highlight) {
         return (
             <div className="va-card" style={{
-                backgroundColor: bg,
-                border: `1.5px solid ${border}`,
-                borderRadius: 4,
+                backgroundColor: 'var(--surface-tint)',
+                border: '1px solid var(--border)',
+                borderRadius: 14,
                 padding: '20px',
                 animation: 'fadeUp 0.3s ease',
                 position: 'relative',
                 overflow: 'hidden',
             }}>
-                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, backgroundColor: color, borderRadius: 4}} />
+                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, backgroundColor: color }} />
                 <div style={{ paddingLeft: 12 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
                         <IcoFlag c={color} />
-                        <p style={{ fontSize: 14, fontWeight: 700, color, margin: 0, fontFamily: "'DM Sans', sans-serif" }}>{item.heading}</p>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', margin: 0, fontFamily: "'Lexend', sans-serif" }}>{item.heading}</p>
                     </div>
-                    <p style={{ fontSize: 13.5, color: '#374151', lineHeight: 1.8, whiteSpace: 'pre-line', margin: 0, fontFamily: "'DM Sans', sans-serif" }}>{item.text}</p>
+                    <p style={{ fontSize: 13.5, color: 'var(--text-body)', lineHeight: 1.8, whiteSpace: 'pre-line', margin: 0, fontFamily: "'Lexend', sans-serif" }}>{item.text}</p>
                 </div>
             </div>
         );
     }
     return (
         <div className="va-card" style={{
-            backgroundColor: '#fff',
-            borderRadius: 4,
+            backgroundColor: 'var(--surface)',
+            borderRadius: 14,
             padding: '20px',
-            border: '1px solid #F1F5F9',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--card-shadow)',
             animation: 'fadeUp 0.3s ease',
         }}>
             <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
                 <IcoDot c={color} />
                 <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 14, fontWeight: 700, color, margin: '0 0 8px', fontFamily: "'DM Sans', sans-serif" }}>{item.heading}</p>
-                    <p style={{ fontSize: 13.5, color: '#475569', lineHeight: 1.8, whiteSpace: 'pre-line', margin: 0, fontFamily: "'DM Sans', sans-serif" }}>{item.text}</p>
+                    <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', margin: '0 0 8px', fontFamily: "'Lexend', sans-serif" }}>{item.heading}</p>
+                    <p style={{ fontSize: 13.5, color: 'var(--text-body)', lineHeight: 1.8, whiteSpace: 'pre-line', margin: 0, fontFamily: "'Lexend', sans-serif" }}>{item.text}</p>
                 </div>
             </div>
         </div>
@@ -316,11 +317,11 @@ function Awareness() {
 
             {/* Top bar */}
             <header style={S.topBar}>
-                <button className="va-back" style={S.backBtn} onClick={() => navigate('/home')}>
+                <button className="va-back" style={S.backBtn} onClick={() => navigate('/home')} aria-label="Bumalik sa Home">
                     <IcoBack />
                 </button>
                 <h1 style={S.title}>Awareness & Safety</h1>
-                <div style={{ width: 36 }} />
+                <ThemeToggle size={44} />
             </header>
 
             {/* Tabs */}
@@ -332,8 +333,8 @@ function Awareness() {
                                 style={{
                                     ...S.tab,
                                     backgroundColor: activeSection === sec.id ? CONTENT[sec.id].color : 'transparent',
-                                    color: activeSection === sec.id ? '#fff' : '#C45E10',
-                                    border: `1.5px solid ${activeSection === sec.id ? CONTENT[sec.id].color : '#FFE4CC'}`,
+                                    color: activeSection === sec.id ? '#fff' : 'var(--accent-text)',
+                                    border: `1.5px solid ${activeSection === sec.id ? CONTENT[sec.id].color : 'var(--border)'}`,
                                     fontWeight: activeSection === sec.id ? 700 : 500,
                                 }}
                                 onClick={() => handleTab(sec.id)}>
@@ -351,7 +352,7 @@ function Awareness() {
                 {/* ── Hero: responsive image + text ── */}
                 <div
                     className="va-hero"
-                    style={{ backgroundColor: current.bg, border: `1.5px solid ${current.border}` }}
+                    style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' }}
                 >
                     {/* Text - left on PC, below image on mobile */}
                     <div className="va-hero-text">
@@ -364,14 +365,14 @@ function Awareness() {
                             backgroundColor: `${current.color}18`,
                             color: current.color,
                             width: 'fit-content',
-                            fontFamily: "'DM Sans', sans-serif",
+                            fontFamily: "'Lexend', sans-serif",
                         }}>
                             {current.law}
                         </span>
-                        <h2 style={{ fontSize: 19, fontWeight: 800, margin: 0, lineHeight: 1.25, color: current.color, fontFamily: "'DM Sans', sans-serif" }}>
+                        <h2 style={{ fontSize: 19, fontWeight: 700, margin: 0, lineHeight: 1.25, color: 'var(--text)', fontFamily: "'Lexend', sans-serif" }}>
                             {current.title}
                         </h2>
-                        <p style={{ fontSize: 13, color: '#475569', lineHeight: 1.75, margin: 0, fontFamily: "'DM Sans', sans-serif" }}>
+                        <p style={{ fontSize: 13, color: 'var(--text-body)', lineHeight: 1.75, margin: 0, fontFamily: "'Lexend', sans-serif" }}>
                             {current.intro}
                         </p>
                     </div>
@@ -389,20 +390,23 @@ function Awareness() {
                 <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
                     {SECTIONS.map((sec, i) => (
                         <div key={sec.id}
+                            role="button" tabIndex={0}
+                            aria-label={`Pumunta sa: ${sec.label}`}
                             onClick={() => handleTab(sec.id)}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTab(sec.id); } }}
                             style={{
                                 flex: 1, height: 3, borderRadius: 4, cursor: 'pointer',
                                 backgroundColor: i === currentIdx
                                     ? current.color
                                     : i < currentIdx
                                         ? `${current.color}50`
-                                        : '#E2E8F0',
+                                        : 'var(--border)',
                                 transition: 'background-color 0.2s ease',
                             }}
                         />
                     ))}
                 </div>
-                <p style={{ fontSize: 11, color: '#94A3B8', textAlign: 'right', margin: '-8px 0 0', fontFamily: "'DM Sans', sans-serif" }}>
+                <p style={{ fontSize: 11.5, color: 'var(--text-muted)', textAlign: 'right', margin: '-8px 0 0', fontFamily: "'Lexend', sans-serif" }}>
                     {currentIdx + 1} of {SECTIONS.length}
                 </p>
 
@@ -424,7 +428,7 @@ function Awareness() {
                     ) : <div />}
                     {currentIdx < SECTIONS.length - 1 && (
                         <button className="va-nav-btn"
-                            style={{ ...S.navBtn, color: current.color, borderColor: current.color, marginLeft: 'auto' }}
+                            style={{ ...S.navBtn, color: 'var(--accent-text)', borderColor: current.color, marginLeft: 'auto' }}
                             onClick={() => handleTab(SECTIONS[currentIdx + 1].id)}>
                             {SECTIONS[currentIdx + 1].label} →
                         </button>
@@ -433,12 +437,12 @@ function Awareness() {
 
                 {/* CTA */}
                 <div style={{ background: 'linear-gradient(135deg, #C45E10 0%, #F47920 100%)', borderRadius: 4, padding: '22px', marginTop: 8 }}>
-                    <p style={{ fontSize: 18, fontWeight: 800, color: '#fff', margin: '0 0 6px', fontFamily: "'DM Sans', sans-serif" }}>Ready to take action?</p>
-                    <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, margin: '0 0 16px', fontFamily: "'DM Sans', sans-serif" }}>
+                    <p style={{ fontSize: 18, fontWeight: 800, color: '#fff', margin: '0 0 6px', fontFamily: "'Lexend', sans-serif" }}>Ready to take action?</p>
+                    <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, margin: '0 0 16px', fontFamily: "'Lexend', sans-serif" }}>
                         File a report confidentially through VAWC-Response. Your report is encrypted and reviewed by barangay officials.
                     </p>
                     <button className="va-cta-btn"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 20px', backgroundColor: '#fff', color: '#F47920', fontSize: 14, fontWeight: 700, border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 20px', backgroundColor: '#fff', color: '#C45E10', fontSize: 14, fontWeight: 700, border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: "'Lexend', sans-serif" }}
                         onClick={() => navigate('/report')}>
                         <span>Report Now</span>
                         <IcoArrow />
@@ -451,16 +455,16 @@ function Awareness() {
 }
 
 const S = {
-    page:          { minHeight: '100vh', backgroundColor: '#FFF3E0', display: 'flex', flexDirection: 'column', fontFamily: "'DM Sans', sans-serif" },
-    topBar:        { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: '#fff', borderBottom: '1px solid #FFE4CC', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 1px 8px rgba(244,121,32,0.06)' },
-    backBtn:       { width: 36, height: 36, borderRadius: 10, backgroundColor: '#FFF3E0', border: '1.5px solid #FFE4CC', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
-    title:         { fontSize: 17, fontWeight: 700, color: '#C45E10', fontFamily: "'DM Sans', sans-serif" },
-    tabsWrapper:   { backgroundColor: '#fff', borderBottom: '1px solid #FFE4CC', padding: '12px 16px', position: 'sticky', top: 65, zIndex: 99 },
-    tabsFadeRight: { position: 'absolute', top: 0, right: 0, width: 48, height: '100%', background: 'linear-gradient(to right, transparent, #fff)', pointerEvents: 'none' },
-    tabs:          { display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#FFCC99 #FFF3E0', WebkitOverflowScrolling: 'touch', paddingBottom: 8, paddingRight: 32 },
-    tab:           { whiteSpace: 'nowrap', padding: '7px 15px', borderRadius: 4, fontSize: 13, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", flexShrink: 0 },
-    content:       { padding: '20px', display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 40 },
-    navBtn:        { padding: '10px 16px', borderRadius: 4, border: '1.5px solid #FFE4CC', backgroundColor: '#fff', color: '#C45E10', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" },
+    page:          { minHeight: '100vh', background: 'var(--page-grad)', display: 'flex', flexDirection: 'column', fontFamily: "'Lexend', sans-serif", color: 'var(--text)' },
+    topBar:        { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: 'var(--topbar)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 },
+    backBtn:       { width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--surface-tint)', border: '1px solid var(--border)', color: 'var(--accent-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
+    title:         { fontSize: 17, fontWeight: 700, color: 'var(--accent-text)', fontFamily: "'Lexend', sans-serif" },
+    tabsWrapper:   { backgroundColor: 'var(--topbar)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '12px 16px', position: 'sticky', top: 65, zIndex: 99 },
+    tabsFadeRight: { position: 'absolute', top: 0, right: 0, width: 40, height: '100%', background: 'linear-gradient(to right, transparent, var(--page))', pointerEvents: 'none' },
+    tabs:          { display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch', paddingBottom: 8, paddingRight: 32 },
+    tab:           { whiteSpace: 'nowrap', padding: '7px 15px', borderRadius: 999, fontSize: 13, cursor: 'pointer', fontFamily: "'Lexend', sans-serif", flexShrink: 0 },
+    content:       { padding: '20px', display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 40, maxWidth: 840, width: '100%', marginLeft: 'auto', marginRight: 'auto' },
+    navBtn:        { padding: '10px 16px', borderRadius: 12, border: '1px solid var(--border)', backgroundColor: 'var(--surface)', color: 'var(--accent-text)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend', sans-serif" },
 };
 
 export default Awareness;

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 
 // ─── Font + scoped CSS ──────────────────────────────────────────────────────
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id = 'vawc-font'; l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(l);
 }
 if (!document.getElementById('vawc-sos-css')) {
@@ -23,10 +23,10 @@ if (!document.getElementById('vawc-sos-css')) {
         .sos-card { transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
         .sos-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(244,121,32,0.18); border-color: #FFCC99; }
         .sos-card:active { transform: scale(0.98); }
-        .sos-call:hover { background: #C2410C !important; }
+        .sos-call:hover { filter: brightness(1.08); transform: scale(1.06); }
         .sos-overlay { animation: sosFadeIn 0.18s ease; }
         .sos-modal   { animation: sosSlideUp 0.22s ease; }
-        .sos-close:hover { background: #FFF3E0 !important; }
+        .sos-close:hover { filter: brightness(0.96); }
     `;
     document.head.appendChild(s);
 }
@@ -59,17 +59,41 @@ const IcoPin   = ({ c = '#F47920' }) => (<svg width="16" height="16" viewBox="0 
 // ─── Component ──────────────────────────────────────────────────────────────
 function SOSButton({ variant = 'block' }) {
     const [open, setOpen] = useState(false);
+    const modalRef = useRef(null);
+    const lastFocusedRef = useRef(null);
 
-    // Lock body scroll while modal open + ESC to close
+    // Lock body scroll while modal open + ESC to close + focus trap + focus restore
     useEffect(() => {
         if (!open) return;
-        const prev = document.body.style.overflow;
+        const prevOverflow = document.body.style.overflow;
         document.body.style.overflow = 'hidden';
-        const onKey = e => { if (e.key === 'Escape') setOpen(false); };
+        lastFocusedRef.current = document.activeElement;
+
+        // Move focus into the dialog once it has mounted.
+        const focusTimer = setTimeout(() => {
+            const first = modalRef.current?.querySelector('button, a[href], input, [tabindex]:not([tabindex="-1"])');
+            first?.focus();
+        }, 0);
+
+        const onKey = (e) => {
+            if (e.key === 'Escape') { setOpen(false); return; }
+            if (e.key !== 'Tab' || !modalRef.current) return;
+            // Trap Tab within the dialog.
+            const focusables = modalRef.current.querySelectorAll('button, a[href], input, [tabindex]:not([tabindex="-1"])');
+            if (!focusables.length) return;
+            const firstEl = focusables[0];
+            const lastEl = focusables[focusables.length - 1];
+            if (e.shiftKey && document.activeElement === firstEl) { e.preventDefault(); lastEl.focus(); }
+            else if (!e.shiftKey && document.activeElement === lastEl) { e.preventDefault(); firstEl.focus(); }
+        };
         window.addEventListener('keydown', onKey);
+
         return () => {
-            document.body.style.overflow = prev;
+            document.body.style.overflow = prevOverflow;
             window.removeEventListener('keydown', onKey);
+            clearTimeout(focusTimer);
+            // Restore focus to whatever opened the dialog.
+            if (lastFocusedRef.current && lastFocusedRef.current.focus) lastFocusedRef.current.focus();
         };
     }, [open]);
 
@@ -91,7 +115,7 @@ function SOSButton({ variant = 'block' }) {
 
             {open && ReactDOM.createPortal(
                 <div className="sos-overlay" style={S.overlay} onClick={() => setOpen(false)} role="dialog" aria-modal="true" aria-labelledby="sos-title">
-                    <div className="sos-modal" style={S.modal} onClick={e => e.stopPropagation()}>
+                    <div ref={modalRef} className="sos-modal" style={S.modal} onClick={e => e.stopPropagation()}>
 
                         <div style={S.modalHeader}>
                             <div>
@@ -111,18 +135,16 @@ function SOSButton({ variant = 'block' }) {
                                     className="sos-card"
                                     style={{ ...S.card, ...(h.priority ? S.cardPriority : {}) }}
                                 >
-                                    <div style={S.cardLeft}>
-                                        <div style={{ ...S.cardIcon, background: '#FFF3E0' }}>
-                                            <IcoPhone c="#C45E10" />
-                                        </div>
-                                        <div style={{ minWidth: 0, flex: 1 }}>
-                                            <p style={S.cardLabel}>{h.label}</p>
-                                            <p style={{ ...S.cardDesc, ...(h.test ? { color: '#C45E10', fontStyle: 'italic', fontWeight: 600 } : {}) }}>{h.desc}</p>
-                                        </div>
+                                    <div style={{ ...S.cardIcon, background: 'var(--surface-tint)' }}>
+                                        <IcoPhone c="#C45E10" />
                                     </div>
-                                    <span className="sos-call" style={S.callBtn}>
+                                    <div style={{ minWidth: 0, flex: 1 }}>
+                                        <p style={S.cardLabel}>{h.label}</p>
+                                        <p style={{ ...S.cardNumber, ...(h.test ? { color: 'var(--text-muted)' } : {}) }}>{h.display}</p>
+                                        <p style={{ ...S.cardDesc, ...(h.test ? { fontStyle: 'italic' } : {}) }}>{h.desc}</p>
+                                    </div>
+                                    <span className="sos-call" style={S.callBtn} aria-hidden="true">
                                         <IcoPhone />
-                                        {h.display}
                                     </span>
                                 </a>
                             ))}
@@ -157,7 +179,7 @@ const S = {
         color: '#fff', fontSize: 15.5, fontWeight: 800,
         border: 'none', borderRadius: 16, cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-        fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em', textTransform: 'uppercase',
+        fontFamily: "'Lexend', sans-serif", letterSpacing: '0.04em', textTransform: 'uppercase',
         boxShadow: '0 8px 22px rgba(220,38,38,0.28)',
     },
     compactBtn: {
@@ -166,59 +188,59 @@ const S = {
         color: '#fff', fontSize: 13, fontWeight: 700,
         border: 'none', borderRadius: 9999, cursor: 'pointer',
         display: 'inline-flex', alignItems: 'center', gap: 8,
-        fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.03em', textTransform: 'uppercase',
+        fontFamily: "'Lexend', sans-serif", letterSpacing: '0.03em', textTransform: 'uppercase',
         boxShadow: '0 6px 16px rgba(220,38,38,0.22)',
     },
 
     // ── Modal
     overlay: {
-        position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.55)',
+        position: 'fixed', inset: 0, backgroundColor: 'var(--overlay)',
         zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '20px 14px', backdropFilter: 'blur(4px)',
     },
     modal: {
-        background: '#fff', borderRadius: 24,
+        background: 'var(--surface)', borderRadius: 24,
         width: '100%', maxWidth: 460, maxHeight: '88vh', overflowY: 'auto',
         padding: '24px 20px 22px',
-        boxShadow: '0 -12px 44px rgba(244,121,32,0.22)',
-        border: '1px solid #FFE4CC',
+        boxShadow: 'var(--card-shadow-strong)',
+        border: '1px solid var(--border)',
     },
     modalHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 },
-    modalTitle:  { margin: 0, fontSize: 19, fontWeight: 800, color: '#C45E10', fontFamily: "'DM Sans', sans-serif" },
-    modalSub:    { margin: '3px 0 0', fontSize: 12.5, color: '#F47920', fontFamily: "'DM Sans', sans-serif" },
-    closeBtn:    { width: 34, height: 34, borderRadius: 10, background: '#FFF3E0', border: '1px solid #FFE4CC', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 },
+    modalTitle:  { margin: 0, fontSize: 19, fontWeight: 700, color: 'var(--accent-text)', fontFamily: "'Lexend', sans-serif" },
+    modalSub:    { margin: '3px 0 0', fontSize: 12.5, color: 'var(--text-muted)', fontFamily: "'Lexend', sans-serif" },
+    closeBtn:    { width: 44, height: 44, borderRadius: 10, background: 'var(--surface-tint)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 },
 
     // ── Hotline cards
     list: { display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 14 },
     card: {
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
-        padding: '12px 13px', background: '#fff',
-        border: '1.5px solid #FFE9D6', borderRadius: 16,
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '13px 14px', background: 'var(--surface)',
+        border: '1.5px solid var(--border)', borderRadius: 16,
         textDecoration: 'none', cursor: 'pointer',
     },
-    cardPriority: { background: '#FFF3E0', borderColor: '#FFCC99', boxShadow: '0 4px 14px rgba(196,94,16,0.1)' },
-    cardLeft:     { display: 'flex', alignItems: 'center', gap: 11, minWidth: 0, flex: 1 },
-    cardIcon:     { width: 38, height: 38, borderRadius: 10, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-    cardLabel:    { margin: 0, fontSize: 13.5, fontWeight: 700, color: '#1E1B4B', lineHeight: 1.25, fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-    cardDesc:     { margin: '2px 0 0', fontSize: 11.5, color: '#64748B', lineHeight: 1.35, fontFamily: "'DM Sans', sans-serif" },
+    cardPriority: { background: 'var(--surface-tint)', borderColor: '#FFCC99', boxShadow: '0 4px 14px rgba(196,94,16,0.1)' },
+    cardIcon:     { width: 40, height: 40, borderRadius: 12, flexShrink: 0, alignSelf: 'flex-start', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    cardLabel:    { margin: 0, fontSize: 13.5, fontWeight: 700, color: 'var(--text)', lineHeight: 1.3, fontFamily: "'Lexend', sans-serif", overflowWrap: 'break-word' },
+    cardNumber:   { margin: '2px 0 1px', fontSize: 15, fontWeight: 800, color: 'var(--accent-text)', letterSpacing: '0.2px', lineHeight: 1.2, fontFamily: "'Lexend', sans-serif" },
+    cardDesc:     { margin: 0, fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.4, fontFamily: "'Lexend', sans-serif" },
     callBtn:      {
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        padding: '8px 11px', background: '#C45E10', color: '#fff',
-        borderRadius: 8, fontSize: 12, fontWeight: 700,
-        whiteSpace: 'nowrap', flexShrink: 0,
-        fontFamily: "'DM Sans', sans-serif",
-        transition: 'background 0.15s ease',
+        width: 44, height: 44, borderRadius: '50%',
+        background: '#16A34A', color: '#fff',
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        flexShrink: 0, alignSelf: 'center',
+        boxShadow: '0 3px 10px rgba(22,163,74,0.3)',
+        transition: 'transform 0.15s ease, filter 0.15s ease',
     },
 
     // ── Nearest station
-    station:      { background: '#FFF3E0', border: '1.5px solid #FFE4CC', borderRadius: 12, padding: '13px 14px', marginBottom: 12 },
+    station:      { background: 'var(--surface-tint)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '13px 14px', marginBottom: 12 },
     stationHead:  { display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4 },
-    stationTitle: { margin: 0, fontSize: 11, fontWeight: 700, color: '#F47920', textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: "'DM Sans', sans-serif" },
-    stationName:  { margin: 0, fontSize: 14, fontWeight: 700, color: '#1E1B4B', fontFamily: "'DM Sans', sans-serif" },
-    stationAddr:  { margin: '2px 0 0', fontSize: 12.5, color: '#475569', fontFamily: "'DM Sans', sans-serif" },
-    stationDist:  { margin: '4px 0 0', fontSize: 11.5, color: '#F47920', fontWeight: 600, fontFamily: "'DM Sans', sans-serif" },
+    stationTitle: { margin: 0, fontSize: 11, fontWeight: 700, color: 'var(--accent-text)', textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: "'Lexend', sans-serif" },
+    stationName:  { margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text)', fontFamily: "'Lexend', sans-serif" },
+    stationAddr:  { margin: '2px 0 0', fontSize: 12.5, color: 'var(--text-body)', fontFamily: "'Lexend', sans-serif" },
+    stationDist:  { margin: '4px 0 0', fontSize: 11.5, color: 'var(--accent-text)', fontWeight: 600, fontFamily: "'Lexend', sans-serif" },
 
-    footnote: { margin: 0, fontSize: 11.5, color: '#64748B', textAlign: 'center', lineHeight: 1.5, fontFamily: "'DM Sans', sans-serif" },
+    footnote: { margin: 0, fontSize: 11.5, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5, fontFamily: "'Lexend', sans-serif" },
 };
 
 export default SOSButton;

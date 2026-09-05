@@ -1,16 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle';
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id = 'vawc-font'; l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(l);
 }
 if (!document.getElementById('vawc-contact-css')) {
     const s = document.createElement('style'); s.id = 'vawc-contact-css';
     s.textContent = `
         .vc-contact-row { transition: background-color 0.12s ease; }
-        .vc-contact-row:active { background-color: #FFF3E0; }
+        .vc-contact-row:active { background-color: var(--surface-tint); }
         .vc-back-btn { transition: transform 0.12s ease; }
         .vc-back-btn:hover { transform: translateX(-2px); }
     `;
@@ -27,12 +28,12 @@ const IcoChevron = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="
 
 const contacts = [
     { icon: <IcoPhone c="#991B1B" />, iconBg: '#FEF2F2', label: 'PNP Emergency Hotline', value: '911', sub: 'For immediate danger - call first' },
-    { icon: <IcoShield c="#C45E10" />, iconBg: '#FFF3E0', label: 'PNP Women & Children Protection Desk', value: '1800-188-PNP-107', sub: 'VAWC case handling with confidentiality' },
+    { icon: <IcoShield c="#C45E10" />, iconBg: 'var(--surface-tint)', label: 'PNP Women & Children Protection Desk', value: '1800-188-PNP-107', sub: 'VAWC case handling with confidentiality' },
     { icon: <IcoPhone c="#059669" />, iconBg: '#ECFDF5', label: 'DSWD Action Center', value: '8-951-2803', sub: 'Shelter, counseling, legal assistance' },
     { icon: <IcoPhone c="#9B4DAB" />, iconBg: '#F3E5F5', label: 'NBI Hotline', value: '8523-8231', sub: 'National Bureau of Investigation' },
-    { icon: <IcoShield c="#C45E10" />, iconBg: '#FFF3E0', label: 'Public Attorney\'s Office (PAO)', value: '(02) 8929-9436', sub: 'Free legal assistance' },
+    { icon: <IcoShield c="#C45E10" />, iconBg: 'var(--surface-tint)', label: 'Public Attorney\'s Office (PAO)', value: '(02) 8929-9436', sub: 'Free legal assistance' },
     { icon: <IcoMail />, iconBg: '#F3E5F5', label: 'Email Support', value: 'support@vawcresponse.gov.ph', sub: 'Non-urgent inquiries' },
-    { icon: <IcoShield c="#C45E10" />, iconBg: '#FFF3E0', label: 'Barangay VAWC Desk', value: 'Contact your local barangay hall', sub: 'Available 24/7 - required by RA 9262' },
+    { icon: <IcoShield c="#C45E10" />, iconBg: 'var(--surface-tint)', label: 'Barangay VAWC Desk', value: 'Contact your local barangay hall', sub: 'Available 24/7 - required by RA 9262' },
 ];
 
 function ContactUs() {
@@ -43,11 +44,11 @@ function ContactUs() {
 
             {/* Top bar */}
             <header style={S.topBar}>
-                <button className="vc-back-btn" style={S.backBtn} onClick={() => navigate('/home')}>
+                <button className="vc-back-btn" style={S.backBtn} onClick={() => navigate('/home')} aria-label="Bumalik sa Home">
                     <IcoBack />
                 </button>
                 <h1 style={S.title}>Contact & Help</h1>
-                <div style={{ width: 36 }} />
+                <ThemeToggle size={44} />
             </header>
 
             <main style={S.content}>
@@ -102,33 +103,33 @@ function ContactUs() {
 }
 
 const S = {
-    page:           { minHeight: '100vh', backgroundColor: '#FFF3E0', display: 'flex', flexDirection: 'column', fontFamily: "'DM Sans', sans-serif" },
-    topBar:         { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: '#fff', borderBottom: '1px solid #FFE4CC', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 1px 8px rgba(244,121,32,0.06)' },
-    backBtn:        { width: 36, height: 36, borderRadius: 10, backgroundColor: '#FFF3E0', border: '1.5px solid #FFE4CC', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
-    title:          { fontSize: 17, fontWeight: 700, color: '#C45E10', fontFamily: "'DM Sans', sans-serif" },
+    page:           { minHeight: '100vh', background: 'var(--page-grad)', color: 'var(--text)', display: 'flex', flexDirection: 'column', fontFamily: "'Lexend', sans-serif" },
+    topBar:         { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 1px 8px rgba(244,121,32,0.06)' },
+    backBtn:        { width: 44, height: 44, borderRadius: 10, backgroundColor: 'var(--surface-tint)', border: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
+    title:          { fontSize: 17, fontWeight: 700, color: 'var(--accent-text)', fontFamily: "'Lexend', sans-serif" },
     content:        { padding: '20px', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 40 },
 
     emergencyCard:  { backgroundColor: '#991B1B', borderRadius: 4, padding: '20px', boxShadow: '0 4px 16px rgba(153,27,27,0.3)' },
     emergencyLeft:  { display: 'flex', gap: 16, alignItems: 'flex-start' },
     emergencyIconBox:{ width: 40, height: 40, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-    emergencyLabel: { fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 4, fontFamily: "'DM Sans', sans-serif" },
-    emergencyNumber:{ fontSize: 40, fontWeight: 800, color: '#fff', lineHeight: 1, marginBottom: 6, fontFamily: "'DM Sans', sans-serif" },
-    emergencyDesc:  { fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, fontFamily: "'DM Sans', sans-serif" },
+    emergencyLabel: { fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 4, fontFamily: "'Lexend', sans-serif" },
+    emergencyNumber:{ fontSize: 40, fontWeight: 800, color: '#fff', lineHeight: 1, marginBottom: 6, fontFamily: "'Lexend', sans-serif" },
+    emergencyDesc:  { fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, fontFamily: "'Lexend', sans-serif" },
 
-    card:           { backgroundColor: '#fff', borderRadius: 12, padding: '20px 20px 8px', boxShadow: '0 2px 10px rgba(244,121,32,0.06)', border: '1px solid #FFE4CC' },
-    cardTitle:      { fontSize: 13, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 14, fontFamily: "'DM Sans', sans-serif" },
+    card:           { backgroundColor: 'var(--surface)', borderRadius: 12, padding: '20px 20px 8px', boxShadow: '0 2px 10px rgba(244,121,32,0.06)', border: '1px solid var(--border)' },
+    cardTitle:      { fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 14, fontFamily: "'Lexend', sans-serif" },
     row:            { display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', cursor: 'pointer', borderRadius: 4},
     rowIcon:        { width: 36, height: 36, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
     rowBody:        { flex: 1 },
-    rowLabel:       { fontSize: 12, fontWeight: 600, color: '#475569', marginBottom: 2, fontFamily: "'DM Sans', sans-serif" },
-    rowValue:       { fontSize: 14.5, fontWeight: 700, color: '#0F172A', marginBottom: 2, fontFamily: "'DM Sans', sans-serif" },
-    rowSub:         { fontSize: 11.5, color: '#94A3B8', fontFamily: "'DM Sans', sans-serif" },
-    divider:        { height: 1, backgroundColor: '#F1F5F9', marginLeft: 50 },
+    rowLabel:       { fontSize: 12, fontWeight: 600, color: 'var(--text-body)', marginBottom: 2, fontFamily: "'Lexend', sans-serif" },
+    rowValue:       { fontSize: 14.5, fontWeight: 700, color: 'var(--text)', marginBottom: 2, fontFamily: "'Lexend', sans-serif" },
+    rowSub:         { fontSize: 11.5, color: 'var(--text-muted)', fontFamily: "'Lexend', sans-serif" },
+    divider:        { height: 1, backgroundColor: 'var(--border-soft)', marginLeft: 50 },
 
-    noteBox:        { backgroundColor: '#fff', borderRadius: 4, padding: '18px 20px', border: '1.5px solid #FFE4CC' },
+    noteBox:        { backgroundColor: 'var(--surface)', borderRadius: 4, padding: '18px 20px', border: '1.5px solid var(--border)' },
     noteIconRow:    { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 },
-    noteTitle:      { fontSize: 13.5, fontWeight: 700, color: '#C45E10', fontFamily: "'DM Sans', sans-serif" },
-    noteText:       { fontSize: 13, color: '#475569', lineHeight: 1.7, fontFamily: "'DM Sans', sans-serif" },
+    noteTitle:      { fontSize: 13.5, fontWeight: 700, color: 'var(--accent-text)', fontFamily: "'Lexend', sans-serif" },
+    noteText:       { fontSize: 13, color: 'var(--text-body)', lineHeight: 1.7, fontFamily: "'Lexend', sans-serif" },
 };
 
 export default ContactUs;

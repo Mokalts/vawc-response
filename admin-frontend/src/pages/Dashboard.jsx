@@ -7,7 +7,7 @@ import api from '../api/api';
 if (!document.getElementById('dash-css')) {
     const s = document.createElement('style'); s.id = 'dash-css';
     s.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap');
         @keyframes shimmer   { 0%{background-position:200% 0}100%{background-position:-200% 0} }
         @keyframes fadeIn    { from{opacity:0}to{opacity:1} }
         @keyframes popIn     { from{opacity:0;transform:scale(0.96) translateY(10px)}to{opacity:1;transform:scale(1)translateY(0)} }
@@ -18,7 +18,7 @@ if (!document.getElementById('dash-css')) {
             100%{box-shadow:0 0 0 0 rgba(244,121,32,0);}
         }
         .dash-row { cursor:pointer; }
-        .dash-row:hover td { background:#F8FAFC !important; }
+        .dash-row:hover td { background:var(--adm-muted) !important; }
         .dash-row td { transition:background 0.1s; }
         .period-btn { transition:all 0.15s ease; }
         .period-btn:hover:not(.p-active) { color:#475569 !important; }
@@ -26,7 +26,7 @@ if (!document.getElementById('dash-css')) {
         .new-card:hover { transform:translateY(-2px) !important; box-shadow:0 8px 24px rgba(196,94,16,0.24) !important; }
         .confirm-btn:hover:not([disabled]) { background:#065F46 !important; color:#fff !important; }
         .confirm-btn { transition:all 0.15s ease; }
-        .nr-row:hover { background:#F8FAFC !important; }
+        .nr-row:hover { background:var(--adm-muted) !important; }
         .nr-row { transition:background 0.1s; cursor:pointer; }
     `;
     document.head.appendChild(s);
@@ -81,7 +81,7 @@ const STATUS_CFG = {
     resolved: { label: 'Resolved', color: '#065F46', bg: '#ECFDF5', dot: '#10B981' },
     referred_to_police: { label: 'Referred to Authorities', color: '#991B1B', bg: '#FEF2F2', dot: '#EF4444' },
 };
-const sCfg = (s) => STATUS_CFG[s] || { label: s || '-', color: '#94A3B8', bg: '#F1F5F9', dot: '#CBD5E1' };
+const sCfg = (s) => STATUS_CFG[s] || { label: s || '-', color: 'var(--adm-text-muted)', bg: 'var(--adm-border)', dot: '#CBD5E1' };
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const Ico = ({ d, size = 16, color = 'currentColor' }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d={d} stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
@@ -111,7 +111,7 @@ const rangeSubtitle = (stats) => {
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 const Skel = ({ w = '100%', h = 14, r = 6, mb = 0 }) => (
-    <div style={{ width: w, height: h, borderRadius: 4, background: 'linear-gradient(90deg,#F1F5F9 25%,#E2E8F0 50%,#F1F5F9 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite', marginBottom: mb }} />
+    <div style={{ width: w, height: h, borderRadius: 4, background: 'linear-gradient(90deg,var(--adm-border) 25%,var(--adm-border) 50%,var(--adm-border) 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.4s infinite', marginBottom: mb }} />
 );
 
 // ─── Period Tabs ──────────────────────────────────────────────────────────────
@@ -124,13 +124,13 @@ function PeriodTabs({ period, onChange }) {
         if (el) setPill({ w: el.offsetWidth, l: el.offsetLeft, o: 1 });
     }, [period]);
     return (
-        <div style={{ position: 'relative', display: 'flex', gap: 2, backgroundColor: '#F1F5F9', padding: 4, borderRadius: 4, border: '1px solid #E2E8F0' }}>
-            <div style={{ position: 'absolute', top: 4, bottom: 4, borderRadius: 4, backgroundColor: '#fff', boxShadow: '0 1px 3px rgba(15,23,42,0.08)', transition: 'all 0.2s ease', width: pill.w, left: pill.l, opacity: pill.o }} />
+        <div style={{ position: 'relative', display: 'flex', gap: 2, backgroundColor: 'var(--adm-border)', padding: 4, borderRadius: 4, border: '1px solid var(--adm-border)' }}>
+            <div style={{ position: 'absolute', top: 4, bottom: 4, borderRadius: 4, backgroundColor: 'var(--adm-card)', boxShadow: '0 1px 3px rgba(15,23,42,0.08)', transition: 'all 0.2s ease', width: pill.w, left: pill.l, opacity: pill.o }} />
             {PERIODS.map((p, i) => (
                 <button key={p.key} ref={el => refs.current[i] = el}
                     className={`period-btn${period === p.key ? ' p-active' : ''}`}
                     onClick={() => onChange(p.key)}
-                    style={{ padding: '6px 16px', borderRadius: 4, border: 'none', backgroundColor: 'transparent', fontSize: 13, fontWeight: period === p.key ? 600 : 500, color: period === p.key ? '#0F172A' : '#64748B', cursor: 'pointer', fontFamily: "'DM Sans',sans-serif", position: 'relative', zIndex: 1 }}>
+                    style={{ padding: '6px 16px', borderRadius: 4, border: 'none', backgroundColor: 'transparent', fontSize: 13, fontWeight: period === p.key ? 600 : 500, color: period === p.key ? 'var(--adm-text)' : '#64748B', cursor: 'pointer', fontFamily: "'Lexend',sans-serif", position: 'relative', zIndex: 1 }}>
                     {p.label}
                 </button>
             ))}
@@ -142,7 +142,7 @@ function PeriodTabs({ period, onChange }) {
 function StatusBadge({ rawStatus, displayLabel }) {
     const cfg = sCfg(rawStatus);
     return (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 4, fontSize: 11.5, fontWeight: 600, color: cfg.color, backgroundColor: cfg.bg, whiteSpace: 'nowrap', fontFamily: "'DM Sans',sans-serif" }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 4, fontSize: 11.5, fontWeight: 600, color: cfg.color, backgroundColor: cfg.bg, whiteSpace: 'nowrap', fontFamily: "'Lexend',sans-serif" }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: cfg.dot, flexShrink: 0 }} />
             {displayLabel || cfg.label}
         </span>
@@ -152,13 +152,13 @@ function StatusBadge({ rawStatus, displayLabel }) {
 // ─── New Reports Modal ────────────────────────────────────────────────────────
 function ReportBriefPanel({ report, onClose, onConfirm, isConfirmed, isConfirming }) {
     return (
-        <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: 12, marginTop: 4, animation: 'slideRight 0.15s ease' }}>
+        <div style={{ borderTop: '1px solid var(--adm-border)', paddingTop: 12, marginTop: 4, animation: 'slideRight 0.15s ease' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <span style={{ fontSize: 11.5, fontWeight: 700, color: '#7B2D8B', background: '#F3E5F5', padding: '2px 7px', borderRadius: 4, fontFamily: "'DM Sans',sans-serif" }}>{report.case_number}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: '#7B2D8B', background: '#F3E5F5', padding: '2px 7px', borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>{report.case_number}</span>
                     <StatusBadge rawStatus={report.status} displayLabel={report.status_display} />
                 </div>
-                <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', padding: 2, display: 'flex' }}><IcoX size={13} /></button>
+                <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--adm-text-muted)', padding: 2, display: 'flex' }}><IcoX size={13} /></button>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 7, marginBottom: 10 }}>
                 {[
@@ -168,22 +168,22 @@ function ReportBriefPanel({ report, onClose, onConfirm, isConfirmed, isConfirmin
                     report.incident_type && [null, 'Type', report.incident_type],
                     report.address && [<IcoPin color="#7B2D8B" />, 'Location', truncate(report.address, 40)],
                 ].filter(Boolean).map(([icon, label, val], i) => (
-                    <div key={i} style={{ background: '#F8FAFC', borderRadius: 4, padding: '8px 10px', border: '1px solid #E2E8F0', gridColumn: label === 'Location' ? 'span 2' : 'auto' }}>
-                        <p style={{ margin: '0 0 3px', fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: "'DM Sans',sans-serif", display: 'flex', alignItems: 'center', gap: 4 }}>{icon}{label}</p>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: '#0F172A', fontFamily: "'DM Sans',sans-serif" }}>{val}</p>
+                    <div key={i} style={{ background: 'var(--adm-muted)', borderRadius: 4, padding: '8px 10px', border: '1px solid var(--adm-border)', gridColumn: label === 'Location' ? 'span 2' : 'auto' }}>
+                        <p style={{ margin: '0 0 3px', fontSize: 10, fontWeight: 700, color: 'var(--adm-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: "'Lexend',sans-serif", display: 'flex', alignItems: 'center', gap: 4 }}>{icon}{label}</p>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--adm-text)', fontFamily: "'Lexend',sans-serif" }}>{val}</p>
                     </div>
                 ))}
                 {report.statement && (
-                    <div style={{ gridColumn: 'span 2', background: '#F8FAFC', borderRadius: 4, padding: '8px 10px', border: '1px solid #E2E8F0' }}>
-                        <p style={{ margin: '0 0 3px', fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: "'DM Sans',sans-serif" }}>Statement</p>
-                        <p style={{ margin: 0, fontSize: 13, color: '#475569', fontFamily: "'DM Sans',sans-serif", lineHeight: 1.5 }}>{truncate(report.statement, 150)}</p>
+                    <div style={{ gridColumn: 'span 2', background: 'var(--adm-muted)', borderRadius: 4, padding: '8px 10px', border: '1px solid var(--adm-border)' }}>
+                        <p style={{ margin: '0 0 3px', fontSize: 10, fontWeight: 700, color: 'var(--adm-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: "'Lexend',sans-serif" }}>Statement</p>
+                        <p style={{ margin: 0, fontSize: 13, color: 'var(--adm-text-2)', fontFamily: "'Lexend',sans-serif", lineHeight: 1.5 }}>{truncate(report.statement, 150)}</p>
                     </div>
                 )}
             </div>
             {isConfirmed
-                ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px 0', borderRadius: 4, background: '#ECFDF5', color: '#059669', fontSize: 13, fontWeight: 700, fontFamily: "'DM Sans',sans-serif" }}><IcoCheck color="#059669" /> Confirmed</div>
+                ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '9px 0', borderRadius: 4, background: '#ECFDF5', color: '#059669', fontSize: 13, fontWeight: 700, fontFamily: "'Lexend',sans-serif" }}><IcoCheck color="#059669" /> Confirmed</div>
                 : <button className="confirm-btn" disabled={isConfirming} onClick={() => onConfirm(report.id)}
-                    style={{ width: '100%', padding: '9px 0', borderRadius: 8, border: '1.5px solid #A7F3D0', background: '#F0FDF4', color: '#065F46', fontSize: 13, fontWeight: 700, cursor: isConfirming ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans',sans-serif", opacity: isConfirming ? 0.7 : 1 }}>
+                    style={{ width: '100%', padding: '9px 0', borderRadius: 8, border: '1.5px solid #A7F3D0', background: '#F0FDF4', color: '#065F46', fontSize: 13, fontWeight: 700, cursor: isConfirming ? 'not-allowed' : 'pointer', fontFamily: "'Lexend',sans-serif", opacity: isConfirming ? 0.7 : 1 }}>
                     {isConfirming ? 'Confirming…' : 'Confirm Report'}
                 </button>
             }
@@ -222,52 +222,52 @@ function NewReportsModal({ onClose, onConfirmed }) {
     return (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 900, backdropFilter: 'blur(4px)', padding: '20px 16px', animation: 'fadeIn 0.18s ease' }}
             onClick={onClose}>
-            <div style={{ backgroundColor: '#fff', borderRadius: 4, width: '100%', maxWidth: 500, maxHeight: '82vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(15,23,42,0.22)', animation: 'popIn 0.2s ease' }}
+            <div style={{ backgroundColor: 'var(--adm-card)', borderRadius: 4, width: '100%', maxWidth: 500, maxHeight: '82vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(15,23,42,0.22)', animation: 'popIn 0.2s ease' }}
                 onClick={e => e.stopPropagation()}>
                 {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 24px 14px', borderBottom: '1px solid #F1F5F9', flexShrink: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 24px 14px', borderBottom: '1px solid var(--adm-border)', flexShrink: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <div style={{ width: 34, height: 34, borderRadius: 4, background: '#C45E10', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <IcoBell color="#fff" size={16} />
                         </div>
                         <div>
-                            <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#7B2D8B', fontFamily: "'DM Sans',sans-serif" }}>New Reports</p>
-                            <p style={{ margin: 0, fontSize: 12, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif" }}>
+                            <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#7B2D8B', fontFamily: "'Lexend',sans-serif" }}>New Reports</p>
+                            <p style={{ margin: 0, fontSize: 12, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>
                                 {loading ? 'Loading…' : pending.length > 0 ? `${pending.length} awaiting confirmation` : 'All confirmed'}
                             </p>
                         </div>
                     </div>
-                    <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 4, border: 'none', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IcoX /></button>
+                    <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 4, border: 'none', background: 'var(--adm-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IcoX /></button>
                 </div>
 
                 {/* Body */}
                 <div style={{ overflowY: 'auto', flex: 1, padding: '4px 0' }}>
                     {loading && [1, 2, 3].map(i => (
-                        <div key={i} style={{ padding: '12px 24px', borderBottom: '1px solid #F8FAFC' }}>
+                        <div key={i} style={{ padding: '12px 24px', borderBottom: '1px solid var(--adm-muted)' }}>
                             <Skel w="55%" h={12} r={4} mb={7} /><Skel w="35%" h={10} r={4} />
                         </div>
                     ))}
                     {!loading && reports.length === 0 && (
                         <div style={{ textAlign: 'center', padding: '40px 0' }}>
                             <IcoCheck color="#A7F3D0" size={36} />
-                            <p style={{ marginTop: 10, fontSize: 14, fontWeight: 600, color: '#059669', fontFamily: "'DM Sans',sans-serif" }}>All caught up</p>
-                            <p style={{ fontSize: 12.5, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif", margin: '4px 0 0' }}>No new reports to confirm.</p>
+                            <p style={{ marginTop: 10, fontSize: 14, fontWeight: 600, color: '#059669', fontFamily: "'Lexend',sans-serif" }}>All caught up</p>
+                            <p style={{ fontSize: 12.5, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif", margin: '4px 0 0' }}>No new reports to confirm.</p>
                         </div>
                     )}
                     {!loading && !selected && reports.map(r => {
                         const done = confirmed[r.id];
                         return (
-                            <div key={r.id} style={{ borderBottom: '1px solid #F8FAFC' }}>
+                            <div key={r.id} style={{ borderBottom: '1px solid var(--adm-muted)' }}>
                                 <div className="nr-row" onClick={() => !done && setSelected(r)}
                                     style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 24px', opacity: done ? 0.45 : 1 }}>
                                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: done ? '#A7F3D0' : '#9B4DAB', flexShrink: 0 }} />
                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                        <p style={{ margin: '0 0 2px', fontSize: 13.5, fontWeight: 700, color: '#0F172A', fontFamily: "'DM Sans',sans-serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.victim_name}</p>
-                                        <p style={{ margin: 0, fontSize: 11.5, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif" }}>{r.case_number} · {fmtDate(r.created_at)}</p>
+                                        <p style={{ margin: '0 0 2px', fontSize: 13.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: "'Lexend',sans-serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.victim_name}</p>
+                                        <p style={{ margin: 0, fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>{r.case_number} · {fmtDate(r.created_at)}</p>
                                     </div>
                                     {done
-                                        ? <span style={{ fontSize: 11, fontWeight: 700, color: '#059669', background: '#ECFDF5', padding: '3px 9px', borderRadius: 4, fontFamily: "'DM Sans',sans-serif" }}>Confirmed</span>
-                                        : <button onClick={e => { e.stopPropagation(); setSelected(r); }} style={{ padding: '5px 12px', borderRadius: 4, border: '1.5px solid #E1BEE7', background: '#F3E5F5', color: '#7B2D8B', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif", flexShrink: 0 }}>View</button>
+                                        ? <span style={{ fontSize: 11, fontWeight: 700, color: '#059669', background: '#ECFDF5', padding: '3px 9px', borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>Confirmed</span>
+                                        : <button onClick={e => { e.stopPropagation(); setSelected(r); }} style={{ padding: '5px 12px', borderRadius: 4, border: '1.5px solid #E1BEE7', background: '#F3E5F5', color: '#7B2D8B', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend',sans-serif", flexShrink: 0 }}>View</button>
                                     }
                                 </div>
                             </div>
@@ -281,8 +281,8 @@ function NewReportsModal({ onClose, onConfirmed }) {
                 </div>
 
                 {/* Footer */}
-                <div style={{ padding: '14px 24px 18px', borderTop: '1px solid #F1F5F9', flexShrink: 0 }}>
-                    <button onClick={onClose} style={{ width: '100%', padding: '10px 0', borderRadius: 4, border: '1.5px solid #E2E8F0', background: '#fff', color: '#475569', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>Close</button>
+                <div style={{ padding: '14px 24px 18px', borderTop: '1px solid var(--adm-border)', flexShrink: 0 }}>
+                    <button onClick={onClose} style={{ width: '100%', padding: '10px 0', borderRadius: 4, border: '1.5px solid var(--adm-border)', background: 'var(--adm-card)', color: 'var(--adm-text-2)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend',sans-serif" }}>Close</button>
                 </div>
             </div>
         </div>
@@ -296,7 +296,7 @@ function ChartCard({ title, subtitle, children }) {
             <div style={{ ...S.tableHeader, justifyContent: 'flex-start', gap: 8 }}>
                 <div style={S.cardAccent} />
                 <span style={S.cardTitle}>{title}</span>
-                {subtitle && <span style={{ fontSize: 11.5, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif" }}>· {subtitle}</span>}
+                {subtitle && <span style={{ fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>· {subtitle}</span>}
             </div>
             <div style={{ padding: '18px 20px' }}>{children}</div>
         </div>
@@ -306,7 +306,7 @@ function ChartCard({ title, subtitle, children }) {
 const ChartEmpty = ({ text }) => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 10px', textAlign: 'center' }}>
         <IcoInbox color="#CBD5E1" size={32} />
-        <p style={{ margin: '10px 0 0', fontSize: 13, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif" }}>{text}</p>
+        <p style={{ margin: '10px 0 0', fontSize: 13, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>{text}</p>
     </div>
 );
 
@@ -323,7 +323,7 @@ function StatusDonut({ byStatus, loading }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
             <svg width={140} height={140} viewBox="0 0 140 140" style={{ flexShrink: 0 }}>
                 <g transform="rotate(-90 70 70)">
-                    <circle cx={70} cy={70} r={R} fill="none" stroke="#F1F5F9" strokeWidth={STROKE} />
+                    <circle cx={70} cy={70} r={R} fill="none" style={{ stroke: 'var(--adm-border)' }} strokeWidth={STROKE} />
                     {entries.map(([s, c]) => {
                         const len = (c / total) * C;
                         const seg = (
@@ -334,16 +334,16 @@ function StatusDonut({ byStatus, loading }) {
                         return seg;
                     })}
                 </g>
-                <text x={70} y={66} textAnchor="middle" style={{ fontSize: 26, fontWeight: 800, fill: '#0F172A', fontFamily: "'DM Sans',sans-serif" }}>{total}</text>
-                <text x={70} y={84} textAnchor="middle" style={{ fontSize: 11, fill: '#94A3B8', fontFamily: "'DM Sans',sans-serif" }}>cases</text>
+                <text x={70} y={66} textAnchor="middle" style={{ fontSize: 26, fontWeight: 800, fill: 'var(--adm-text)', fontFamily: "'Lexend',sans-serif" }}>{total}</text>
+                <text x={70} y={84} textAnchor="middle" style={{ fontSize: 11, fill: '#94A3B8', fontFamily: "'Lexend',sans-serif" }}>cases</text>
             </svg>
             <div style={{ flex: 1, minWidth: 160, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {entries.map(([s, c]) => (
                     <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span style={{ width: 10, height: 10, borderRadius: 3, background: sCfg(s).dot, flexShrink: 0 }} />
-                        <span style={{ flex: 1, fontSize: 12.5, color: '#475569', fontFamily: "'DM Sans',sans-serif" }}>{sCfg(s).label}</span>
-                        <span style={{ fontSize: 12.5, fontWeight: 700, color: '#0F172A', fontFamily: "'DM Sans',sans-serif" }}>{c}</span>
-                        <span style={{ fontSize: 11, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif", width: 38, textAlign: 'right' }}>{Math.round((c / total) * 100)}%</span>
+                        <span style={{ flex: 1, fontSize: 12.5, color: 'var(--adm-text-2)', fontFamily: "'Lexend',sans-serif" }}>{sCfg(s).label}</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: "'Lexend',sans-serif" }}>{c}</span>
+                        <span style={{ fontSize: 11, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif", width: 38, textAlign: 'right' }}>{Math.round((c / total) * 100)}%</span>
                     </div>
                 ))}
             </div>
@@ -362,10 +362,10 @@ function IncidentBars({ data, loading }) {
             {items.map(d => (
                 <div key={d.type}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <span style={{ fontSize: 12.5, fontWeight: 600, color: '#475569', fontFamily: "'DM Sans',sans-serif" }}>{d.type}</span>
-                        <span style={{ fontSize: 12.5, fontWeight: 700, color: '#0F172A', fontFamily: "'DM Sans',sans-serif" }}>{d.count}</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--adm-text-2)', fontFamily: "'Lexend',sans-serif" }}>{d.type}</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: "'Lexend',sans-serif" }}>{d.count}</span>
                     </div>
-                    <div style={{ height: 10, borderRadius: 6, background: '#F1F5F9', overflow: 'hidden' }}>
+                    <div style={{ height: 10, borderRadius: 6, background: 'var(--adm-border)', overflow: 'hidden' }}>
                         <div style={{ height: '100%', width: `${(d.count / max) * 100}%`, background: incidentColor(d.type), borderRadius: 6, transition: 'width 0.3s ease' }} />
                     </div>
                 </div>
@@ -460,7 +460,7 @@ export default function Dashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                         <PeriodTabs period={period} onChange={(k) => { setPeriod(k); setShowCustom(false); }} />
                         <button className="period-btn" onClick={() => setShowCustom(v => !v)}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 4, border: `1.5px solid ${period === 'custom' ? '#7B2D8B' : '#E2E8F0'}`, background: period === 'custom' ? '#F3E5F5' : '#fff', color: period === 'custom' ? '#7B2D8B' : '#64748B', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 4, border: `1.5px solid ${period === 'custom' ? '#7B2D8B' : 'var(--adm-border)'}`, background: period === 'custom' ? '#F3E5F5' : 'var(--adm-card)', color: period === 'custom' ? '#7B2D8B' : 'var(--adm-text-muted)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend',sans-serif" }}>
                             <IcoCal size={13} color={period === 'custom' ? '#7B2D8B' : '#94A3B8'} /> Custom
                         </button>
                     </div>
@@ -468,7 +468,7 @@ export default function Dashboard() {
 
                 {/* ── Custom date range picker ────────────────────────────── */}
                 {showCustom && (
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap', background: '#fff', border: '1px solid #E2E8F0', borderRadius: 4, padding: '14px 16px', marginBottom: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap', background: 'var(--adm-card)', border: '1px solid var(--adm-border)', borderRadius: 4, padding: '14px 16px', marginBottom: 16 }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                             <label style={S.dateLbl}>From</label>
                             <input type="date" value={customStart} max={customEnd || toISO(new Date())} onChange={e => setCustomStart(e.target.value)} style={S.dateInput} />
@@ -478,12 +478,12 @@ export default function Dashboard() {
                             <input type="date" value={customEnd} min={customStart} max={toISO(new Date())} onChange={e => setCustomEnd(e.target.value)} style={S.dateInput} />
                         </div>
                         <button onClick={() => { if (canApply) setPeriod('custom'); }} disabled={!canApply}
-                            style={{ padding: '9px 18px', borderRadius: 4, border: 'none', background: canApply ? '#7B2D8B' : '#E2E8F0', color: canApply ? '#fff' : '#94A3B8', fontSize: 13, fontWeight: 600, cursor: canApply ? 'pointer' : 'not-allowed', fontFamily: "'DM Sans',sans-serif" }}>
+                            style={{ padding: '9px 18px', borderRadius: 4, border: 'none', background: canApply ? '#7B2D8B' : 'var(--adm-border)', color: canApply ? '#fff' : '#94A3B8', fontSize: 13, fontWeight: 600, cursor: canApply ? 'pointer' : 'not-allowed', fontFamily: "'Lexend',sans-serif" }}>
                             Apply
                         </button>
                         {period === 'custom' && (
                             <button onClick={() => { setPeriod('quarterly'); setCustomStart(''); setCustomEnd(''); setShowCustom(false); }}
-                                style={{ padding: '9px 14px', borderRadius: 4, border: '1.5px solid #E2E8F0', background: '#fff', color: '#64748B', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>
+                                style={{ padding: '9px 14px', borderRadius: 4, border: '1.5px solid var(--adm-border)', background: 'var(--adm-card)', color: '#64748B', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend',sans-serif" }}>
                                 Clear
                             </button>
                         )}
@@ -513,10 +513,10 @@ export default function Dashboard() {
                             </svg>
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#C45E10', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: "'DM Sans',sans-serif" }}>
+                            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: '#C45E10', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: "'Lexend',sans-serif" }}>
                                 Multiple reports received
                             </p>
-                            <p style={{ margin: '3px 0 0', fontSize: 13.5, color: '#7C2D12', lineHeight: 1.55, fontFamily: "'DM Sans',sans-serif" }}>
+                            <p style={{ margin: '3px 0 0', fontSize: 13.5, color: '#7C2D12', lineHeight: 1.55, fontFamily: "'Lexend',sans-serif" }}>
                                 <strong>{burstAlert.report_count}</strong> new report{burstAlert.report_count !== 1 ? 's' : ''} from <strong>{burstAlert.distinct_users}</strong> different victim{burstAlert.distinct_users !== 1 ? 's' : ''} in the last {burstAlert.window_minutes} minutes. Please review and respond promptly.
                             </p>
                         </div>
@@ -528,7 +528,7 @@ export default function Dashboard() {
                                 border: '1.5px solid #FFCC99',
                                 color: '#C45E10', cursor: 'pointer',
                                 display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                fontFamily: "'DM Sans',sans-serif",
+                                fontFamily: "'Lexend',sans-serif",
                             }}>
                             <IcoX size={14} color="#C45E10" />
                         </button>
@@ -538,8 +538,8 @@ export default function Dashboard() {
                 {error && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 4, padding: '12px 16px', marginBottom: 16 }}>
                         <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#FB7185', flexShrink: 0 }} />
-                        <span style={{ fontSize: 13, color: '#BE123C', fontFamily: "'DM Sans',sans-serif" }}>{error}</span>
-                        <button onClick={fetchStats} style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 600, color: '#BE123C', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>Retry</button>
+                        <span style={{ fontSize: 13, color: '#BE123C', fontFamily: "'Lexend',sans-serif" }}>{error}</span>
+                        <button onClick={fetchStats} style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 600, color: '#BE123C', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Lexend',sans-serif" }}>Retry</button>
                     </div>
                 )}
 
@@ -563,7 +563,7 @@ export default function Dashboard() {
                         </div>
                         <div style={S.statMeta}>
                             <IcoFilter size={11} color="#94A3B8" />
-                            <span style={{ fontSize: 11.5, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif" }}>{periodDesc}</span>
+                            <span style={{ fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>{periodDesc}</span>
                         </div>
                     </div>
 
@@ -579,7 +579,7 @@ export default function Dashboard() {
                                     : <>
                                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
                                             <p style={{ ...S.statNum, color: '#fff', margin: 0 }}>{newCount}</p>
-                                            {newCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.25)', color: '#fff', borderRadius: 4, padding: '1px 8px', fontFamily: "'DM Sans',sans-serif" }}>new</span>}
+                                            {newCount > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: 'rgba(255,255,255,0.25)', color: '#fff', borderRadius: 4, padding: '1px 8px', fontFamily: "'Lexend',sans-serif" }}>new</span>}
                                         </div>
                                         <p style={{ ...S.statLabel, color: 'rgba(255,255,255,0.75)', margin: 0 }}>New Reports</p>
                                     </>
@@ -587,7 +587,7 @@ export default function Dashboard() {
                             </div>
                         </div>
                         <div style={{ ...S.statMeta, borderColor: 'rgba(255,255,255,0.15)' }}>
-                            <span style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.6)', fontFamily: "'DM Sans',sans-serif" }}>Tap to review and confirm</span>
+                            <span style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.6)', fontFamily: "'Lexend',sans-serif" }}>Tap to review and confirm</span>
                         </div>
                     </div>
                 </div>
@@ -611,18 +611,18 @@ export default function Dashboard() {
                             <span style={S.cardTitle}>Cases</span>
                             <span style={S.periodTag}>{activeLabel}</span>
                             {!loading && subtitle && (
-                                <span style={{ fontSize: 11.5, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif" }}>
+                                <span style={{ fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>
                                     · {subtitle}
                                 </span>
                             )}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             {!loading && (
-                                <span style={{ fontSize: 12.5, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif" }}>
+                                <span style={{ fontSize: 12.5, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>
                                     {reports.length} record{reports.length !== 1 ? 's' : ''}
                                 </span>
                             )}
-                            <button onClick={() => navigate('/reports')} style={{ padding: '6px 14px', borderRadius: 4, border: '1.5px solid #E2E8F0', background: '#fff', color: '#475569', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif" }}>
+                            <button onClick={() => navigate('/reports')} style={{ padding: '6px 14px', borderRadius: 4, border: '1.5px solid var(--adm-border)', background: 'var(--adm-card)', color: 'var(--adm-text-2)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend',sans-serif" }}>
                                 View All Cases
                             </button>
                         </div>
@@ -632,9 +632,9 @@ export default function Dashboard() {
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
-                                <tr style={{ backgroundColor: '#F8FAFC', borderBottom: '2px solid #E2E8F0' }}>
+                                <tr style={{ backgroundColor: 'var(--adm-muted)', borderBottom: '2px solid var(--adm-border)' }}>
                                     {['Case No.', 'Victim Name', 'Respondent', 'Date Filed', 'Status'].map(h => (
-                                        <th key={h} style={{ padding: '10px 18px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.7px', whiteSpace: 'nowrap', fontFamily: "'DM Sans',sans-serif" }}>
+                                        <th key={h} style={{ padding: '10px 18px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.7px', whiteSpace: 'nowrap', fontFamily: "'Lexend',sans-serif" }}>
                                             {h}
                                         </th>
                                     ))}
@@ -642,7 +642,7 @@ export default function Dashboard() {
                             </thead>
                             <tbody>
                                 {loading && [1, 2, 3, 4, 5, 6].map(i => (
-                                    <tr key={i} style={{ borderBottom: '1px solid #F8FAFC' }}>
+                                    <tr key={i} style={{ borderBottom: '1px solid var(--adm-muted)' }}>
                                         {[80, 160, 140, 100, 70, 100].map((w, j) => (
                                             <td key={j} style={{ padding: '14px 18px' }}>
                                                 <Skel w={w} h={12} r={4} />
@@ -655,10 +655,10 @@ export default function Dashboard() {
                                     <tr>
                                         <td colSpan={6} style={{ textAlign: 'center', padding: '56px 24px' }}>
                                             <IcoInbox color="#CBD5E1" size={40} />
-                                            <p style={{ marginTop: 12, fontSize: 15, fontWeight: 600, color: '#475569', fontFamily: "'DM Sans',sans-serif" }}>
+                                            <p style={{ marginTop: 12, fontSize: 15, fontWeight: 600, color: 'var(--adm-text-2)', fontFamily: "'Lexend',sans-serif" }}>
                                                 No confirmed cases in this period
                                             </p>
-                                            <p style={{ fontSize: 13, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif", margin: '4px 0 0' }}>
+                                            <p style={{ fontSize: 13, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif", margin: '4px 0 0' }}>
                                                 {subtitle}
                                             </p>
                                         </td>
@@ -672,10 +672,10 @@ export default function Dashboard() {
                                                 {r.case_number || `#${String(r.id).padStart(5, '0')}`}
                                             </span>
                                         </td>
-                                        <td style={{ ...S.td, fontWeight: 600, color: '#0F172A' }}>{r.victim_name}</td>
+                                        <td style={{ ...S.td, fontWeight: 600, color: 'var(--adm-text)' }}>{r.victim_name}</td>
                                         <td style={S.td}>
                                             {r.offender_name
-                                                ? <span style={{ fontSize: 13, color: '#475569', fontFamily: "'DM Sans',sans-serif" }}>{r.offender_name}</span>
+                                                ? <span style={{ fontSize: 13, color: 'var(--adm-text-2)', fontFamily: "'Lexend',sans-serif" }}>{r.offender_name}</span>
                                                 : <span style={{ color: '#CBD5E1', fontSize: 13 }}>-</span>
                                             }
                                         </td>
@@ -697,28 +697,28 @@ export default function Dashboard() {
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
-const FF = "'DM Sans', sans-serif";
+const FF = "'Lexend', sans-serif";
 const S = {
     wrap: { maxWidth: 1200, fontFamily: FF },
     topRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 },
-    greeting: { margin: 0, fontSize: 19, fontWeight: 700, color: '#0F172A', fontFamily: FF, letterSpacing: '-0.2px' },
-    greetingSub: { margin: '3px 0 0', fontSize: 12.5, color: '#94A3B8', fontFamily: FF },
+    greeting: { margin: 0, fontSize: 19, fontWeight: 700, color: 'var(--adm-text)', fontFamily: FF, letterSpacing: '-0.2px' },
+    greetingSub: { margin: '3px 0 0', fontSize: 12.5, color: 'var(--adm-text-muted)', fontFamily: FF },
 
     statsRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 18 },
     analyticsRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 18 },
-    dateLbl: { fontSize: 10.5, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.6px', fontFamily: FF },
-    dateInput: { padding: '8px 10px', borderRadius: 4, border: '1.5px solid #E2E8F0', fontSize: 13, color: '#0F172A', fontFamily: FF, outline: 'none' },
+    dateLbl: { fontSize: 10.5, fontWeight: 700, color: 'var(--adm-text-muted)', textTransform: 'uppercase', letterSpacing: '0.6px', fontFamily: FF },
+    dateInput: { padding: '8px 10px', borderRadius: 4, border: '1.5px solid var(--adm-border)', fontSize: 13, color: 'var(--adm-text)', fontFamily: FF, outline: 'none' },
 
-    statCard: { backgroundColor: '#fff', borderRadius: 4, padding: '18px 20px', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(15,23,42,0.05)', display: 'flex', flexDirection: 'column', gap: 12 },
+    statCard: { backgroundColor: 'var(--adm-card)', borderRadius: 4, padding: '18px 20px', border: '1px solid var(--adm-border)', boxShadow: '0 1px 3px rgba(15,23,42,0.05)', display: 'flex', flexDirection: 'column', gap: 12 },
     newCard: { borderRadius: 4, padding: '18px 20px', border: '2px solid #F47920', background: 'linear-gradient(135deg,#F47920,#C45E10)', boxShadow: '0 4px 14px rgba(196,94,16,0.24)', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'pointer' },
-    statNum: { margin: '0 0 2px', fontSize: 26, fontWeight: 800, color: '#0F172A', fontFamily: FF, letterSpacing: '-0.5px' },
+    statNum: { margin: '0 0 2px', fontSize: 26, fontWeight: 800, color: 'var(--adm-text)', fontFamily: FF, letterSpacing: '-0.5px' },
     statLabel: { margin: 0, fontSize: 12.5, fontWeight: 500, color: '#64748B', fontFamily: FF },
-    statMeta: { display: 'flex', alignItems: 'center', gap: 5, paddingTop: 10, borderTop: '1px solid #F1F5F9' },
+    statMeta: { display: 'flex', alignItems: 'center', gap: 5, paddingTop: 10, borderTop: '1px solid var(--adm-border)' },
 
-    tableCard: { backgroundColor: '#fff', borderRadius: 4, border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(15,23,42,0.05)', overflow: 'hidden' },
-    tableHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid #F1F5F9', backgroundColor: '#FAFAFA', flexWrap: 'wrap', gap: 10 },
+    tableCard: { backgroundColor: 'var(--adm-card)', borderRadius: 4, border: '1px solid var(--adm-border)', boxShadow: '0 1px 3px rgba(15,23,42,0.05)', overflow: 'hidden' },
+    tableHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid var(--adm-border)', backgroundColor: 'var(--adm-muted)', flexWrap: 'wrap', gap: 10 },
     cardAccent: { width: 3, height: 16, borderRadius: 4, backgroundColor: '#7B2D8B', flexShrink: 0 },
-    cardTitle: { fontSize: 12.5, fontWeight: 700, color: '#0F172A', fontFamily: FF, textTransform: 'uppercase', letterSpacing: '0.5px' },
+    cardTitle: { fontSize: 12.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: FF, textTransform: 'uppercase', letterSpacing: '0.5px' },
     periodTag: { fontSize: 11, fontWeight: 600, color: '#7B2D8B', backgroundColor: '#F3E5F5', padding: '2px 8px', borderRadius: 4, fontFamily: FF },
-    td: { padding: '13px 18px', fontSize: 13.5, color: '#475569', fontFamily: FF, borderBottom: '1px solid #F8FAFC' },
+    td: { padding: '13px 18px', fontSize: 13.5, color: 'var(--adm-text-2)', fontFamily: FF, borderBottom: '1px solid var(--adm-muted)' },
 };

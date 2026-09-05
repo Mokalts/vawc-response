@@ -45,13 +45,13 @@ const STRENGTH_LABELS = ["", "Weak", "Fair", "Good", "Strong"];
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 const CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap');
   @keyframes spin    { to { transform: rotate(360deg); } }
   @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
   @keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeUp  { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
   .adm-row { transition: background 0.12s ease; }
-  .adm-row:hover td { background: #F8FAFC !important; }
+  .adm-row:hover td { background: var(--adm-muted) !important; }
   .adm-row td { transition: background 0.12s ease; }
   .adm-action { transition: all 0.15s ease !important; }
   .adm-action:hover { border-color: #9B4DAB !important; color: #7B2D8B !important; background: #F3E5F5 !important; transform: translateY(-1px); }
@@ -78,7 +78,7 @@ const Field = ({ label, name, type = "text", half, required = true, value, onCha
       type={type} name={name} value={value} onChange={onChange}
       style={S.fieldInput}
       onFocus={e => { e.target.style.borderColor = "#9B4DAB"; e.target.style.background = "#fff"; }}
-      onBlur={e  => { e.target.style.borderColor = "#E2E8F0"; e.target.style.background = "#F8FAFC"; }}
+      onBlur={e  => { e.target.style.borderColor = "var(--adm-border)"; e.target.style.background = "var(--adm-muted)"; }}
     />
   </div>
 );
@@ -180,10 +180,10 @@ const CreateAdminModal = ({ onClose, onCreated }) => {
               <div style={{ marginTop: 8 }}>
                 <div style={{ display: "flex", gap: 4, marginBottom: 5 }}>
                   {[1,2,3,4].map(i => (
-                    <div key={i} style={{ flex: 1, height: 3, borderRadius: 4, backgroundColor: i <= strength ? STRENGTH_COLORS[strength] : "#E2E8F0", transition: "background-color 0.2s" }} />
+                    <div key={i} style={{ flex: 1, height: 3, borderRadius: 4, backgroundColor: i <= strength ? STRENGTH_COLORS[strength] : "var(--adm-border)", transition: "background-color 0.2s" }} />
                   ))}
                 </div>
-                <p style={{ fontSize: 11, color: STRENGTH_COLORS[strength], margin: "0 0 6px", fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>{STRENGTH_LABELS[strength]}</p>
+                <p style={{ fontSize: 11, color: STRENGTH_COLORS[strength], margin: "0 0 6px", fontWeight: 600, fontFamily: "'Lexend', sans-serif" }}>{STRENGTH_LABELS[strength]}</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
                   {[
                     { test: form.password.length >= 8,                         label: "At least 8 characters" },
@@ -191,7 +191,7 @@ const CreateAdminModal = ({ onClose, onCreated }) => {
                     { test: /[0-9]/.test(form.password),                       label: "One number" },
                     { test: /[!@#$%^&*(),.?":{}|<>_-]/.test(form.password),   label: "One special character" },
                   ].map(({ test, label }) => (
-                    <p key={label} style={{ fontSize: 11, margin: 0, color: test ? "#059669" : "#94A3B8", display: "flex", alignItems: "center", gap: 5, fontFamily: "'DM Sans', sans-serif" }}>
+                    <p key={label} style={{ fontSize: 11, margin: 0, color: test ? "#059669" : "#94A3B8", display: "flex", alignItems: "center", gap: 5, fontFamily: "'Lexend', sans-serif" }}>
                       <span>{test ? "✓" : "○"}</span> {label}
                     </p>
                   ))}
@@ -203,11 +203,11 @@ const CreateAdminModal = ({ onClose, onCreated }) => {
           {/* Position locked */}
           <div style={{ gridColumn: "span 2" }}>
             <label style={S.fieldLabel}>Position</label>
-            <div style={{ padding: "10px 12px", borderRadius: 4, border: "1.5px solid #E2E8F0", background: "#F1F5F9", fontSize: 13.5, color: "#64748B", fontFamily: "'DM Sans', sans-serif" }}>Admin</div>
+            <div style={{ padding: "10px 12px", borderRadius: 4, border: "1.5px solid var(--adm-border)", background: "var(--adm-border)", fontSize: 13.5, color: "#64748B", fontFamily: "'Lexend', sans-serif" }}>Admin</div>
           </div>
 
           {error && (
-            <div style={{ gridColumn: "span 2", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 4, padding: "10px 14px", fontSize: 12.5, color: "#991B1B", fontFamily: "'DM Sans', sans-serif" }}>
+            <div style={{ gridColumn: "span 2", background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 4, padding: "10px 14px", fontSize: 12.5, color: "#991B1B", fontFamily: "'Lexend', sans-serif" }}>
               {error}
             </div>
           )}
@@ -217,7 +217,7 @@ const CreateAdminModal = ({ onClose, onCreated }) => {
         <div style={S.createModalFooter}>
           <button onClick={onClose} style={S.cancelBtn}>Cancel</button>
           <button onClick={handleSubmit} disabled={loading} className="adm-primary-btn"
-            style={{ padding: "9px 22px", borderRadius: 8, border: "none", background: "#9B4DAB", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, display: "flex", alignItems: "center", gap: 7, fontFamily: "'DM Sans', sans-serif" }}>
+            style={{ padding: "9px 22px", borderRadius: 8, border: "none", background: "#9B4DAB", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, display: "flex", alignItems: "center", gap: 7, fontFamily: "'Lexend', sans-serif" }}>
             {loading && <span style={S.spinner} />}
             Create Account
           </button>
@@ -229,12 +229,12 @@ const CreateAdminModal = ({ onClose, onCreated }) => {
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 const SkeletonRow = () => (
-  <tr style={{ borderBottom: "1px solid #F1F5F9" }}>
+  <tr style={{ borderBottom: "1px solid var(--adm-border)" }}>
     {[44, 160, 110, 90, 80, 80, 130].map((w, i) => (
       <td key={i} style={{ padding: "14px 16px" }}>
         {i === 0
-          ? <div style={{ width: 38, height: 38, borderRadius: 4, background: "#E2E8F0" }} />
-          : <div style={{ height: 12, width: w, borderRadius: 4, background: "linear-gradient(90deg,#F1F5F9 25%,#E2E8F0 50%,#F1F5F9 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+          ? <div style={{ width: 38, height: 38, borderRadius: 4, background: "var(--adm-border)" }} />
+          : <div style={{ height: 12, width: w, borderRadius: 4, background: "linear-gradient(90deg,var(--adm-border) 25%,var(--adm-border) 50%,var(--adm-border) 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
         }
       </td>
     ))}
@@ -243,13 +243,13 @@ const SkeletonRow = () => (
 
 // ─── Badges ───────────────────────────────────────────────────────────────────
 const ActiveBadge = ({ active }) => (
-  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 4, fontSize: 11.5, fontWeight: 600, background: active ? "#ECFDF5" : "#F1F5F9", color: active ? "#065F46" : "#64748B", fontFamily: "'DM Sans', sans-serif" }}>
+  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 4, fontSize: 11.5, fontWeight: 600, background: active ? "#ECFDF5" : "var(--adm-border)", color: active ? "#065F46" : "#64748B", fontFamily: "'Lexend', sans-serif" }}>
     <span style={{ width: 8, height: 8, borderRadius: '50%', background: active ? "#10B981" : "#94A3B8" }} />
     {active ? "Active" : "Inactive"}
   </span>
 );
 const FaceBadge = ({ enrolled }) => (
-  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 4, fontSize: 11.5, fontWeight: 600, background: enrolled ? "#F3E5F5" : "#FFFBEB", color: enrolled ? "#7B2D8B" : "#92400E", fontFamily: "'DM Sans', sans-serif" }}>
+  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 4, fontSize: 11.5, fontWeight: 600, background: enrolled ? "#F3E5F5" : "#FFFBEB", color: enrolled ? "#7B2D8B" : "#92400E", fontFamily: "'Lexend', sans-serif" }}>
     <span style={{ width: 8, height: 8, borderRadius: '50%', background: enrolled ? "#9B4DAB" : "#F59E0B" }} />
     {enrolled ? "Enrolled" : "Not Enrolled"}
   </span>
@@ -261,9 +261,9 @@ const ActionBtn = ({ label, variant = "default", onClick }) => (
     className={`adm-action${variant === "danger" ? " danger" : variant === "success" ? " success" : ""}`}
     onClick={onClick}
     style={{
-      padding: "5px 12px", borderRadius: 4, border: "1.5px solid #E2E8F0",
-      background: "#fff", fontSize: 12, fontWeight: 500, cursor: "pointer",
-      whiteSpace: "nowrap", color: "#374151", fontFamily: "'DM Sans', sans-serif",
+      padding: "5px 12px", borderRadius: 4, border: "1.5px solid var(--adm-border)",
+      background: "var(--adm-card)", fontSize: 12, fontWeight: 500, cursor: "pointer",
+      whiteSpace: "nowrap", color: "#374151", fontFamily: "'Lexend', sans-serif",
     }}
   >
     {label}
@@ -470,7 +470,7 @@ export default function AdminManagement() {
           )}
           {tab === "unverified" && (
             <button onClick={handleCleanupUnverified}
-              style={{ padding: "10px 16px", borderRadius: 8, border: "1.5px solid #FECACA", background: "#FEF2F2", color: "#991B1B", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", display: "inline-flex", alignItems: "center", gap: 7 }}>
+              style={{ padding: "10px 16px", borderRadius: 8, border: "1.5px solid #FECACA", background: "#FEF2F2", color: "#991B1B", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif", display: "inline-flex", alignItems: "center", gap: 7 }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
               Purge accounts older than 90 days
             </button>
@@ -478,7 +478,7 @@ export default function AdminManagement() {
         </div>
 
         {/* Tab bar */}
-        <div style={{ display: "flex", gap: 4, marginBottom: 14, borderBottom: "1.5px solid #E2E8F0", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 4, marginBottom: 14, borderBottom: "1.5px solid var(--adm-border)", flexWrap: "wrap" }}>
           {[
             { key: "admins",          label: "Admins",            count: admins.length },
             { key: "victims",         label: "Victims",            count: victims.length },
@@ -497,12 +497,12 @@ export default function AdminManagement() {
                   background: "transparent",
                   color: active ? "#7B2D8B" : "#64748B",
                   fontSize: 13.5, fontWeight: active ? 700 : 600,
-                  cursor: "pointer", fontFamily: "'DM Sans',sans-serif",
+                  cursor: "pointer", fontFamily: "'Lexend',sans-serif",
                   display: "inline-flex", alignItems: "center", gap: 6,
                 }}>
                 {t.label}
                 {t.count > 0 && (
-                  <span style={{ minWidth: 18, padding: "0 6px", height: 18, borderRadius: 9, background: active ? "#7B2D8B" : "#E2E8F0", color: active ? "#fff" : "#475569", fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ minWidth: 18, padding: "0 6px", height: 18, borderRadius: 9, background: active ? "#7B2D8B" : "var(--adm-border)", color: active ? "#fff" : "#475569", fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                     {t.count > 99 ? "99+" : t.count}
                   </span>
                 )}
@@ -523,12 +523,12 @@ export default function AdminManagement() {
               placeholder={tab === "admins" ? "Search by name, email, username, or employee ID" : "Search by name, email, phone, or address"}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ width: "100%", padding: "10px 12px 10px 36px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", fontSize: 13.5, color: "#0F172A", fontFamily: "'DM Sans',sans-serif", outline: "none", boxSizing: "border-box" }}
+              style={{ width: "100%", padding: "10px 12px 10px 36px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", fontSize: 13.5, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", outline: "none", boxSizing: "border-box" }}
               onFocus={(e) => e.target.style.borderColor = "#7B2D8B"}
-              onBlur={(e) => e.target.style.borderColor = "#E2E8F0"}
+              onBlur={(e) => e.target.style.borderColor = "var(--adm-border)"}
             />
             {search && (
-              <button onClick={() => setSearch("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 22, height: 22, borderRadius: "50%", border: "none", background: "#E2E8F0", color: "#475569", cursor: "pointer", fontSize: 14, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'DM Sans',sans-serif" }}>×</button>
+              <button onClick={() => setSearch("")} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 22, height: 22, borderRadius: "50%", border: "none", background: "var(--adm-border)", color: "var(--adm-text-2)", cursor: "pointer", fontSize: 14, lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Lexend',sans-serif" }}>×</button>
             )}
           </div>
           {tab === "admins" && <button
@@ -536,11 +536,11 @@ export default function AdminManagement() {
             style={{
               padding: "10px 14px",
               borderRadius: 8,
-              border: showDeleted ? "1.5px solid #C45E10" : "1.5px solid #E2E8F0",
+              border: showDeleted ? "1.5px solid #C45E10" : "1.5px solid var(--adm-border)",
               background: showDeleted ? "#FFF3E0" : "#fff",
               color: showDeleted ? "#C45E10" : "#475569",
               fontSize: 13, fontWeight: 600, cursor: "pointer",
-              fontFamily: "'DM Sans',sans-serif",
+              fontFamily: "'Lexend',sans-serif",
               display: "inline-flex", alignItems: "center", gap: 7,
               transition: "all 0.15s ease",
               whiteSpace: "nowrap",
@@ -563,38 +563,38 @@ export default function AdminManagement() {
           <div style={{ background: "#FFF3E0", border: "1.5px solid #FFCC99", borderRadius: 0, marginBottom: 16, animation: "slideDown 0.2s ease" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 16px", borderBottom: "1px solid #FFCC99", background: "#FFE4CC" }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              <p style={{ margin: 0, fontSize: 12.5, fontWeight: 800, color: "#C45E10", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "'DM Sans',sans-serif" }}>
+              <p style={{ margin: 0, fontSize: 12.5, fontWeight: 800, color: "#C45E10", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "'Lexend',sans-serif" }}>
                 Recently Deleted ({deletedAdmins.length})
               </p>
-              <p style={{ margin: "0 0 0 auto", fontSize: 11.5, color: "#9A3412", fontFamily: "'DM Sans',sans-serif" }}>
+              <p style={{ margin: "0 0 0 auto", fontSize: 11.5, color: "#9A3412", fontFamily: "'Lexend',sans-serif" }}>
                 Recoverable within 30 days of deletion.
               </p>
             </div>
             <div style={{ padding: deletedAdmins.length === 0 ? "20px 16px" : 0 }}>
               {deletedAdmins.length === 0 ? (
-                <p style={{ margin: 0, fontSize: 13, color: "#9A3412", textAlign: "center", fontFamily: "'DM Sans',sans-serif" }}>
+                <p style={{ margin: 0, fontSize: 13, color: "#9A3412", textAlign: "center", fontFamily: "'Lexend',sans-serif" }}>
                   No deleted admins. Deleted accounts will appear here for 30 days.
                 </p>
               ) : (
                 deletedAdmins.map((a, i) => (
-                  <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderTop: i === 0 ? "none" : "1px solid #FFE4CC", background: "#fff" }}>
-                    <div style={{ ...S.avatar, background: "#E2E8F0", color: "#94A3B8" }}>{initials(a)}</div>
+                  <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderTop: i === 0 ? "none" : "1px solid #FFE4CC", background: "var(--adm-card)" }}>
+                    <div style={{ ...S.avatar, background: "var(--adm-border)", color: "var(--adm-text-muted)" }}>{initials(a)}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ margin: "0 0 2px", fontSize: 13.5, fontWeight: 700, color: "#0F172A", fontFamily: "'DM Sans',sans-serif" }}>
+                      <p style={{ margin: "0 0 2px", fontSize: 13.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>
                         {[a.first_name, a.middle_name, a.last_name].filter(Boolean).join(" ")}
                       </p>
-                      <p style={{ margin: 0, fontSize: 12, color: "#64748B", fontFamily: "'DM Sans',sans-serif" }}>
+                      <p style={{ margin: 0, fontSize: 12, color: "#64748B", fontFamily: "'Lexend',sans-serif" }}>
                         {a.email} · {a.employee_id}
                       </p>
                     </div>
                     <div style={{ textAlign: "right", marginRight: 8 }}>
-                      <p style={{ margin: 0, fontSize: 11, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "'DM Sans',sans-serif" }}>Deleted</p>
-                      <p style={{ margin: "1px 0 0", fontSize: 12.5, fontWeight: 700, color: daysLeft(a.deleted_at) <= 7 ? "#C62828" : "#C45E10", fontFamily: "'DM Sans',sans-serif" }}>
+                      <p style={{ margin: 0, fontSize: 11, color: "var(--adm-text-muted)", textTransform: "uppercase", letterSpacing: "0.06em", fontFamily: "'Lexend',sans-serif" }}>Deleted</p>
+                      <p style={{ margin: "1px 0 0", fontSize: 12.5, fontWeight: 700, color: daysLeft(a.deleted_at) <= 7 ? "#C62828" : "#C45E10", fontFamily: "'Lexend',sans-serif" }}>
                         {daysLeft(a.deleted_at)} day{daysLeft(a.deleted_at) === 1 ? "" : "s"} left
                       </p>
                     </div>
                     <button className="adm-action success" onClick={() => setConfirm({ type: "recover", admin: a, loading: false })}
-                      style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid #A7F3D0", background: "#ECFDF5", color: "#065F46", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif", whiteSpace: "nowrap" }}>
+                      style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid #A7F3D0", background: "#ECFDF5", color: "#065F46", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap" }}>
                       Recover
                     </button>
                   </div>
@@ -619,7 +619,7 @@ export default function AdminManagement() {
           <div className="adm-table-wrap" style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
               <thead>
-                <tr style={{ backgroundColor: "#F8FAFC", borderBottom: "1px solid #E2E8F0" }}>
+                <tr style={{ backgroundColor: "var(--adm-muted)", borderBottom: "1px solid var(--adm-border)" }}>
                   {["", "Name & Email", "Username", "Employee ID", "Status", "Face 2FA", "Actions"].map((h, i) => (
                     <th key={i} style={{ ...S.th, textAlign: i === 6 ? "right" : "left" }}>{h}</th>
                   ))}
@@ -645,9 +645,9 @@ export default function AdminManagement() {
                   </tr>
                 ) : (
                   visibleAdmins.map((a) => (
-                    <tr key={a.id} className="adm-row" style={{ borderBottom: "1px solid #F1F5F9" }}>
+                    <tr key={a.id} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
                       <td style={{ padding: "12px 16px", width: 52 }}>
-                        <div style={{ ...S.avatar, background: a.is_active ? "linear-gradient(135deg,#E1BEE7,#7B2D8B)" : "#E2E8F0", color: a.is_active ? "#fff" : "#94A3B8" }}>
+                        <div style={{ ...S.avatar, background: a.is_active ? "linear-gradient(135deg,#E1BEE7,#7B2D8B)" : "var(--adm-border)", color: a.is_active ? "#fff" : "#94A3B8" }}>
                           {initials(a)}
                         </div>
                       </td>
@@ -691,7 +691,7 @@ export default function AdminManagement() {
             <div className="adm-table-wrap" style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
                 <thead>
-                  <tr style={{ backgroundColor: "#F8FAFC", borderBottom: "1px solid #E2E8F0" }}>
+                  <tr style={{ backgroundColor: "var(--adm-muted)", borderBottom: "1px solid var(--adm-border)" }}>
                     {["", "Full Name & Email", "Phone", "Address", "Minor", "Actions"].map((h, i) => (
                       <th key={i} style={{ ...S.th, textAlign: i === 5 ? "right" : "left" }}>{h}</th>
                     ))}
@@ -709,7 +709,7 @@ export default function AdminManagement() {
                     </td></tr>
                   ) : (
                     visibleVictims.map(u => (
-                      <tr key={u.id} className="adm-row" style={{ borderBottom: "1px solid #F1F5F9" }}>
+                      <tr key={u.id} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
                         <td style={{ padding: "12px 16px", width: 52 }}>
                           <div style={{ ...S.avatar, background: "linear-gradient(135deg,#FFE4CC,#F47920)", color: "#fff" }}>
                             {initials(u)}
@@ -719,9 +719,9 @@ export default function AdminManagement() {
                           <p style={S.adminName}>{[u.first_name, u.middle_name, u.last_name].filter(Boolean).join(" ")}</p>
                           <p style={S.adminEmail}>{u.email}</p>
                         </td>
-                        <td style={{ ...S.td, color: "#475569", fontFamily: "monospace" }}>{u.phone_number || "-"}</td>
+                        <td style={{ ...S.td, color: "var(--adm-text-2)", fontFamily: "monospace" }}>{u.phone_number || "-"}</td>
                         <td style={{ ...S.td, color: "#64748B", maxWidth: 240, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.address || "-"}</td>
-                        <td style={S.td}>{u.is_minor ? <span style={{ fontSize: 11.5, fontWeight: 700, color: "#92400E", background: "#FEF3C7", padding: "3px 9px", borderRadius: 9999 }}>Minor</span> : <span style={{ color: "#CBD5E1" }}>-</span>}</td>
+                        <td style={S.td}>{u.is_minor ? <span style={{ fontSize: 11.5, fontWeight: 700, color: "#92400E", background: "#FEF3C7", padding: "3px 9px", borderRadius: 9999 }}>Minor</span> : <span style={{ color: "var(--adm-border-strong)" }}>-</span>}</td>
                         <td style={{ ...S.td, textAlign: "right" }}>
                           <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", flexWrap: "wrap" }}>
                             <ActionBtn label="Edit"    onClick={() => setEditingVictim(u)} />
@@ -743,14 +743,14 @@ export default function AdminManagement() {
           <div style={S.tableCard}>
             <div style={{ padding: "12px 16px", background: "#FFFBEB", borderBottom: "1px solid #FDE68A", display: "flex", alignItems: "center", gap: 10 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#92400E" strokeWidth="1.8" /><path d="M12 8v4M12 16h.01" stroke="#92400E" strokeWidth="2" strokeLinecap="round" /></svg>
-              <p style={{ margin: 0, fontSize: 12.5, color: "#7C2D12", fontFamily: "'DM Sans',sans-serif" }}>
+              <p style={{ margin: 0, fontSize: 12.5, color: "#7C2D12", fontFamily: "'Lexend',sans-serif" }}>
                 These accounts never completed email/OTP verification - they cannot log in. Archive them to clean up your DB, or use the purge button to bulk-delete ones older than 90 days.
               </p>
             </div>
             <div className="adm-table-wrap" style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
                 <thead>
-                  <tr style={{ backgroundColor: "#F8FAFC", borderBottom: "1px solid #E2E8F0" }}>
+                  <tr style={{ backgroundColor: "var(--adm-muted)", borderBottom: "1px solid var(--adm-border)" }}>
                     {["", "Name & Email", "Phone", "Signed Up", "Actions"].map((h, i) => (
                       <th key={i} style={{ ...S.th, textAlign: i === 4 ? "right" : "left" }}>{h}</th>
                     ))}
@@ -770,17 +770,17 @@ export default function AdminManagement() {
                     visibleUnverified.map(u => {
                       const ageDays = u.created_at ? Math.floor((Date.now() - new Date(u.created_at).getTime()) / 86400000) : 0;
                       return (
-                        <tr key={u.id} className="adm-row" style={{ borderBottom: "1px solid #F1F5F9" }}>
+                        <tr key={u.id} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
                           <td style={{ padding: "12px 16px", width: 52 }}>
-                            <div style={{ ...S.avatar, background: "#E2E8F0", color: "#94A3B8" }}>{initials(u)}</div>
+                            <div style={{ ...S.avatar, background: "var(--adm-border)", color: "var(--adm-text-muted)" }}>{initials(u)}</div>
                           </td>
                           <td style={S.td}>
                             <p style={S.adminName}>{[u.first_name, u.middle_name, u.last_name].filter(Boolean).join(" ")}</p>
                             <p style={S.adminEmail}>{u.email}</p>
                           </td>
-                          <td style={{ ...S.td, color: "#475569", fontFamily: "monospace" }}>{u.phone_number || "-"}</td>
+                          <td style={{ ...S.td, color: "var(--adm-text-2)", fontFamily: "monospace" }}>{u.phone_number || "-"}</td>
                           <td style={S.td}>
-                            <p style={{ margin: 0, fontSize: 13, color: "#0F172A" }}>{fmtDate(u.created_at)}</p>
+                            <p style={{ margin: 0, fontSize: 13, color: "var(--adm-text)" }}>{fmtDate(u.created_at)}</p>
                             <p style={{ margin: 0, fontSize: 11.5, color: ageDays >= 90 ? "#C62828" : "#94A3B8" }}>
                               {ageDays} day{ageDays === 1 ? "" : "s"} ago{ageDays >= 90 ? " - eligible for purge" : ""}
                             </p>
@@ -803,14 +803,14 @@ export default function AdminManagement() {
           <div style={S.tableCard}>
             <div style={{ padding: "12px 16px", background: "#FFF3E0", borderBottom: "1px solid #FFCC99", display: "flex", alignItems: "center", gap: 10 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              <p style={{ margin: 0, fontSize: 12.5, color: "#7C2D12", fontFamily: "'DM Sans',sans-serif" }}>
+              <p style={{ margin: 0, fontSize: 12.5, color: "#7C2D12", fontFamily: "'Lexend',sans-serif" }}>
                 Archived victim accounts. Recoverable within 30 days of deletion.
               </p>
             </div>
             <div className="adm-table-wrap" style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
                 <thead>
-                  <tr style={{ backgroundColor: "#F8FAFC", borderBottom: "1px solid #E2E8F0" }}>
+                  <tr style={{ backgroundColor: "var(--adm-muted)", borderBottom: "1px solid var(--adm-border)" }}>
                     {["", "Name & Email", "Phone", "Deleted", "Days Left", "Actions"].map((h, i) => (
                       <th key={i} style={{ ...S.th, textAlign: i === 5 ? "right" : "left" }}>{h}</th>
                     ))}
@@ -830,16 +830,16 @@ export default function AdminManagement() {
                     visibleDeletedVictims.map(u => {
                       const daysLft = daysLeft(u.deleted_at);
                       return (
-                        <tr key={u.id} className="adm-row" style={{ borderBottom: "1px solid #F1F5F9" }}>
+                        <tr key={u.id} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
                           <td style={{ padding: "12px 16px", width: 52 }}>
-                            <div style={{ ...S.avatar, background: "#E2E8F0", color: "#94A3B8" }}>{initials(u)}</div>
+                            <div style={{ ...S.avatar, background: "var(--adm-border)", color: "var(--adm-text-muted)" }}>{initials(u)}</div>
                           </td>
                           <td style={S.td}>
                             <p style={S.adminName}>{[u.first_name, u.middle_name, u.last_name].filter(Boolean).join(" ")}</p>
                             <p style={S.adminEmail}>{u.email}</p>
                           </td>
-                          <td style={{ ...S.td, color: "#475569", fontFamily: "monospace" }}>{u.phone_number || "-"}</td>
-                          <td style={{ ...S.td, color: "#475569" }}>{fmtDate(u.deleted_at)}</td>
+                          <td style={{ ...S.td, color: "var(--adm-text-2)", fontFamily: "monospace" }}>{u.phone_number || "-"}</td>
+                          <td style={{ ...S.td, color: "var(--adm-text-2)" }}>{fmtDate(u.deleted_at)}</td>
                           <td style={S.td}>
                             <span style={{ display: "inline-flex", padding: "3px 10px", borderRadius: 9999, fontSize: 11.5, fontWeight: 700, color: daysLft <= 7 ? "#C62828" : "#C45E10", background: daysLft <= 7 ? "#FEF2F2" : "#FFF3E0", border: `1.5px solid ${daysLft <= 7 ? "#FECACA" : "#FFCC99"}` }}>
                               {daysLft} day{daysLft === 1 ? "" : "s"} left
@@ -875,10 +875,10 @@ export default function AdminManagement() {
               >
                 <path d="M7.5 5l5 5-5 5" stroke="#94A3B8" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontSize: 13.5, fontWeight: 600, color: "#64748B", fontFamily: "'DM Sans', sans-serif" }}>
+              <span style={{ fontSize: 13.5, fontWeight: 600, color: "#64748B", fontFamily: "'Lexend', sans-serif" }}>
                 Recently Deleted ({deletedAdmins.length})
               </span>
-              <span style={{ fontSize: 12, color: "#94A3B8", fontFamily: "'DM Sans', sans-serif" }}>
+              <span style={{ fontSize: 12, color: "var(--adm-text-muted)", fontFamily: "'Lexend', sans-serif" }}>
                 - recoverable within 30 days
               </span>
             </button>
@@ -890,7 +890,7 @@ export default function AdminManagement() {
                     <thead>
                       <tr style={{ backgroundColor: "#FFF5F5", borderBottom: "1px solid #FECACA" }}>
                         {["", "Name", "Username", "Deleted On", "Days Left", ""].map((h, i) => (
-                          <th key={i} style={{ ...S.th, textAlign: i === 5 ? "right" : "left", color: "#94A3B8" }}>{h}</th>
+                          <th key={i} style={{ ...S.th, textAlign: i === 5 ? "right" : "left", color: "var(--adm-text-muted)" }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -900,16 +900,16 @@ export default function AdminManagement() {
                         return (
                           <tr key={a.id} style={{ borderBottom: "1px solid #FEF2F2" }}>
                             <td style={{ padding: "12px 16px", width: 52 }}>
-                              <div style={{ ...S.avatar, background: "#E2E8F0", color: "#94A3B8" }}>{initials(a)}</div>
+                              <div style={{ ...S.avatar, background: "var(--adm-border)", color: "var(--adm-text-muted)" }}>{initials(a)}</div>
                             </td>
                             <td style={S.td}>
                               <p style={{ ...S.adminName, color: "#64748B" }}>{[a.first_name, a.middle_name, a.last_name].filter(Boolean).join(" ")}</p>
                               <p style={S.adminEmail}>{a.email}</p>
                             </td>
-                            <td style={S.td}><span style={{ ...S.monoTag, color: "#94A3B8" }}>{a.username}</span></td>
-                            <td style={{ ...S.td, color: "#94A3B8" }}>{fmtDate(a.deleted_at)}</td>
+                            <td style={S.td}><span style={{ ...S.monoTag, color: "var(--adm-text-muted)" }}>{a.username}</span></td>
+                            <td style={{ ...S.td, color: "var(--adm-text-muted)" }}>{fmtDate(a.deleted_at)}</td>
                             <td style={S.td}>
-                              <span style={{ display: "inline-block", padding: "3px 9px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: days <= 5 ? "#FEF2F2" : "#FFFBEB", color: days <= 5 ? "#991B1B" : "#92400E", fontFamily: "'DM Sans', sans-serif" }}>
+                              <span style={{ display: "inline-block", padding: "3px 9px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: days <= 5 ? "#FEF2F2" : "#FFFBEB", color: days <= 5 ? "#991B1B" : "#92400E", fontFamily: "'Lexend', sans-serif" }}>
                                 {days} day{days !== 1 ? "s" : ""} left
                               </span>
                             </td>
@@ -1029,8 +1029,8 @@ function EditVictimModal({ victim, onClose, onSaved, onError }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
-      <form onSubmit={handleSubmit} style={{ background: "#fff", borderRadius: 12, maxWidth: 560, width: "100%", maxHeight: "90vh", overflowY: "auto", padding: 24, fontFamily: "'DM Sans',sans-serif", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
-        <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "#0F172A" }}>Edit Victim Profile</h2>
+      <form onSubmit={handleSubmit} style={{ background: "var(--adm-card)", borderRadius: 12, maxWidth: 560, width: "100%", maxHeight: "90vh", overflowY: "auto", padding: 24, fontFamily: "'Lexend',sans-serif", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+        <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "var(--adm-text)" }}>Edit Victim Profile</h2>
         <p style={{ margin: "0 0 18px", fontSize: 12.5, color: "#64748B" }}>You're editing this account on behalf of <strong>{victim.first_name} {victim.last_name}</strong>. Changes save immediately.</p>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
@@ -1052,7 +1052,7 @@ function EditVictimModal({ victim, onClose, onSaved, onError }) {
           </div>
           <div style={{ gridColumn: "span 2", display: "flex", alignItems: "center", gap: 8 }}>
             <input type="checkbox" id="vc-isminor" checked={form.is_minor} onChange={handleChange("is_minor")} />
-            <label htmlFor="vc-isminor" style={{ fontSize: 13, color: "#475569", cursor: "pointer" }}>This victim is a minor (under 18)</label>
+            <label htmlFor="vc-isminor" style={{ fontSize: 13, color: "var(--adm-text-2)", cursor: "pointer" }}>This victim is a minor (under 18)</label>
           </div>
           {form.is_minor && (
             <>
@@ -1094,8 +1094,8 @@ function ResetVictimPasswordModal({ victim, onClose, onDone, onError }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
-      <form onSubmit={handleSubmit} style={{ background: "#fff", borderRadius: 12, maxWidth: 440, width: "100%", padding: 24, fontFamily: "'DM Sans',sans-serif", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
-        <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "#0F172A" }}>Reset Victim Password</h2>
+      <form onSubmit={handleSubmit} style={{ background: "var(--adm-card)", borderRadius: 12, maxWidth: 440, width: "100%", padding: 24, fontFamily: "'Lexend',sans-serif", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+        <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "var(--adm-text)" }}>Reset Victim Password</h2>
         <p style={{ margin: "0 0 16px", fontSize: 12.5, color: "#64748B" }}>
           You're setting a new password for <strong>{victim.first_name} {victim.last_name}</strong>. Share it with them securely (in person or by phone) - they should change it after their next login.
         </p>
@@ -1135,8 +1135,8 @@ function ResetAdminPasswordModal({ admin, onClose, onDone, onError }) {
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
-      <form onSubmit={handleSubmit} style={{ background: "#fff", borderRadius: 12, maxWidth: 440, width: "100%", padding: 24, fontFamily: "'DM Sans',sans-serif", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
-        <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "#0F172A" }}>Reset Admin Password</h2>
+      <form onSubmit={handleSubmit} style={{ background: "var(--adm-card)", borderRadius: 12, maxWidth: 440, width: "100%", padding: 24, fontFamily: "'Lexend',sans-serif", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+        <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "var(--adm-text)" }}>Reset Admin Password</h2>
         <p style={{ margin: "0 0 16px", fontSize: 12.5, color: "#64748B" }}>
           You're setting a new password for admin <strong>{admin.first_name} {admin.last_name}</strong> ({admin.username}). Share it with them securely - they should change it after their next login.
         </p>
@@ -1155,63 +1155,63 @@ function ResetAdminPasswordModal({ admin, onClose, onDone, onError }) {
 
 const FormField = ({ label, children }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-    <label style={{ fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</label>
+    <label style={{ fontSize: 11, fontWeight: 700, color: "var(--adm-text-2)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</label>
     {children}
   </div>
 );
 
 const S2 = {
-  input:      { width: "100%", boxSizing: "border-box", padding: "9px 12px", borderRadius: 8, border: "1.5px solid #E2E8F0", fontSize: 13.5, color: "#0F172A", fontFamily: "'DM Sans',sans-serif", outline: "none", marginBottom: 8 },
-  btnGhost:   { padding: "9px 16px", borderRadius: 8, border: "1.5px solid #E2E8F0", background: "#fff", color: "#475569", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" },
-  btnPrimary: { padding: "9px 18px", borderRadius: 8, border: "none", background: "#C45E10", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans',sans-serif" },
+  input:      { width: "100%", boxSizing: "border-box", padding: "9px 12px", borderRadius: 8, border: "1.5px solid var(--adm-border)", fontSize: 13.5, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", outline: "none", marginBottom: 8 },
+  btnGhost:   { padding: "9px 16px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
+  btnPrimary: { padding: "9px 18px", borderRadius: 8, border: "none", background: "#C45E10", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const S = {
-  wrap:        { maxWidth: "1200px", fontFamily: "'DM Sans', sans-serif" },
+  wrap:        { maxWidth: "1200px", fontFamily: "'Lexend', sans-serif" },
   header:      { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, gap: 12, flexWrap: "wrap" },
-  headerSub:   { fontSize: 13, color: "#94A3B8", fontFamily: "'DM Sans', sans-serif" },
-  newBtn:      { padding: "9px 18px", borderRadius: 4, border: "none", background: "#9B4DAB", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 2px 8px rgba(123,45,139,0.2)", fontFamily: "'DM Sans', sans-serif" },
+  headerSub:   { fontSize: 13, color: "var(--adm-text-muted)", fontFamily: "'Lexend', sans-serif" },
+  newBtn:      { padding: "9px 18px", borderRadius: 4, border: "none", background: "#9B4DAB", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 2px 8px rgba(123,45,139,0.2)", fontFamily: "'Lexend', sans-serif" },
 
   errorBanner: { display: "flex", alignItems: "center", gap: 10, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 4, padding: "12px 16px", marginBottom: 16 },
-  errorText:   { flex: 1, fontSize: 13, color: "#991B1B", fontFamily: "'DM Sans', sans-serif" },
-  retryBtn:    { padding: "4px 12px", borderRadius: 4, border: "1px solid #FECACA", background: "#fff", color: "#991B1B", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
+  errorText:   { flex: 1, fontSize: 13, color: "#991B1B", fontFamily: "'Lexend', sans-serif" },
+  retryBtn:    { padding: "4px 12px", borderRadius: 4, border: "1px solid #FECACA", background: "var(--adm-card)", color: "#991B1B", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Lexend', sans-serif" },
 
-  tableCard:   { background: "#fff", borderRadius: 0, border: "1px solid #E2E8F0", overflow: "hidden", boxShadow: "0 1px 4px rgba(15,23,42,0.06)" },
-  th:          { padding: "11px 16px", fontSize: 11, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.6px", whiteSpace: "nowrap", fontFamily: "'DM Sans', sans-serif" },
-  td:          { padding: "13px 16px", fontSize: 13.5, fontFamily: "'DM Sans', sans-serif" },
+  tableCard:   { background: "var(--adm-card)", borderRadius: 0, border: "1px solid var(--adm-border)", overflow: "hidden", boxShadow: "0 1px 4px rgba(15,23,42,0.06)" },
+  th:          { padding: "11px 16px", fontSize: 11, fontWeight: 700, color: "var(--adm-text-muted)", textTransform: "uppercase", letterSpacing: "0.6px", whiteSpace: "nowrap", fontFamily: "'Lexend', sans-serif" },
+  td:          { padding: "13px 16px", fontSize: 13.5, fontFamily: "'Lexend', sans-serif" },
 
   avatar:      { width: 38, height: 38, borderRadius: '50%', display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, flexShrink: 0 },
-  adminName:   { fontSize: 13.5, fontWeight: 600, color: "#0F172A", marginBottom: 2, fontFamily: "'DM Sans', sans-serif" },
-  adminEmail:  { fontSize: 11.5, color: "#94A3B8", fontFamily: "'DM Sans', sans-serif" },
-  monoTag:     { fontFamily: "monospace", fontSize: 12.5, color: "#475569", background: "#F1F5F9", padding: "2px 8px", borderRadius: 4},
+  adminName:   { fontSize: 13.5, fontWeight: 600, color: "var(--adm-text)", marginBottom: 2, fontFamily: "'Lexend', sans-serif" },
+  adminEmail:  { fontSize: 11.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend', sans-serif" },
+  monoTag:     { fontFamily: "monospace", fontSize: 12.5, color: "var(--adm-text-2)", background: "var(--adm-border)", padding: "2px 8px", borderRadius: 4},
 
   emptyState:  { textAlign: "center", padding: "56px 24px" },
-  emptyIcon:   { width: 52, height: 52, borderRadius: 4, background: "#F1F5F9", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 22 },
-  emptyTitle:  { fontWeight: 600, color: "#0F172A", margin: "0 0 4px", fontFamily: "'DM Sans', sans-serif" },
-  emptySub:    { color: "#94A3B8", fontSize: 13, margin: 0, fontFamily: "'DM Sans', sans-serif" },
+  emptyIcon:   { width: 52, height: 52, borderRadius: 4, background: "var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px", fontSize: 22 },
+  emptyTitle:  { fontWeight: 600, color: "var(--adm-text)", margin: "0 0 4px", fontFamily: "'Lexend', sans-serif" },
+  emptySub:    { color: "var(--adm-text-muted)", fontSize: 13, margin: 0, fontFamily: "'Lexend', sans-serif" },
 
-  toast:       { position: "fixed", top: 20, right: 20, zIndex: 999, background: "#fff", borderRadius: 4, border: "1px solid", padding: "12px 18px", boxShadow: "0 8px 24px rgba(0,0,0,0.10)", display: "flex", alignItems: "center", gap: 9, fontSize: 13.5, fontWeight: 500, fontFamily: "'DM Sans', sans-serif" },
+  toast:       { position: "fixed", top: 20, right: 20, zIndex: 999, background: "var(--adm-card)", borderRadius: 4, border: "1px solid", padding: "12px 18px", boxShadow: "0 8px 24px rgba(0,0,0,0.10)", display: "flex", alignItems: "center", gap: 9, fontSize: 13.5, fontWeight: 500, fontFamily: "'Lexend', sans-serif" },
 
   // Modal
   modalBackdrop:     { position: "fixed", inset: 0, zIndex: 1000, background: "rgba(15,23,42,0.5)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 },
-  confirmModal:      { background: "#fff", borderRadius: 4, width: "100%", maxWidth: 400, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", padding: 28, fontFamily: "'DM Sans', sans-serif" },
-  createModal:       { background: "#fff", borderRadius: 4, width: "100%", maxWidth: 560, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", maxHeight: "90vh", overflowY: "auto", fontFamily: "'DM Sans', sans-serif" },
+  confirmModal:      { background: "var(--adm-card)", borderRadius: 4, width: "100%", maxWidth: 400, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", padding: 28, fontFamily: "'Lexend', sans-serif" },
+  createModal:       { background: "var(--adm-card)", borderRadius: 4, width: "100%", maxWidth: 560, boxShadow: "0 20px 60px rgba(0,0,0,0.15)", maxHeight: "90vh", overflowY: "auto", fontFamily: "'Lexend', sans-serif" },
   createModalHeader: { padding: "20px 24px 0", display: "flex", alignItems: "flex-start", justifyContent: "space-between" },
   createModalFooter: { padding: "0 24px 24px", display: "flex", gap: 10, justifyContent: "flex-end" },
-  modalTitle:        { margin: "0 0 6px", fontSize: 16, fontWeight: 700, color: "#0F172A", fontFamily: "'DM Sans', sans-serif" },
-  modalSub:          { margin: 0, fontSize: 12.5, color: "#94A3B8", fontFamily: "'DM Sans', sans-serif" },
-  modalMsg:          { margin: "0 0 20px", fontSize: 13.5, color: "#64748B", lineHeight: 1.6, fontFamily: "'DM Sans', sans-serif" },
+  modalTitle:        { margin: "0 0 6px", fontSize: 16, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend', sans-serif" },
+  modalSub:          { margin: 0, fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend', sans-serif" },
+  modalMsg:          { margin: "0 0 20px", fontSize: 13.5, color: "#64748B", lineHeight: 1.6, fontFamily: "'Lexend', sans-serif" },
   modalFooter:       { display: "flex", gap: 10, justifyContent: "flex-end" },
-  cancelBtn:         { padding: "9px 18px", borderRadius: 4, border: "1.5px solid #E2E8F0", background: "#fff", color: "#374151", fontSize: 13.5, fontWeight: 500, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" },
-  confirmBtn:        { padding: "9px 20px", borderRadius: 4, border: "none", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontFamily: "'DM Sans', sans-serif" },
-  closeBtn:          { background: "none", border: "none", cursor: "pointer", color: "#94A3B8", padding: 4, display: "flex" },
+  cancelBtn:         { padding: "9px 18px", borderRadius: 4, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "#374151", fontSize: 13.5, fontWeight: 500, cursor: "pointer", fontFamily: "'Lexend', sans-serif" },
+  confirmBtn:        { padding: "9px 20px", borderRadius: 4, border: "none", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontFamily: "'Lexend', sans-serif" },
+  closeBtn:          { background: "none", border: "none", cursor: "pointer", color: "var(--adm-text-muted)", padding: 4, display: "flex" },
   spinner:           { width: 13, height: 13, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: '50%', animation: "spin 0.7s linear infinite", display: "inline-block" },
 
   // Form
   formGrid:    { padding: "20px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 },
-  fieldLabel:  { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#94A3B8", marginBottom: 5, fontFamily: "'DM Sans', sans-serif" },
-  fieldInput:  { width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 4, border: "1.5px solid #E2E8F0", fontSize: 13.5, color: "#0F172A", background: "#F8FAFC", outline: "none", fontFamily: "'DM Sans', sans-serif", marginBottom: 0 },
-  pwWrap:      { display: "flex", alignItems: "center", border: "1.5px solid #E2E8F0", borderRadius: 8, background: "#F8FAFC", overflow: "hidden" },
-  eyeBtn:      { padding: "0 12px", background: "none", border: "none", cursor: "pointer", color: "#94A3B8", display: "flex", alignItems: "center" },
+  fieldLabel:  { display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--adm-text-muted)", marginBottom: 5, fontFamily: "'Lexend', sans-serif" },
+  fieldInput:  { width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 4, border: "1.5px solid var(--adm-border)", fontSize: 13.5, color: "var(--adm-text)", background: "var(--adm-muted)", outline: "none", fontFamily: "'Lexend', sans-serif", marginBottom: 0 },
+  pwWrap:      { display: "flex", alignItems: "center", border: "1.5px solid var(--adm-border)", borderRadius: 8, background: "var(--adm-muted)", overflow: "hidden" },
+  eyeBtn:      { padding: "0 12px", background: "none", border: "none", cursor: "pointer", color: "var(--adm-text-muted)", display: "flex", alignItems: "center" },
 };

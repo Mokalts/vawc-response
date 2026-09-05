@@ -1,11 +1,11 @@
 :root {
-    /* Primary — violet */
+    /* Primary, violet */
     --primary:        #F47920;
     --primary-dark:   #C45E10;
     --primary-bg:     #FFF3E0;
     --primary-border: #FFE4CC;
 
-    /* Secondary — orange */
+    /* Secondary, orange */
     --secondary:      #F47920;
     --secondary-dark: #C45E10;
     --secondary-bg:   #FFF3E0;
@@ -15,14 +15,13 @@
     --danger:         #E11D48;
     --warning:        #D97706;
 
-    /* Neutrals */
-    --text:           #0F172A;
-    --text-body:      #475569;
-    --text-muted:     #94A3B8;
+    /* Neutrals, NOTE: --text / --text-body / --text-muted are defined in
+       index.css as THEME-AWARE tokens; do not redefine them here or they'd
+       shadow the dark-mode values. */
     --bg:             #FFF3E0;
-    --gray:           #BFBAB4;
+    --gray:           #78716C;
 
-    /* Legacy aliases (for any leftover var() calls — point at new tokens) */
+    /* Legacy aliases (for any leftover var() calls, point at new tokens) */
     --blush-bg:   var(--primary-bg);
     --light-rose: var(--primary-border);
     --deep-rose:  var(--primary-dark);
@@ -41,8 +40,8 @@
 }
 
 body {
-    background-color: var(--primary-bg);
-    font-family: 'Inter', sans-serif;
+    background-color: var(--page);
+    font-family: var(--font, 'Lexend', sans-serif);
     font-size: 16px;
     color: var(--text);
 }

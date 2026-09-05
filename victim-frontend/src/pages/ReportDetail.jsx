@@ -4,7 +4,7 @@ import { AdminLayout } from "../components/Sidebar";
 import api from "../api/api";
 
 const CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap');
   @keyframes spin      { to{transform:rotate(360deg)} }
   @keyframes shimmer   { 0%{background-position:-200% 0}100%{background-position:200% 0} }
   @keyframes slideDown { from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)} }
@@ -53,13 +53,13 @@ const Spinner = ({ size=14, color="#fff" }) => (
 );
 
 const Card = ({ title, icon, children, style={}, headerRight }) => (
-  <div style={{ background:"#fff", borderRadius: 12, border:"1px solid #E2E8F0", overflow:"hidden", fontFamily:"'DM Sans',sans-serif", boxShadow:"0 1px 3px rgba(15,23,42,0.05)", ...style }}>
+  <div style={{ background:"#fff", borderRadius: 12, border:"1px solid #E2E8F0", overflow:"hidden", fontFamily:"'Lexend',sans-serif", boxShadow:"0 1px 3px rgba(15,23,42,0.05)", ...style }}>
     {title&&(
       <div style={{ padding:"14px 20px", borderBottom:"1px solid #F1F5F9", display:"flex", alignItems:"center", justifyContent:"space-between", backgroundColor:"#FAFAFA" }}>
         <div style={{ display:"flex", alignItems:"center", gap:8 }}>
           <div style={{ width:3, height:16, borderRadius: 4, backgroundColor:"#F47920" }}/>
           {icon&&<span style={{ display:"flex" }}>{icon}</span>}
-          <h3 style={{ margin:0, fontSize:12.5, fontWeight:700, color:"#0F172A", fontFamily:"'DM Sans',sans-serif", textTransform:"uppercase", letterSpacing:"0.5px" }}>{title}</h3>
+          <h3 style={{ margin:0, fontSize:12.5, fontWeight:700, color:"#0F172A", fontFamily:"'Lexend',sans-serif", textTransform:"uppercase", letterSpacing:"0.5px" }}>{title}</h3>
         </div>
         {headerRight}
       </div>
@@ -70,19 +70,19 @@ const Card = ({ title, icon, children, style={}, headerRight }) => (
 
 const InfoRow = ({ label, value, mono, muted }) => (
   <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
-    <span style={{ fontSize:10.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#94A3B8", fontFamily:"'DM Sans',sans-serif" }}>{label}</span>
-    <span style={{ fontSize:13.5, color:muted?"#94A3B8":"#0F172A", fontWeight:500, fontStyle:muted?"italic":"normal", fontFamily:mono?"monospace":"'DM Sans',sans-serif" }}>{value||"-"}</span>
+    <span style={{ fontSize:10.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#94A3B8", fontFamily:"'Lexend',sans-serif" }}>{label}</span>
+    <span style={{ fontSize:13.5, color:muted?"#94A3B8":"#0F172A", fontWeight:500, fontStyle:muted?"italic":"normal", fontFamily:mono?"monospace":"'Lexend',sans-serif" }}>{value||"-"}</span>
   </div>
 );
 
 const M = {
   backdrop: { position:"fixed", inset:0, zIndex:1000, background:"rgba(15,23,42,0.5)", backdropFilter:"blur(4px)", display:"flex", alignItems:"center", justifyContent:"center", padding:16 },
-  modal:    { background:"#fff", borderRadius: 16, width:"100%", boxShadow:"0 20px 60px rgba(0,0,0,0.15)", padding:28, fontFamily:"'DM Sans',sans-serif" },
-  title:    { margin:0, fontSize:16, fontWeight:700, color:"#0F172A", fontFamily:"'DM Sans',sans-serif" },
-  sub:      { margin:"3px 0 0", fontSize:12.5, color:"#94A3B8", fontFamily:"'DM Sans',sans-serif" },
+  modal:    { background:"#fff", borderRadius: 16, width:"100%", boxShadow:"0 20px 60px rgba(0,0,0,0.15)", padding:28, fontFamily:"'Lexend',sans-serif" },
+  title:    { margin:0, fontSize:16, fontWeight:700, color:"#0F172A", fontFamily:"'Lexend',sans-serif" },
+  sub:      { margin:"3px 0 0", fontSize:12.5, color:"#94A3B8", fontFamily:"'Lexend',sans-serif" },
   closeBtn: { background:"none", border:"none", cursor:"pointer", color:"#94A3B8", padding:4, display:"flex" },
-  cancelBtn:{ padding:"8px 18px", borderRadius: 10, border:"1.5px solid #E2E8F0", background:"#fff", color:"#374151", fontSize:13.5, fontWeight:500, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" },
-  saveBtn:  { padding:"8px 20px", borderRadius: 4, border:"none", color:"#fff", fontSize:13.5, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:7, fontFamily:"'DM Sans',sans-serif" },
+  cancelBtn:{ padding:"8px 18px", borderRadius: 10, border:"1.5px solid #E2E8F0", background:"#fff", color:"#374151", fontSize:13.5, fontWeight:500, cursor:"pointer", fontFamily:"'Lexend',sans-serif" },
+  saveBtn:  { padding:"8px 20px", borderRadius: 4, border:"none", color:"#fff", fontSize:13.5, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:7, fontFamily:"'Lexend',sans-serif" },
 };
 
 const CloseX = ({ onClick }) => (
@@ -108,7 +108,7 @@ const StatusModal = ({ current, onClose, onSave, saving }) => {
               <div key={s} className="rd-status-opt" onClick={()=>setSelected(s)}
                 style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 12px", borderRadius: 4, cursor:"pointer", border:`1.5px solid ${isActive?cfg.dot:"#F1F5F9"}`, background:isActive?cfg.bg:"#fff", opacity:isPast?0.4:1 }}>
                 <span style={{ width:8, height:8, borderRadius: 4, background:cfg.dot, flexShrink:0 }}/>
-                <span style={{ flex:1, fontSize:13.5, fontWeight:isActive?600:500, color:isActive?cfg.color:"#374151", fontFamily:"'DM Sans',sans-serif" }}>{cfg.label}</span>
+                <span style={{ flex:1, fontSize:13.5, fontWeight:isActive?600:500, color:isActive?cfg.color:"#374151", fontFamily:"'Lexend',sans-serif" }}>{cfg.label}</span>
                 {isActive&&<IcoCheck size={15} color={cfg.dot}/>}
               </div>
             );
@@ -130,7 +130,7 @@ const ConfirmModal = ({ title, message, confirmLabel, danger, onConfirm, onClose
   <div style={M.backdrop} onClick={onClose}>
     <div style={{ ...M.modal, maxWidth:400 }} onClick={e=>e.stopPropagation()}>
       <p style={{ ...M.title, margin:"0 0 8px" }}>{title}</p>
-      <p style={{ margin:"0 0 20px", fontSize:13.5, color:"#64748B", lineHeight:1.6, fontFamily:"'DM Sans',sans-serif" }}>{message}</p>
+      <p style={{ margin:"0 0 20px", fontSize:13.5, color:"#64748B", lineHeight:1.6, fontFamily:"'Lexend',sans-serif" }}>{message}</p>
       <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
         <button onClick={onClose} style={M.cancelBtn}>Cancel</button>
         <button onClick={onConfirm} disabled={loading} style={{ ...M.saveBtn, background:danger?"#EF4444":"#F47920", opacity:loading?0.7:1 }}>
@@ -157,14 +157,14 @@ const DeleteReportModal = ({ reportNum, onClose, onConfirm, loading }) => (
       <div style={{ display:"flex", gap:10, alignItems:"flex-start", background:"#FFFBEB", border:"1px solid #FDE68A", borderRadius: 4, padding:"12px 14px", marginBottom:16 }}>
         <IcoWarn size={15} color="#92400E"/>
         <div>
-          <p style={{ margin:"0 0 4px", fontSize:13, fontWeight:700, color:"#92400E", fontFamily:"'DM Sans',sans-serif" }}>Recoverable within 30 days</p>
-          <p style={{ margin:0, fontSize:12.5, color:"#78350F", lineHeight:1.5, fontFamily:"'DM Sans',sans-serif" }}>
+          <p style={{ margin:"0 0 4px", fontSize:13, fontWeight:700, color:"#92400E", fontFamily:"'Lexend',sans-serif" }}>Recoverable within 30 days</p>
+          <p style={{ margin:0, fontSize:12.5, color:"#78350F", lineHeight:1.5, fontFamily:"'Lexend',sans-serif" }}>
             Deleted reports are not permanently removed. You can recover them from the case detail page within 30 days. After 30 days, they are permanently deleted.
           </p>
         </div>
       </div>
 
-      <p style={{ margin:"0 0 16px", fontSize:13.5, color:"#374151", fontFamily:"'DM Sans',sans-serif" }}>
+      <p style={{ margin:"0 0 16px", fontSize:13.5, color:"#374151", fontFamily:"'Lexend',sans-serif" }}>
         Are you sure you want to delete <strong>Report {reportNum}</strong>?
       </p>
 
@@ -203,17 +203,17 @@ const DeleteModal = ({ caseId, onClose, onConfirm, loading }) => {
           <div><p style={M.title}>Delete Case</p><p style={M.sub}>Case #{caseId} will be moved to Recently Deleted</p></div>
           <CloseX onClick={onClose}/>
         </div>
-        <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:600, color:"#374151", fontFamily:"'DM Sans',sans-serif" }}>Why are you deleting this case?</p>
+        <p style={{ margin:"0 0 10px", fontSize:13, fontWeight:600, color:"#374151", fontFamily:"'Lexend',sans-serif" }}>Why are you deleting this case?</p>
         <div style={{ display:"flex", flexDirection:"column", gap:4, marginBottom:12 }}>
           {DELETE_REASONS.map(r=>(
             <label key={r.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius: 4, cursor:"pointer", border:`1.5px solid ${reason===r.id?"#FECACA":"#F1F5F9"}`, background:reason===r.id?"#FEF2F2":"#fff" }}>
               <input type="radio" name="del-reason" value={r.id} checked={reason===r.id} onChange={()=>{ setReason(r.id); setErr(""); }} style={{ accentColor:"#EF4444" }}/>
-              <span style={{ fontSize:13.5, color:reason===r.id?"#991B1B":"#374151", fontWeight:reason===r.id?600:400, fontFamily:"'DM Sans',sans-serif" }}>{r.label}</span>
+              <span style={{ fontSize:13.5, color:reason===r.id?"#991B1B":"#374151", fontWeight:reason===r.id?600:400, fontFamily:"'Lexend',sans-serif" }}>{r.label}</span>
             </label>
           ))}
           {reason==="other"&&<textarea placeholder="Describe your reason…" value={otherText} onChange={e=>setOtherText(e.target.value)} maxLength={300}
-            style={{ width:"100%", boxSizing:"border-box", minHeight:72, resize:"vertical", border:"1.5px solid #E2E8F0", borderRadius: 4, padding:"10px 12px", fontSize:13.5, fontFamily:"'DM Sans',sans-serif", color:"#0F172A", outline:"none", marginTop:4 }}/>}
-          {err&&<p style={{ margin:"4px 0 0", fontSize:12.5, color:"#EF4444", fontFamily:"'DM Sans',sans-serif" }}>{err}</p>}
+            style={{ width:"100%", boxSizing:"border-box", minHeight:72, resize:"vertical", border:"1.5px solid #E2E8F0", borderRadius: 4, padding:"10px 12px", fontSize:13.5, fontFamily:"'Lexend',sans-serif", color:"#0F172A", outline:"none", marginTop:4 }}/>}
+          {err&&<p style={{ margin:"4px 0 0", fontSize:12.5, color:"#EF4444", fontFamily:"'Lexend',sans-serif" }}>{err}</p>}
         </div>
         <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
           <button onClick={onClose} style={M.cancelBtn} disabled={loading}>Cancel</button>
@@ -247,8 +247,8 @@ const CaseTimeline = ({ cas, onUpdateStatus, onReferToPolice }) => {
                 {i<TIMELINE_STEPS.length-1&&<div style={{ width:2, flex:1, minHeight:14, background:isDone?cfg.dot:"#E2E8F0", marginTop:3 }}/>}
               </div>
               <div style={{ paddingTop:2 }}>
-                <p style={{ margin:0, fontSize:12.5, fontWeight:isCurrent?700:isDone?500:400, color:isCurrent?cfg.color:isDone?"#374151":"#94A3B8", fontFamily:"'DM Sans',sans-serif" }}>{cfg.label}</p>
-                {isCurrent&&<span style={{ fontSize:10.5, color:cfg.dot, fontWeight:500, fontFamily:"'DM Sans',sans-serif" }}>Current</span>}
+                <p style={{ margin:0, fontSize:12.5, fontWeight:isCurrent?700:isDone?500:400, color:isCurrent?cfg.color:isDone?"#374151":"#94A3B8", fontFamily:"'Lexend',sans-serif" }}>{cfg.label}</p>
+                {isCurrent&&<span style={{ fontSize:10.5, color:cfg.dot, fontWeight:500, fontFamily:"'Lexend',sans-serif" }}>Current</span>}
               </div>
             </div>
           );
@@ -263,8 +263,8 @@ const CaseTimeline = ({ cas, onUpdateStatus, onReferToPolice }) => {
                 </div>
               </div>
               <div style={{ paddingTop:2 }}>
-                <p style={{ margin:0, fontSize:12.5, fontWeight:isCurrent?700:400, color:isCurrent?cfg.color:"#94A3B8", fontFamily:"'DM Sans',sans-serif" }}>{cfg.label}</p>
-                {isCurrent&&<span style={{ fontSize:10.5, color:cfg.dot, fontWeight:500, fontFamily:"'DM Sans',sans-serif" }}>Current</span>}
+                <p style={{ margin:0, fontSize:12.5, fontWeight:isCurrent?700:400, color:isCurrent?cfg.color:"#94A3B8", fontFamily:"'Lexend',sans-serif" }}>{cfg.label}</p>
+                {isCurrent&&<span style={{ fontSize:10.5, color:cfg.dot, fontWeight:500, fontFamily:"'Lexend',sans-serif" }}>Current</span>}
               </div>
             </div>
           );
@@ -274,20 +274,20 @@ const CaseTimeline = ({ cas, onUpdateStatus, onReferToPolice }) => {
         <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:8 }}>
           {!isResolved&&(
             <button className="rd-btn" onClick={onUpdateStatus}
-              style={{ width:"100%", padding:"10px 0", borderRadius: 8, border:"none", background:"#C45E10", color:"#fff", fontSize:13.5, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, fontFamily:"'DM Sans',sans-serif" }}>
+              style={{ width:"100%", padding:"10px 0", borderRadius: 8, border:"none", background:"#C45E10", color:"#fff", fontSize:13.5, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, fontFamily:"'Lexend',sans-serif" }}>
               <IcoCheck size={14} color="#fff"/> {isReferred?"Change Status (Revert)":"Update Status"}
             </button>
           )}
           {canQuickRefer&&(
             <button className="rd-btn" onClick={onReferToPolice}
-              style={{ width:"100%", padding:"10px 0", borderRadius: 8, border:"2px solid #EF4444", background:"#FEF2F2", color:"#DC2626", fontSize:13.5, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, fontFamily:"'DM Sans',sans-serif" }}>
+              style={{ width:"100%", padding:"10px 0", borderRadius: 8, border:"2px solid #EF4444", background:"#FEF2F2", color:"#DC2626", fontSize:13.5, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8, fontFamily:"'Lexend',sans-serif" }}>
               <IcoShield size={15} color="#DC2626"/> Refer to Authorities (Serious Case)
             </button>
           )}
         </div>
       )}
-      {isReferred&&<div style={{ marginTop:10, padding:"12px 14px", borderRadius: 4, background:"#FEF2F2", border:"1.5px solid #FECACA", display:"flex", gap:10 }}><IcoShield size={15} color="#DC2626"/><div><p style={{ margin:"0 0 2px", fontSize:13, fontWeight:700, color:"#DC2626", fontFamily:"'DM Sans',sans-serif" }}>Referred to Authorities</p><p style={{ margin:0, fontSize:12, color:"#991B1B", lineHeight:1.5, fontFamily:"'DM Sans',sans-serif" }}>Use "Change Status" to revert if needed.</p></div></div>}
-      {isResolved&&<div style={{ marginTop:10, padding:"12px 14px", borderRadius: 4, background:"#ECFDF5", border:"1.5px solid #A7F3D0", display:"flex", gap:10 }}><IcoCheck size={15} color="#059669"/><div><p style={{ margin:"0 0 2px", fontSize:13, fontWeight:700, color:"#059669", fontFamily:"'DM Sans',sans-serif" }}>Case Resolved</p><p style={{ margin:0, fontSize:12, color:"#065F46", lineHeight:1.5, fontFamily:"'DM Sans',sans-serif" }}>Successfully resolved at barangay level.</p></div></div>}
+      {isReferred&&<div style={{ marginTop:10, padding:"12px 14px", borderRadius: 4, background:"#FEF2F2", border:"1.5px solid #FECACA", display:"flex", gap:10 }}><IcoShield size={15} color="#DC2626"/><div><p style={{ margin:"0 0 2px", fontSize:13, fontWeight:700, color:"#DC2626", fontFamily:"'Lexend',sans-serif" }}>Referred to Authorities</p><p style={{ margin:0, fontSize:12, color:"#991B1B", lineHeight:1.5, fontFamily:"'Lexend',sans-serif" }}>Use "Change Status" to revert if needed.</p></div></div>}
+      {isResolved&&<div style={{ marginTop:10, padding:"12px 14px", borderRadius: 4, background:"#ECFDF5", border:"1.5px solid #A7F3D0", display:"flex", gap:10 }}><IcoCheck size={15} color="#059669"/><div><p style={{ margin:"0 0 2px", fontSize:13, fontWeight:700, color:"#059669", fontFamily:"'Lexend',sans-serif" }}>Case Resolved</p><p style={{ margin:0, fontSize:12, color:"#065F46", lineHeight:1.5, fontFamily:"'Lexend',sans-serif" }}>Successfully resolved at barangay level.</p></div></div>}
     </Card>
   );
 };
@@ -300,7 +300,7 @@ const PrintPanel = ({ cas }) => {
   ];
   return (
     <Card title="Print Documents" icon={<IcoPrint size={16} color="#F47920"/>}>
-      <p style={{ margin:"0 0 12px", fontSize:12.5, color:"#94A3B8", fontFamily:"'DM Sans',sans-serif" }}>Auto-fill official barangay documents.</p>
+      <p style={{ margin:"0 0 12px", fontSize:12.5, color:"#94A3B8", fontFamily:"'Lexend',sans-serif" }}>Auto-fill official barangay documents.</p>
       <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
         {docs.map(doc=>(
           <button key={doc.key} className="rd-btn"
@@ -308,8 +308,8 @@ const PrintPanel = ({ cas }) => {
             style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 12px", borderRadius: 4, border:`1.5px solid ${doc.border}`, background:doc.bg, cursor:"pointer", textAlign:"left", width:"100%" }}>
             <IcoPrint size={15} color={doc.color}/>
             <div style={{ flex:1 }}>
-              <p style={{ margin:0, fontSize:13, fontWeight:600, color:doc.color, fontFamily:"'DM Sans',sans-serif" }}>{doc.label}</p>
-              <p style={{ margin:0, fontSize:11, color:doc.color+"99", fontFamily:"'DM Sans',sans-serif" }}>{doc.sub}</p>
+              <p style={{ margin:0, fontSize:13, fontWeight:600, color:doc.color, fontFamily:"'Lexend',sans-serif" }}>{doc.label}</p>
+              <p style={{ margin:0, fontSize:11, color:doc.color+"99", fontFamily:"'Lexend',sans-serif" }}>{doc.sub}</p>
             </div>
             <svg width="14" height="14" fill="none" viewBox="0 0 20 20"><path d="M7.5 5l5 5-5 5" stroke={doc.color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/></svg>
           </button>
@@ -467,9 +467,9 @@ export default function ReportDetail() {
     <AdminLayout>
       <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", minHeight:"50vh" }}>
         <IcoWarn size={36} color="#CBD5E1"/>
-        <p style={{ fontWeight:600, color:"#0F172A", margin:"12px 0 6px", fontFamily:"'DM Sans',sans-serif" }}>Case not found</p>
-        <p style={{ color:"#94A3B8", fontSize:13, margin:"0 0 20px", fontFamily:"'DM Sans',sans-serif" }}>{error}</p>
-        <button onClick={()=>navigate("/reports")} style={{ padding:"8px 20px", borderRadius: 4, border:"1.5px solid #E2E8F0", background:"#fff", color:"#374151", fontSize:13, fontWeight:500, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>← Back to Reports</button>
+        <p style={{ fontWeight:600, color:"#0F172A", margin:"12px 0 6px", fontFamily:"'Lexend',sans-serif" }}>Case not found</p>
+        <p style={{ color:"#94A3B8", fontSize:13, margin:"0 0 20px", fontFamily:"'Lexend',sans-serif" }}>{error}</p>
+        <button onClick={()=>navigate("/reports")} style={{ padding:"8px 20px", borderRadius: 4, border:"1.5px solid #E2E8F0", background:"#fff", color:"#374151", fontSize:13, fontWeight:500, cursor:"pointer", fontFamily:"'Lexend',sans-serif" }}>← Back to Reports</button>
       </div>
     </AdminLayout>
   );
@@ -483,36 +483,36 @@ export default function ReportDetail() {
   return (
     <AdminLayout>
       <style>{CSS}</style>
-      <div style={{ maxWidth:1200, fontFamily:"'DM Sans',sans-serif" }}>
+      <div style={{ maxWidth:1200, fontFamily:"'Lexend',sans-serif" }}>
 
         {/* Header */}
         <div style={{ marginBottom:20 }}>
           <button onClick={()=>navigate("/reports")}
-            style={{ display:"inline-flex", alignItems:"center", gap:6, background:"#F8FAFC", border:"1px solid #E2E8F0", borderRadius: 4, cursor:"pointer", color:"#475569", fontSize:13, fontWeight:600, padding:"6px 12px", marginBottom:14, fontFamily:"'DM Sans',sans-serif" }}>
+            style={{ display:"inline-flex", alignItems:"center", gap:6, background:"#F8FAFC", border:"1px solid #E2E8F0", borderRadius: 4, cursor:"pointer", color:"#475569", fontSize:13, fontWeight:600, padding:"6px 12px", marginBottom:14, fontFamily:"'Lexend',sans-serif" }}>
             <svg width="13" height="13" fill="none" viewBox="0 0 20 20"><path d="M12.5 5l-5 5 5 5" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"/></svg>
             Back to Reports
           </button>
           <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
             <div>
               <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap", marginBottom:6 }}>
-                <h1 style={{ margin:0, fontSize:20, fontWeight:800, color:"#0F172A", fontFamily:"'DM Sans',sans-serif" }}>{cas.case_number}</h1>
-                <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"5px 12px", borderRadius: 4, fontSize:12.5, fontWeight:600, color:cfg.color, background:cfg.bg, fontFamily:"'DM Sans',sans-serif" }}>
+                <h1 style={{ margin:0, fontSize:20, fontWeight:800, color:"#0F172A", fontFamily:"'Lexend',sans-serif" }}>{cas.case_number}</h1>
+                <span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"5px 12px", borderRadius: 4, fontSize:12.5, fontWeight:600, color:cfg.color, background:cfg.bg, fontFamily:"'Lexend',sans-serif" }}>
                   <span style={{ width:7, height:7, borderRadius: 4, background:cfg.dot }}/>{cas.status_display||cfg.label}
                 </span>
-                {isMinor&&<span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius: 4, fontSize:11, fontWeight:600, background:"#FEF3C7", color:"#92400E", fontFamily:"'DM Sans',sans-serif" }}>Minor</span>}
-                {cas.is_deleted&&<span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius: 4, fontSize:11, fontWeight:600, background:"#FEF2F2", color:"#991B1B", fontFamily:"'DM Sans',sans-serif" }}><IcoTrash size={11} color="#991B1B"/> Deleted</span>}
+                {isMinor&&<span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius: 4, fontSize:11, fontWeight:600, background:"#FEF3C7", color:"#92400E", fontFamily:"'Lexend',sans-serif" }}>Minor</span>}
+                {cas.is_deleted&&<span style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius: 4, fontSize:11, fontWeight:600, background:"#FEF2F2", color:"#991B1B", fontFamily:"'Lexend',sans-serif" }}><IcoTrash size={11} color="#991B1B"/> Deleted</span>}
               </div>
-              <p style={{ margin:"0 0 2px", fontSize:16, fontWeight:700, color:"#0F172A", fontFamily:"'DM Sans',sans-serif" }}>vs. <span style={{ color:"#C45E10" }}>{cas.offender_name}</span></p>
-              <p style={{ margin:0, fontSize:12.5, color:"#94A3B8", fontFamily:"'DM Sans',sans-serif" }}>Filed {fmt(cas.created_at)}</p>
+              <p style={{ margin:"0 0 2px", fontSize:16, fontWeight:700, color:"#0F172A", fontFamily:"'Lexend',sans-serif" }}>vs. <span style={{ color:"#C45E10" }}>{cas.offender_name}</span></p>
+              <p style={{ margin:0, fontSize:12.5, color:"#94A3B8", fontFamily:"'Lexend',sans-serif" }}>Filed {fmt(cas.created_at)}</p>
             </div>
             <div style={{ display:"flex", gap:10 }}>
               {!cas.is_deleted
                 ? <button className="rd-btn" onClick={()=>setShowDeleteConfirm(true)}
-                    style={{ padding:"8px 16px", borderRadius: 8, border:"1.5px solid #FECACA", background:"#FEF2F2", color:"#991B1B", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+                    style={{ padding:"8px 16px", borderRadius: 8, border:"1.5px solid #FECACA", background:"#FEF2F2", color:"#991B1B", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"'Lexend',sans-serif" }}>
                     Delete Case
                   </button>
                 : <button className="rd-btn" onClick={()=>setShowRecover(true)}
-                    style={{ padding:"8px 16px", borderRadius: 8, border:"1.5px solid #A7F3D0", background:"#ECFDF5", color:"#065F46", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+                    style={{ padding:"8px 16px", borderRadius: 8, border:"1.5px solid #A7F3D0", background:"#ECFDF5", color:"#065F46", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"'Lexend',sans-serif" }}>
                     Recover Case
                   </button>
               }
@@ -538,7 +538,7 @@ export default function ReportDetail() {
               <div style={{ marginTop:16, paddingTop:16, borderTop:"1px solid #F1F5F9" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12 }}>
                   <IcoGuardian size={14} color="#F47920"/>
-                  <span style={{ fontSize:10.5, fontWeight:700, color:"#94A3B8", textTransform:"uppercase", letterSpacing:"0.07em", fontFamily:"'DM Sans',sans-serif" }}>Minor / Guardian</span>
+                  <span style={{ fontSize:10.5, fontWeight:700, color:"#94A3B8", textTransform:"uppercase", letterSpacing:"0.07em", fontFamily:"'Lexend',sans-serif" }}>Minor / Guardian</span>
                 </div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16 }}>
                   <InfoRow label="Victim is Minor" value={isMinor?"Yes (Below 18)":"No"} muted={!isMinor}/>
@@ -560,24 +560,24 @@ export default function ReportDetail() {
                     style={{ opacity: isDelR ? 0.75 : 1, border: isDelR ? "1.5px dashed #FECACA" : "1px solid #E2E8F0" }}
                     headerRight={
                       <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                        <span style={{ fontSize:11.5, color:"#94A3B8", fontFamily:"'DM Sans',sans-serif" }}>{fmt(r.created_at)}</span>
+                        <span style={{ fontSize:11.5, color:"#94A3B8", fontFamily:"'Lexend',sans-serif" }}>{fmt(r.created_at)}</span>
                         {isDelR ? (
                           // Show recover button for deleted reports
                           dLeft > 0 ? (
                             <button
                               onClick={()=>setRecoverReportTarget({id:r.id,num:idx+1})}
-                              style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius: 4, border:"1.5px solid #A7F3D0", background:"#ECFDF5", color:"#065F46", fontSize:11.5, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+                              style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius: 4, border:"1.5px solid #A7F3D0", background:"#ECFDF5", color:"#065F46", fontSize:11.5, fontWeight:600, cursor:"pointer", fontFamily:"'Lexend',sans-serif" }}>
                               <IcoRecover size={11} color="#065F46"/> Recover ({dLeft}d left)
                             </button>
                           ) : (
-                            <span style={{ fontSize:11, color:"#EF4444", fontFamily:"'DM Sans',sans-serif" }}>Expired</span>
+                            <span style={{ fontSize:11, color:"#EF4444", fontFamily:"'Lexend',sans-serif" }}>Expired</span>
                           )
                         ) : (
                           // Show delete button only if more than 1 active report
                           activeReportCount > 1 && (
                             <button
                               onClick={()=>setDeleteReportTarget({id:r.id,num:idx+1})}
-                              style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius: 4, border:"1.5px solid #FECACA", background:"#FEF2F2", color:"#991B1B", fontSize:11.5, fontWeight:600, cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+                              style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"4px 10px", borderRadius: 4, border:"1.5px solid #FECACA", background:"#FEF2F2", color:"#991B1B", fontSize:11.5, fontWeight:600, cursor:"pointer", fontFamily:"'Lexend',sans-serif" }}>
                               <IcoTrash size={11} color="#991B1B"/> Delete
                             </button>
                           )
@@ -590,8 +590,8 @@ export default function ReportDetail() {
                       <div style={{ display:"flex", gap:10, alignItems:"flex-start", background:"#FEF2F2", border:"1px solid #FECACA", borderRadius: 4, padding:"10px 14px", marginBottom:14 }}>
                         <IcoTrash size={14} color="#DC2626"/>
                         <div>
-                          <p style={{ margin:"0 0 2px", fontSize:13, fontWeight:700, color:"#DC2626", fontFamily:"'DM Sans',sans-serif" }}>This report has been deleted</p>
-                          <p style={{ margin:0, fontSize:12, color:"#991B1B", fontFamily:"'DM Sans',sans-serif" }}>
+                          <p style={{ margin:"0 0 2px", fontSize:13, fontWeight:700, color:"#DC2626", fontFamily:"'Lexend',sans-serif" }}>This report has been deleted</p>
+                          <p style={{ margin:0, fontSize:12, color:"#991B1B", fontFamily:"'Lexend',sans-serif" }}>
                             {dLeft > 0
                               ? `Recoverable for ${dLeft} more day${dLeft!==1?'s':''}. Go to Cases → Recently Deleted to manage deleted cases, or click Recover above.`
                               : "Recovery period has expired. This report will be permanently deleted."
@@ -603,11 +603,11 @@ export default function ReportDetail() {
 
                     <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
                       <div>
-                        <p style={{ margin:"0 0 8px", fontSize:10.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#94A3B8", fontFamily:"'DM Sans',sans-serif" }}>Incident Type</p>
+                        <p style={{ margin:"0 0 8px", fontSize:10.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#94A3B8", fontFamily:"'Lexend',sans-serif" }}>Incident Type</p>
                         <div style={{ display:"flex", gap:8, alignItems:"center" }}>
                           <select value={incidentTypes[r.id]||""} onChange={e=>setIncidentTypes(p=>({...p,[r.id]:e.target.value}))}
                             disabled={isDelR}
-                            style={{ flex:1, padding:"8px 12px", borderRadius: 4, border:"1.5px solid #E2E8F0", fontSize:13.5, color:"#0F172A", background:"#F8FAFC", outline:"none", fontFamily:"'DM Sans',sans-serif", opacity:isDelR?0.5:1 }}
+                            style={{ flex:1, padding:"8px 12px", borderRadius: 4, border:"1.5px solid #E2E8F0", fontSize:13.5, color:"#0F172A", background:"#F8FAFC", outline:"none", fontFamily:"'Lexend',sans-serif", opacity:isDelR?0.5:1 }}
                             onFocus={e=>{ e.target.style.borderColor="#F47920"; e.target.style.background="#fff"; }}
                             onBlur={e=>{ e.target.style.borderColor="#E2E8F0"; e.target.style.background="#F8FAFC"; }}>
                             <option value="">- Not classified -</option>
@@ -616,7 +616,7 @@ export default function ReportDetail() {
                           {!isDelR && (
                             <button onClick={()=>handleIncidentTypeSave(r.id)}
                               disabled={incidentTypes[r.id]===(r.incident_type||"")}
-                              style={{ padding:"8px 14px", borderRadius: 4, border:"none", background:incidentTypes[r.id]===(r.incident_type||"")?"#E2E8F0":"#F47920", color:incidentTypes[r.id]===(r.incident_type||"")?"#94A3B8":"#fff", fontSize:13, fontWeight:600, cursor:incidentTypes[r.id]===(r.incident_type||"")?"not-allowed":"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+                              style={{ padding:"8px 14px", borderRadius: 4, border:"none", background:incidentTypes[r.id]===(r.incident_type||"")?"#E2E8F0":"#F47920", color:incidentTypes[r.id]===(r.incident_type||"")?"#94A3B8":"#fff", fontSize:13, fontWeight:600, cursor:incidentTypes[r.id]===(r.incident_type||"")?"not-allowed":"pointer", fontFamily:"'Lexend',sans-serif" }}>
                               Save
                             </button>
                           )}
@@ -624,24 +624,24 @@ export default function ReportDetail() {
                       </div>
                       {r.incident_date&&(
                         <div>
-                          <p style={{ margin:"0 0 4px", fontSize:10.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#94A3B8", fontFamily:"'DM Sans',sans-serif" }}>Date of Incident</p>
+                          <p style={{ margin:"0 0 4px", fontSize:10.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#94A3B8", fontFamily:"'Lexend',sans-serif" }}>Date of Incident</p>
                           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                             <IcoCal size={14} color="#F47920"/>
-                            <span style={{ fontSize:13.5, color:"#0F172A", fontWeight:600, fontFamily:"'DM Sans',sans-serif" }}>{fmtDate(r.incident_date)}</span>
+                            <span style={{ fontSize:13.5, color:"#0F172A", fontWeight:600, fontFamily:"'Lexend',sans-serif" }}>{fmtDate(r.incident_date)}</span>
                           </div>
                         </div>
                       )}
                       {r.address&&<InfoRow label="Reported Location" value={r.address}/>}
                       <div>
-                        <p style={{ margin:"0 0 8px", fontSize:10.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#94A3B8", fontFamily:"'DM Sans',sans-serif" }}>Statement</p>
+                        <p style={{ margin:"0 0 8px", fontSize:10.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#94A3B8", fontFamily:"'Lexend',sans-serif" }}>Statement</p>
                         {r.statement
-                          ? <div style={{ background:"#F8FAFC", borderRadius: 4, padding:"14px 16px", fontSize:13.5, color:"#374151", lineHeight:1.75, borderLeft:"3px solid #FFE4CC", whiteSpace:"pre-wrap", fontFamily:"'DM Sans',sans-serif" }}>{r.statement}</div>
-                          : <div style={{ background:"#F8FAFC", borderRadius: 4, padding:"14px 16px", fontSize:13, color:"#94A3B8", fontStyle:"italic", borderLeft:"3px solid #E2E8F0", fontFamily:"'DM Sans',sans-serif" }}>No statement provided.</div>
+                          ? <div style={{ background:"#F8FAFC", borderRadius: 4, padding:"14px 16px", fontSize:13.5, color:"#374151", lineHeight:1.75, borderLeft:"3px solid #FFE4CC", whiteSpace:"pre-wrap", fontFamily:"'Lexend',sans-serif" }}>{r.statement}</div>
+                          : <div style={{ background:"#F8FAFC", borderRadius: 4, padding:"14px 16px", fontSize:13, color:"#94A3B8", fontStyle:"italic", borderLeft:"3px solid #E2E8F0", fontFamily:"'Lexend',sans-serif" }}>No statement provided.</div>
                         }
                       </div>
                       {r.photo_urls?.length>0&&(
                         <div>
-                          <p style={{ margin:"0 0 8px", fontSize:10.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#94A3B8", fontFamily:"'DM Sans',sans-serif" }}>Evidence Photos ({r.photo_urls.length})</p>
+                          <p style={{ margin:"0 0 8px", fontSize:10.5, fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase", color:"#94A3B8", fontFamily:"'Lexend',sans-serif" }}>Evidence Photos ({r.photo_urls.length})</p>
                           <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(100px,1fr))", gap:8 }}>
                             {r.photo_urls.map((url,i)=>(
                               <div key={i} onClick={()=>setLightbox(url)} style={{ aspectRatio:"1", borderRadius: 4, overflow:"hidden", cursor:"zoom-in", border:"1px solid #E2E8F0" }}>
@@ -655,7 +655,7 @@ export default function ReportDetail() {
                       )}
                       {(r.latitude&&r.longitude)&&(
                         <a href={`https://www.google.com/maps/search/?api=1&query=${r.latitude},${r.longitude}`} target="_blank" rel="noopener noreferrer" className="rd-map"
-                          style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 12px", borderRadius: 4, border:"1.5px solid #E2E8F0", color:"#475569", fontSize:13, fontWeight:600, textDecoration:"none", fontFamily:"'DM Sans',sans-serif" }}>
+                          style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 12px", borderRadius: 4, border:"1.5px solid #E2E8F0", color:"#475569", fontSize:13, fontWeight:600, textDecoration:"none", fontFamily:"'Lexend',sans-serif" }}>
                           <IcoPin size={14} color="#94A3B8"/> View on Google Maps
                         </a>
                       )}
@@ -686,7 +686,7 @@ export default function ReportDetail() {
 
       {/* Toast */}
       {toast&&(
-        <div style={{ position:"fixed", top:20, right:20, zIndex:999, background:"#fff", border:`1px solid ${toast.success?"#A7F3D0":"#FECACA"}`, borderRadius: 4, padding:"12px 18px", boxShadow:"0 8px 24px rgba(0,0,0,0.10)", display:"flex", alignItems:"center", gap:9, animation:"slideDown 0.2s ease", fontSize:13.5, color:toast.success?"#065F46":"#991B1B", fontWeight:500, fontFamily:"'DM Sans',sans-serif" }}>
+        <div style={{ position:"fixed", top:20, right:20, zIndex:999, background:"#fff", border:`1px solid ${toast.success?"#A7F3D0":"#FECACA"}`, borderRadius: 4, padding:"12px 18px", boxShadow:"0 8px 24px rgba(0,0,0,0.10)", display:"flex", alignItems:"center", gap:9, animation:"slideDown 0.2s ease", fontSize:13.5, color:toast.success?"#065F46":"#991B1B", fontWeight:500, fontFamily:"'Lexend',sans-serif" }}>
           <span style={{ width:20, height:20, borderRadius: 4, background:toast.success?"#D1FAE5":"#FEE2E2", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
             {toast.success?<svg width="10" height="10" fill="none" viewBox="0 0 20 20"><path d="M5 10l4 4 6-8" stroke="#10B981" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"/></svg>:<svg width="10" height="10" fill="none" viewBox="0 0 20 20"><path d="M15 5L5 15M5 5l10 10" stroke="#EF4444" strokeWidth={2} strokeLinecap="round"/></svg>}
           </span>

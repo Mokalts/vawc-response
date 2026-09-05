@@ -7,7 +7,7 @@ import api from '../api/api';
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link');
     l.id = 'vawc-font'; l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(l);
 }
 
@@ -122,7 +122,7 @@ function FaceVerify() {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        ctx.font = 'bold 12px DM Sans, system-ui, sans-serif';
+        ctx.font = 'bold 12px Lexend, system-ui, sans-serif';
         ctx.textAlign = 'center';
         if (count === 0) {
             ctx.fillStyle = 'rgba(255,255,255,0.85)';
@@ -356,7 +356,7 @@ function FaceVerify() {
                 </div>
 
                 {/* Lighting / positioning tip */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: '#FFF3E0', border: '1.5px solid #FFCC99', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontFamily: "'DM Sans', sans-serif" }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: '#FFF3E0', border: '1.5px solid #FFCC99', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontFamily: "'Lexend', sans-serif" }}>
                     <span style={{ flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: '#F47920', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
                             <circle cx="12" cy="12" r="4" stroke="#fff" strokeWidth="2" />
@@ -397,7 +397,7 @@ function FaceVerify() {
 
                 {/* ── Liveness challenge panel ── */}
                 {phase === 'liveness' && (
-                    <div style={{ background: '#F3E5F5', border: '2px solid #9B4DAB', borderRadius: 10, padding: '14px 16px', marginBottom: 12, fontFamily: "'DM Sans', sans-serif", animation: 'fadeIn 0.2s ease' }}>
+                    <div style={{ background: '#F3E5F5', border: '2px solid #9B4DAB', borderRadius: 10, padding: '14px 16px', marginBottom: 12, fontFamily: "'Lexend', sans-serif", animation: 'fadeIn 0.2s ease' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
                             <span style={{ fontSize: 10.5, fontWeight: 700, color: '#4A1259', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                                 Liveness Check
@@ -479,7 +479,7 @@ function FaceVerify() {
                             navigate('/dashboard');
                         }
                     }}
-                    style={{ marginTop: 8, width: '100%', padding: '10px 0', borderRadius: 4, border: '1.5px dashed #E1BEE7', background: 'transparent', color: '#9B4DAB', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+                    style={{ marginTop: 8, width: '100%', padding: '10px 0', borderRadius: 4, border: '1.5px dashed #E1BEE7', background: 'transparent', color: '#9B4DAB', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend', sans-serif" }}
                 >
                     Skip Face Verification (Temporary)
                 </button>
@@ -504,7 +504,7 @@ function FaceVerify() {
                         <p style={S.modalMsg}>{popup.message}</p>
 
                         {popup.type === 'error' && (
-                            <div style={{ background: '#FFF3E0', border: '1.5px solid #FFCC99', borderRadius: 8, padding: '10px 12px', margin: '4px 0 14px', fontFamily: "'DM Sans', sans-serif" }}>
+                            <div style={{ background: '#FFF3E0', border: '1.5px solid #FFCC99', borderRadius: 8, padding: '10px 12px', margin: '4px 0 14px', fontFamily: "'Lexend', sans-serif" }}>
                                 <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#9A3412' }}>Tips before retrying</p>
                                 <p style={{ margin: '2px 0 0', fontSize: 12, color: '#7C2D12', lineHeight: 1.5 }}>
                                     Move to a brighter spot, face the camera directly, and keep your full face inside the oval. Remove glasses or face coverings.
@@ -546,13 +546,13 @@ function FaceVerify() {
 }
 
 const S = {
-    page: { minHeight: '100vh', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'DM Sans', sans-serif" },
+    page: { minHeight: '100vh', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'Lexend', sans-serif" },
     card: { backgroundColor: '#fff', borderRadius: 12, padding: '32px', width: '100%', maxWidth: '480px', boxShadow: '0 4px 24px rgba(15,23,42,0.09)', border: '1px solid #E2E8F0' },
 
     header: { display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' },
     logoWrap: { width: '48px', height: '48px', borderRadius: 4, backgroundColor: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-    title: { fontSize: '18px', fontWeight: '700', color: '#0F172A', marginBottom: '3px', fontFamily: "'DM Sans', sans-serif" },
-    subtitle: { fontSize: '12.5px', color: '#94A3B8', fontFamily: "'DM Sans', sans-serif" },
+    title: { fontSize: '18px', fontWeight: '700', color: '#0F172A', marginBottom: '3px', fontFamily: "'Lexend', sans-serif" },
+    subtitle: { fontSize: '12.5px', color: '#94A3B8', fontFamily: "'Lexend', sans-serif" },
 
     cameraWrap: { position: 'relative', width: '100%', aspectRatio: '4/3', backgroundColor: '#0F172A', borderRadius: 4, overflow: 'hidden', marginBottom: '16px' },
     video: { width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' },
@@ -563,25 +563,25 @@ const S = {
 
     warmingOverlay: { position: 'absolute', inset: 0, backgroundColor: 'rgba(15,23,42,0.7)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' },
     warmingSpinner: { width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.15)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
-    warmingText: { fontSize: '13px', fontWeight: '500', color: 'rgba(255,255,255,0.7)', fontFamily: "'DM Sans', sans-serif" },
+    warmingText: { fontSize: '13px', fontWeight: '500', color: 'rgba(255,255,255,0.7)', fontFamily: "'Lexend', sans-serif" },
 
-    status: { fontSize: '13px', color: '#64748B', textAlign: 'center', marginBottom: '16px', lineHeight: '1.5', fontFamily: "'DM Sans', sans-serif" },
+    status: { fontSize: '13px', color: '#64748B', textAlign: 'center', marginBottom: '16px', lineHeight: '1.5', fontFamily: "'Lexend', sans-serif" },
 
-    verifyBtn: { width: '100%', padding: '13px', backgroundColor: '#9B4DAB', color: '#fff', fontSize: '14.5px', fontWeight: '600', border: 'none', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(123,45,139,0.25)', marginBottom: '12px', fontFamily: "'DM Sans', sans-serif" },
+    verifyBtn: { width: '100%', padding: '13px', backgroundColor: '#9B4DAB', color: '#fff', fontSize: '14.5px', fontWeight: '600', border: 'none', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(123,45,139,0.25)', marginBottom: '12px', fontFamily: "'Lexend', sans-serif" },
     spinner: { width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 },
 
-    backBtn: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', padding: '10px 0', backgroundColor: 'transparent', color: '#94A3B8', fontSize: '13px', fontWeight: '500', border: '1.5px solid #E2E8F0', borderRadius: 10, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" },
+    backBtn: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', padding: '10px 0', backgroundColor: 'transparent', color: '#94A3B8', fontSize: '13px', fontWeight: '500', border: '1.5px solid #E2E8F0', borderRadius: 10, cursor: 'pointer', fontFamily: "'Lexend', sans-serif" },
 
     // Modal
     backdrop: { position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' },
     modal: { backgroundColor: '#fff', borderRadius: 16, padding: '32px 28px', width: '100%', maxWidth: '360px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', animation: 'slideUp 0.2s ease' },
     modalIconWrap: { width: '64px', height: '64px', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' },
-    modalTitle: { fontSize: '20px', fontWeight: '700', marginBottom: '10px', fontFamily: "'DM Sans', sans-serif" },
-    modalMsg: { fontSize: '13.5px', color: '#64748B', lineHeight: '1.65', marginBottom: '22px', fontFamily: "'DM Sans', sans-serif" },
+    modalTitle: { fontSize: '20px', fontWeight: '700', marginBottom: '10px', fontFamily: "'Lexend', sans-serif" },
+    modalMsg: { fontSize: '13.5px', color: '#64748B', lineHeight: '1.65', marginBottom: '22px', fontFamily: "'Lexend', sans-serif" },
 
     modalBtns: { display: 'flex', flexDirection: 'column', gap: '10px' },
-    retryBtn: { width: '100%', padding: '12px', backgroundColor: '#9B4DAB', color: '#fff', fontSize: '14px', fontWeight: '600', border: 'none', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', fontFamily: "'DM Sans', sans-serif" },
-    returnBtn: { width: '100%', padding: '12px', backgroundColor: 'transparent', color: '#7B2D8B', fontSize: '14px', fontWeight: '600', border: '1.5px solid #E1BEE7', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', fontFamily: "'DM Sans', sans-serif" },
+    retryBtn: { width: '100%', padding: '12px', backgroundColor: '#9B4DAB', color: '#fff', fontSize: '14px', fontWeight: '600', border: 'none', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', fontFamily: "'Lexend', sans-serif" },
+    returnBtn: { width: '100%', padding: '12px', backgroundColor: 'transparent', color: '#7B2D8B', fontSize: '14px', fontWeight: '600', border: '1.5px solid #E1BEE7', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', fontFamily: "'Lexend', sans-serif" },
 
     successLoader: { height: '4px', backgroundColor: '#E2E8F0', borderRadius: 4, overflow: 'hidden' },
     successLoaderBar: { height: '100%', backgroundColor: '#059669', borderRadius: 4, animation: 'slideUp 1.8s linear forwards', width: '100%' },

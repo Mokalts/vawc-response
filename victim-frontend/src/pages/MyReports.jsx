@@ -5,7 +5,7 @@ import api from '../api';
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id = 'vawc-font'; l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(l);
 }
 if (!document.getElementById('vawc-myreports-css')) {
@@ -117,7 +117,7 @@ function StatusTimeline({ currentStatus }) {
                             fontSize: 13,
                             fontWeight: current ? 700 : 500,
                             color: current ? '#F47920' : done ? '#059669' : '#94A3B8',
-                            fontFamily: "'DM Sans',sans-serif",
+                            fontFamily: "'Lexend',sans-serif",
                         }}>
                             {step.label}
                             {current && <span style={{ marginLeft: 6, fontSize: 10.5, background: '#FFF3E0', color: '#F47920', padding: '2px 7px', borderRadius: 9999, fontWeight: 700 }}>Current</span>}
@@ -142,7 +142,7 @@ function ReportCard({ report, onClick, onDelete }) {
                     {report.has_status_update && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
                             <span style={{ width: 7, height: 7, borderRadius: 4, background: '#F47920', flexShrink: 0 }} />
-                            <span style={{ fontSize: 11, fontWeight: 700, color: '#F47920', fontFamily: "'DM Sans',sans-serif" }}>Status Updated</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: '#F47920', fontFamily: "'Lexend',sans-serif" }}>Status Updated</span>
                         </div>
                     )}
                     <p style={S.cardDate}>{fmtDate(report.created_at)}</p>
@@ -158,12 +158,12 @@ function ReportCard({ report, onClick, onDelete }) {
             {(report.offender_name || report.incident_date) && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
                     {report.offender_name && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, color: '#475569', background: '#F8FAFC', borderRadius: 4, padding: '3px 8px', border: '1px solid #E2E8F0', fontFamily: "'DM Sans',sans-serif" }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, color: '#475569', background: '#F8FAFC', borderRadius: 4, padding: '3px 8px', border: '1px solid #E2E8F0', fontFamily: "'Lexend',sans-serif" }}>
                             <IcoUser /> {report.offender_name}
                         </span>
                     )}
                     {report.incident_date && (
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, color: '#475569', background: '#F8FAFC', borderRadius: 4, padding: '3px 8px', border: '1px solid #E2E8F0', fontFamily: "'DM Sans',sans-serif" }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, color: '#475569', background: '#F8FAFC', borderRadius: 4, padding: '3px 8px', border: '1px solid #E2E8F0', fontFamily: "'Lexend',sans-serif" }}>
                             <IcoCal /> {fmtDate(report.incident_date)}
                         </span>
                     )}
@@ -205,7 +205,7 @@ function DetailModal({ report, onClose, onDelete }) {
                 <div style={S.modalHead}>
                     <div>
                         <p style={S.modalTitle}>Report Details</p>
-                        <p style={{ margin: 0, fontSize: 12, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif" }}>
+                        <p style={{ margin: 0, fontSize: 12, color: '#94A3B8', fontFamily: "'Lexend',sans-serif" }}>
                             Filed {fmtDate(report.created_at)} at {fmtTime(report.created_at)}
                         </p>
                     </div>
@@ -216,7 +216,7 @@ function DetailModal({ report, onClose, onDelete }) {
                     {report.has_status_update && (
                         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', backgroundColor: '#FFF3E0', borderRadius: 4, padding: '11px 13px', border: '1px solid #FFE4CC' }}>
                             <IcoBell />
-                            <p style={{ fontSize: 13, color: '#C45E10', lineHeight: 1.6, margin: 0, fontFamily: "'DM Sans',sans-serif" }}>
+                            <p style={{ fontSize: 13, color: '#C45E10', lineHeight: 1.6, margin: 0, fontFamily: "'Lexend',sans-serif" }}>
                                 The barangay has updated your case status.
                             </p>
                         </div>
@@ -343,12 +343,12 @@ function DeleteModal({ report, onClose, onDeleted }) {
                             Deleted reports can only be recovered by the barangay VAWC officer within 30 days.
                         </p>
                     </div>
-                    <p style={{ fontSize: 13.5, color: '#475569', margin: 0, fontFamily: "'DM Sans',sans-serif" }}>
+                    <p style={{ fontSize: 13.5, color: '#475569', margin: 0, fontFamily: "'Lexend',sans-serif" }}>
                         Why are you deleting this report?
                     </p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                         {DELETE_REASONS.map(r => (
-                            <label key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 13px', borderRadius: 4, border: `1.5px solid ${reason === r.id ? '#F47920' : '#E2E8F0'}`, background: reason === r.id ? '#FFF3E0' : '#fff', cursor: 'pointer', fontSize: 13.5, color: '#0F172A', fontFamily: "'DM Sans',sans-serif", transition: 'all 0.12s' }}>
+                            <label key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 13px', borderRadius: 4, border: `1.5px solid ${reason === r.id ? '#F47920' : '#E2E8F0'}`, background: reason === r.id ? '#FFF3E0' : '#fff', cursor: 'pointer', fontSize: 13.5, color: '#0F172A', fontFamily: "'Lexend',sans-serif", transition: 'all 0.12s' }}>
                                 <input type="radio" name="del-reason" value={r.id} checked={reason === r.id} onChange={() => setReason(r.id)} style={{ accentColor: '#F47920' }} />
                                 {r.label}
                             </label>
@@ -359,13 +359,13 @@ function DeleteModal({ report, onClose, onDeleted }) {
                             placeholder="Please specify…"
                             value={custom}
                             onChange={e => setCustom(e.target.value)}
-                            style={{ width: '100%', minHeight: 80, padding: '10px 12px', borderRadius: 4, border: '1.5px solid #E2E8F0', fontSize: 13.5, color: '#0F172A', fontFamily: "'DM Sans',sans-serif", resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
+                            style={{ width: '100%', minHeight: 80, padding: '10px 12px', borderRadius: 4, border: '1.5px solid #E2E8F0', fontSize: 13.5, color: '#0F172A', fontFamily: "'Lexend',sans-serif", resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
                         />
                     )}
                     {error && (
                         <div style={S.errorBox}>
                             <IcoWarn />
-                            <p style={{ margin: 0, fontSize: 13, color: '#BE123C', fontFamily: "'DM Sans',sans-serif" }}>{error}</p>
+                            <p style={{ margin: 0, fontSize: 13, color: '#BE123C', fontFamily: "'Lexend',sans-serif" }}>{error}</p>
                         </div>
                     )}
                     <div style={{ display: 'flex', gap: 10 }}>
@@ -428,7 +428,7 @@ function MyReports() {
                     <p style={S.count}>{reports.length} total{newCount > 0 ? ` · ${newCount} updated` : ''}</p>
                 </div>
                 {newCount > 0 && (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 4, background: '#FFF3E0', color: '#F47920', fontSize: 12, fontWeight: 700, fontFamily: "'DM Sans',sans-serif", border: '1px solid #FFE4CC' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '5px 12px', borderRadius: 4, background: '#FFF3E0', color: '#F47920', fontSize: 12, fontWeight: 700, fontFamily: "'Lexend',sans-serif", border: '1px solid #FFE4CC' }}>
                         <IcoBell /> {newCount} update{newCount > 1 ? 's' : ''}
                     </span>
                 )}
@@ -438,7 +438,7 @@ function MyReports() {
                 {error && (
                     <div style={S.errorBox}>
                         <IcoWarn />
-                        <p style={{ margin: 0, fontSize: 13, color: '#BE123C', fontFamily: "'DM Sans',sans-serif" }}>{error}</p>
+                        <p style={{ margin: 0, fontSize: 13, color: '#BE123C', fontFamily: "'Lexend',sans-serif" }}>{error}</p>
                     </div>
                 )}
 
@@ -488,36 +488,36 @@ function MyReports() {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const S = {
-    page: { minHeight: '100vh', backgroundColor: '#FFF3E0', display: 'flex', flexDirection: 'column', paddingBottom: 80, fontFamily: "'DM Sans',sans-serif" },
+    page: { minHeight: '100vh', backgroundColor: '#FFF3E0', display: 'flex', flexDirection: 'column', paddingBottom: 80, fontFamily: "'Lexend',sans-serif" },
     topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', backgroundColor: '#fff', borderBottom: '1px solid #FFE4CC', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 1px 8px rgba(244,121,32,0.06)' },
-    title: { fontSize: 18, fontWeight: 800, color: '#C45E10', fontFamily: "'DM Sans',sans-serif", margin: '0 0 2px' },
-    count: { fontSize: 12.5, fontWeight: 600, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif", margin: 0 },
+    title: { fontSize: 18, fontWeight: 800, color: '#C45E10', fontFamily: "'Lexend',sans-serif", margin: '0 0 2px' },
+    count: { fontSize: 12.5, fontWeight: 600, color: '#94A3B8', fontFamily: "'Lexend',sans-serif", margin: 0 },
     content: { padding: '20px', display: 'flex', flexDirection: 'column', gap: 12 },
     errorBox: { display: 'flex', alignItems: 'center', gap: 8, backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 8, padding: '12px 15px' },
     card: { backgroundColor: '#fff', borderRadius: 12, padding: '18px 16px', boxShadow: '0 2px 10px rgba(244,121,32,0.06)', border: '1px solid #FFE4CC', animation: 'fadeUp 0.2s ease' },
-    cardDate: { fontSize: 13.5, fontWeight: 700, color: '#0F172A', margin: '0 0 2px', fontFamily: "'DM Sans',sans-serif" },
-    cardTime: { fontSize: 11.5, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif", margin: 0 },
-    badge: { display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 700, padding: '4px 10px', borderRadius: 4, fontFamily: "'DM Sans',sans-serif", whiteSpace: 'nowrap' },
-    excerpt: { fontSize: 14, color: '#475569', lineHeight: 1.55, marginBottom: 12, fontFamily: "'DM Sans',sans-serif" },
-    meta: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, color: '#94A3B8', fontFamily: "'DM Sans',sans-serif" },
-    viewLink: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12.5, fontWeight: 700, color: '#F47920', fontFamily: "'DM Sans',sans-serif" },
-    deleteBtn: { display: 'inline-flex', alignItems: 'center', gap: 5, background: '#fff', border: '1px solid #FFE4CC', borderRadius: 4, padding: '6px 12px', fontSize: 12.5, fontWeight: 600, color: '#BE123C', cursor: 'pointer', fontFamily: "'DM Sans',sans-serif", transition: 'all 0.12s' },
+    cardDate: { fontSize: 13.5, fontWeight: 700, color: '#0F172A', margin: '0 0 2px', fontFamily: "'Lexend',sans-serif" },
+    cardTime: { fontSize: 11.5, color: '#94A3B8', fontFamily: "'Lexend',sans-serif", margin: 0 },
+    badge: { display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11.5, fontWeight: 700, padding: '4px 10px', borderRadius: 4, fontFamily: "'Lexend',sans-serif", whiteSpace: 'nowrap' },
+    excerpt: { fontSize: 14, color: '#475569', lineHeight: 1.55, marginBottom: 12, fontFamily: "'Lexend',sans-serif" },
+    meta: { display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, color: '#94A3B8', fontFamily: "'Lexend',sans-serif" },
+    viewLink: { display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 12.5, fontWeight: 700, color: '#F47920', fontFamily: "'Lexend',sans-serif" },
+    deleteBtn: { display: 'inline-flex', alignItems: 'center', gap: 5, background: '#fff', border: '1px solid #FFE4CC', borderRadius: 4, padding: '6px 12px', fontSize: 12.5, fontWeight: 600, color: '#BE123C', cursor: 'pointer', fontFamily: "'Lexend',sans-serif", transition: 'all 0.12s' },
     empty: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '60px 24px', gap: 10 },
-    emptyTitle: { fontSize: 18, fontWeight: 700, color: '#C45E10', fontFamily: "'DM Sans',sans-serif" },
-    emptyText: { fontSize: 14, color: '#94A3B8', lineHeight: 1.6, fontFamily: "'DM Sans',sans-serif", maxWidth: 280 },
-    emptyBtn: { marginTop: 8, padding: '13px 28px', backgroundColor: '#F47920', color: '#fff', fontSize: 15, fontWeight: 600, border: 'none', borderRadius: 4, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif", boxShadow: '0 2px 8px rgba(244,121,32,0.25)' },
+    emptyTitle: { fontSize: 18, fontWeight: 700, color: '#C45E10', fontFamily: "'Lexend',sans-serif" },
+    emptyText: { fontSize: 14, color: '#94A3B8', lineHeight: 1.6, fontFamily: "'Lexend',sans-serif", maxWidth: 280 },
+    emptyBtn: { marginTop: 8, padding: '13px 28px', backgroundColor: '#F47920', color: '#fff', fontSize: 15, fontWeight: 600, border: 'none', borderRadius: 4, cursor: 'pointer', fontFamily: "'Lexend',sans-serif", boxShadow: '0 2px 8px rgba(244,121,32,0.25)' },
     backdrop: { position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 500, backdropFilter: 'blur(3px)', padding: '20px 16px', animation: 'fadeIn 0.18s ease' },
     modal: { backgroundColor: '#fff', borderRadius: 16, width: '100%', maxWidth: 420, maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(15,23,42,0.2)', animation: 'popIn 0.22s ease' },
     modalHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 20px 14px', borderBottom: '1px solid #F1F5F9', flexShrink: 0 },
     modalBody: { overflowY: 'auto', padding: '16px 20px 24px', display: 'flex', flexDirection: 'column', gap: 12 },
-    modalTitle: { fontSize: 17, fontWeight: 800, color: '#C45E10', fontFamily: "'DM Sans',sans-serif", margin: 0 },
+    modalTitle: { fontSize: 17, fontWeight: 800, color: '#C45E10', fontFamily: "'Lexend',sans-serif", margin: 0 },
     closeBtn: { width: 34, height: 34, borderRadius: 10, backgroundColor: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
     detailItem: { backgroundColor: '#F8FAFC', borderRadius: 10, padding: '14px 15px', border: '1px solid #E2E8F0' },
-    detailLabel: { fontSize: 10.5, fontWeight: 700, color: '#C45E10', textTransform: 'uppercase', letterSpacing: '0.7px', margin: '0 0 6px', fontFamily: "'DM Sans',sans-serif" },
-    detailValue: { fontSize: 14.5, color: '#0F172A', lineHeight: 1.6, margin: 0, fontFamily: "'DM Sans',sans-serif" },
+    detailLabel: { fontSize: 10.5, fontWeight: 700, color: '#C45E10', textTransform: 'uppercase', letterSpacing: '0.7px', margin: '0 0 6px', fontFamily: "'Lexend',sans-serif" },
+    detailValue: { fontSize: 14.5, color: '#0F172A', lineHeight: 1.6, margin: 0, fontFamily: "'Lexend',sans-serif" },
     noteBox: { display: 'flex', gap: 8, alignItems: 'flex-start', backgroundColor: '#FFFBEB', borderRadius: 4, padding: '11px 13px', border: '1px solid #FDE68A' },
-    noteText: { fontSize: 13, color: '#92400E', lineHeight: 1.6, margin: 0, fontFamily: "'DM Sans',sans-serif" },
-    closeFullBtn: { flex: 1, padding: 13, backgroundColor: '#F47920', color: '#fff', fontSize: 15, fontWeight: 600, border: 'none', borderRadius: 4, cursor: 'pointer', fontFamily: "'DM Sans',sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
+    noteText: { fontSize: 13, color: '#92400E', lineHeight: 1.6, margin: 0, fontFamily: "'Lexend',sans-serif" },
+    closeFullBtn: { flex: 1, padding: 13, backgroundColor: '#F47920', color: '#fff', fontSize: 15, fontWeight: 600, border: 'none', borderRadius: 4, cursor: 'pointer', fontFamily: "'Lexend',sans-serif", display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 },
 };
 
 export default MyReports;

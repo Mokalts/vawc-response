@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle';
 import api from "../api";
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id='vawc-font'; l.rel='stylesheet';
-    l.href='https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    l.href='https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(l);
 }
 if (!document.getElementById('vawc-victim-css')) {
@@ -85,6 +86,7 @@ function OTP() {
 
     return (
         <div style={S.page}>
+            <div style={{ position: 'fixed', top: 14, right: 14, zIndex: 50 }}><ThemeToggle size={44} /></div>
             <div style={S.brand}>
                 <div style={S.brandIcon}><IcoShield /></div>
                 <div>
@@ -110,7 +112,7 @@ function OTP() {
                 <div style={S.instructBox}>
                     <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:9}}>
                         <IcoInfo />
-                        <p style={{margin:0,fontSize:12.5,fontWeight:700,color:'#0369A1',fontFamily:"'DM Sans', sans-serif"}}>How to verify</p>
+                        <p style={{margin:0,fontSize:12.5,fontWeight:700,color:'#0369A1',fontFamily:"'Lexend', sans-serif"}}>How to verify</p>
                     </div>
                     <ul style={{margin:0,paddingLeft:16,display:'flex',flexDirection:'column',gap:4}}>
                         {[
@@ -118,31 +120,32 @@ function OTP() {
                             'Code expires in 5 minutes - use Resend if needed.',
                             'A verification link was also emailed - valid for 1 hour.',
                             "Can't find the email? Check your spam folder.",
-                        ].map((t,i)=><li key={i} style={{fontSize:12.5,color:'#0369A1',lineHeight:1.6,fontFamily:"'DM Sans', sans-serif"}}>{t}</li>)}
+                        ].map((t,i)=><li key={i} style={{fontSize:12.5,color:'#0369A1',lineHeight:1.6,fontFamily:"'Lexend', sans-serif"}}>{t}</li>)}
                     </ul>
                 </div>
 
                 {/* OTP boxes */}
-                <div style={S.otpRow}>
+                <div style={S.otpRow} role="group" aria-label="6-digit verification code">
                     {otp.map((digit,i)=>(
                         <input key={i} className="vi-otp" ref={el=>inputs.current[i]=el}
-                            type="text" maxLength={1} value={digit}
+                            type="text" inputMode="numeric" autoComplete={i===0?'one-time-code':'off'}
+                            aria-label={`Digit ${i+1} of 6`} maxLength={1} value={digit}
                             onChange={e=>handleChange(e.target.value,i)}
                             onKeyDown={e=>handleKeyDown(e,i)}
-                            style={{...S.otpBox, borderColor:digit?'#F47920':'#E2E8F0', backgroundColor:digit?'#FFF0F3':'#F8FAFC'}} />
+                            style={{...S.otpBox, borderColor:digit?'#F47920':'var(--border)', backgroundColor:digit?'#FFF0F3':'var(--surface-alt)'}} />
                     ))}
                 </div>
 
                 {error && (
                     <div style={{display:'flex',alignItems:'center',gap:8,backgroundColor:'#FFF1F2',border:'1px solid #FECDD3',borderRadius: 4,padding:'10px 13px',marginBottom:14,animation:'fadeUp 0.2s ease'}}>
                         <IcoWarn c="#BE123C" />
-                        <p style={{margin:0,fontSize:13,color:'#BE123C',fontFamily:"'DM Sans', sans-serif"}}>{error}</p>
+                        <p style={{margin:0,fontSize:13,color:'#BE123C',fontFamily:"'Lexend', sans-serif"}}>{error}</p>
                     </div>
                 )}
                 {resendSuccess && (
                     <div style={{display:'flex',alignItems:'center',gap:8,backgroundColor:'#ECFDF5',border:'1px solid #A7F3D0',borderRadius: 4,padding:'10px 13px',marginBottom:14,animation:'fadeUp 0.2s ease'}}>
                         <IcoCheck />
-                        <p style={{margin:0,fontSize:13,color:'#065F46',fontFamily:"'DM Sans', sans-serif"}}>New code sent. Check your {channel==='email'?'email (and spam folder)':'mobile number'}.</p>
+                        <p style={{margin:0,fontSize:13,color:'#065F46',fontFamily:"'Lexend', sans-serif"}}>New code sent. Check your {channel==='email'?'email (and spam folder)':'mobile number'}.</p>
                     </div>
                 )}
 
@@ -152,11 +155,11 @@ function OTP() {
 
                 <div style={S.divider} />
 
-                <p style={{textAlign:'center',fontSize:14,color:'#64748B',marginBottom:channel==='email'?14:0,fontFamily:"'DM Sans', sans-serif"}}>
+                <p style={{textAlign:'center',fontSize:14,color:'var(--text-muted)',marginBottom:channel==='email'?14:0,fontFamily:"'Lexend', sans-serif"}}>
                     Didn't receive a code?{' '}
                     {canResend
-                        ? <span style={S.link} onClick={handleResend}>Resend Code</span>
-                        : <span style={{color:'#CBD5E1',fontWeight:600,fontFamily:"'DM Sans', sans-serif"}}>Resend in 0:{countdown<10?`0${countdown}`:countdown}</span>
+                        ? <button type="button" style={S.link} onClick={handleResend}>Resend Code</button>
+                        : <span style={{color:'#78716C',fontWeight:600,fontFamily:"'Lexend', sans-serif"}}>Resend in 0:{countdown<10?`0${countdown}`:countdown}</span>
                     }
                 </p>
 
@@ -167,9 +170,9 @@ function OTP() {
                     </button>
                 )}
                 {channel==='phone' && (
-                    <p style={{textAlign:'center',fontSize:13.5,color:'#64748B',fontFamily:"'DM Sans', sans-serif"}}>
+                    <p style={{textAlign:'center',fontSize:13.5,color:'var(--text-muted)',fontFamily:"'Lexend', sans-serif"}}>
                         Wrong number?{' '}
-                        <span style={S.link} onClick={()=>{setChannel('email');setOtp(['','','','','','']);setCountdown(45);setCanResend(false);setError('');setResendSuccess(false);}}>Use email instead</span>
+                        <button type="button" style={S.link} onClick={()=>{setChannel('email');setOtp(['','','','','','']);setCountdown(45);setCanResend(false);setError('');setResendSuccess(false);}}>Use email instead</button>
                     </p>
                 )}
             </div>
@@ -178,22 +181,22 @@ function OTP() {
 }
 
 const S = {
-    page:       {minHeight:'100vh',backgroundColor:'#FFF3E0',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px',fontFamily:"'DM Sans', sans-serif"},
+    page:       {minHeight:'100vh',background:'var(--page-grad)',color:'var(--text)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px',fontFamily:"'Lexend', sans-serif"},
     brand:      {display:'flex',alignItems:'center',gap:14,marginBottom:16,width:'100%',maxWidth:420},
-    brandIcon:  {width:44,height:44,borderRadius: '50%',backgroundColor:'#fff',border:'1px solid #FFE4CC',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 2px 8px rgba(244,121,32,0.1)'},
-    brandTitle: {fontSize:18,fontWeight:800,color:'#C45E10',margin:'0 0 3px',fontFamily:"'DM Sans', sans-serif"},
-    brandSub:   {fontSize:13,color:'#475569',margin:0,fontFamily:"'DM Sans', sans-serif"},
+    brandIcon:  {width:44,height:44,borderRadius: '50%',backgroundColor:'var(--surface)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 2px 8px rgba(244,121,32,0.1)'},
+    brandTitle: {fontSize:18,fontWeight:800,color:'var(--accent-text)',margin:'0 0 3px',fontFamily:"'Lexend', sans-serif"},
+    brandSub:   {fontSize:13,color:'var(--text-body)',margin:0,fontFamily:"'Lexend', sans-serif"},
     banner:     {display:'flex',alignItems:'flex-start',gap:10,borderRadius: 4,padding:'13px 15px',border:'1.5px solid',boxSizing:'border-box'},
-    bannerTitle:{fontSize:13.5,fontWeight:700,color:'#92400E',margin:'0 0 3px',fontFamily:"'DM Sans', sans-serif"},
-    bannerText: {fontSize:12.5,color:'#78350F',margin:0,lineHeight:1.5,fontFamily:"'DM Sans', sans-serif"},
-    card:       {backgroundColor:'#fff',borderRadius: 12,padding:'24px',width:'100%',maxWidth:420,boxShadow:'0 4px 20px rgba(244,121,32,0.08)',border:'1px solid #FFE4CC'},
+    bannerTitle:{fontSize:13.5,fontWeight:700,color:'#92400E',margin:'0 0 3px',fontFamily:"'Lexend', sans-serif"},
+    bannerText: {fontSize:12.5,color:'#78350F',margin:0,lineHeight:1.5,fontFamily:"'Lexend', sans-serif"},
+    card:       {backgroundColor:'var(--surface)',borderRadius: 12,padding:'24px',width:'100%',maxWidth:420,boxShadow:'0 4px 20px rgba(244,121,32,0.08)',border:'1px solid var(--border)'},
     instructBox:{backgroundColor:'#F3E5F5',border:'1.5px solid #BFDBFE',borderRadius: 12,padding:'13px 15px',marginBottom:20},
     otpRow:     {display:'flex',justifyContent:'space-between',gap:8,marginBottom:18},
-    otpBox:     {width:'100%',maxWidth:56,height:60,borderRadius: 4,border:'2px solid #E2E8F0',fontSize:22,fontWeight:700,textAlign:'center',color:'#C45E10',outline:'none',fontFamily:"'DM Sans', sans-serif"},
-    verifyBtn:  {width:'100%',padding:13,backgroundColor:'#F47920',color:'#fff',fontSize:15,fontWeight:600,border:'none',borderRadius: 4,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'DM Sans', sans-serif",boxShadow:'0 2px 8px rgba(244,121,32,0.25)'},
-    divider:    {height:1,backgroundColor:'#F1F5F9',margin:'18px 0'},
-    link:       {color:'#F47920',fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans', sans-serif"},
-    switchBtn:  {width:'100%',padding:'11px 14px',backgroundColor:'#F8FAFC',color:'#475569',fontSize:13.5,fontWeight:600,border:'1.5px solid #E2E8F0',borderRadius: 4,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'DM Sans', sans-serif",marginTop:8},
+    otpBox:     {width:'100%',maxWidth:56,height:60,borderRadius: 4,border:'2px solid var(--border)',fontSize:22,fontWeight:700,textAlign:'center',color:'var(--accent-text)',outline:'none',fontFamily:"'Lexend', sans-serif"},
+    verifyBtn:  {width:'100%',padding:13,backgroundColor:'#F47920',color:'#fff',fontSize:15,fontWeight:600,border:'none',borderRadius: 4,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'Lexend', sans-serif",boxShadow:'0 2px 8px rgba(244,121,32,0.25)'},
+    divider:    {height:1,backgroundColor:'var(--border-soft)',margin:'18px 0'},
+    link:       {color:'var(--accent-text)',fontWeight:700,cursor:'pointer',fontFamily:"'Lexend', sans-serif",background:'none',border:'none',padding:0,fontSize:'inherit'},
+    switchBtn:  {width:'100%',padding:'11px 14px',backgroundColor:'var(--surface-alt)',color:'var(--text-body)',fontSize:13.5,fontWeight:600,border:'1.5px solid var(--border)',borderRadius: 4,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'Lexend', sans-serif",marginTop:8},
 };
 
 export default OTP;

@@ -1,36 +1,113 @@
 :root {
-  /* ───── VAWC Philippines official palette ───── */
-
-  /* Primary — Orange (Hope & Action) */
+  /* ───── VAWC Philippines official palette, brand hues (constant in both themes) ───── */
   --vawc-orange:       #F47920;
   --vawc-orange-light: #FF9A4D;
   --vawc-orange-tint:  #FFF3E0;
   --vawc-orange-dark:  #C45E10;
-
-  /* Secondary — Purple (Justice & Dignity) */
   --vawc-purple:       #7B2D8B;
   --vawc-purple-light: #9B4DAB;
   --vawc-purple-tint:  #F3E5F5;
   --vawc-purple-deep:  #4A1259;
+  --vawc-white:        #FFFFFF;
+  --vawc-success:      #2E7D32;
+  --vawc-danger:       #C62828;
 
-  /* Neutrals & semantic */
-  --vawc-white:    #FFFFFF;
-  --vawc-surface:  #F8F6FA;
-  --vawc-success:  #2E7D32;
-  --vawc-danger:   #C62828;
+  /* ───── Semantic THEME tokens, components reference these, not raw hex ─────
+     Highlight (orange/purple) identity stays the same across themes; only
+     surfaces, text, and borders flip. Defaults below = LIGHT. */
+  --page:         #FFF3E0;                                   /* solid page bg */
+  --page-grad:    linear-gradient(180deg, #FFF9F3 0%, #FFF3E0 100%);
+  --surface:      #FFFFFF;                                   /* card surface */
+  --surface-tint: #FFF3E0;                                   /* orange-tint fills, icon boxes */
+  --surface-alt:  #F8FAFC;                                   /* neutral inset (inputs, review rows) */
+  --topbar:       rgba(255, 255, 255, 0.72);                /* frosted top bar */
+  --nav:          rgba(255, 255, 255, 0.86);                /* floating nav bar */
+  --text:         #201A17;                                   /* primary text */
+  --text-body:    #475569;                                   /* body copy */
+  --text-muted:   #64748B;                                   /* captions/hints */
+  --border:       #FFE4CC;                                   /* warm hairline */
+  --border-soft:  #F1F5F9;                                   /* neutral hairline */
+  --accent-text:  #C45E10;                                   /* orange text/links (AA on surface) */
+  --card-shadow:  0 6px 22px rgba(196, 94, 16, 0.08);
+  --card-shadow-strong: 0 12px 30px rgba(196, 94, 16, 0.14);
+  --overlay:      rgba(24, 12, 28, 0.55);
+  --radius-card:  20px;
+  --font:         'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Awareness / category accents (AA text colour + soft icon-box tint) */
+  --acc-pink:    #BE185D;  --tint-pink:   #FDF2F8;
+  --acc-green:   #047857;  --tint-green:  #ECFDF5;
+  --acc-purple:  #7B2D8B;  --tint-purple: #F3E5F5;
+  --acc-orange:  #C45E10;  --tint-orange: #FFF3E0;
+
+  /* Semantic status boxes (theme-aware note/banner surfaces) */
+  --bg-warn:    #FFFBEB;  --bd-warn:    #FDE68A;  --tx-warn:    #92400E;
+  --bg-success: #ECFDF5;  --bd-success: #A7F3D0;  --tx-success: #065F46;
+  --bg-error:   #FFF1F2;  --bd-error:   #FECDD3;  --tx-error:   #BE123C;
+  --bg-info:    #F3E5F5;  --bd-info:    #E1BEE7;  --tx-info:    #4A1259;
+}
+
+:root[data-theme="dark"] {
+  --page:         #171311;
+  --page-grad:    linear-gradient(180deg, #1B1512 0%, #171311 100%);
+  --surface:      #221B17;
+  --surface-tint: #33251A;                                   /* dark warm tint (was peach) */
+  --surface-alt:  #211A16;
+  --topbar:       rgba(28, 22, 18, 0.72);
+  --nav:          rgba(30, 24, 20, 0.88);
+  --text:         #F3ECE6;
+  --text-body:    #CBBFB4;
+  --text-muted:   #A99C90;
+  --border:       #3B2E25;
+  --border-soft:  #2A211B;
+  --accent-text:  #FF9A4D;                                   /* lighter orange reads on dark */
+  --card-shadow:  0 6px 22px rgba(0, 0, 0, 0.35);
+  --card-shadow-strong: 0 14px 34px rgba(0, 0, 0, 0.5);
+  --overlay:      rgba(0, 0, 0, 0.62);
+
+  --acc-pink:    #F472B6;  --tint-pink:   #3A2230;
+  --acc-green:   #34D399;  --tint-green:  #123227;
+  --acc-purple:  #C084FC;  --tint-purple: #2E1A38;
+  --acc-orange:  #FF9A4D;  --tint-orange: #33251A;
+
+  --bg-warn:    #2C2410;  --bd-warn:    #544418;  --tx-warn:    #FCD34D;
+  --bg-success: #0F241C;  --bd-success: #1F4A3A;  --tx-success: #6EE7B7;
+  --bg-error:   #2E1517;  --bd-error:   #5A252B;  --tx-error:   #FDA4AF;
+  --bg-info:    #241830;  --bd-info:    #3E2A52;  --tx-info:    #D8B4FE;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--vawc-surface);
+  background-color: var(--page);
+  color: var(--text);
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* ───── Accessibility: trauma-informed motion + keyboard focus ─────
+   Respect users who ask their OS to reduce motion. This neutralises the
+   infinite SOS pulse, floating blobs, bell ring, and fade-ups globally so
+   the app never feels alarming or busy for a distressed user. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Always show a visible focus ring for keyboard users (never remove it). */
+:focus-visible {
+  outline: 3px solid #C45E10;
+  outline-offset: 2px;
+  border-radius: 4px;
 }

@@ -9,7 +9,7 @@ export const hasAcceptedTerms = () => {
 // ─── Font + scoped CSS ──────────────────────────────────────────────────────
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id = 'vawc-font'; l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(l);
 }
 if (!document.getElementById('vawc-terms-css')) {
@@ -20,12 +20,12 @@ if (!document.getElementById('vawc-terms-css')) {
         .terms-overlay { animation: termsFadeIn 0.18s ease; }
         .terms-modal   { animation: termsSlideUp 0.22s ease; }
         .terms-scroll::-webkit-scrollbar { width: 8px; }
-        .terms-scroll::-webkit-scrollbar-track { background: #FFF3E0; border-radius: 4px; }
+        .terms-scroll::-webkit-scrollbar-track { background: var(--surface-tint); border-radius: 4px; }
         .terms-scroll::-webkit-scrollbar-thumb { background: #FFCC99; border-radius: 4px; }
         .terms-scroll::-webkit-scrollbar-thumb:hover { background: #A78BFA; }
         .terms-accept:not([disabled]):hover { background: #C45E10 !important; box-shadow: 0 4px 14px rgba(196,94,16,0.35) !important; transform: translateY(-1px); }
         .terms-accept:not([disabled]):active { transform: scale(0.98); }
-        .terms-decline:hover { background: #FFF3E0 !important; border-color: #FFCC99 !important; }
+        .terms-decline:hover { background: var(--surface-tint) !important; border-color: #FFCC99 !important; }
     `;
     document.head.appendChild(s);
 }
@@ -259,14 +259,14 @@ const S = {
     overlay: {
         position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.65)',
         zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '16px', fontFamily: "'DM Sans', sans-serif",
+        padding: '16px', fontFamily: "'Lexend', sans-serif",
     },
     modal: {
-        background: '#fff', borderRadius: 16,
+        background: 'var(--surface)', borderRadius: 16,
         width: '100%', maxWidth: 560, maxHeight: '92vh',
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
         boxShadow: '0 20px 60px rgba(196,94,16,0.35)',
-        border: '1px solid #FFE4CC',
+        border: '1px solid var(--border)',
     },
 
     header: {
@@ -280,10 +280,10 @@ const S = {
         border: '1px solid rgba(255,255,255,0.35)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
     },
-    headerTitle: { margin: 0, fontSize: 17, fontWeight: 800, color: '#fff', fontFamily: "'DM Sans', sans-serif" },
-    headerSub:   { margin: '2px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.85)', fontFamily: "'DM Sans', sans-serif" },
+    headerTitle: { margin: 0, fontSize: 17, fontWeight: 800, color: '#fff', fontFamily: "'Lexend', sans-serif" },
+    headerSub:   { margin: '2px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.85)', fontFamily: "'Lexend', sans-serif" },
 
-    progressTrack: { width: '100%', height: 4, background: '#FFF3E0' },
+    progressTrack: { width: '100%', height: 4, background: 'var(--surface-tint)' },
     progressFill:  { height: '100%', background: 'linear-gradient(90deg, #F47920 0%, #FB923C 100%)', transition: 'width 0.15s ease' },
 
     scroll: {
@@ -292,10 +292,10 @@ const S = {
         background: '#FDFCFF',
     },
     intro: {
-        margin: '0 0 18px', fontSize: 13.5, color: '#475569', lineHeight: 1.65,
-        fontFamily: "'DM Sans', sans-serif",
+        margin: '0 0 18px', fontSize: 13.5, color: 'var(--text-body)', lineHeight: 1.65,
+        fontFamily: "'Lexend', sans-serif",
     },
-    strong: { color: '#C45E10', fontWeight: 700 },
+    strong: { color: 'var(--accent-text)', fontWeight: 700 },
 
     section: { marginBottom: 18, paddingLeft: 14, borderLeft: '3px solid #FFCC99' },
     sectionHead: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 7 },
@@ -304,14 +304,14 @@ const S = {
         background: '#F47920', color: '#fff',
         fontSize: 12, fontWeight: 800,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Lexend', sans-serif",
     },
-    sectionTitle: { margin: 0, fontSize: 14.5, fontWeight: 800, color: '#1E1B4B', fontFamily: "'DM Sans', sans-serif" },
-    sectionBody:  { fontSize: 13, color: '#475569', lineHeight: 1.65, fontFamily: "'DM Sans', sans-serif" },
+    sectionTitle: { margin: 0, fontSize: 14.5, fontWeight: 800, color: 'var(--text)', fontFamily: "'Lexend', sans-serif" },
+    sectionBody:  { fontSize: 13, color: 'var(--text-body)', lineHeight: 1.65, fontFamily: "'Lexend', sans-serif" },
 
-    para: { margin: '0 0 8px', fontSize: 13, color: '#475569', lineHeight: 1.65, fontFamily: "'DM Sans', sans-serif" },
+    para: { margin: '0 0 8px', fontSize: 13, color: 'var(--text-body)', lineHeight: 1.65, fontFamily: "'Lexend', sans-serif" },
     list: { listStyle: 'none', margin: '0 0 8px', padding: 0, display: 'flex', flexDirection: 'column', gap: 6 },
-    bullet: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: '#475569', lineHeight: 1.55, fontFamily: "'DM Sans', sans-serif" },
+    bullet: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--text-body)', lineHeight: 1.55, fontFamily: "'Lexend', sans-serif" },
     bulletDot: {
         flexShrink: 0, marginTop: 7, width: 6, height: 6, borderRadius: '50%',
         background: '#F47920',
@@ -319,32 +319,32 @@ const S = {
 
     acknowledge: {
         marginTop: 12, padding: '14px 16px',
-        background: '#FFF3E0', border: '1.5px solid #FFCC99', borderRadius: 12,
+        background: 'var(--surface-tint)', border: '1.5px solid #FFCC99', borderRadius: 12,
     },
-    ackTitle: { margin: 0, fontSize: 12, fontWeight: 800, color: '#9A3412', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4, fontFamily: "'DM Sans', sans-serif" },
-    ackText:  { margin: 0, fontSize: 12.5, color: '#7C2D12', lineHeight: 1.6, fontFamily: "'DM Sans', sans-serif" },
+    ackTitle: { margin: 0, fontSize: 12, fontWeight: 800, color: '#9A3412', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4, fontFamily: "'Lexend', sans-serif" },
+    ackText:  { margin: 0, fontSize: 12.5, color: '#7C2D12', lineHeight: 1.6, fontFamily: "'Lexend', sans-serif" },
 
     scrollHint: {
         margin: '0 22px 10px', padding: '8px 12px',
-        background: '#FFF3E0', border: '1px dashed #FFCC99', borderRadius: 8,
-        color: '#F47920', fontSize: 12, fontWeight: 600,
+        background: 'var(--surface-tint)', border: '1px dashed #FFCC99', borderRadius: 8,
+        color: 'var(--accent-text)', fontSize: 12, fontWeight: 600,
         display: 'inline-flex', alignItems: 'center', gap: 6,
-        cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+        cursor: 'pointer', fontFamily: "'Lexend', sans-serif",
         alignSelf: 'flex-start',
     },
 
     footer: {
         display: 'flex', gap: 10,
         padding: '14px 20px 18px',
-        borderTop: '1px solid #F1F5F9',
-        background: '#fff',
+        borderTop: '1px solid var(--border-soft)',
+        background: 'var(--surface)',
     },
     declineBtn: {
         flex: 1, padding: '12px 16px',
-        background: '#fff', color: '#475569',
-        border: '1.5px solid #E2E8F0', borderRadius: 10,
+        background: 'var(--surface)', color: 'var(--text-body)',
+        border: '1.5px solid var(--border)', borderRadius: 10,
         fontSize: 14, fontWeight: 700, cursor: 'pointer',
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Lexend', sans-serif",
         transition: 'all 0.15s ease',
     },
     acceptBtn: {
@@ -352,7 +352,7 @@ const S = {
         background: '#F47920', color: '#fff',
         border: 'none', borderRadius: 10,
         fontSize: 14, fontWeight: 800, cursor: 'pointer',
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Lexend', sans-serif",
         transition: 'all 0.15s ease',
         boxShadow: '0 2px 8px rgba(244,121,32,0.25)',
     },

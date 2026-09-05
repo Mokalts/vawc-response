@@ -22,18 +22,18 @@ const CSS = `
     @import url('https://fonts.googleapis.com/css2?family=Times:wght@400;700&display=swap');
     @page { size: A4; margin: 0.75in; }
 
-    .pd-wrap { background: #E2E8F0; min-height: 100vh; padding: 24px 16px 60px; font-family: 'DM Sans', sans-serif; }
+    .pd-wrap { background: #E2E8F0; min-height: 100vh; padding: 24px 16px 60px; font-family: 'Lexend', sans-serif; }
     .pd-toolbar {
         max-width: 8.27in; margin: 0 auto 16px;
         display: flex; align-items: center; justify-content: space-between;
         gap: 12px; flex-wrap: wrap;
     }
-    .pd-toolbar h1 { margin: 0; font-size: 18px; font-weight: 700; color: #0F172A; font-family: 'DM Sans', sans-serif; }
-    .pd-toolbar p  { margin: 2px 0 0; font-size: 12.5px; color: #475569; font-family: 'DM Sans', sans-serif; }
+    .pd-toolbar h1 { margin: 0; font-size: 18px; font-weight: 700; color: #0F172A; font-family: 'Lexend', sans-serif; }
+    .pd-toolbar p  { margin: 2px 0 0; font-size: 12.5px; color: #475569; font-family: 'Lexend', sans-serif; }
     .pd-btn {
         padding: 10px 18px; border-radius: 8px; border: none;
         background: #F47920; color: #fff; font-size: 13.5px; font-weight: 700;
-        cursor: pointer; font-family: 'DM Sans', sans-serif;
+        cursor: pointer; font-family: 'Lexend', sans-serif;
         display: inline-flex; align-items: center; gap: 8px;
         box-shadow: 0 2px 6px rgba(244,121,32,0.3);
     }
@@ -43,12 +43,12 @@ const CSS = `
         padding: 10px 16px; border-radius: 8px;
         border: 1.5px solid #CBD5E1; background: #fff; color: #475569;
         font-size: 13px; font-weight: 600; cursor: pointer;
-        font-family: 'DM Sans', sans-serif;
+        font-family: 'Lexend', sans-serif;
     }
     .pd-banner {
         max-width: 8.27in; margin: 0 auto 16px;
         background: #FFF3E0; border: 1.5px solid #FFCC99; border-radius: 8px;
-        padding: 12px 16px; font-size: 12.5px; color: #C45E10; font-family: 'DM Sans', sans-serif;
+        padding: 12px 16px; font-size: 12.5px; color: #C45E10; font-family: 'Lexend', sans-serif;
     }
     .pd-paper {
         background: #fff;
@@ -424,15 +424,15 @@ export default function PrintDocument() {
     const cfg = DOC_TYPES[type];
     if (!cfg) {
         return (
-            <div style={{ padding: 40, textAlign: "center", fontFamily: "'DM Sans',sans-serif" }}>
+            <div style={{ padding: 40, textAlign: "center", fontFamily: "'Lexend',sans-serif" }}>
                 <p style={{ color: "#C62828" }}>Unknown document type: <code>{type}</code></p>
                 <button onClick={() => navigate(-1)}>Back</button>
             </div>
         );
     }
 
-    if (loading) return <div style={{ padding: 40, textAlign: "center", fontFamily: "'DM Sans',sans-serif" }}>Loading case…</div>;
-    if (error)  return <div style={{ padding: 40, textAlign: "center", color: "#C62828", fontFamily: "'DM Sans',sans-serif" }}>{error}</div>;
+    if (loading) return <div style={{ padding: 40, textAlign: "center", fontFamily: "'Lexend',sans-serif" }}>Loading case…</div>;
+    if (error)  return <div style={{ padding: 40, textAlign: "center", color: "#C62828", fontFamily: "'Lexend',sans-serif" }}>{error}</div>;
     if (!cas)   return null;
 
     const victim = cas.victim || {};

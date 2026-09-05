@@ -1,10 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fil">
   <head>
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/barangay-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#F47920" />
+    <meta name="theme-color" content="#F47920" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#171311" media="(prefers-color-scheme: dark)" />
+    <!-- Preconnect + load the app font here to avoid a per-page FOUT / layout shift.
+         Lexend: reading-optimised for legibility (trauma-informed, low-literacy audience). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap"
+    />
+    <!-- Apply saved theme before paint to avoid a flash of the wrong theme -->
+    <script>
+      (function () {
+        try {
+          // Default to LIGHT until every page is dark-ready. Only honour an
+          // explicit user choice (the toggle). Re-enable OS auto-dark
+          // (prefers-color-scheme) once the dark rollout is complete.
+          var t = localStorage.getItem('vawc_theme') || 'light';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
     <meta
       name="description"
       content="VAWC-Response — Digital reporting and case monitoring system for Barangay Palanginan, Iba, Zambales (RA 9262)."

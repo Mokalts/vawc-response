@@ -1,10 +1,12 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
-from database import engine
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+from database import engine, get_db
 from models import User, Report, OTP
 from models.case import Case
 from models.case_message import CaseMessage
@@ -64,3 +66,16 @@ app.include_router(admin_users.router)
 @app.api_route("/", methods=["GET", "HEAD"], tags=["Health"])
 def root():
     return {"message": "VAWC-Response API is running."}
+
+
+# Keep-warm endpoint that ALSO touches the database. Point the uptime monitor
+# here (instead of "/") so the free-tier Postgres (Neon) stays awake too — not
+# just the web server. This prevents a slow first login when the DB has
+# auto-suspended after inactivity. Accepts HEAD so uptime monitors get a 200.
+@app.api_route("/health/db", methods=["GET", "HEAD"], tags=["Health"])
+def health_db(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+        return {"status": "ok", "db": "up"}
+    except Exception:
+        return JSONResponse(status_code=503, content={"status": "error", "db": "down"})

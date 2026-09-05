@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle';
 import api from "../api";
 import { hasAcceptedTerms } from '../components/TermsModal';
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id = 'vawc-font'; l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(l);
 }
 if (!document.getElementById('vawc-victim-css')) {
@@ -60,31 +61,31 @@ const IcoCheck     = ({ pass }) => pass
     : (<svg width="10" height="10" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#CBD5E1" strokeWidth="2"/></svg>);
 const Spinner      = () => (<span style={{ width:14, height:14, border:'2px solid rgba(255,255,255,0.3)', borderTopColor:'#fff', borderRadius: '50%', animation:'spin 0.7s linear infinite', display:'inline-block', flexShrink:0 }} />);
 
-const Field = ({ label, optional, children }) => (
+const Field = ({ label, optional, htmlFor, children }) => (
     <div style={{ marginBottom:16 }}>
-        <label style={{ display:'block', fontSize:11, fontWeight:700, color:'#C45E10', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.07em', fontFamily:"'DM Sans', sans-serif" }}>
-            {label}{optional && <span style={{ fontWeight:400, color:'#94A3B8', fontSize:10.5, textTransform:'none', letterSpacing:0 }}> (optional)</span>}
+        <label htmlFor={htmlFor} style={{ display:'block', fontSize:11, fontWeight:700, color:'var(--accent-text)', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.07em', fontFamily:"'Lexend', sans-serif" }}>
+            {label}{optional && <span style={{ fontWeight:400, color:'var(--text-muted)', fontSize:10.5, textTransform:'none', letterSpacing:0 }}> (optional)</span>}
         </label>
         {children}
     </div>
 );
 
 const Input = ({ type='text', name, placeholder, value, onChange, style={} }) => (
-    <input className="vi-input" type={type} name={name} placeholder={placeholder} value={value} onChange={onChange}
-        style={{ width:'100%', boxSizing:'border-box', padding:'12px 14px', borderRadius: 8, border:'1.5px solid #E2E8F0', fontSize:14.5, color:'#0F172A', backgroundColor:'#F8FAFC', outline:'none', fontFamily:"'DM Sans', sans-serif", ...style }} />
+    <input id={name} className="vi-input" type={type} name={name} placeholder={placeholder} value={value} onChange={onChange}
+        style={{ width:'100%', boxSizing:'border-box', padding:'12px 14px', borderRadius: 8, border:'1.5px solid var(--border)', fontSize:14.5, color:'var(--text)', backgroundColor:'var(--surface-alt)', outline:'none', fontFamily:"'Lexend', sans-serif", ...style }} />
 );
 
 const Select = ({ name, value, onChange, children }) => (
-    <select name={name} value={value} onChange={onChange}
-        style={{ width:'100%', padding:'12px 14px', borderRadius: 8, border:'1.5px solid #E2E8F0', fontSize:14.5, color:'#0F172A', backgroundColor:'#F8FAFC', outline:'none', fontFamily:"'DM Sans', sans-serif", cursor:'pointer' }}>
+    <select id={name} name={name} value={value} onChange={onChange}
+        style={{ width:'100%', padding:'12px 14px', borderRadius: 8, border:'1.5px solid var(--border)', fontSize:14.5, color:'var(--text)', backgroundColor:'var(--surface-alt)', outline:'none', fontFamily:"'Lexend', sans-serif", cursor:'pointer' }}>
         {children}
     </select>
 );
 
 const SectionHeader = ({ icon, title }) => (
-    <div style={{ display:'flex', alignItems:'center', gap:8, borderBottom:'1.5px solid #FFE4CC', paddingBottom:10, marginBottom:16, marginTop:8 }}>
+    <div style={{ display:'flex', alignItems:'center', gap:8, borderBottom:'1.5px solid var(--border)', paddingBottom:10, marginBottom:16, marginTop:8 }}>
         {icon}
-        <p style={{ margin:0, fontSize:13, fontWeight:700, color:'#C45E10', fontFamily:"'DM Sans', sans-serif" }}>{title}</p>
+        <p style={{ margin:0, fontSize:13, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" }}>{title}</p>
     </div>
 );
 
@@ -177,6 +178,7 @@ function SignUp() {
 
     return (
         <div style={S.page}>
+            <div style={{ position: 'fixed', top: 14, right: 14, zIndex: 50 }}><ThemeToggle size={44} /></div>
             <div style={S.brand}>
                 <div style={S.brandIcon}><IcoShield /></div>
                 <div>
@@ -191,14 +193,14 @@ function SignUp() {
                 <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#C45E10" strokeWidth="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Personal Information" />
 
                 <div style={{ display:'flex', gap:12 }}>
-                    <Field label="First Name"><Input name="first_name" placeholder="First name" value={form.first_name} onChange={handleChange} /></Field>
-                    <Field label="Last Name"><Input name="last_name" placeholder="Last name" value={form.last_name} onChange={handleChange} /></Field>
+                    <Field label="First Name" htmlFor="first_name"><Input name="first_name" placeholder="First name" value={form.first_name} onChange={handleChange} /></Field>
+                    <Field label="Last Name" htmlFor="last_name"><Input name="last_name" placeholder="Last name" value={form.last_name} onChange={handleChange} /></Field>
                 </div>
-                <Field label="Middle Name" optional><Input name="middle_name" placeholder="Middle name" value={form.middle_name} onChange={handleChange} /></Field>
+                <Field label="Middle Name" optional htmlFor="middle_name"><Input name="middle_name" placeholder="Middle name" value={form.middle_name} onChange={handleChange} /></Field>
 
                 <div style={{ display:'flex', gap:12 }}>
-                    <Field label="Birthdate"><Input type="date" name="birthdate" value={form.birthdate} onChange={handleChange} /></Field>
-                    <Field label="Sex">
+                    <Field label="Birthdate" htmlFor="birthdate"><Input type="date" name="birthdate" value={form.birthdate} onChange={handleChange} /></Field>
+                    <Field label="Sex" htmlFor="sex">
                         <Select name="sex" value={form.sex} onChange={handleChange}>
                             <option value="">Select</option>
                             <option value="Female">Female</option>
@@ -210,32 +212,32 @@ function SignUp() {
                 {/* ── Minor Toggle ───────────────────────────────────────── */}
                 <button type="button" className="minor-toggle"
                     onClick={handleMinorToggle}
-                    style={{ width:'100%', display:'flex', alignItems:'center', gap:12, padding:'12px 14px', borderRadius: 4, border:`1.5px solid ${isMinor ? '#F47920' : '#E2E8F0'}`, background: isMinor ? '#FFF3E0' : '#F8FAFC', cursor:'pointer', marginBottom:16, textAlign:'left' }}>
+                    style={{ width:'100%', display:'flex', alignItems:'center', gap:12, padding:'12px 14px', borderRadius: 4, border:`1.5px solid ${isMinor ? '#F47920' : 'var(--border)'}`, background: isMinor ? 'var(--surface-tint)' : 'var(--surface-alt)', cursor:'pointer', marginBottom:16, textAlign:'left' }}>
                     {/* Checkbox visual */}
                     <div style={{ width:18, height:18, borderRadius: 4, border:`2px solid ${isMinor ? '#F47920' : '#CBD5E1'}`, background: isMinor ? '#F47920' : '#fff', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all 0.15s' }}>
                         {isMinor && <svg width="10" height="10" fill="none" viewBox="0 0 20 20"><path d="M4 10l5 5 7-8" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>}
                     </div>
                     <div>
-                        <p style={{ margin:0, fontSize:13.5, fontWeight:600, color: isMinor ? '#C45E10' : '#475569', fontFamily:"'DM Sans', sans-serif" }}>The victim is a minor (below 18)</p>
-                        <p style={{ margin:'2px 0 0', fontSize:11.5, color:'#94A3B8', fontFamily:"'DM Sans', sans-serif" }}>Guardian information will be required</p>
+                        <p style={{ margin:0, fontSize:13.5, fontWeight:600, color: isMinor ? '#C45E10' : '#475569', fontFamily:"'Lexend', sans-serif" }}>The victim is a minor (below 18)</p>
+                        <p style={{ margin:'2px 0 0', fontSize:11.5, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>Guardian information will be required</p>
                     </div>
                 </button>
 
                 {/* ── Guardian Section (conditional) ─────────────────────── */}
                 {isMinor && (
-                    <div className="guardian-section" style={{ backgroundColor:'#FFF3E0', border:'1.5px solid #FFE4CC', borderRadius: 4, padding:'16px', marginBottom:16 }}>
+                    <div className="guardian-section" style={{ backgroundColor:'var(--surface-tint)', border:'1.5px solid var(--border)', borderRadius: 4, padding:'16px', marginBottom:16 }}>
                         <SectionHeader icon={<IcoGuardian />} title="Guardian Information" />
-                        <Field label="Guardian's Full Name">
+                        <Field label="Guardian's Full Name" htmlFor="guardian_name">
                             <Input name="guardian_name" placeholder="e.g. Maria Santos" value={form.guardian_name} onChange={handleChange} />
                         </Field>
-                        <Field label="Relationship to Victim">
+                        <Field label="Relationship to Victim" htmlFor="guardian_relationship">
                             <Select name="guardian_relationship" value={form.guardian_relationship} onChange={handleChange}>
                                 <option value="">Select relationship</option>
                                 {GUARDIAN_RELATIONSHIPS.map(r => <option key={r} value={r}>{r}</option>)}
                             </Select>
                         </Field>
-                        <div style={{ backgroundColor:'#FFF3E0', borderRadius: 8, padding:'10px 12px', border:'1px solid #FFCC99', marginTop:-4 }}>
-                            <p style={{ fontSize:12, color:'#92400E', margin:0, lineHeight:1.6, fontFamily:"'DM Sans', sans-serif" }}>
+                        <div style={{ backgroundColor:'var(--surface-tint)', borderRadius: 8, padding:'10px 12px', border:'1px solid #FFCC99', marginTop:-4 }}>
+                            <p style={{ fontSize:12, color:'#92400E', margin:0, lineHeight:1.6, fontFamily:"'Lexend', sans-serif" }}>
                                 The guardian named above will be the official filer of this report on behalf of the minor victim.
                             </p>
                         </div>
@@ -245,11 +247,11 @@ function SignUp() {
                 {/* Contact */}
                 <SectionHeader icon={<IcoPhone />} title="Contact Information" />
 
-                <Field label="Mobile Number"><Input type="tel" name="phone_number" placeholder="e.g. 09xxxxxxxxx" value={form.phone_number} onChange={handleChange} /></Field>
-                <Field label="Email Address"><Input type="email" name="email" placeholder="Enter your email address" value={form.email} onChange={handleChange} /></Field>
+                <Field label="Mobile Number" htmlFor="phone_number"><Input type="tel" name="phone_number" placeholder="e.g. 09xxxxxxxxx" value={form.phone_number} onChange={handleChange} /></Field>
+                <Field label="Email Address" htmlFor="email"><Input type="email" name="email" placeholder="Enter your email address" value={form.email} onChange={handleChange} /></Field>
 
                 <div style={{ backgroundColor:'#ECFDF5', borderRadius: 4, padding:'12px 14px', marginBottom:16, marginTop:-4, border:'1px solid #A7F3D0' }}>
-                    <p style={{ fontSize:12.5, color:'#065F46', lineHeight:1.6, margin:0, fontFamily:"'DM Sans', sans-serif" }}>
+                    <p style={{ fontSize:12.5, color:'#065F46', lineHeight:1.6, margin:0, fontFamily:"'Lexend', sans-serif" }}>
                         Your mobile number and email will be used to verify your account and send updates about your report.
                     </p>
                 </div>
@@ -257,19 +259,20 @@ function SignUp() {
                 {/* Address */}
                 <SectionHeader icon={<IcoHome />} title="Address within the Barangay" />
 
-                <Field label="House No. / Street"><Input name="street" placeholder="e.g. 12 Mabini Street" value={form.street} onChange={handleChange} /></Field>
-                <Field label="Purok / Zone"><Input name="purok" placeholder="e.g. Purok 3 or Zone 2" value={form.purok} onChange={handleChange} /></Field>
-                <Field label="Landmark" optional><Input name="landmark" placeholder="e.g. Near the covered court" value={form.landmark} onChange={handleChange} /></Field>
+                <Field label="House No. / Street" htmlFor="street"><Input name="street" placeholder="e.g. 12 Mabini Street" value={form.street} onChange={handleChange} /></Field>
+                <Field label="Purok / Zone" htmlFor="purok"><Input name="purok" placeholder="e.g. Purok 3 or Zone 2" value={form.purok} onChange={handleChange} /></Field>
+                <Field label="Landmark" optional htmlFor="landmark"><Input name="landmark" placeholder="e.g. Near the covered court" value={form.landmark} onChange={handleChange} /></Field>
 
                 {/* Password */}
                 <SectionHeader icon={<IcoLock />} title="Create Password" />
 
-                <Field label="Password">
+                <Field label="Password" htmlFor="password">
                     <div style={S.pwWrap}>
-                        <input className="vi-input" type={showPassword?'text':'password'} name="password"
+                        <input id="password" className="vi-input" type={showPassword?'text':'password'} name="password"
                             placeholder="Create a password" value={form.password} onChange={handleChange}
-                            style={{ flex:1, padding:'12px 14px', border:'none', fontSize:14.5, color:'#0F172A', background:'transparent', outline:'none', fontFamily:"'DM Sans', sans-serif" }} />
-                        <button type="button" style={S.eyeBtn} onClick={() => setShowPassword(v=>!v)}>
+                            style={{ flex:1, padding:'12px 14px', border:'none', fontSize:14.5, color:'var(--text)', background:'transparent', outline:'none', fontFamily:"'Lexend', sans-serif" }} />
+                        <button type="button" style={S.eyeBtn} onClick={() => setShowPassword(v=>!v)}
+                            aria-label={showPassword ? 'Itago ang password' : 'Ipakita ang password'}>
                             {showPassword ? <IcoEyeClosed /> : <IcoEyeOpen />}
                         </button>
                     </div>
@@ -277,13 +280,13 @@ function SignUp() {
                         <div style={{ marginTop:10 }}>
                             <div style={{ display:'flex', gap:3, marginBottom:4 }}>
                                 {[1,2,3,4].map(i => (
-                                    <div key={i} style={{ flex:1, height:3, borderRadius: 4, backgroundColor: i<=strength ? STR_COLORS[strength] : '#E2E8F0', transition:'background-color 0.2s' }} />
+                                    <div key={i} style={{ flex:1, height:3, borderRadius: 4, backgroundColor: i<=strength ? STR_COLORS[strength] : 'var(--border)', transition:'background-color 0.2s' }} />
                                 ))}
                             </div>
-                            <p style={{ fontSize:11.5, color:STR_COLORS[strength], margin:'0 0 8px', fontWeight:600, fontFamily:"'DM Sans', sans-serif" }}>{STR_LABELS[strength]}</p>
+                            <p style={{ fontSize:11.5, color:STR_COLORS[strength], margin:'0 0 8px', fontWeight:600, fontFamily:"'Lexend', sans-serif" }}>{STR_LABELS[strength]}</p>
                             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'4px 8px' }}>
                                 {pwChecks.map(({ test, label }) => (
-                                    <p key={label} style={{ fontSize:11.5, margin:0, color: test?'#059669':'#94A3B8', display:'flex', alignItems:'center', gap:5, fontFamily:"'DM Sans', sans-serif" }}>
+                                    <p key={label} style={{ fontSize:11.5, margin:0, color: test?'#047857':'#64748B', display:'flex', alignItems:'center', gap:5, fontFamily:"'Lexend', sans-serif" }}>
                                         <IcoCheck pass={test} />{label}
                                     </p>
                                 ))}
@@ -292,24 +295,25 @@ function SignUp() {
                     )}
                 </Field>
 
-                <Field label="Confirm Password">
+                <Field label="Confirm Password" htmlFor="confirm_password">
                     <div style={S.pwWrap}>
-                        <input className="vi-input" type={showConfirm?'text':'password'} name="confirm_password"
+                        <input id="confirm_password" className="vi-input" type={showConfirm?'text':'password'} name="confirm_password"
                             placeholder="Confirm your password" value={form.confirm_password} onChange={handleChange}
-                            style={{ flex:1, padding:'12px 14px', border:'none', fontSize:14.5, color:'#0F172A', background:'transparent', outline:'none', fontFamily:"'DM Sans', sans-serif" }} />
-                        <button type="button" style={S.eyeBtn} onClick={() => setShowConfirm(v=>!v)}>
+                            style={{ flex:1, padding:'12px 14px', border:'none', fontSize:14.5, color:'var(--text)', background:'transparent', outline:'none', fontFamily:"'Lexend', sans-serif" }} />
+                        <button type="button" style={S.eyeBtn} onClick={() => setShowConfirm(v=>!v)}
+                            aria-label={showConfirm ? 'Itago ang password' : 'Ipakita ang password'}>
                             {showConfirm ? <IcoEyeClosed /> : <IcoEyeOpen />}
                         </button>
                     </div>
                     {form.confirm_password.length > 0 && form.password !== form.confirm_password && (
-                        <p style={{ fontSize:12, color:'#F47920', marginTop:6, marginBottom:0, fontFamily:"'DM Sans', sans-serif" }}>Passwords do not match.</p>
+                        <p style={{ fontSize:12, color:'#BE123C', marginTop:6, marginBottom:0, fontFamily:"'Lexend', sans-serif" }}>Passwords do not match.</p>
                     )}
                 </Field>
 
                 {error && (
                     <div style={{ display:'flex', alignItems:'center', gap:8, backgroundColor:'#FFF1F2', border:'1px solid #FECDD3', borderRadius: 4, padding:'10px 13px', marginBottom:16 }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#BE123C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="#BE123C" strokeWidth="1.8" strokeLinecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="#BE123C" strokeWidth="2.4" strokeLinecap="round"/></svg>
-                        <p style={{ margin:0, fontSize:13, color:'#BE123C', fontFamily:"'DM Sans', sans-serif" }}>{error}</p>
+                        <p style={{ margin:0, fontSize:13, color:'#BE123C', fontFamily:"'Lexend', sans-serif" }}>{error}</p>
                     </div>
                 )}
 
@@ -318,25 +322,25 @@ function SignUp() {
                 </button>
 
                 <div style={S.divider} />
-                <p style={S.bottomText}>Already have an account?{' '}<span className="vi-link" style={S.bottomLink} onClick={() => navigate('/')}>Sign In</span></p>
+                <p style={S.bottomText}>Already have an account?{' '}<button type="button" className="vi-link" style={S.bottomLink} onClick={() => navigate('/')}>Sign In</button></p>
             </div>
         </div>
     );
 }
 
 const S = {
-    page:       { minHeight:'100vh', backgroundColor:'#FFF3E0', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px 24px 48px', fontFamily:"'DM Sans', sans-serif" },
+    page:       { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px 24px 48px', fontFamily:"'Lexend', sans-serif" },
     brand:      { display:'flex', alignItems:'center', gap:14, marginBottom:20, width:'100%', maxWidth:460 },
-    brandIcon:  { width:44, height:44, borderRadius: '50%', backgroundColor:'#fff', border:'1px solid #FFE4CC', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, boxShadow:'0 2px 8px rgba(244,121,32,0.1)' },
-    brandTitle: { fontSize:20, fontWeight:800, color:'#C45E10', margin:'0 0 2px', fontFamily:"'DM Sans', sans-serif" },
-    brandSub:   { fontSize:12.5, color:'#94A3B8', margin:0, fontFamily:"'DM Sans', sans-serif" },
-    card:       { backgroundColor:'#fff', borderRadius: 12, padding:'24px', width:'100%', maxWidth:460, boxShadow:'0 4px 20px rgba(244,121,32,0.08)', border:'1px solid #FFE4CC' },
-    pwWrap:     { display:'flex', alignItems:'center', border:'1.5px solid #E2E8F0', borderRadius: 12, backgroundColor:'#F8FAFC', overflow:'hidden' },
+    brandIcon:  { width:44, height:44, borderRadius: '50%', backgroundColor:'var(--surface)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, boxShadow:'0 2px 8px rgba(244,121,32,0.1)' },
+    brandTitle: { fontSize:20, fontWeight:800, color:'var(--accent-text)', margin:'0 0 2px', fontFamily:"'Lexend', sans-serif" },
+    brandSub:   { fontSize:12.5, color:'var(--text-muted)', margin:0, fontFamily:"'Lexend', sans-serif" },
+    card:       { backgroundColor:'var(--surface)', borderRadius: 12, padding:'24px', width:'100%', maxWidth:460, boxShadow:'0 4px 20px rgba(244,121,32,0.08)', border:'1px solid var(--border)' },
+    pwWrap:     { display:'flex', alignItems:'center', border:'1.5px solid var(--border)', borderRadius: 12, backgroundColor:'var(--surface-alt)', overflow:'hidden' },
     eyeBtn:     { padding:'0 13px', background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', flexShrink:0 },
-    submitBtn:  { width:'100%', padding:13, backgroundColor:'#F47920', color:'#fff', fontSize:15, fontWeight:600, border:'none', borderRadius: 10, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:"'DM Sans', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.25)' },
-    divider:    { height:1, backgroundColor:'#F1F5F9', margin:'20px 0' },
-    bottomText: { textAlign:'center', fontSize:14, color:'#64748B', margin:0, fontFamily:"'DM Sans', sans-serif" },
-    bottomLink: { color:'#F47920', fontWeight:600, cursor:'pointer', transition:'color 0.12s' },
+    submitBtn:  { width:'100%', padding:13, backgroundColor:'#F47920', color:'#fff', fontSize:15, fontWeight:600, border:'none', borderRadius: 10, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.25)' },
+    divider:    { height:1, backgroundColor:'var(--border-soft)', margin:'20px 0' },
+    bottomText: { textAlign:'center', fontSize:14, color:'var(--text-muted)', margin:0, fontFamily:"'Lexend', sans-serif" },
+    bottomLink: { color:'#B45309', fontWeight:700, cursor:'pointer', transition:'color 0.12s', background:'none', border:'none', padding:0, fontSize:14, fontFamily:"'Lexend', sans-serif" },
 };
 
 export default SignUp;

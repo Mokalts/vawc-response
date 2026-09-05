@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/api';
 import { COLORS, TEXT, GLOBAL_CSS } from '../theme';
 import { ConfirmHost } from './ConfirmDialog';
+import ThemeToggle from './ThemeToggle';
 
 // ─── Inject global styles once ────────────────────────────────────────────────
 if (!document.getElementById('vawc-global-css')) {
@@ -158,13 +159,15 @@ function Sidebar() {
                 {NAV.filter(n => isSuper || !n.superOnly).map(item => {
                     const active = location.pathname === item.path;
                     const NavIcon = item.icon;
-                    const showBadge = item.path === '/reports' && unread > 0;
-                    const showBurstDot = item.path === '/dashboard' && showBurstAlert;
+                    // New-reports indicator now lives on Dashboard (that's where reports
+                    // are reviewed/accepted). Red dot + hover tooltip.
+                    const showDashDot = item.path === '/dashboard' && unread > 0;
                     return (
                         <button
                             key={item.path}
                             className={`vawc-nav-btn${active ? ' active' : ''}`}
                             onClick={() => navigate(item.path)}
+                            title={showDashDot ? 'Please check new reports' : undefined}
                             style={{ ...S.navBtn, ...(active ? S.navBtnActive : {}) }}
                         >
                             {/* Active left bar */}
@@ -172,20 +175,15 @@ function Sidebar() {
 
                             <div style={{ ...S.navIconWrap, ...(active ? S.navIconActive : {}), position: 'relative' }}>
                                 <NavIcon size={16} color={active ? '#fff' : '#E1BEE7'} />
-                                {showBurstDot && (
-                                    <span className="burst-dot" style={{ position: 'absolute', top: -2, right: -2, width: 9, height: 9, borderRadius: '50%', background: '#F47920', border: '2px solid #4A1259' }} />
+                                {showDashDot && (
+                                    <span className="burst-dot" title="Please check new reports"
+                                        style={{ position: 'absolute', top: -3, right: -3, minWidth: 9, height: 9, borderRadius: '50%', background: '#EF4444', border: '2px solid #4A1259' }} />
                                 )}
                             </div>
 
                             <span style={{ ...S.navLabel, color: active ? '#FFFFFF' : '#E1BEE7', fontWeight: active ? 700 : 500 }}>
                                 {item.label}
                             </span>
-
-                            {showBadge && (
-                                <span style={S.badge}>
-                                    {unread > 99 ? '99+' : unread}
-                                </span>
-                            )}
                         </button>
                     );
                 })}
@@ -203,42 +201,58 @@ function Sidebar() {
 }
 
 // ─── Top Bar ──────────────────────────────────────────────────────────────────
-function TopBar() {
+// `breadcrumbs` is the trail AFTER the "Dashboard" home crumb. Each item is a
+// string, or { label, onClick } to make it a clickable step. When a page does
+// not supply it, the trail falls back to the section name derived from the URL.
+function TopBar({ breadcrumbs }) {
     const admin = getAdmin();
     const location = useLocation();
+    const navigate = useNavigate();
     const initials = [admin.first_name, admin.last_name]
         .filter(Boolean).map(n => n[0]).join('').toUpperCase() || '?';
 
-    // Derive page title from path
     const titles = {
         '/dashboard': 'Dashboard',
-        '/reports': 'Cases',
+        '/reports': 'Profiles',
         '/admin-management': 'Admin Management',
     };
     const pathBase = '/' + location.pathname.split('/')[1];
     const pageTitle = titles[pathBase] || 'VAWC-Response';
+    const isDashboard = pathBase === '/dashboard';
 
-    // Breadcrumbs
-    const parts = location.pathname.split('/').filter(Boolean);
+    // Home crumb is always "Dashboard"; the rest is the page-supplied trail
+    // (or the section name as a URL fallback). Dashboard itself has no trail.
+    const trail = breadcrumbs != null ? breadcrumbs : (isDashboard ? [] : [pageTitle]);
+    const crumbs = [
+        { label: 'Dashboard', onClick: () => navigate('/dashboard') },
+        ...trail.map(c => (typeof c === 'string' ? { label: c } : c)),
+    ];
 
     return (
         <header style={S.topBar}>
             <div>
                 <h1 style={S.pageTitle}>{pageTitle}</h1>
                 <div style={S.breadcrumb}>
-                    <span style={S.breadCrumb}>Home</span>
-                    {parts.map((p, i) => (
-                        <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <IcoChevron size={11} color="#CBD5E1" />
-                            <span style={{ ...S.breadCrumb, color: i === parts.length - 1 ? COLORS.primary : '#94A3B8', fontWeight: i === parts.length - 1 ? 600 : 400 }}>
-                                {p.charAt(0).toUpperCase() + p.slice(1).replace(/-/g, ' ')}
+                    {crumbs.map((c, i) => {
+                        const last = i === crumbs.length - 1;
+                        const clickable = !last && typeof c.onClick === 'function';
+                        return (
+                            <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                {i > 0 && <IcoChevron size={11} color="#CBD5E1" />}
+                                <span
+                                    onClick={clickable ? c.onClick : undefined}
+                                    title={clickable ? `Go to ${c.label}` : undefined}
+                                    style={{ ...S.breadCrumb, color: last ? COLORS.primary : '#94A3B8', fontWeight: last ? 600 : 400, cursor: clickable ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>
+                                    {c.label}
+                                </span>
                             </span>
-                        </span>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <ThemeToggle size={36} />
                 <div style={S.topDate}>
                     {new Date().toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
                 </div>
@@ -260,12 +274,12 @@ function TopBar() {
 }
 
 // ─── Layout ───────────────────────────────────────────────────────────────────
-export function AdminLayout({ children }) {
+export function AdminLayout({ children, breadcrumbs }) {
     return (
         <div style={S.layout}>
             <Sidebar />
             <div style={S.content}>
-                <TopBar />
+                <TopBar breadcrumbs={breadcrumbs} />
                 <main style={S.main}>{children}</main>
             </div>
             <ConfirmHost />
@@ -309,7 +323,7 @@ const S = {
     logoutLabel: { fontSize: 13.5, fontWeight: 600, color: '#FFCC99', fontFamily: TEXT.font },
 
     // Top bar
-    topBar: { height: 62, backgroundColor: COLORS.white, borderBottom: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', position: 'sticky', top: 0, zIndex: 50, boxShadow: '0 1px 3px rgba(15,23,42,0.04)' },
+    topBar: { height: 62, backgroundColor: COLORS.bgCard, borderBottom: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', position: 'sticky', top: 0, zIndex: 50, boxShadow: 'var(--adm-card-shadow)' },
     pageTitle: { margin: 0, fontSize: 17, fontWeight: 700, color: COLORS.textPrimary, fontFamily: TEXT.font, letterSpacing: '-0.2px' },
     breadcrumb: { display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 },
     breadCrumb: { fontSize: 11.5, color: '#94A3B8', fontFamily: TEXT.font },

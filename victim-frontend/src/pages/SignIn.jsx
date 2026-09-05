@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from "../api";
 import SOSButton from '../components/SOSButton';
+import ThemeToggle from '../components/ThemeToggle';
 import TermsModal, { hasAcceptedTerms } from '../components/TermsModal';
 
 // ─── Font + CSS ───────────────────────────────────────────────────────────────
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id = 'vawc-font'; l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(l);
 }
 if (!document.getElementById('vawc-victim-css')) {
@@ -44,16 +45,16 @@ const InfoBox = ({ variant, icon, title, text, children }) => {
         <div style={{ backgroundColor: v.bg, border: `1.5px solid ${v.bd}`, borderRadius: 12, padding: '14px 16px', marginBottom: 16, animation: 'fadeUp 0.2s ease' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: (text || children) ? 6 : 0 }}>
                 {icon}
-                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: v.tc, fontFamily: "'DM Sans', sans-serif" }}>{title}</p>
+                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: v.tc, fontFamily: "'Lexend', sans-serif" }}>{title}</p>
             </div>
-            {text && <p style={{ margin: 0, fontSize: 13, color: v.sc, lineHeight: 1.6, fontFamily: "'DM Sans', sans-serif" }}>{text}</p>}
+            {text && <p style={{ margin: 0, fontSize: 13, color: v.sc, lineHeight: 1.6, fontFamily: "'Lexend', sans-serif" }}>{text}</p>}
             {children}
         </div>
     );
 };
 
 const ActBtn = ({ label, bg = '#F47920', color = '#fff', border, onClick, loading, children }) => (
-    <button onClick={onClick} disabled={loading} style={{ width: '100%', padding: '11px', borderRadius: 8, border: border || 'none', background: bg, color, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: "'DM Sans', sans-serif", opacity: loading ? 0.7 : 1 }}>
+    <button onClick={onClick} disabled={loading} style={{ width: '100%', padding: '11px', borderRadius: 8, border: border || 'none', background: bg, color, fontSize: 13.5, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: "'Lexend', sans-serif", opacity: loading ? 0.7 : 1 }}>
         {loading && <Spinner />}{children || label}
     </button>
 );
@@ -78,6 +79,13 @@ function SignIn() {
 
     useEffect(() => {
         if (!hasAcceptedTerms()) setTermsOpen(true);
+        // Pre-warm the backend (Render free tier cold-starts after ~15 min idle),
+        // so the first sign-in of the day is fast instead of timing out.
+        const base = api.defaults.baseURL;
+        if (base) {
+            // Hit /health/db (runs SELECT 1) so BOTH the server and the DB wake up.
+            try { fetch(base + '/health/db', { method: 'GET', mode: 'no-cors', cache: 'no-store' }).catch(() => {}); } catch (e) {}
+        }
     }, []);
 
     const handleSignUpClick = () => {
@@ -130,6 +138,10 @@ function SignIn() {
     return (
         <div style={S.page}>
 
+            <div style={{ position: 'fixed', top: 14, right: 14, zIndex: 50 }}>
+                <ThemeToggle size={44} />
+            </div>
+
             {/* Brand header */}
             <div style={S.brand}>
                 <div style={S.brandIcon}>
@@ -155,23 +167,24 @@ function SignIn() {
             <div style={S.card}>
 
                 <div style={S.field}>
-                    <label style={S.label}>Email Address</label>
-                    <input className="vi-input" type="text" inputMode="email" name="email" placeholder="Enter your email"
+                    <label htmlFor="signin-email" style={S.label}>Email Address</label>
+                    <input id="signin-email" className="vi-input" type="text" inputMode="email" name="email" placeholder="Enter your email"
                         autoComplete="off"
-                        style={{ ...S.input, borderColor: error ? '#FECDD3' : '#E2E8F0' }}
+                        style={{ ...S.input, borderColor: error ? '#FECDD3' : 'var(--border)' }}
                         value={form.email} onChange={handleChange}
                         onKeyDown={e => e.key === 'Enter' && handleSubmit()} />
                 </div>
 
                 <div style={S.field}>
-                    <label style={S.label}>Password</label>
-                    <div style={{ ...S.pwWrap, borderColor: error ? '#FECDD3' : '#E2E8F0' }}>
-                        <input className="vi-input" type={showPassword ? 'text' : 'password'} name="password"
+                    <label htmlFor="signin-password" style={S.label}>Password</label>
+                    <div style={{ ...S.pwWrap, borderColor: error ? '#FECDD3' : 'var(--border)' }}>
+                        <input id="signin-password" className="vi-input" type={showPassword ? 'text' : 'password'} name="password"
                             placeholder="Enter your password" autoComplete="off"
                             style={{ ...S.pwInput, border: 'none', boxShadow: 'none' }}
                             value={form.password} onChange={handleChange}
                             onKeyDown={e => e.key === 'Enter' && handleSubmit()} />
-                        <button type="button" style={S.eyeBtn} onClick={() => setShowPassword(v => !v)}>
+                        <button type="button" style={S.eyeBtn} onClick={() => setShowPassword(v => !v)}
+                            aria-label={showPassword ? 'Itago ang password' : 'Ipakita ang password'}>
                             {showPassword ? <IcoEyeClosed /> : <IcoEyeOpen />}
                         </button>
                     </div>
@@ -179,12 +192,12 @@ function SignIn() {
 
                 {error && (
                     <div style={S.errorBox}>
-                        <IcoWarn /><p style={{ margin: 0, fontSize: 13, color: '#BE123C', fontFamily: "'DM Sans', sans-serif" }}>{error}</p>
+                        <IcoWarn /><p style={{ margin: 0, fontSize: 13, color: '#BE123C', fontFamily: "'Lexend', sans-serif" }}>{error}</p>
                     </div>
                 )}
 
                 <div style={{ textAlign: 'right', marginBottom: 20 }}>
-                    <span className="vi-link" style={S.forgot} onClick={() => navigate('/forgot-password')}>Forgot Password?</span>
+                    <button type="button" className="vi-link" style={S.forgot} onClick={() => navigate('/forgot-password')}>Forgot Password?</button>
                 </div>
 
                 <button type="button" className="vi-btn" onClick={handleSubmit} style={{ ...S.submitBtn, opacity: loading ? 0.75 : 1 }} disabled={loading}>
@@ -223,12 +236,12 @@ function SignIn() {
 
 
                 <div style={S.divider} />
-                <p style={S.bottomText}>Don't have an account?{' '}<span className="vi-link" style={S.bottomLink} onClick={handleSignUpClick}>Sign Up</span></p>
+                <p style={S.bottomText}>Don't have an account?{' '}<button type="button" className="vi-link" style={S.bottomLink} onClick={handleSignUpClick}>Sign Up</button></p>
             </div>
 
             {/* Emergency SOS - accessible pre-login */}
             <div style={{ width: '100%', maxWidth: 420, marginTop: 16, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                <p style={{ margin: 0, fontSize: 12, color: '#64748B', fontFamily: "'DM Sans', sans-serif" }}>
+                <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)', fontFamily: "'Lexend', sans-serif" }}>
                     Need help right now?
                 </p>
                 <SOSButton variant="compact" />
@@ -241,25 +254,25 @@ function SignIn() {
 }
 
 const S = {
-    page: { minHeight: '100vh', background: 'linear-gradient(180deg, #FFF9F3 0%, #FFF3E0 55%, #FFE9D6 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'DM Sans', sans-serif" },
+    page: { minHeight: '100vh', background: 'var(--page-grad)', color: 'var(--text)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'Lexend', sans-serif" },
     brand: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 3, marginBottom: 22, width: '100%', maxWidth: 420 },
-    brandIcon: { width: 76, height: 76, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: '#fff', border: '3px solid #FFCC99', boxShadow: '0 6px 20px rgba(244,121,32,0.18)', marginBottom: 10 },
-    brandTitle: { fontSize: 24, fontWeight: 800, color: '#C45E10', margin: 0, fontFamily: "'DM Sans', sans-serif", letterSpacing: '-0.5px' },
-    brandSub: { fontSize: 12.5, fontWeight: 600, color: '#E8843C', margin: 0, fontFamily: "'DM Sans', sans-serif" },
-    brandTag: { fontSize: 12.5, color: '#94A3B8', margin: '5px 0 0', fontFamily: "'DM Sans', sans-serif" },
-    card: { backgroundColor: '#fff', borderRadius: 22, padding: '28px 24px', width: '100%', maxWidth: 420, boxShadow: '0 12px 36px rgba(244,121,32,0.13)', border: '1px solid #FFF0E1' },
+    brandIcon: { width: 76, height: 76, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: 'var(--surface)', border: '3px solid #FFCC99', boxShadow: '0 6px 20px rgba(244,121,32,0.18)', marginBottom: 10 },
+    brandTitle: { fontSize: 24, fontWeight: 800, color: 'var(--accent-text)', margin: 0, fontFamily: "'Lexend', sans-serif", letterSpacing: '-0.5px' },
+    brandSub: { fontSize: 12.5, fontWeight: 600, color: '#B45309', margin: 0, fontFamily: "'Lexend', sans-serif" },
+    brandTag: { fontSize: 12.5, color: 'var(--text-muted)', margin: '5px 0 0', fontFamily: "'Lexend', sans-serif" },
+    card: { backgroundColor: 'var(--surface)', borderRadius: 22, padding: '28px 24px', width: '100%', maxWidth: 420, boxShadow: '0 12px 36px rgba(244,121,32,0.13)', border: '1px solid var(--border)' },
     field: { marginBottom: 18 },
-    label: { display: 'block', fontSize: 11, fontWeight: 700, color: '#C45E10', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: "'DM Sans', sans-serif" },
-    input: { width: '100%', boxSizing: 'border-box', padding: '13px 15px', borderRadius: 12, border: '1.5px solid #FFE4CC', fontSize: 15, color: '#0F172A', backgroundColor: '#FFFBF7', outline: 'none', fontFamily: "'DM Sans', sans-serif" },
-    pwWrap: { display: 'flex', alignItems: 'center', border: '1.5px solid #FFE4CC', borderRadius: 12, backgroundColor: '#FFFBF7', overflow: 'hidden' },
-    pwInput: { flex: 1, padding: '13px 15px', border: 'none', fontSize: 15, color: '#0F172A', backgroundColor: 'transparent', outline: 'none', fontFamily: "'DM Sans', sans-serif" },
+    label: { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--accent-text)', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: "'Lexend', sans-serif" },
+    input: { width: '100%', boxSizing: 'border-box', padding: '13px 15px', borderRadius: 12, border: '1.5px solid var(--border)', fontSize: 15, color: 'var(--text)', backgroundColor: 'var(--surface-alt)', outline: 'none', fontFamily: "'Lexend', sans-serif" },
+    pwWrap: { display: 'flex', alignItems: 'center', border: '1.5px solid var(--border)', borderRadius: 12, backgroundColor: 'var(--surface-alt)', overflow: 'hidden' },
+    pwInput: { flex: 1, padding: '13px 15px', border: 'none', fontSize: 15, color: 'var(--text)', backgroundColor: 'transparent', outline: 'none', fontFamily: "'Lexend', sans-serif" },
     eyeBtn: { padding: '0 13px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', flexShrink: 0 },
     errorBox: { display: 'flex', alignItems: 'center', gap: 8, backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 12, padding: '10px 13px', marginBottom: 16 },
-    forgot: { fontSize: 13.5, color: '#F47920', cursor: 'pointer', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", transition: 'color 0.12s' },
-    submitBtn: { width: '100%', padding: 14, background: 'linear-gradient(135deg, #F47920 0%, #E8641C 100%)', color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: "'DM Sans', sans-serif", boxShadow: '0 8px 20px rgba(196,94,16,0.28)' },
-    divider: { height: 1, backgroundColor: '#F1F5F9', margin: '20px 0' },
-    bottomText: { textAlign: 'center', fontSize: 14, color: '#64748B', margin: 0, fontFamily: "'DM Sans', sans-serif" },
-    bottomLink: { color: '#F47920', fontWeight: 700, cursor: 'pointer', transition: 'color 0.12s' },
+    forgot: { fontSize: 13.5, color: '#B45309', cursor: 'pointer', fontWeight: 600, fontFamily: "'Lexend', sans-serif", transition: 'color 0.12s', background: 'none', border: 'none', padding: 0 },
+    submitBtn: { width: '100%', padding: 14, background: 'linear-gradient(135deg, #F47920 0%, #E8641C 100%)', color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: "'Lexend', sans-serif", boxShadow: '0 8px 20px rgba(196,94,16,0.28)' },
+    divider: { height: 1, backgroundColor: 'var(--border-soft)', margin: '20px 0' },
+    bottomText: { textAlign: 'center', fontSize: 14, color: 'var(--text-muted)', margin: 0, fontFamily: "'Lexend', sans-serif" },
+    bottomLink: { color: '#B45309', fontWeight: 700, cursor: 'pointer', transition: 'color 0.12s', background: 'none', border: 'none', padding: 0, fontSize: 14, fontFamily: "'Lexend', sans-serif" },
 };
 
 export default SignIn;

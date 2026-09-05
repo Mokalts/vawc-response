@@ -7,8 +7,17 @@
     <meta name="theme-color" content="#7B2D8B" />
     <meta
       name="description"
-      content="VAWC-Response Admin Portal — Barangay Palanginan, Iba, Zambales."
+      content="VAWC-Response Admin Portal, Barangay Palanginan, Iba, Zambales."
     />
+    <!-- Apply saved theme before paint (default light) to avoid a flash -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('vawc_admin_theme') || 'light';
+          document.documentElement.setAttribute('data-theme', t);
+        } catch (e) {}
+      })();
+    </script>
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/barangay-logo.png" />
     <!--
       manifest.json provides metadata used when your web app is installed on a

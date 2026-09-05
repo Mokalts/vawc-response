@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle';
 import BottomNavbar from '../components/BottomNavbar';
 import LocationPicker from '../components/LocationPicker';
 import api from '../api';
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id='vawc-font'; l.rel='stylesheet';
-    l.href='https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    l.href='https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(l);
 }
 if (!document.getElementById('vawc-rn-css')) {
@@ -18,7 +19,7 @@ if (!document.getElementById('vawc-rn-css')) {
         .vrn-btn-hover { transition: opacity 0.15s, transform 0.15s; }
         .vrn-remove:hover { background-color:#FFF1F2 !important; border-color:#FCA5A5 !important; }
         .vrn-remove { transition: background-color 0.15s, border-color 0.15s; }
-        .vrn-upload-hover:hover { background-color:#FFF3E0 !important; border-color:#F47920 !important; }
+        .vrn-upload-hover:hover { background-color:var(--surface-tint) !important; border-color:#F47920 !important; }
         .vrn-upload-hover { transition: background-color 0.15s, border-color 0.15s; }
     `;
     document.head.appendChild(s);
@@ -134,23 +135,23 @@ function ReportNow() {
                 <div style={{ width:72, height:72, borderRadius: 4, backgroundColor:'#ECFDF5', border:'2px solid #6EE7B7', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 20px' }}>
                     <IcoCheck c="#059669" size={34} />
                 </div>
-                <h2 style={{ fontSize:22, fontWeight:800, color:'#0A5A42', marginBottom:10, fontFamily:"'DM Sans', sans-serif" }}>Report Submitted</h2>
-                <p style={{ fontSize:14, color:'#475569', lineHeight:1.7, fontFamily:"'DM Sans', sans-serif", marginBottom:28 }}>
+                <h2 style={{ fontSize:22, fontWeight:800, color:'#0A5A42', marginBottom:10, fontFamily:"'Lexend', sans-serif" }}>Report Submitted</h2>
+                <p style={{ fontSize:14, color:'var(--text-body)', lineHeight:1.7, fontFamily:"'Lexend', sans-serif", marginBottom:28 }}>
                     Your report has been received. You will be asked to visit your Barangay VAWC Desk for official confirmation.
                 </p>
-                <div style={{ backgroundColor:'#FFF3E0', borderRadius: 4, padding:'16px 18px', border:'1px solid #FFE4CC', marginBottom:24, textAlign:'left' }}>
+                <div style={{ backgroundColor:'var(--surface-tint)', borderRadius: 4, padding:'16px 18px', border:'1px solid var(--border)', marginBottom:24, textAlign:'left' }}>
                     <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:6 }}>
                         <IcoShield />
-                        <p style={{ fontSize:13, fontWeight:700, color:'#C45E10', fontFamily:"'DM Sans', sans-serif" }}>Confidential</p>
+                        <p style={{ fontSize:13, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" }}>Confidential</p>
                     </div>
-                    <p style={{ fontSize:13, color:'#475569', lineHeight:1.6, fontFamily:"'DM Sans', sans-serif" }}>
+                    <p style={{ fontSize:13, color:'var(--text-body)', lineHeight:1.6, fontFamily:"'Lexend', sans-serif" }}>
                         All reports are kept strictly confidential under Republic Act 9262.
                     </p>
                 </div>
                 <button className="vrn-btn-hover" style={{ ...S.submitBtn, width:'100%', marginBottom:12 }} onClick={() => navigate('/my-reports')}>
                     View My Reports
                 </button>
-                <button style={{ background:'none', border:'none', color:'#94A3B8', fontSize:13, cursor:'pointer', fontFamily:"'DM Sans', sans-serif" }} onClick={() => navigate('/home')}>
+                <button style={{ background:'none', border:'none', color:'var(--text-muted)', fontSize:13.5, fontWeight:600, cursor:'pointer', fontFamily:"'Lexend', sans-serif" }} onClick={() => navigate('/home')}>
                     Back to Home
                 </button>
             </div>
@@ -160,18 +161,18 @@ function ReportNow() {
     // ── Merge Modal ───────────────────────────────────────────────────────────
     if (showMerge && mergeInfo) return (
         <div style={{ ...S.page, alignItems:'center', justifyContent:'center', padding:28 }}>
-            <div style={{ backgroundColor:'#fff', borderRadius: 4, padding:28, maxWidth:360, width:'100%', boxShadow:'0 20px 60px rgba(15,23,42,0.15)' }}>
+            <div style={{ backgroundColor:'var(--surface)', borderRadius: 4, padding:28, maxWidth:360, width:'100%', boxShadow:'0 20px 60px rgba(15,23,42,0.15)' }}>
                 <div style={{ width:60, height:60, borderRadius: 4, backgroundColor:'#FFFBEB', border:'2px solid #FDE68A', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 16px' }}>
                     <svg width="28" height="28" fill="none" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#D97706" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="#D97706" strokeWidth="1.8" strokeLinecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="#D97706" strokeWidth="2.4" strokeLinecap="round"/></svg>
                 </div>
-                <h2 style={{ fontSize:18, fontWeight:800, color:'#0F172A', textAlign:'center', marginBottom:8, fontFamily:"'DM Sans',sans-serif" }}>
+                <h2 style={{ fontSize:18, fontWeight:800, color:'var(--text)', textAlign:'center', marginBottom:8, fontFamily:"'Lexend',sans-serif" }}>
                     Existing Case Found
                 </h2>
-                <p style={{ fontSize:13.5, color:'#475569', lineHeight:1.6, textAlign:'center', marginBottom:16, fontFamily:"'DM Sans',sans-serif" }}>
+                <p style={{ fontSize:13.5, color:'var(--text-body)', lineHeight:1.6, textAlign:'center', marginBottom:16, fontFamily:"'Lexend',sans-serif" }}>
                     You already have an open case against <strong>{mergeInfo.offender}</strong> ({mergeInfo.case_number}) with {mergeInfo.report_count} report{mergeInfo.report_count!==1?'s':''}.
                 </p>
                 <div style={{ backgroundColor:'#FFFBEB', borderRadius: 4, padding:'12px 14px', marginBottom:20, border:'1px solid #FDE68A' }}>
-                    <p style={{ fontSize:13, color:'#92400E', lineHeight:1.6, margin:0, fontFamily:"'DM Sans',sans-serif" }}>
+                    <p style={{ fontSize:13, color:'#92400E', lineHeight:1.6, margin:0, fontFamily:"'Lexend',sans-serif" }}>
                         Adding to the existing case keeps all your reports organized together. The VAWC officer will be notified of this new report.
                     </p>
                 </div>
@@ -184,7 +185,7 @@ function ReportNow() {
                         onClick={() => { setShowMerge(false); setForceNew(true); doSubmit(true); }}>
                         Create New Case Instead
                     </button>
-                    <button style={{ background:'none', border:'none', color:'#94A3B8', fontSize:13, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}
+                    <button style={{ background:'none', border:'none', color:'var(--text-muted)', fontSize:13.5, fontWeight:600, cursor:'pointer', fontFamily:"'Lexend',sans-serif" }}
                         onClick={() => setShowMerge(false)}>
                         Cancel
                     </button>
@@ -201,13 +202,13 @@ function ReportNow() {
                 return (
                     <React.Fragment key={s.id}>
                         <div style={{ display:'flex', flexDirection:'column', alignItems:'center', flexShrink:0 }}>
-                            <div style={{ width:26, height:26, borderRadius: 8, backgroundColor: done?'#059669':current?'#F47920':'#E2E8F0', display:'flex', alignItems:'center', justifyContent:'center', transition:'background-color 0.2s' }}>
-                                {done ? <IcoCheck c="#fff" size={13} /> : <span style={{ fontSize:11, fontWeight:700, color: current?'#fff':'#94A3B8', fontFamily:"'DM Sans', sans-serif" }}>{s.id}</span>}
+                            <div style={{ width:26, height:26, borderRadius: 8, backgroundColor: done?'#059669':current?'#F47920':'var(--border)', display:'flex', alignItems:'center', justifyContent:'center', transition:'background-color 0.2s' }}>
+                                {done ? <IcoCheck c="#fff" size={13} /> : <span style={{ fontSize:11, fontWeight:700, color: current?'#fff':'#64748B', fontFamily:"'Lexend', sans-serif" }}>{s.id}</span>}
                             </div>
-                            <p style={{ fontSize:9.5, fontWeight: current?700:500, color: done?'#059669':current?'#F47920':'#94A3B8', marginTop:3, fontFamily:"'DM Sans', sans-serif", whiteSpace:'nowrap' }}>{s.short}</p>
+                            <p style={{ fontSize:10.5, fontWeight: current?700:600, color: done?'#047857':current?'#C45E10':'#64748B', marginTop:3, fontFamily:"'Lexend', sans-serif", whiteSpace:'nowrap' }}>{s.short}</p>
                         </div>
                         {i < STEPS.length-1 && (
-                            <div style={{ flex:1, height:2, backgroundColor: step>s.id?'#059669':'#E2E8F0', margin:'0 4px', marginBottom:14, transition:'background-color 0.3s' }} />
+                            <div style={{ flex:1, height:2, backgroundColor: step>s.id?'#059669':'var(--border)', margin:'0 4px', marginBottom:14, transition:'background-color 0.3s' }} />
                         )}
                     </React.Fragment>
                 );
@@ -223,18 +224,21 @@ function ReportNow() {
     return (
         <div style={S.page}>
             <header style={S.topBar}>
-                <button style={S.backBtn} onClick={() => step>1 ? setStep(step-1) : navigate('/home')}>
+                <button style={S.backBtn} onClick={() => step>1 ? setStep(step-1) : navigate('/home')}
+                    aria-label={step>1 ? 'Bumalik sa nakaraang hakbang' : 'Bumalik sa Home'}>
                     <IcoArrow dir="left" />
                 </button>
                 <h1 style={S.title}>Submit a Report</h1>
-                <div style={{ width:36 }} />
+                <ThemeToggle size={44} />
             </header>
 
-            <div style={{ padding:'16px 20px 8px', backgroundColor:'#fff', borderBottom:'1px solid #F1F5F9' }}>
-                <StepBar />
-                <p style={{ fontSize:11.5, color:'#94A3B8', textAlign:'center', marginTop:4, fontFamily:"'DM Sans', sans-serif" }}>
-                    Step {step} of {STEPS.length}
-                </p>
+            <div style={{ padding:'16px 20px 8px', backgroundColor:'var(--surface)', borderBottom:'1px solid var(--border-soft)' }}>
+                <div style={{ maxWidth:680, margin:'0 auto' }}>
+                    <StepBar />
+                    <p style={{ fontSize:12, color:'var(--text-muted)', textAlign:'center', marginTop:4, fontFamily:"'Lexend', sans-serif" }}>
+                        Step {step} of {STEPS.length}
+                    </p>
+                </div>
             </div>
 
             <main style={S.content}>
@@ -246,39 +250,41 @@ function ReportNow() {
                             {/* Offender name */}
                             <div style={S.card}>
                                 <div style={S.cardHeader}>
-                                    <div style={{ ...S.iconBox, backgroundColor:'#FFF3E0', borderColor:'#FFE4CC' }}>
+                                    <div style={{ ...S.iconBox, backgroundColor:'var(--surface-tint)', borderColor:'var(--border)' }}>
                                         <IcoEdit />
                                     </div>
                                     <div>
-                                        <h2 style={S.cardTitle}>Offender's Name</h2>
+                                        <h2 id="lbl-offender" style={S.cardTitle}>Offender's Name</h2>
                                         <p style={S.cardSub}>Pangalan ng salarin - required</p>
                                     </div>
                                 </div>
                                 <input
                                     type="text"
+                                    aria-labelledby="lbl-offender"
                                     placeholder="Full name of the offender"
                                     value={offenderName}
                                     onChange={e => setOffenderName(e.target.value)}
                                     style={{ ...S.textarea, resize:'none', padding:'12px 14px', minHeight:'unset' }}
                                 />
                                 {offenderName.trim().length > 0 && offenderName.trim().length < 2 && (
-                                    <p style={{ fontSize:12, color:'#EF4444', marginTop:5, fontFamily:"'DM Sans', sans-serif" }}>Please enter a valid name</p>
+                                    <p style={{ fontSize:12, color:'#BE123C', marginTop:5, fontFamily:"'Lexend', sans-serif" }}>Please enter a valid name</p>
                                 )}
                             </div>
 
                             {/* Incident date */}
                             <div style={S.card}>
                                 <div style={S.cardHeader}>
-                                    <div style={{ ...S.iconBox, backgroundColor:'#FFF3E0', borderColor:'#FFE4CC' }}>
+                                    <div style={{ ...S.iconBox, backgroundColor:'var(--surface-tint)', borderColor:'var(--border)' }}>
                                         <IcoEdit />
                                     </div>
                                     <div>
-                                        <h2 style={S.cardTitle}>Date of Incident</h2>
+                                        <h2 id="lbl-date" style={S.cardTitle}>Date of Incident</h2>
                                         <p style={S.cardSub}>Petsa ng pangyayari - required</p>
                                     </div>
                                 </div>
                                 <input
                                     type="datetime-local"
+                                    aria-labelledby="lbl-date"
                                     value={incidentDate}
                                     max={new Date().toISOString().slice(0,16)}
                                     onChange={e => setIncidentDate(e.target.value)}
@@ -289,29 +295,30 @@ function ReportNow() {
                             {/* Statement */}
                             <div style={S.card}>
                                 <div style={S.cardHeader}>
-                                    <div style={{ ...S.iconBox, backgroundColor:'#FFF3E0', borderColor:'#FFE4CC' }}>
+                                    <div style={{ ...S.iconBox, backgroundColor:'var(--surface-tint)', borderColor:'var(--border)' }}>
                                         <IcoEdit />
                                     </div>
                                     <div>
-                                        <h2 style={S.cardTitle}>Your Statement</h2>
+                                        <h2 id="lbl-statement" style={S.cardTitle}>Your Statement</h2>
                                         <p style={S.cardSub}>Ilarawan ang nangyari</p>
                                     </div>
                                 </div>
                                 <p style={S.hint}>Describe what happened in your own words. You may write in Filipino or English.</p>
                                 <textarea
-                                    style={{ ...S.textarea, borderColor: chars>0&&chars<MIN_CHARS?'#FCA5A5':chars>=MIN_CHARS?'#6EE7B7':'#E2E8F0' }}
+                                    aria-labelledby="lbl-statement"
+                                    style={{ ...S.textarea, borderColor: chars>0&&chars<MIN_CHARS?'#FCA5A5':chars>=MIN_CHARS?'#6EE7B7':'var(--border)' }}
                                     placeholder="Ilarawan ang nangyari sa iyong sariling salita…"
                                     value={statement}
                                     onChange={e => setStatement(e.target.value)}
                                     rows={6}
                                 />
                                 <div style={{ display:'flex', justifyContent:'space-between', marginTop:6 }}>
-                                    <p style={{ fontSize:12, color: chars>=MIN_CHARS?'#059669':chars>0?'#EF4444':'#94A3B8', fontFamily:"'DM Sans', sans-serif" }}>
+                                    <p style={{ fontSize:12, color: chars>=MIN_CHARS?'#047857':chars>0?'#BE123C':'#64748B', fontFamily:"'Lexend', sans-serif" }}>
                                         {chars>=MIN_CHARS ? 'Minimum met' : chars>0 ? `${shortage} more character${shortage!==1?'s':''} needed` : `Minimum ${MIN_CHARS} characters`}
                                     </p>
-                                    <p style={{ fontSize:12, color:'#94A3B8', fontFamily:"'DM Sans', sans-serif" }}>{chars}</p>
+                                    <p style={{ fontSize:12, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>{chars}</p>
                                 </div>
-                                <div style={{ height:4, backgroundColor:'#F1F5F9', borderRadius: 4, marginTop:8, overflow:'hidden' }}>
+                                <div style={{ height:4, backgroundColor:'var(--border-soft)', borderRadius: 4, marginTop:8, overflow:'hidden' }}>
                                     <div style={{ height:'100%', width:`${pct*100}%`, backgroundColor: chars>=MIN_CHARS?'#6EE7B7':'#FCA5A5', borderRadius: 4, transition:'width 0.2s' }} />
                                 </div>
                             </div>
@@ -322,7 +329,7 @@ function ReportNow() {
                     {step === 2 && (
                         <div style={S.card}>
                             <div style={S.cardHeader}>
-                                <div style={{ ...S.iconBox, backgroundColor:'#FFF3E0', borderColor:'#FFE4CC' }}>
+                                <div style={{ ...S.iconBox, backgroundColor:'var(--surface-tint)', borderColor:'var(--border)' }}>
                                     <IcoImage />
                                 </div>
                                 <div>
@@ -345,15 +352,16 @@ function ReportNow() {
                             </div>
                             {imagePreviews.length > 0 && (
                                 <div style={{ marginTop:16 }}>
-                                    <p style={{ fontSize:12, fontWeight:600, color:'#64748B', marginBottom:10, fontFamily:"'DM Sans', sans-serif" }}>
+                                    <p style={{ fontSize:12, fontWeight:600, color:'var(--text-muted)', marginBottom:10, fontFamily:"'Lexend', sans-serif" }}>
                                         {imagePreviews.length} photo{imagePreviews.length!==1?'s':''} attached
                                     </p>
                                     <div style={{ display:'flex', flexWrap:'wrap', gap:10 }}>
                                         {imagePreviews.map((src, i) => (
                                             <div key={i} style={{ position:'relative', width:80, height:80, flexShrink:0 }}>
-                                                <img src={src} alt={`preview-${i}`} style={{ width:'100%', height:'100%', borderRadius: 4, objectFit:'cover', border:'1px solid #E2E8F0' }} />
+                                                <img src={src} alt={`Attachment ${i+1}`} style={{ width:'100%', height:'100%', borderRadius: 4, objectFit:'cover', border:'1px solid var(--border)' }} />
                                                 <button className="vrn-remove" onClick={() => removeImage(i)}
-                                                    style={{ position:'absolute', top:-7, right:-7, width:22, height:22, borderRadius: 4, backgroundColor:'#FFF1F2', border:'1.5px solid #FECDD3', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                                                    aria-label={`Alisin ang larawan ${i+1}`}
+                                                    style={{ position:'absolute', top:-9, right:-9, width:28, height:28, borderRadius: '50%', backgroundColor:'#FFF1F2', border:'1.5px solid #FECDD3', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
                                                     <IcoX />
                                                 </button>
                                             </div>
@@ -423,22 +431,22 @@ function ReportNow() {
                             {imagePreviews.length > 0 && (
                                 <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:14 }}>
                                     {imagePreviews.map((src,i) => (
-                                        <img key={i} src={src} alt={`p-${i}`} style={{ width:56, height:56, borderRadius: 4, objectFit:'cover', border:'1px solid #E2E8F0' }} />
+                                        <img key={i} src={src} alt={`Attachment ${i+1}`} style={{ width:56, height:56, borderRadius: 4, objectFit:'cover', border:'1px solid var(--border)' }} />
                                     ))}
                                 </div>
                             )}
 
-                            <div style={{ ...S.noteBox, backgroundColor:'#FFF3E0', border:'1px solid #FFE4CC' }}>
+                            <div style={{ ...S.noteBox, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)' }}>
                                 <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:7 }}>
                                     <IcoShield />
-                                    <p style={{ fontSize:13, fontWeight:700, color:'#C45E10', fontFamily:"'DM Sans', sans-serif" }}>After Submission</p>
+                                    <p style={{ fontSize:13, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" }}>After Submission</p>
                                 </div>
                                 <p style={S.noteText}>You will be asked to visit your Barangay VAWC Desk for official confirmation of this report.</p>
                             </div>
 
                             {submitErr && (
                                 <div style={{ backgroundColor:'#FFF1F2', borderRadius: 4, padding:'12px 14px', border:'1px solid #FECDD3', marginBottom:4 }}>
-                                    <p style={{ fontSize:13, color:'#BE123C', lineHeight:1.6, fontFamily:"'DM Sans', sans-serif" }}>{submitErr}</p>
+                                    <p style={{ fontSize:13, color:'#BE123C', lineHeight:1.6, fontFamily:"'Lexend', sans-serif" }}>{submitErr}</p>
                                 </div>
                             )}
                         </div>
@@ -475,29 +483,29 @@ function ReportNow() {
 }
 
 const S = {
-    page:         { minHeight:'100vh', backgroundColor:'#FFF3E0', display:'flex', flexDirection:'column', paddingBottom:80, fontFamily:"'DM Sans', sans-serif" },
-    topBar:       { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', backgroundColor:'#fff', borderBottom:'1px solid #FFE4CC', position:'sticky', top:0, zIndex:100 },
-    backBtn:      { width:36, height:36, borderRadius: 10, backgroundColor:'#FFF3E0', border:'1px solid #FFE4CC', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
-    title:        { fontSize:16, fontWeight:700, color:'#C45E10', fontFamily:"'DM Sans', sans-serif" },
-    content:      { padding:'18px 20px', display:'flex', flexDirection:'column', gap:14 },
-    card:         { backgroundColor:'#fff', borderRadius: 12, padding:'20px', boxShadow:'0 2px 12px rgba(244,121,32,0.06)', border:'1px solid #FFE4CC' },
+    page:         { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', paddingBottom:80, fontFamily:"'Lexend', sans-serif" },
+    topBar:       { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', backgroundColor:'var(--surface)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100 },
+    backBtn:      { width:44, height:44, borderRadius: 10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
+    title:        { fontSize:16, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },
+    content:      { padding:'18px 20px', display:'flex', flexDirection:'column', gap:14, maxWidth:680, width:'100%', marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' },
+    card:         { backgroundColor:'var(--surface)', borderRadius: 12, padding:'20px', boxShadow:'0 2px 12px rgba(244,121,32,0.06)', border:'1px solid var(--border)' },
     cardHeader:   { display:'flex', alignItems:'center', gap:10, marginBottom:14 },
     iconBox:      { width:34, height:34, borderRadius: 10, border:'1px solid', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 },
-    cardTitle:    { fontSize:17, fontWeight:700, color:'#C45E10', margin:0, fontFamily:"'DM Sans', sans-serif" },
-    cardSub:      { fontSize:11.5, color:'#94A3B8', fontFamily:"'DM Sans', sans-serif", marginTop:1 },
-    hint:         { fontSize:13, color:'#475569', lineHeight:1.65, marginBottom:16, fontFamily:"'DM Sans', sans-serif" },
-    textarea:     { width:'100%', padding:'13px 14px', borderRadius: 4, border:'1.5px solid #E2E8F0', fontSize:15, backgroundColor:'#F8FAFC', outline:'none', color:'#0F172A', resize:'vertical', lineHeight:1.65, fontFamily:"'DM Sans', sans-serif", boxSizing:'border-box', transition:'border-color 0.15s' },
-    uploadSolid:  { display:'flex', alignItems:'center', justifyContent:'center', gap:9, width:'100%', padding:'14px', backgroundColor:'#F47920', color:'#fff', fontSize:15, fontWeight:600, borderRadius: 4, cursor:'pointer', boxSizing:'border-box', fontFamily:"'DM Sans', sans-serif" },
-    uploadOutline:{ display:'flex', alignItems:'center', justifyContent:'center', gap:9, width:'100%', padding:'14px', backgroundColor:'transparent', color:'#F47920', fontSize:15, fontWeight:600, borderRadius: 4, cursor:'pointer', border:'2px dashed #FFE4CC', boxSizing:'border-box', fontFamily:"'DM Sans', sans-serif" },
-    locBtn:       { width:'100%', padding:'15px', backgroundColor:'#1FA87A', color:'#fff', fontSize:15, fontWeight:600, border:'none', borderRadius: 4, cursor:'pointer', fontFamily:"'DM Sans', sans-serif", boxShadow:'0 2px 8px rgba(31,168,122,0.25)' },
+    cardTitle:    { fontSize:17, fontWeight:700, color:'var(--accent-text)', margin:0, fontFamily:"'Lexend', sans-serif" },
+    cardSub:      { fontSize:12, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif", marginTop:1 },
+    hint:         { fontSize:13, color:'var(--text-body)', lineHeight:1.65, marginBottom:16, fontFamily:"'Lexend', sans-serif" },
+    textarea:     { width:'100%', padding:'13px 14px', borderRadius: 4, border:'1.5px solid var(--border)', fontSize:15, backgroundColor:'var(--surface-alt)', outline:'none', color:'var(--text)', resize:'vertical', lineHeight:1.65, fontFamily:"'Lexend', sans-serif", boxSizing:'border-box', transition:'border-color 0.15s' },
+    uploadSolid:  { display:'flex', alignItems:'center', justifyContent:'center', gap:9, width:'100%', padding:'14px', backgroundColor:'#F47920', color:'#fff', fontSize:15, fontWeight:600, borderRadius: 4, cursor:'pointer', boxSizing:'border-box', fontFamily:"'Lexend', sans-serif" },
+    uploadOutline:{ display:'flex', alignItems:'center', justifyContent:'center', gap:9, width:'100%', padding:'14px', backgroundColor:'transparent', color:'var(--accent-text)', fontSize:15, fontWeight:600, borderRadius: 4, cursor:'pointer', border:'2px dashed var(--border)', boxSizing:'border-box', fontFamily:"'Lexend', sans-serif" },
+    locBtn:       { width:'100%', padding:'15px', backgroundColor:'#1FA87A', color:'#fff', fontSize:15, fontWeight:600, border:'none', borderRadius: 4, cursor:'pointer', fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(31,168,122,0.25)' },
     noteBox:      { backgroundColor:'#ECFDF5', borderRadius: 4, padding:'12px 14px', marginTop:14, border:'1px solid #6EE7B7' },
-    noteText:     { fontSize:12.5, color:'#0A5A42', lineHeight:1.65, fontFamily:"'DM Sans', sans-serif", margin:0 },
-    reviewRow:    { marginBottom:12, backgroundColor:'#F8FAFC', borderRadius: 4, padding:'12px 14px', border:'1px solid #F1F5F9' },
-    reviewLabel:  { fontSize:10.5, fontWeight:700, color:'#94A3B8', textTransform:'uppercase', letterSpacing:'0.7px', marginBottom:5, fontFamily:"'DM Sans', sans-serif" },
-    reviewVal:    { fontSize:14, color:'#0F172A', lineHeight:1.65, fontFamily:"'DM Sans', sans-serif", wordBreak:'break-word' },
-    prevBtn:      { flex:1, padding:'13px', backgroundColor:'transparent', color:'#C45E10', fontSize:15, fontWeight:600, border:'2px solid #FFE4CC', borderRadius: 4, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:"'DM Sans', sans-serif" },
-    nextBtn:      { flex:1, padding:'13px', backgroundColor:'#F47920', color:'#fff', fontSize:15, fontWeight:600, border:'none', borderRadius: 4, display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:"'DM Sans', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.3)' },
-    submitBtn:    { flex:1, padding:'13px', backgroundColor:'#C45E10', color:'#fff', fontSize:15, fontWeight:700, border:'none', borderRadius: 8, cursor:'pointer', fontFamily:"'DM Sans', sans-serif", boxShadow:'0 2px 10px rgba(244,121,32,0.3)' },
+    noteText:     { fontSize:12.5, color:'#0A5A42', lineHeight:1.65, fontFamily:"'Lexend', sans-serif", margin:0 },
+    reviewRow:    { marginBottom:12, backgroundColor:'var(--surface-alt)', borderRadius: 4, padding:'12px 14px', border:'1px solid var(--border-soft)' },
+    reviewLabel:  { fontSize:10.5, fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.7px', marginBottom:5, fontFamily:"'Lexend', sans-serif" },
+    reviewVal:    { fontSize:14, color:'var(--text)', lineHeight:1.65, fontFamily:"'Lexend', sans-serif", wordBreak:'break-word' },
+    prevBtn:      { flex:1, padding:'13px', backgroundColor:'transparent', color:'var(--accent-text)', fontSize:15, fontWeight:600, border:'2px solid var(--border)', borderRadius: 4, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:"'Lexend', sans-serif" },
+    nextBtn:      { flex:1, padding:'13px', backgroundColor:'#F47920', color:'#fff', fontSize:15, fontWeight:600, border:'none', borderRadius: 4, display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.3)' },
+    submitBtn:    { flex:1, padding:'13px', backgroundColor:'#C45E10', color:'#fff', fontSize:15, fontWeight:700, border:'none', borderRadius: 8, cursor:'pointer', fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 10px rgba(244,121,32,0.3)' },
 };
 
 export default ReportNow;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
 
@@ -7,7 +7,7 @@ if (!document.getElementById('vawc-font')) {
     const link = document.createElement('link');
     link.id = 'vawc-font';
     link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    link.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(link);
 }
 if (!document.getElementById('vawc-admin-login-css')) {
@@ -39,6 +39,18 @@ function Login() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [formData, setFormData] = useState({ username: '', password: '' });
+
+    // Pre-warm the backend on page load. Render's free tier spins the server
+    // down after ~15 min idle, so the FIRST request of the day cold-starts
+    // (~30-60s) and can time out. Firing a fire-and-forget request here wakes
+    // the server while the admin is typing, so Sign In is fast and reliable.
+    useEffect(() => {
+        const base = api.defaults.baseURL;
+        if (base) {
+            // Hit /health/db (runs SELECT 1) so BOTH the server and the DB wake up.
+            try { fetch(base + '/health/db', { method: 'GET', mode: 'no-cors', cache: 'no-store' }).catch(() => {}); } catch (e) {}
+        }
+    }, []);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -172,7 +184,7 @@ function Login() {
     );
 }
 
-const FF = "'DM Sans', sans-serif";
+const FF = "'Lexend', sans-serif";
 const S = {
     page: { minHeight: '100vh', background: 'linear-gradient(180deg, #FFF9F3 0%, #FFF3E0 55%, #FFE9D6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: FF },
 

@@ -9,7 +9,7 @@ export const COLORS = {
   // Primary - orange (brand, main actions, active states)
   primary:        "#F47920",   // orange-500, primary brand
   primaryLight:   "#FF9A4D",   // orange light, accent
-  primaryBg:      "#FFF3E0",   // orange-50
+  primaryBg:      "var(--adm-primary-bg)",   // orange tint (theme-aware: peach in light, dark-orange in dark)
   primaryBorder:  "#FFCC99",   // orange-200
 
   // Secondary - violet (accents, secondary actions, super-admin)
@@ -30,20 +30,20 @@ export const COLORS = {
   skyBg:          "#F3E5F5",
   skyBorder:      "#E1BEE7",
 
-  // Surface
+  // Surface — theme-aware (flip in dark; see GLOBAL_CSS :root / [data-theme=dark])
   white:        "#FFFFFF",
-  bgPage:       "#F4F6F9",
-  bgCard:       "#FFFFFF",
-  bgMuted:      "#F8FAFC",
+  bgPage:       "var(--adm-page)",
+  bgCard:       "var(--adm-card)",
+  bgMuted:      "var(--adm-muted)",
 
-  // Borders
-  border:       "#E2E8F0",
-  borderStrong: "#CBD5E1",
+  // Borders — theme-aware
+  border:       "var(--adm-border)",
+  borderStrong: "var(--adm-border-strong)",
 
-  // Text
-  textPrimary:  "#0F172A",
-  textSecondary:"#475569",
-  textMuted:    "#94A3B8",
+  // Text — theme-aware
+  textPrimary:  "var(--adm-text)",
+  textSecondary:"var(--adm-text-2)",
+  textMuted:    "var(--adm-text-muted)",
   textInverse:  "#FFFFFF",
 
   // Status
@@ -69,12 +69,12 @@ export const COLORS = {
 
 // ─── Typography ───────────────────────────────────────────────────────────────
 export const TEXT = {
-  font:       "'DM Sans', sans-serif",
-  pageTitle:  { fontSize: 20, fontWeight: 700, color: COLORS.textPrimary, fontFamily: "'DM Sans', sans-serif", letterSpacing: "-0.3px" },
-  cardTitle:  { fontSize: 13, fontWeight: 700, color: COLORS.textPrimary, fontFamily: "'DM Sans', sans-serif", textTransform: "uppercase", letterSpacing: "0.6px" },
-  body:       { fontSize: 13.5, fontWeight: 400, color: COLORS.textSecondary, fontFamily: "'DM Sans', sans-serif", lineHeight: 1.6 },
-  label:      { fontSize: 11, fontWeight: 700, color: COLORS.textMuted, fontFamily: "'DM Sans', sans-serif", textTransform: "uppercase", letterSpacing: "0.7px" },
-  small:      { fontSize: 12, fontWeight: 400, color: COLORS.textMuted, fontFamily: "'DM Sans', sans-serif" },
+  font:       "'Lexend', sans-serif",
+  pageTitle:  { fontSize: 20, fontWeight: 700, color: COLORS.textPrimary, fontFamily: "'Lexend', sans-serif", letterSpacing: "-0.3px" },
+  cardTitle:  { fontSize: 13, fontWeight: 700, color: COLORS.textPrimary, fontFamily: "'Lexend', sans-serif", textTransform: "uppercase", letterSpacing: "0.6px" },
+  body:       { fontSize: 13.5, fontWeight: 400, color: COLORS.textSecondary, fontFamily: "'Lexend', sans-serif", lineHeight: 1.6 },
+  label:      { fontSize: 11, fontWeight: 700, color: COLORS.textMuted, fontFamily: "'Lexend', sans-serif", textTransform: "uppercase", letterSpacing: "0.7px" },
+  small:      { fontSize: 12, fontWeight: 400, color: COLORS.textMuted, fontFamily: "'Lexend', sans-serif" },
 };
 
 // ─── Spacing ──────────────────────────────────────────────────────────────────
@@ -112,7 +112,7 @@ export const CARD = {
     backgroundColor: COLORS.bgCard,
     borderRadius: RADIUS.lg,
     border: `1px solid ${COLORS.border}`,
-    boxShadow: SHADOW.card,
+    boxShadow: "var(--adm-card-shadow)",
     overflow: "hidden",
     fontFamily: TEXT.font,
   },
@@ -139,7 +139,7 @@ export const BTN = {
   },
   secondary: {
     padding: "8px 16px", borderRadius: RADIUS.md,
-    border: `1.5px solid ${COLORS.border}`, background: COLORS.white, color: COLORS.textSecondary,
+    border: `1.5px solid ${COLORS.border}`, background: COLORS.bgCard, color: COLORS.textSecondary,
     fontSize: 13.5, fontWeight: 500, cursor: "pointer", fontFamily: TEXT.font,
     display: "inline-flex", alignItems: "center", gap: 7,
   },
@@ -223,12 +223,28 @@ export const INPUT = {
 
 // ─── Global CSS string (inject once) ─────────────────────────────────────────
 export const GLOBAL_CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap');
+
+  /* ── Theme tokens (light default; flipped by data-theme="dark" on <html>) ── */
+  :root {
+    --adm-page:#F4F6F9; --adm-card:#FFFFFF; --adm-muted:#F8FAFC;
+    --adm-border:#E2E8F0; --adm-border-strong:#CBD5E1;
+    --adm-text:#0F172A; --adm-text-2:#475569; --adm-text-muted:#94A3B8;
+    --adm-primary-bg:#FFF3E0;
+    --adm-topbar:rgba(255,255,255,0.82); --adm-card-shadow:0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+  }
+  :root[data-theme="dark"] {
+    --adm-page:#0F1216; --adm-card:#181C22; --adm-muted:#1E232B;
+    --adm-border:#2B323C; --adm-border-strong:#3C4551;
+    --adm-text:#EAEEF3; --adm-text-2:#B6C0CD; --adm-text-muted:#8B95A3;
+    --adm-primary-bg:#33251A;
+    --adm-topbar:rgba(22,26,32,0.82); --adm-card-shadow:0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  }
 
   *, *::before, *::after { box-sizing: border-box; }
 
   body {
-    font-family: 'DM Sans', sans-serif;
+    font-family: 'Lexend', sans-serif;
     background-color: ${COLORS.bgPage};
     color: ${COLORS.textPrimary};
     margin: 0;

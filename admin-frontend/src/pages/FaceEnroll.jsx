@@ -9,7 +9,7 @@ const CAPTURE_COUNT = 15;
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link');
     l.id = 'vawc-font'; l.rel = 'stylesheet';
-    l.href = 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    l.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(l);
 }
 
@@ -115,7 +115,7 @@ function FaceEnroll() {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        ctx.font = 'bold 12px DM Sans, system-ui, sans-serif';
+        ctx.font = 'bold 12px Lexend, system-ui, sans-serif';
         ctx.textAlign = 'center';
         if (count === 0) {
             ctx.fillStyle = 'rgba(255,255,255,0.85)';
@@ -366,18 +366,18 @@ function FaceEnroll() {
 }
 
 const S = {
-    page:          { minHeight: '100vh', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'DM Sans', sans-serif" },
+    page:          { minHeight: '100vh', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'Lexend', sans-serif" },
     card:          { backgroundColor: '#fff', borderRadius: 12, padding: '32px', width: '100%', maxWidth: '480px', boxShadow: '0 4px 24px rgba(15,23,42,0.09)', border: '1px solid #E2E8F0' },
 
     header:        { display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' },
     logoWrap:      { width: '48px', height: '48px', borderRadius: 4, backgroundColor: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-    title:         { fontSize: '18px', fontWeight: '700', color: '#0F172A', marginBottom: '3px', fontFamily: "'DM Sans', sans-serif" },
-    subtitle:      { fontSize: '12.5px', color: '#94A3B8', fontFamily: "'DM Sans', sans-serif" },
+    title:         { fontSize: '18px', fontWeight: '700', color: '#0F172A', marginBottom: '3px', fontFamily: "'Lexend', sans-serif" },
+    subtitle:      { fontSize: '12.5px', color: '#94A3B8', fontFamily: "'Lexend', sans-serif" },
 
     tipsGrid:      { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '20px' },
     tip:           { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', backgroundColor: '#F8FAFC', borderRadius: 4, border: '1px solid #F1F5F9' },
     tipIcon:       { flexShrink: 0, display: 'flex', alignItems: 'center' },
-    tipText:       { fontSize: '11.5px', color: '#475569', fontFamily: "'DM Sans', sans-serif" },
+    tipText:       { fontSize: '11.5px', color: '#475569', fontFamily: "'Lexend', sans-serif" },
 
     cameraWrap:    { position: 'relative', width: '100%', aspectRatio: '4/3', backgroundColor: '#0F172A', borderRadius: 4, overflow: 'hidden', marginBottom: '16px' },
     video:         { width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' },
@@ -388,24 +388,24 @@ const S = {
 
     doneOverlay:   { position: 'absolute', inset: 0, backgroundColor: 'rgba(5,150,105,0.75)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' },
     doneCircle:    { width: '64px', height: '64px', borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.2)', border: '2px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-    doneText:      { fontSize: '15px', fontWeight: '700', color: '#fff', fontFamily: "'DM Sans', sans-serif" },
+    doneText:      { fontSize: '15px', fontWeight: '700', color: '#fff', fontFamily: "'Lexend', sans-serif" },
 
     progressWrap:  { marginBottom: '12px' },
     progressTrack: { height: '6px', backgroundColor: '#F1F5F9', borderRadius: 4, overflow: 'hidden', marginBottom: '6px' },
     progressFill:  { height: '100%', backgroundColor: '#9B4DAB', borderRadius: 4, transition: 'width 0.3s ease' },
     progressRow:   { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-    progressLabel: { fontSize: '12px', color: '#64748B', fontFamily: "'DM Sans', sans-serif" },
-    progressPct:   { fontSize: '12px', fontWeight: '700', color: '#9B4DAB', fontFamily: "'DM Sans', sans-serif" },
+    progressLabel: { fontSize: '12px', color: '#64748B', fontFamily: "'Lexend', sans-serif" },
+    progressPct:   { fontSize: '12px', fontWeight: '700', color: '#9B4DAB', fontFamily: "'Lexend', sans-serif" },
 
-    status:        { fontSize: '13px', color: '#64748B', textAlign: 'center', marginBottom: '16px', lineHeight: '1.5', fontFamily: "'DM Sans', sans-serif" },
+    status:        { fontSize: '13px', color: '#64748B', textAlign: 'center', marginBottom: '16px', lineHeight: '1.5', fontFamily: "'Lexend', sans-serif" },
 
     errorBox:      { display: 'flex', alignItems: 'flex-start', gap: '8px', backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 8, padding: '10px 13px', marginBottom: '14px' },
-    errorText:     { fontSize: '12.5px', color: '#BE123C', lineHeight: '1.5', fontFamily: "'DM Sans', sans-serif" },
+    errorText:     { fontSize: '12.5px', color: '#BE123C', lineHeight: '1.5', fontFamily: "'Lexend', sans-serif" },
 
-    primaryBtn:    { width: '100%', padding: '13px', backgroundColor: '#9B4DAB', color: '#fff', fontSize: '14.5px', fontWeight: '600', border: 'none', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(123,45,139,0.25)', marginBottom: '16px', fontFamily: "'DM Sans', sans-serif" },
+    primaryBtn:    { width: '100%', padding: '13px', backgroundColor: '#9B4DAB', color: '#fff', fontSize: '14.5px', fontWeight: '600', border: 'none', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(123,45,139,0.25)', marginBottom: '16px', fontFamily: "'Lexend', sans-serif" },
     spinner:       { width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 },
 
-    footerNote:    { textAlign: 'center', fontSize: '11.5px', color: '#CBD5E1', lineHeight: '1.6', fontFamily: "'DM Sans', sans-serif" },
+    footerNote:    { textAlign: 'center', fontSize: '11.5px', color: '#CBD5E1', lineHeight: '1.6', fontFamily: "'Lexend', sans-serif" },
 };
 
 export default FaceEnroll;

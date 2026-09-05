@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ThemeToggle from '../components/ThemeToggle';
 import api from '../api';
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id='vawc-font'; l.rel='stylesheet';
-    l.href='https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap';
+    l.href='https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
     document.head.appendChild(l);
 }
 if (!document.getElementById('vawc-victim-css')) {
@@ -16,8 +17,8 @@ if (!document.getElementById('vawc-victim-css')) {
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const IcoShield    = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#F47920" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoBack      = ({ c='#C45E10' }) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoEyeOpen   = () => (<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="3" stroke="#94A3B8" strokeWidth="1.8"/></svg>);
-const IcoEyeClosed = () => (<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round"/></svg>);
+const IcoEyeOpen   = () => (<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="3" stroke="#64748B" strokeWidth="1.8"/></svg>);
+const IcoEyeClosed = () => (<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoWarn      = ({ c='#BE123C' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke={c} strokeWidth="1.8" strokeLinecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke={c} strokeWidth="2.4" strokeLinecap="round"/></svg>);
 const IcoCheck     = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const Spinner      = () => (<span style={{width:14,height:14,border:'2px solid rgba(255,255,255,0.3)',borderTopColor:'#fff',borderRadius: '50%',animation:'spin 0.7s linear infinite',display:'inline-block',flexShrink:0}} />);
@@ -28,17 +29,17 @@ const Steps = ({ current }) => (
         {[1,2,3].map((n,i)=>(
             <React.Fragment key={n}>
                 <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
-                    <div style={{width:28,height:28,borderRadius: 4,display:'flex',alignItems:'center',justifyContent:'center',backgroundColor:n<current?'#059669':n===current?'#F47920':'#E2E8F0',transition:'all 0.3s ease'}}>
+                    <div style={{width:28,height:28,borderRadius: 4,display:'flex',alignItems:'center',justifyContent:'center',backgroundColor:n<current?'#059669':n===current?'#F47920':'var(--border)',transition:'all 0.3s ease'}}>
                         {n < current
                             ? <IcoCheck />
-                            : <span style={{fontSize:12,fontWeight:700,color:n===current?'#fff':'#94A3B8',fontFamily:"'DM Sans', sans-serif"}}>{n}</span>
+                            : <span style={{fontSize:12,fontWeight:700,color:n===current?'#fff':'#64748B',fontFamily:"'Lexend', sans-serif"}}>{n}</span>
                         }
                     </div>
-                    <span style={{fontSize:10,fontWeight:600,color:n===current?'#F47920':n<current?'#059669':'#94A3B8',fontFamily:"'DM Sans', sans-serif",whiteSpace:'nowrap'}}>
+                    <span style={{fontSize:10.5,fontWeight:700,color:n===current?'#C45E10':n<current?'#047857':'#64748B',fontFamily:"'Lexend', sans-serif",whiteSpace:'nowrap'}}>
                         {['Send Code','Verify','Reset'][i]}
                     </span>
                 </div>
-                {i<2 && <div style={{flex:1,height:2,backgroundColor:n<current?'#059669':'#E2E8F0',margin:'0 8px',marginBottom:18,transition:'background-color 0.3s ease'}} />}
+                {i<2 && <div style={{flex:1,height:2,backgroundColor:n<current?'#059669':'var(--border)',margin:'0 8px',marginBottom:18,transition:'background-color 0.3s ease'}} />}
             </React.Fragment>
         ))}
     </div>
@@ -122,14 +123,14 @@ function ForgotPassword() {
 
             {/* Brand + back */}
             <div style={S.topRow}>
-                <button style={S.backBtn} onClick={goBack}><IcoBack /></button>
+                <button style={S.backBtn} onClick={goBack} aria-label={step===1 ? 'Bumalik sa Sign In' : 'Bumalik sa nakaraang hakbang'}><IcoBack /></button>
                 <div style={S.brand}>
                     <div style={S.brandIcon}><IcoShield /></div>
                     <h1 style={S.brandTitle}>
                         {step===1?"Forgot Password":step===2?"Enter OTP":"New Password"}
                     </h1>
                 </div>
-                <div style={{width:36}} />
+                <ThemeToggle size={44} />
             </div>
 
             <div style={S.card}>
@@ -142,8 +143,8 @@ function ForgotPassword() {
                         <p style={S.desc}>{usePhone?"Enter your registered mobile number and we'll send a verification code.":"Enter your registered email and we'll send a 6-digit verification code."}</p>
 
                         <div style={S.field}>
-                            <label style={S.label}>{usePhone?"Mobile Number":"Email Address"}</label>
-                            <input className="vi-input" type={usePhone?"tel":"email"} placeholder={usePhone?"e.g. 09xxxxxxxxx":"Enter your email address"}
+                            <label htmlFor="fp-identifier" style={S.label}>{usePhone?"Mobile Number":"Email Address"}</label>
+                            <input id="fp-identifier" className="vi-input" type={usePhone?"tel":"email"} placeholder={usePhone?"e.g. 09xxxxxxxxx":"Enter your email address"}
                                 style={S.input} value={identifier} onChange={e=>{setIdentifier(e.target.value);setError('');}}
                                 onKeyDown={e=>e.key==='Enter'&&handleSendOTP()} />
                         </div>
@@ -154,8 +155,8 @@ function ForgotPassword() {
                             {loading?<><Spinner />Sending…</>:'Send Code'}
                         </button>
 
-                        <p style={{textAlign:'center',fontSize:13.5,color:'#64748B',marginTop:14,fontFamily:"'DM Sans', sans-serif"}}>
-                            {usePhone ? <>Use email instead?{' '}<span style={S.link} onClick={()=>{setUsePhone(false);setIdentifier('');setError('');}}>Switch to email</span></> : <>Not working?{' '}<span style={S.link} onClick={()=>{setUsePhone(true);setIdentifier('');setError('');}}>Try mobile number</span></>}
+                        <p style={{textAlign:'center',fontSize:13.5,color:'var(--text-muted)',marginTop:14,fontFamily:"'Lexend', sans-serif"}}>
+                            {usePhone ? <>Use email instead?{' '}<button type="button" style={S.link} onClick={()=>{setUsePhone(false);setIdentifier('');setError('');}}>Switch to email</button></> : <>Not working?{' '}<button type="button" style={S.link} onClick={()=>{setUsePhone(true);setIdentifier('');setError('');}}>Try mobile number</button></>}
                         </p>
                     </>
                 )}
@@ -167,17 +168,18 @@ function ForgotPassword() {
                             A 6-digit code was sent to your{' '}
                             {identifier.includes("@")?"email and mobile number":"mobile number"}.
                         </p>
-                        <p style={{textAlign:'center',fontSize:14.5,fontWeight:700,color:'#065F46',marginBottom:20,fontFamily:"'DM Sans', sans-serif"}}>
+                        <p style={{textAlign:'center',fontSize:14.5,fontWeight:700,color:'#065F46',marginBottom:20,fontFamily:"'Lexend', sans-serif"}}>
                             {identifier.includes("@") ? identifier.replace(/(.{2})(.*)(@.*)/, '$1***$3') : identifier.slice(0,3)+"****"+identifier.slice(-4)}
                         </p>
 
-                        <div style={S.otpRow}>
+                        <div style={S.otpRow} role="group" aria-label="6-digit verification code">
                             {otp.map((digit,i)=>(
                                 <input key={i} className="vi-otp" ref={el=>inputs.current[i]=el}
-                                    type="text" maxLength={1} value={digit}
+                                    type="text" inputMode="numeric" autoComplete={i===0?'one-time-code':'off'}
+                                    aria-label={`Digit ${i+1} of 6`} maxLength={1} value={digit}
                                     onChange={e=>handleOtpChange(e.target.value,i)}
                                     onKeyDown={e=>handleOtpKey(e,i)}
-                                    style={{...S.otpBox, borderColor:digit?'#F47920':'#E2E8F0', backgroundColor:digit?'#FFF0F3':'#F8FAFC'}} />
+                                    style={{...S.otpBox, borderColor:digit?'#F47920':'var(--border)', backgroundColor:digit?'#FFF0F3':'var(--surface-alt)'}} />
                             ))}
                         </div>
 
@@ -187,10 +189,10 @@ function ForgotPassword() {
                             {loading?<><Spinner />Verifying…</>:'Verify Code'}
                         </button>
 
-                        <p style={{textAlign:'center',fontSize:14,color:'#64748B',marginTop:16,fontFamily:"'DM Sans', sans-serif"}}>
+                        <p style={{textAlign:'center',fontSize:14,color:'var(--text-muted)',marginTop:16,fontFamily:"'Lexend', sans-serif"}}>
                             Didn't receive a code?{' '}
-                            {canResend ? <span style={S.link} onClick={handleResend}>Resend Code</span>
-                                       : <span style={{color:'#CBD5E1',fontWeight:600,fontFamily:"'DM Sans', sans-serif"}}>Resend in 0:{countdown<10?`0${countdown}`:countdown}</span>}
+                            {canResend ? <button type="button" style={S.link} onClick={handleResend}>Resend Code</button>
+                                       : <span style={{color:'#78716C',fontWeight:600,fontFamily:"'Lexend', sans-serif"}}>Resend in 0:{countdown<10?`0${countdown}`:countdown}</span>}
                         </p>
                     </>
                 )}
@@ -201,29 +203,33 @@ function ForgotPassword() {
                         <p style={S.desc}>Enter your new password below. Make sure it meets all the requirements.</p>
 
                         <div style={S.field}>
-                            <label style={S.label}>New Password</label>
+                            <label htmlFor="fp-new-password" style={S.label}>New Password</label>
                             <div style={S.pwWrap}>
-                                <input className="vi-input" type={showPassword?'text':'password'} placeholder="Enter new password"
+                                <input id="fp-new-password" className="vi-input" type={showPassword?'text':'password'} placeholder="Enter new password"
+                                    autoComplete="new-password"
                                     value={newPassword} onChange={e=>setNewPassword(e.target.value)}
                                     style={{...S.pwInput,border:'none',boxShadow:'none'}} />
-                                <button type="button" style={S.eyeBtn} onClick={()=>setShowPassword(v=>!v)}>
+                                <button type="button" style={S.eyeBtn} onClick={()=>setShowPassword(v=>!v)}
+                                    aria-label={showPassword ? 'Itago ang password' : 'Ipakita ang password'}>
                                     {showPassword?<IcoEyeClosed />:<IcoEyeOpen />}
                                 </button>
                             </div>
                         </div>
 
                         <div style={S.field}>
-                            <label style={S.label}>Confirm New Password</label>
+                            <label htmlFor="fp-confirm-password" style={S.label}>Confirm New Password</label>
                             <div style={S.pwWrap}>
-                                <input className="vi-input" type={showConfirm?'text':'password'} placeholder="Confirm new password"
+                                <input id="fp-confirm-password" className="vi-input" type={showConfirm?'text':'password'} placeholder="Confirm new password"
+                                    autoComplete="new-password"
                                     value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)}
                                     style={{...S.pwInput,border:'none',boxShadow:'none'}} />
-                                <button type="button" style={S.eyeBtn} onClick={()=>setShowConfirm(v=>!v)}>
+                                <button type="button" style={S.eyeBtn} onClick={()=>setShowConfirm(v=>!v)}
+                                    aria-label={showConfirm ? 'Itago ang password' : 'Ipakita ang password'}>
                                     {showConfirm?<IcoEyeClosed />:<IcoEyeOpen />}
                                 </button>
                             </div>
                             {confirmPassword.length>0 && newPassword!==confirmPassword && (
-                                <p style={{fontSize:12,color:'#F47920',marginTop:6,marginBottom:0,fontFamily:"'DM Sans', sans-serif"}}>Passwords do not match.</p>
+                                <p style={{fontSize:12,color:'#C62828',marginTop:6,marginBottom:0,fontFamily:"'Lexend', sans-serif"}}>Passwords do not match.</p>
                             )}
                         </div>
 
@@ -240,26 +246,26 @@ function ForgotPassword() {
 }
 
 const S = {
-    page:       {minHeight:'100vh',backgroundColor:'#FFF3E0',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px',fontFamily:"'DM Sans', sans-serif"},
+    page:       {minHeight:'100vh',background:'var(--page-grad)',color:'var(--text)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px',fontFamily:"'Lexend', sans-serif"},
     topRow:     {display:'flex',alignItems:'center',justifyContent:'space-between',width:'100%',maxWidth:420,marginBottom:20},
-    backBtn:    {width:36,height:36,borderRadius: 10,backgroundColor:'#fff',border:'1px solid #FFE4CC',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0},
+    backBtn:    {width:44,height:44,borderRadius: 10,backgroundColor:'var(--surface)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0},
     brand:      {display:'flex',alignItems:'center',gap:10,flex:1,justifyContent:'center'},
-    brandIcon:  {width:34,height:34,borderRadius: '50%',backgroundColor:'#FFF3E0',border:'1px solid #FFE4CC',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0},
-    brandTitle: {fontSize:16,fontWeight:800,color:'#C45E10',margin:0,fontFamily:"'DM Sans', sans-serif"},
-    card:       {backgroundColor:'#fff',borderRadius: 12,padding:'24px',width:'100%',maxWidth:420,boxShadow:'0 4px 20px rgba(244,121,32,0.08)',border:'1px solid #FFE4CC'},
-    desc:       {fontSize:13.5,color:'#64748B',lineHeight:1.6,marginBottom:20,textAlign:'center',fontFamily:"'DM Sans', sans-serif"},
+    brandIcon:  {width:34,height:34,borderRadius: '50%',backgroundColor:'var(--surface-tint)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0},
+    brandTitle: {fontSize:16,fontWeight:800,color:'var(--accent-text)',margin:0,fontFamily:"'Lexend', sans-serif"},
+    card:       {backgroundColor:'var(--surface)',borderRadius: 12,padding:'24px',width:'100%',maxWidth:420,boxShadow:'0 4px 20px rgba(244,121,32,0.08)',border:'1px solid var(--border)'},
+    desc:       {fontSize:13.5,color:'var(--text-muted)',lineHeight:1.6,marginBottom:20,textAlign:'center',fontFamily:"'Lexend', sans-serif"},
     field:      {marginBottom:16},
-    label:      {display:'block',fontSize:11,fontWeight:700,color:'#C45E10',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.07em',fontFamily:"'DM Sans', sans-serif"},
-    input:      {width:'100%',boxSizing:'border-box',padding:'12px 14px',borderRadius: 8,border:'1.5px solid #E2E8F0',fontSize:15,color:'#0F172A',backgroundColor:'#F8FAFC',outline:'none',fontFamily:"'DM Sans', sans-serif"},
-    pwWrap:     {display:'flex',alignItems:'center',border:'1.5px solid #E2E8F0',borderRadius: 8,backgroundColor:'#F8FAFC',overflow:'hidden'},
-    pwInput:    {flex:1,padding:'12px 14px',border:'none',fontSize:15,color:'#0F172A',backgroundColor:'transparent',outline:'none',fontFamily:"'DM Sans', sans-serif"},
+    label:      {display:'block',fontSize:11,fontWeight:700,color:'var(--accent-text)',marginBottom:6,textTransform:'uppercase',letterSpacing:'0.07em',fontFamily:"'Lexend', sans-serif"},
+    input:      {width:'100%',boxSizing:'border-box',padding:'12px 14px',borderRadius: 8,border:'1.5px solid var(--border)',fontSize:15,color:'var(--text)',backgroundColor:'var(--surface-alt)',outline:'none',fontFamily:"'Lexend', sans-serif"},
+    pwWrap:     {display:'flex',alignItems:'center',border:'1.5px solid var(--border)',borderRadius: 8,backgroundColor:'var(--surface-alt)',overflow:'hidden'},
+    pwInput:    {flex:1,padding:'12px 14px',border:'none',fontSize:15,color:'var(--text)',backgroundColor:'transparent',outline:'none',fontFamily:"'Lexend', sans-serif"},
     eyeBtn:     {padding:'0 13px',background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',flexShrink:0},
     otpRow:     {display:'flex',justifyContent:'space-between',gap:8,marginBottom:18},
-    otpBox:     {width:'100%',maxWidth:52,height:58,borderRadius: 4,border:'2px solid #E2E8F0',fontSize:22,fontWeight:700,textAlign:'center',color:'#C45E10',outline:'none',fontFamily:"'DM Sans', sans-serif"},
+    otpBox:     {width:'100%',maxWidth:52,height:58,borderRadius: 4,border:'2px solid var(--border)',fontSize:22,fontWeight:700,textAlign:'center',color:'var(--accent-text)',outline:'none',fontFamily:"'Lexend', sans-serif"},
     errorBox:   {display:'flex',alignItems:'center',gap:8,backgroundColor:'#FFF1F2',border:'1px solid #FECDD3',borderRadius: 8,padding:'10px 13px',marginBottom:16,animation:'fadeUp 0.2s ease'},
-    errorText:  {margin:0,fontSize:13,color:'#BE123C',fontFamily:"'DM Sans', sans-serif"},
-    submitBtn:  {width:'100%',padding:13,backgroundColor:'#F47920',color:'#fff',fontSize:15,fontWeight:600,border:'none',borderRadius: 8,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'DM Sans', sans-serif",boxShadow:'0 2px 8px rgba(244,121,32,0.25)'},
-    link:       {color:'#1FA87A',fontWeight:600,cursor:'pointer',fontFamily:"'DM Sans', sans-serif"},
+    errorText:  {margin:0,fontSize:13,color:'#BE123C',fontFamily:"'Lexend', sans-serif"},
+    submitBtn:  {width:'100%',padding:13,backgroundColor:'#F47920',color:'#fff',fontSize:15,fontWeight:600,border:'none',borderRadius: 8,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'Lexend', sans-serif",boxShadow:'0 2px 8px rgba(244,121,32,0.25)'},
+    link:       {color:'#047857',fontWeight:700,cursor:'pointer',fontFamily:"'Lexend', sans-serif",background:'none',border:'none',padding:0,fontSize:'inherit'},
 };
 
 export default ForgotPassword;
