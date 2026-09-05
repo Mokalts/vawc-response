@@ -66,14 +66,21 @@ const CSS = `
     .mr-signtitle { width: 100%; box-sizing: border-box; border: none; background: transparent; text-align: center; font-style: italic; font-size: 12px; font-family: 'Times New Roman', Times, serif; outline: none; margin-top: 2px; }
 
     @media print {
+        /* margin:0 removes the browser's auto date/URL/page-number header & footer */
         @page { size: A4 landscape; margin: 0; }
         html, body { background: #fff !important; margin: 0 !important; }
         .mr-wrap { background: #fff !important; padding: 0 !important; }
         .mr-toolbar, .no-print { display: none !important; }
+        /* page padding lives on the paper so the @page margin can stay 0 */
         .mr-paper { box-shadow: none !important; margin: 0 !important; max-width: none !important; padding: 0.5in 0.55in !important; }
         .mr-cell:focus, .mr-signname:focus { background: transparent !important; }
         .mr-signname { border-bottom: none !important; }
         .mr-delcol, .mr-del { display: none !important; }
+        .mr-addrow { display: none !important; }
+        .mr-table { break-inside: auto; }
+        .mr-table thead { display: table-header-group; }  /* repeat column headers on each page */
+        .mr-table tr { break-inside: avoid; }
+        .mr-signs { break-inside: avoid; margin-top: 34px; }
         .mr-table th { background: #F1F5F9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
 `;
