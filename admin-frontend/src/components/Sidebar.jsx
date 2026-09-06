@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from '../api/api';
 import { COLORS, TEXT, GLOBAL_CSS } from '../theme';
@@ -10,9 +10,8 @@ if (!document.getElementById('vawc-global-css')) {
     const s = document.createElement('style');
     s.id = 'vawc-global-css';
     s.textContent = GLOBAL_CSS + `
-        .vawc-nav-btn { transition: background 0.15s ease, transform 0.15s ease; }
-        .vawc-nav-btn:hover:not(.active) { background: rgba(255,255,255,0.06) !important; }
-        .vawc-nav-btn.active { background: rgba(244,121,32,0.18) !important; }
+        .vawc-nav-btn { transition: transform 0.16s ease, background 0.15s ease; border-radius: 10px; }
+        .vawc-nav-btn:hover { background: rgba(255,255,255,0.06) !important; transform: translateX(4px); }
         .vawc-logout:hover { background: rgba(123,45,139,0.08) !important; }
         .vawc-logout { transition: background 0.15s ease; }
         @keyframes burstPulse {
@@ -95,6 +94,11 @@ const NAV = [
     { label: 'Admin Management', path: '/admin-management', icon: IcoAdmins, superOnly: true, section: 'Management' },
 ];
 
+// Remembers the last active nav path ACROSS sidebar remounts (module scope, not
+// component state), so the active pill can slide from the old item to the new one
+// even though each page mounts its own sidebar.
+let _lastNavPath = null;
+
 // Group the visible nav items into their sections, preserving order.
 const groupNav = (isSuper) => {
     const out = [];
@@ -115,6 +119,30 @@ function Sidebar() {
     const isSuper = !!admin.is_super_admin;
     const [unread, setUnread] = useState(0);
     const [burstAlert, setBurstAlert] = useState(null); // { active, newest_at, ... } | null
+
+    // Sliding active-pill for the nav.
+    const navBtnRefs = useRef({});
+    const [pill, setPill] = useState({ top: 0, height: 0, animate: false, show: false });
+    // The nav item that matches the current route (exact, or a detail sub-route like /reports/:id).
+    const activePath = (NAV.find(n => location.pathname === n.path || location.pathname.startsWith(n.path + '/')) || {}).path;
+
+    useLayoutEffect(() => {
+        const curEl = activePath ? navBtnRefs.current[activePath] : null;
+        if (!curEl) { setPill(p => ({ ...p, show: false })); _lastNavPath = activePath || _lastNavPath; return; }
+        const target = { top: curEl.offsetTop, height: curEl.offsetHeight };
+        const prevEl = (_lastNavPath && _lastNavPath !== activePath) ? navBtnRefs.current[_lastNavPath] : null;
+        if (prevEl) {
+            // Start at the previous item (no transition), then slide to the current one.
+            setPill({ top: prevEl.offsetTop, height: prevEl.offsetHeight, animate: false, show: true });
+            requestAnimationFrame(() => requestAnimationFrame(() =>
+                setPill({ ...target, animate: true, show: true })
+            ));
+        } else {
+            setPill({ ...target, animate: false, show: true });
+        }
+        _lastNavPath = activePath;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activePath, isSuper]);
 
     useEffect(() => {
         const fetch = () => {
@@ -185,23 +213,34 @@ function Sidebar() {
 
             {/* Nav */}
             <nav style={S.nav}>
+                {/* Sliding active pill (behind the buttons) */}
+                <div style={{
+                    position: 'absolute', left: 12, right: 12,
+                    top: pill.top, height: pill.height,
+                    borderRadius: 10, background: 'rgba(244,121,32,0.18)',
+                    boxShadow: `inset 3px 0 0 ${COLORS.primary}`,
+                    opacity: pill.show ? 1 : 0, zIndex: 0, pointerEvents: 'none',
+                    transition: pill.animate
+                        ? 'top 0.34s cubic-bezier(0.22,1,0.36,1), height 0.34s cubic-bezier(0.22,1,0.36,1), opacity 0.2s ease'
+                        : 'opacity 0.2s ease',
+                }} />
                 {groupNav(isSuper).map(group => (
                     <div key={group.name} style={S.navGroup}>
                         <p style={S.navSection}>{group.name}</p>
                         {group.items.map(item => {
-                            const active = location.pathname === item.path;
+                            const active = item.path === activePath;
                             const NavIcon = item.icon;
                             // New-reports indicator lives on Dashboard (where reports are reviewed).
                             const showDashDot = item.path === '/dashboard' && unread > 0;
                             return (
                                 <button
                                     key={item.path}
-                                    className={`vawc-nav-btn${active ? ' active' : ''}`}
+                                    ref={el => { navBtnRefs.current[item.path] = el; }}
+                                    className="vawc-nav-btn"
                                     onClick={() => navigate(item.path)}
                                     title={showDashDot ? 'Please check new reports' : undefined}
-                                    style={{ ...S.navBtn, ...(active ? S.navBtnActive : {}) }}
+                                    style={{ ...S.navBtn, position: 'relative', zIndex: 1 }}
                                 >
-                                    {active && <div style={S.navActiveBar} />}
                                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <NavIcon size={18} color={active ? '#FFFFFF' : '#E1BEE7'} />
                                         {showDashDot && (
@@ -209,7 +248,7 @@ function Sidebar() {
                                                 style={{ position: 'absolute', top: -4, right: -5, minWidth: 9, height: 9, borderRadius: '50%', background: '#EF4444', border: '2px solid #4A1259' }} />
                                         )}
                                     </div>
-                                    <span style={{ ...S.navLabel, color: active ? '#FFFFFF' : '#E1BEE7', fontWeight: active ? 700 : 500 }}>
+                                    <span style={{ ...S.navLabel, color: active ? '#FFFFFF' : '#E1BEE7', fontWeight: active ? 700 : 500, transition: 'color 0.2s ease' }}>
                                         {item.label}
                                     </span>
                                 </button>
@@ -343,7 +382,7 @@ const S = {
     rolePill: { display: 'inline-flex', alignItems: 'center', marginTop: 3, fontSize: 10, fontWeight: 700, color: '#E1BEE7', backgroundColor: 'rgba(123,45,139,0.12)', padding: '2px 8px', borderRadius: 9999, fontFamily: TEXT.font, letterSpacing: '0.3px' },
     rolePillSuper: { display: 'inline-flex', alignItems: 'center', marginTop: 3, fontSize: 10, fontWeight: 800, color: '#fff', background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondaryDark})`, padding: '3px 9px', borderRadius: 9999, fontFamily: TEXT.font, letterSpacing: '0.4px', textTransform: 'uppercase', boxShadow: '0 1px 3px rgba(196,94,16,0.3)' },
 
-    nav: { flex: 1, padding: '10px 12px 0' },
+    nav: { flex: 1, padding: '10px 12px 0', position: 'relative' },
     navGroup: { marginBottom: 14 },
     navSection: { fontSize: 10, fontWeight: 600, color: '#C4A6D1', letterSpacing: '1.5px', textTransform: 'uppercase', padding: '4px 12px 8px', margin: 0, fontFamily: NAVFONT },
     navBtn: { position: 'relative', display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', marginBottom: 3, textAlign: 'left' },
