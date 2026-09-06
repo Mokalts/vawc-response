@@ -21,11 +21,11 @@ if (!document.getElementById('vawc-global-css')) {
         }
         .burst-dot { animation: burstPulse 1.4s infinite; }
 
-        /* Page + tab transitions */
-        @keyframes pageEnter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-        @keyframes tabFade   { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-        .page-enter { animation: pageEnter 0.30s cubic-bezier(0.22, 1, 0.36, 1); }
-        .tab-fade   { animation: tabFade 0.22s ease; }
+        /* Page + tab transitions — horizontal slide-in */
+        @keyframes pageSlide { from { opacity: 0; transform: translateX(36px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes tabSlide  { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
+        .page-enter { animation: pageSlide 0.34s cubic-bezier(0.22, 1, 0.36, 1); overflow-x: hidden; }
+        .tab-fade   { animation: tabSlide 0.28s cubic-bezier(0.22, 1, 0.36, 1); overflow-x: hidden; }
         @media (prefers-reduced-motion: reduce) {
             .page-enter, .tab-fade { animation: none !important; }
         }
