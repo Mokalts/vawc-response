@@ -225,7 +225,7 @@ export const INPUT = {
 
 // ─── Global CSS string (inject once) ─────────────────────────────────────────
 export const GLOBAL_CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
   /* ── Theme tokens (light default; flipped by data-theme="dark" on <html>) ── */
   :root {

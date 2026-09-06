@@ -12,7 +12,7 @@ if (!document.getElementById('vawc-global-css')) {
     s.textContent = GLOBAL_CSS + `
         .vawc-nav-btn { transition: background 0.15s ease, transform 0.15s ease; }
         .vawc-nav-btn:hover:not(.active) { background: rgba(255,255,255,0.06) !important; }
-        .vawc-nav-btn.active { background: rgba(244,121,32,0.15) !important; }
+        .vawc-nav-btn.active { background: rgba(244,121,32,0.18) !important; }
         .vawc-logout:hover { background: rgba(123,45,139,0.08) !important; }
         .vawc-logout { transition: background 0.15s ease; }
         @keyframes burstPulse {
@@ -28,6 +28,9 @@ const getAdmin = () => {
     try { return JSON.parse(localStorage.getItem('admin_user')) || {}; }
     catch { return {}; }
 };
+
+// Distinct display font for the navigation (rest of the app stays on Lexend).
+const NAVFONT = "'Space Grotesk', 'Lexend', sans-serif";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const Ico = ({ d, size = 18, color = 'currentColor' }) => (
@@ -191,13 +194,13 @@ function Sidebar() {
                                 >
                                     {active && <div style={S.navActiveBar} />}
                                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <NavIcon size={18} color={active ? '#FFFFFF' : '#A99BB6'} />
+                                        <NavIcon size={18} color={active ? '#FFFFFF' : '#E1BEE7'} />
                                         {showDashDot && (
                                             <span className="burst-dot" title="Please check new reports"
-                                                style={{ position: 'absolute', top: -4, right: -5, minWidth: 9, height: 9, borderRadius: '50%', background: '#EF4444', border: '2px solid #17121D' }} />
+                                                style={{ position: 'absolute', top: -4, right: -5, minWidth: 9, height: 9, borderRadius: '50%', background: '#EF4444', border: '2px solid #4A1259' }} />
                                         )}
                                     </div>
-                                    <span style={{ ...S.navLabel, color: active ? '#FFFFFF' : '#C9BCD4', fontWeight: active ? 700 : 500 }}>
+                                    <span style={{ ...S.navLabel, color: active ? '#FFFFFF' : '#E1BEE7', fontWeight: active ? 700 : 500 }}>
                                         {item.label}
                                     </span>
                                 </button>
@@ -208,7 +211,7 @@ function Sidebar() {
             </nav>
 
             {/* Logout */}
-            <div style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.07)', marginTop: 'auto' }}>
+            <div style={{ padding: '12px', borderTop: '1px solid #5C1F6E', marginTop: 'auto' }}>
                 <button className="vawc-logout" onClick={handleLogout} style={S.logoutBtn}>
                     <IcoLogout size={16} color="#FFCC99" />
                     <span style={S.logoutLabel}>Sign Out</span>
@@ -309,16 +312,16 @@ export function AdminLayout({ children, breadcrumbs }) {
 const S = {
     layout: { display: 'flex', minHeight: '100vh', backgroundColor: COLORS.bgPage, fontFamily: TEXT.font },
 
-    // Sidebar — dark, near-black with a subtle violet cast (brand-consistent)
-    sidebar: { width: 252, flexShrink: 0, position: 'fixed', top: 0, left: 0, height: '100vh', backgroundColor: '#17121D', display: 'flex', flexDirection: 'column', zIndex: 100, overflowY: 'auto', borderRight: '1px solid rgba(255,255,255,0.06)' },
-    topAccent: { height: 3, background: `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.secondary})`, flexShrink: 0 },
+    // Sidebar — brand violet
+    sidebar: { width: 252, flexShrink: 0, position: 'fixed', top: 0, left: 0, height: '100vh', backgroundColor: '#4A1259', display: 'flex', flexDirection: 'column', zIndex: 100, overflowY: 'auto', borderRight: '1px solid #5C1F6E' },
+    topAccent: { height: 3, backgroundColor: COLORS.primary, flexShrink: 0 },
 
     logoArea: { display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 18px' },
     logoIconWrap: { width: 64, height: 64, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', padding: 0, boxSizing: 'border-box', background: '#fff', border: '2px solid #FFCC99' },
-    logoTitle: { fontSize: 13.5, fontWeight: 700, color: '#FFFFFF', fontFamily: TEXT.font, letterSpacing: '0.2px' },
+    logoTitle: { fontSize: 14, fontWeight: 700, color: '#FFFFFF', fontFamily: NAVFONT, letterSpacing: '0.3px' },
     logoSub: { fontSize: 9.5, color: '#E1BEE7', textTransform: 'uppercase', letterSpacing: '0.8px', marginTop: 2, fontFamily: TEXT.font },
 
-    divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.07)', margin: '0 16px' },
+    divider: { height: 1, backgroundColor: '#5C1F6E', margin: '0 16px' },
 
     adminCard: { display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px' },
     avatar: { width: 34, height: 34, borderRadius: '50%', background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font },
@@ -329,11 +332,11 @@ const S = {
 
     nav: { flex: 1, padding: '10px 12px 0' },
     navGroup: { marginBottom: 14 },
-    navSection: { fontSize: 10, fontWeight: 700, color: '#8A7C96', letterSpacing: '1.3px', textTransform: 'uppercase', padding: '4px 12px 8px', margin: 0, fontFamily: TEXT.font },
+    navSection: { fontSize: 10, fontWeight: 600, color: '#C4A6D1', letterSpacing: '1.5px', textTransform: 'uppercase', padding: '4px 12px 8px', margin: 0, fontFamily: NAVFONT },
     navBtn: { position: 'relative', display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', marginBottom: 3, textAlign: 'left' },
-    navBtnActive: { backgroundColor: 'rgba(244,121,32,0.15)' },
+    navBtnActive: { backgroundColor: 'rgba(244,121,32,0.18)' },
     navActiveBar: { position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: '0 3px 3px 0', backgroundColor: COLORS.primary },
-    navLabel: { fontSize: 13.5, fontFamily: TEXT.font },
+    navLabel: { fontSize: 14, fontFamily: NAVFONT, letterSpacing: '0.2px' },
     badge: { marginLeft: 'auto', minWidth: 18, height: 18, borderRadius: 9, background: COLORS.primary, color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px', fontFamily: TEXT.font },
 
     logoutBtn: { display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 8, border: 'none', backgroundColor: 'transparent', cursor: 'pointer' },
