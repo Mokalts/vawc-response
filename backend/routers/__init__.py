@@ -1,1 +1,2 @@
-from routers import auth, reports, upload, users
+# Routers are imported and registered explicitly in main.py.
+# (No package-level imports needed here.)
