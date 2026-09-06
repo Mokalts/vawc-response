@@ -76,6 +76,8 @@ export default function Reports() {
   const [victimSearch, setVictimSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortBy, setSortBy] = useState("recent");
+  const tabRefs = useRef({});
+  const [tabInd, setTabInd] = useState({ left: 0, width: 0 });
   const [cases, setCases] = useState([]);
   const [caseLoading, setCaseLoading] = useState(false);
   const [caseError, setCaseError] = useState(null);
@@ -170,6 +172,15 @@ export default function Reports() {
     }
   });
 
+  // Slide the active-tab underline to the selected tab.
+  useEffect(() => {
+    const key = isVictimTab ? "victims" : "deleted";
+    const move = () => { const el = tabRefs.current[key]; if (el) setTabInd({ left: el.offsetLeft, width: el.offsetWidth }); };
+    move();
+    window.addEventListener("resize", move);
+    return () => window.removeEventListener("resize", move);
+  }, [view, isVictimTab, deletedCases.length]);
+
   // Accurate, hierarchical breadcrumb trail (shown after "Dashboard" in the top bar).
   const backToVictims = () => { setView("victims"); setSelectedVictim(null); setSelectedCase(null); setCaseDetail(null); };
   const backToCases   = () => { setView("cases"); setSelectedCase(null); setCaseDetail(null); };
@@ -185,15 +196,20 @@ export default function Reports() {
       <div style={S.wrap}>
 
         {/* Tabs */}
-        <div style={S.tabsWrap}>
-          {[{ key: "victims", label: "Cases" }, { key: "deleted", label: "Recently Deleted" }].map(tab => (
-            <button key={tab.key}
-              onClick={() => { setView(tab.key); setSelectedVictim(null); setSelectedCase(null); setCaseDetail(null); }}
-              style={{ padding: "10px 18px", border: "none", borderBottom: (tab.key === "victims" ? isVictimTab : view === tab.key) ? "2px solid #7B2D8B" : "2px solid transparent", background: "transparent", fontSize: 13.5, fontWeight: 600, color: (tab.key === "victims" ? isVictimTab : view === tab.key) ? "#7B2D8B" : "#94A3B8", cursor: "pointer", fontFamily: "'Lexend',sans-serif", transition: "color 0.2s ease, border-color 0.2s ease" }}>
-              {tab.label}
-              {tab.key === "deleted" && deletedCases.length > 0 && <span style={{ marginLeft: 6, padding: "2px 7px", borderRadius: 4, background: "#FEF2F2", color: "#DC2626", fontSize: 11, fontWeight: 700 }}>{deletedCases.length}</span>}
-            </button>
-          ))}
+        <div style={{ ...S.tabsWrap, position: "relative" }}>
+          {[{ key: "victims", label: "Cases" }, { key: "deleted", label: "Recently Deleted" }].map(tab => {
+            const activeTab = tab.key === "victims" ? isVictimTab : view === tab.key;
+            return (
+              <button key={tab.key}
+                ref={el => { tabRefs.current[tab.key] = el; }}
+                onClick={() => { setView(tab.key); setSelectedVictim(null); setSelectedCase(null); setCaseDetail(null); }}
+                style={{ padding: "10px 18px", border: "none", background: "transparent", fontSize: 13.5, fontWeight: 600, color: activeTab ? "#7B2D8B" : "#94A3B8", cursor: "pointer", fontFamily: "'Lexend',sans-serif", transition: "color 0.2s ease" }}>
+                {tab.label}
+                {tab.key === "deleted" && deletedCases.length > 0 && <span style={{ marginLeft: 6, padding: "2px 7px", borderRadius: 4, background: "#FEF2F2", color: "#DC2626", fontSize: 11, fontWeight: 700 }}>{deletedCases.length}</span>}
+              </button>
+            );
+          })}
+          <div style={{ position: "absolute", bottom: -1, height: 2.5, borderRadius: 3, background: "#7B2D8B", left: tabInd.left, width: tabInd.width, transition: "left 0.3s cubic-bezier(0.22,1,0.36,1), width 0.3s cubic-bezier(0.22,1,0.36,1)" }} />
         </div>
 
         <div key={view} className="tab-fade">

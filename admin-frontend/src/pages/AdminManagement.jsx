@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { AdminLayout } from "../components/Sidebar";
 import { confirmDialog } from "../components/ConfirmDialog";
 import api from "../api/api";
@@ -284,6 +284,8 @@ export default function AdminManagement() {
 
   // ── Victim management (super admin only) ───────────────────────────
   const [tab,             setTab]             = useState("admins"); // 'admins' | 'victims' | 'unverified' | 'deleted-victims'
+  const tabRefs = useRef({});
+  const [tabInd, setTabInd] = useState({ left: 0, width: 0 });
   const [victims,         setVictims]         = useState([]);
   const [unverifiedUsers, setUnverifiedUsers] = useState([]);
   const [deletedVictims,  setDeletedVictims]  = useState([]);
@@ -403,6 +405,14 @@ export default function AdminManagement() {
 
   useEffect(() => { fetchAdmins(); }, [fetchAdmins]);
 
+  // Slide the active-tab underline to the selected tab.
+  useEffect(() => {
+    const move = () => { const el = tabRefs.current[tab]; if (el) setTabInd({ left: el.offsetLeft, width: el.offsetWidth }); };
+    move();
+    window.addEventListener("resize", move);
+    return () => window.removeEventListener("resize", move);
+  }, [tab, admins.length, victims.length, unverifiedUsers.length, deletedVictims.length]);
+
   useEffect(() => {
     api.get("/admin/auth/me").then(r => setCurrentAdmin(r.data)).catch(() => {});
   }, []);
@@ -504,7 +514,7 @@ export default function AdminManagement() {
         </div>
 
         {/* Tab bar */}
-        <div style={{ display: "flex", gap: 4, marginBottom: 14, borderBottom: "1.5px solid var(--adm-border)", flexWrap: "wrap" }}>
+        <div style={{ position: "relative", display: "flex", gap: 4, marginBottom: 14, borderBottom: "1.5px solid var(--adm-border)", flexWrap: "wrap" }}>
           {[
             { key: "admins",          label: "Admins",            count: admins.length },
             { key: "victims",         label: "Victims",            count: victims.length },
@@ -513,29 +523,27 @@ export default function AdminManagement() {
           ].map(t => {
             const active = tab === t.key;
             return (
-              <button key={t.key} onClick={() => { setTab(t.key); setSearch(""); }}
+              <button key={t.key} ref={el => { tabRefs.current[t.key] = el; }} onClick={() => { setTab(t.key); setSearch(""); }}
                 style={{
                   padding: "10px 16px",
-                  marginBottom: -1.5,
-                  borderRadius: "8px 8px 0 0",
                   border: "none",
-                  borderBottom: active ? "2.5px solid #7B2D8B" : "2.5px solid transparent",
                   background: "transparent",
                   color: active ? "#7B2D8B" : "#64748B",
                   fontSize: 13.5, fontWeight: active ? 700 : 600,
                   cursor: "pointer", fontFamily: "'Lexend',sans-serif",
                   display: "inline-flex", alignItems: "center", gap: 6,
-                  transition: "color 0.2s ease, border-color 0.2s ease",
+                  transition: "color 0.2s ease",
                 }}>
                 {t.label}
                 {t.count > 0 && (
-                  <span style={{ minWidth: 18, padding: "0 6px", height: 18, borderRadius: 9, background: active ? "#7B2D8B" : "var(--adm-border)", color: active ? "#fff" : "#475569", fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ minWidth: 18, padding: "0 6px", height: 18, borderRadius: 9, background: active ? "#7B2D8B" : "var(--adm-border)", color: active ? "#fff" : "#475569", fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background 0.2s ease, color 0.2s ease" }}>
                     {t.count > 99 ? "99+" : t.count}
                   </span>
                 )}
               </button>
             );
           })}
+          <div style={{ position: "absolute", bottom: -1.5, height: 2.5, borderRadius: 3, background: "#7B2D8B", left: tabInd.left, width: tabInd.width, transition: "left 0.3s cubic-bezier(0.22,1,0.36,1), width 0.3s cubic-bezier(0.22,1,0.36,1)" }} />
         </div>
 
         {/* Search + toolbar */}
