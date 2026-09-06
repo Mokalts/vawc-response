@@ -20,6 +20,15 @@ if (!document.getElementById('vawc-global-css')) {
             50%      { box-shadow: 0 0 0 6px rgba(244,121,32,0); }
         }
         .burst-dot { animation: burstPulse 1.4s infinite; }
+
+        /* Page + tab transitions */
+        @keyframes pageEnter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+        @keyframes tabFade   { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+        .page-enter { animation: pageEnter 0.30s cubic-bezier(0.22, 1, 0.36, 1); }
+        .tab-fade   { animation: tabFade 0.22s ease; }
+        @media (prefers-reduced-motion: reduce) {
+            .page-enter, .tab-fade { animation: none !important; }
+        }
     `;
     document.head.appendChild(s);
 }
@@ -29,8 +38,8 @@ const getAdmin = () => {
     catch { return {}; }
 };
 
-// Distinct display font for the navigation (rest of the app stays on Lexend).
-const NAVFONT = "'Space Grotesk', 'Lexend', sans-serif";
+// Navigation uses the app font (Lexend).
+const NAVFONT = "'Lexend', sans-serif";
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const Ico = ({ d, size = 18, color = 'currentColor' }) => (
@@ -296,12 +305,16 @@ function TopBar({ breadcrumbs }) {
 
 // ─── Layout ───────────────────────────────────────────────────────────────────
 export function AdminLayout({ children, breadcrumbs }) {
+    const location = useLocation();
     return (
         <div style={S.layout}>
             <Sidebar />
             <div style={S.content}>
                 <TopBar breadcrumbs={breadcrumbs} />
-                <main style={S.main}>{children}</main>
+                <main style={S.main}>
+                    {/* keyed by route so the content re-animates on each page change */}
+                    <div key={location.pathname} className="page-enter">{children}</div>
+                </main>
             </div>
             <ConfirmHost />
         </div>

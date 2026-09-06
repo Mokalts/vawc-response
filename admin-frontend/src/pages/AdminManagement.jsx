@@ -525,6 +525,7 @@ export default function AdminManagement() {
                   fontSize: 13.5, fontWeight: active ? 700 : 600,
                   cursor: "pointer", fontFamily: "'Lexend',sans-serif",
                   display: "inline-flex", alignItems: "center", gap: 6,
+                  transition: "color 0.2s ease, border-color 0.2s ease",
                 }}>
                 {t.label}
                 {t.count > 0 && (
@@ -641,7 +642,7 @@ export default function AdminManagement() {
 
         {/* Active Admins Table - only on Admins tab */}
         {tab === "admins" && (
-        <div style={S.tableCard}>
+        <div className="tab-fade" style={S.tableCard}>
           <div className="adm-table-wrap" style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
               <thead>
@@ -736,7 +737,7 @@ export default function AdminManagement() {
 
         {/* ─── VICTIMS tab ────────────────────────────────────────────── */}
         {tab === "victims" && (
-          <div style={S.tableCard}>
+          <div className="tab-fade" style={S.tableCard}>
             <div className="adm-table-wrap" style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
                 <thead>
@@ -789,7 +790,7 @@ export default function AdminManagement() {
 
         {/* ─── UNVERIFIED tab ─────────────────────────────────────────── */}
         {tab === "unverified" && (
-          <div style={S.tableCard}>
+          <div className="tab-fade" style={S.tableCard}>
             <div style={{ padding: "12px 16px", background: "#FFFBEB", borderBottom: "1px solid #FDE68A", display: "flex", alignItems: "center", gap: 10 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#92400E" strokeWidth="1.8" /><path d="M12 8v4M12 16h.01" stroke="#92400E" strokeWidth="2" strokeLinecap="round" /></svg>
               <p style={{ margin: 0, fontSize: 12.5, color: "#7C2D12", fontFamily: "'Lexend',sans-serif" }}>
@@ -849,7 +850,7 @@ export default function AdminManagement() {
 
         {/* ─── DELETED VICTIMS tab ────────────────────────────────────── */}
         {tab === "deleted-victims" && (
-          <div style={S.tableCard}>
+          <div className="tab-fade" style={S.tableCard}>
             <div style={{ padding: "12px 16px", background: "#FFF3E0", borderBottom: "1px solid #FFCC99", display: "flex", alignItems: "center", gap: 10 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
               <p style={{ margin: 0, fontSize: 12.5, color: "#7C2D12", fontFamily: "'Lexend',sans-serif" }}>

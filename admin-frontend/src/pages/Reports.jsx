@@ -75,6 +75,7 @@ export default function Reports() {
   const [victimError, setVictimError] = useState(null);
   const [victimSearch, setVictimSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [sortBy, setSortBy] = useState("recent");
   const [cases, setCases] = useState([]);
   const [caseLoading, setCaseLoading] = useState(false);
   const [caseError, setCaseError] = useState(null);
@@ -159,6 +160,16 @@ export default function Reports() {
 
   const isVictimTab = view === "victims" || view === "cases" || view === "reports";
 
+  const sortedVictims = [...victims].sort((a, b) => {
+    switch (sortBy) {
+      case "oldest": return new Date(a.latest_case_date || 0) - new Date(b.latest_case_date || 0);
+      case "name":   return (a.full_name || "").localeCompare(b.full_name || "");
+      case "cases":  return (b.case_count || 0) - (a.case_count || 0);
+      case "recent":
+      default:       return new Date(b.latest_case_date || 0) - new Date(a.latest_case_date || 0);
+    }
+  });
+
   // Accurate, hierarchical breadcrumb trail (shown after "Dashboard" in the top bar).
   const backToVictims = () => { setView("victims"); setSelectedVictim(null); setSelectedCase(null); setCaseDetail(null); };
   const backToCases   = () => { setView("cases"); setSelectedCase(null); setCaseDetail(null); };
@@ -178,19 +189,33 @@ export default function Reports() {
           {[{ key: "victims", label: "Cases" }, { key: "deleted", label: "Recently Deleted" }].map(tab => (
             <button key={tab.key}
               onClick={() => { setView(tab.key); setSelectedVictim(null); setSelectedCase(null); setCaseDetail(null); }}
-              style={{ padding: "10px 18px", border: "none", borderBottom: (tab.key === "victims" ? isVictimTab : view === tab.key) ? "2px solid #7B2D8B" : "2px solid transparent", background: "transparent", fontSize: 13.5, fontWeight: 600, color: (tab.key === "victims" ? isVictimTab : view === tab.key) ? "#7B2D8B" : "#94A3B8", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+              style={{ padding: "10px 18px", border: "none", borderBottom: (tab.key === "victims" ? isVictimTab : view === tab.key) ? "2px solid #7B2D8B" : "2px solid transparent", background: "transparent", fontSize: 13.5, fontWeight: 600, color: (tab.key === "victims" ? isVictimTab : view === tab.key) ? "#7B2D8B" : "#94A3B8", cursor: "pointer", fontFamily: "'Lexend',sans-serif", transition: "color 0.2s ease, border-color 0.2s ease" }}>
               {tab.label}
               {tab.key === "deleted" && deletedCases.length > 0 && <span style={{ marginLeft: 6, padding: "2px 7px", borderRadius: 4, background: "#FEF2F2", color: "#DC2626", fontSize: 11, fontWeight: 700 }}>{deletedCases.length}</span>}
             </button>
           ))}
         </div>
 
+        <div key={view} className="tab-fade">
+
         {/* VICTIMS */}
         {view === "victims" && (
           <div style={S.card}>
             <div style={S.toolbar}>
               <div style={S.searchWrap}><IcoSearch /><input className="search-input" style={S.searchInput} placeholder="Search victim…" value={victimSearch} onChange={handleSearch} /></div>
-              <span style={S.countLabel}>{victimLoading ? "Loading…" : `${victims.length} victim${victims.length !== 1 ? "s" : ""}`}</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginLeft: "auto" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                  <span>Sort by</span>
+                  <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+                    style={{ padding: "7px 10px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 12.5, fontFamily: "'Lexend',sans-serif", cursor: "pointer" }}>
+                    <option value="recent">Recent activity</option>
+                    <option value="oldest">Oldest activity</option>
+                    <option value="name">Name (A–Z)</option>
+                    <option value="cases">Most cases</option>
+                  </select>
+                </label>
+                <span style={S.countLabel}>{victimLoading ? "Loading…" : `${victims.length} victim${victims.length !== 1 ? "s" : ""}`}</span>
+              </div>
             </div>
             <div style={{ overflowX: "auto" }}>
               <table style={S.table}>
@@ -208,7 +233,7 @@ export default function Reports() {
                   {victimLoading && [1, 2, 3, 4].map(i => <SkelRow key={i} cols={6} />)}
                   {!victimLoading && victimError && <tr><td colSpan={6} style={{ textAlign: "center", padding: "48px" }}><IcoWarn size={28} /><p style={{ color: "#64748B", marginTop: 12, fontFamily: "'Lexend',sans-serif" }}>{victimError}</p><button style={S.retryBtn} onClick={fetchVictims}>Retry</button></td></tr>}
                   {!victimLoading && !victimError && victims.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", padding: "64px" }}><IcoUser size={40} color="#CBD5E1" /><p style={{ fontSize: 14, color: "var(--adm-text-muted)", marginTop: 12, fontFamily: "'Lexend',sans-serif" }}>No confirmed cases yet.</p></td></tr>}
-                  {!victimLoading && !victimError && victims.map(v => (
+                  {!victimLoading && !victimError && sortedVictims.map(v => (
                     <tr key={v.user_id} className="row-hover" onClick={() => openCases(v)}>
                       <td style={S.td}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -411,6 +436,7 @@ export default function Reports() {
             </div>
           </div>
         )}
+        </div>
       </div>
 
       {toast && (
