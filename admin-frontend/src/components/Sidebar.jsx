@@ -11,8 +11,8 @@ if (!document.getElementById('vawc-global-css')) {
     s.id = 'vawc-global-css';
     s.textContent = GLOBAL_CSS + `
         .vawc-nav-btn { transition: background 0.15s ease, transform 0.15s ease; }
-        .vawc-nav-btn:hover:not(.active) { background: rgba(255,255,255,0.05) !important; }
-        .vawc-nav-btn.active { background: rgba(244,121,32,0.18) !important; }
+        .vawc-nav-btn:hover:not(.active) { background: rgba(255,255,255,0.06) !important; }
+        .vawc-nav-btn.active { background: rgba(244,121,32,0.15) !important; }
         .vawc-logout:hover { background: rgba(123,45,139,0.08) !important; }
         .vawc-logout { transition: background 0.15s ease; }
         @keyframes burstPulse {
@@ -77,11 +77,22 @@ const IcoChevron = ({ size = 12, color = 'currentColor' }) => (
 );
 
 const NAV = [
-    { label: 'Dashboard', path: '/dashboard', icon: IcoDashboard, superOnly: false },
-    { label: 'Profiles', path: '/reports', icon: IcoReports, superOnly: false },
-    { label: 'Monthly Report', path: '/monthly-report', icon: IcoMonthly, superOnly: true },
-    { label: 'Admin Management', path: '/admin-management', icon: IcoAdmins, superOnly: true },
+    { label: 'Dashboard', path: '/dashboard', icon: IcoDashboard, superOnly: false, section: 'Menu' },
+    { label: 'Profiles', path: '/reports', icon: IcoReports, superOnly: false, section: 'Menu' },
+    { label: 'Monthly Report', path: '/monthly-report', icon: IcoMonthly, superOnly: true, section: 'Management' },
+    { label: 'Admin Management', path: '/admin-management', icon: IcoAdmins, superOnly: true, section: 'Management' },
 ];
+
+// Group the visible nav items into their sections, preserving order.
+const groupNav = (isSuper) => {
+    const out = [];
+    NAV.filter(n => isSuper || !n.superOnly).forEach(it => {
+        let g = out.find(x => x.name === it.section);
+        if (!g) { g = { name: it.section, items: [] }; out.push(g); }
+        g.items.push(it);
+    });
+    return out;
+};
 
 // ─── Sidebar ──────────────────────────────────────────────────────────────────
 function Sidebar() {
@@ -162,42 +173,42 @@ function Sidebar() {
 
             {/* Nav */}
             <nav style={S.nav}>
-                <p style={S.navSection}>Control Panel</p>
-                {NAV.filter(n => isSuper || !n.superOnly).map(item => {
-                    const active = location.pathname === item.path;
-                    const NavIcon = item.icon;
-                    // New-reports indicator now lives on Dashboard (that's where reports
-                    // are reviewed/accepted). Red dot + hover tooltip.
-                    const showDashDot = item.path === '/dashboard' && unread > 0;
-                    return (
-                        <button
-                            key={item.path}
-                            className={`vawc-nav-btn${active ? ' active' : ''}`}
-                            onClick={() => navigate(item.path)}
-                            title={showDashDot ? 'Please check new reports' : undefined}
-                            style={{ ...S.navBtn, ...(active ? S.navBtnActive : {}) }}
-                        >
-                            {/* Active left bar */}
-                            {active && <div style={S.navActiveBar} />}
-
-                            <div style={{ ...S.navIconWrap, ...(active ? S.navIconActive : {}), position: 'relative' }}>
-                                <NavIcon size={16} color={active ? '#fff' : '#E1BEE7'} />
-                                {showDashDot && (
-                                    <span className="burst-dot" title="Please check new reports"
-                                        style={{ position: 'absolute', top: -3, right: -3, minWidth: 9, height: 9, borderRadius: '50%', background: '#EF4444', border: '2px solid #4A1259' }} />
-                                )}
-                            </div>
-
-                            <span style={{ ...S.navLabel, color: active ? '#FFFFFF' : '#E1BEE7', fontWeight: active ? 700 : 500 }}>
-                                {item.label}
-                            </span>
-                        </button>
-                    );
-                })}
+                {groupNav(isSuper).map(group => (
+                    <div key={group.name} style={S.navGroup}>
+                        <p style={S.navSection}>{group.name}</p>
+                        {group.items.map(item => {
+                            const active = location.pathname === item.path;
+                            const NavIcon = item.icon;
+                            // New-reports indicator lives on Dashboard (where reports are reviewed).
+                            const showDashDot = item.path === '/dashboard' && unread > 0;
+                            return (
+                                <button
+                                    key={item.path}
+                                    className={`vawc-nav-btn${active ? ' active' : ''}`}
+                                    onClick={() => navigate(item.path)}
+                                    title={showDashDot ? 'Please check new reports' : undefined}
+                                    style={{ ...S.navBtn, ...(active ? S.navBtnActive : {}) }}
+                                >
+                                    {active && <div style={S.navActiveBar} />}
+                                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <NavIcon size={18} color={active ? '#FFFFFF' : '#A99BB6'} />
+                                        {showDashDot && (
+                                            <span className="burst-dot" title="Please check new reports"
+                                                style={{ position: 'absolute', top: -4, right: -5, minWidth: 9, height: 9, borderRadius: '50%', background: '#EF4444', border: '2px solid #17121D' }} />
+                                        )}
+                                    </div>
+                                    <span style={{ ...S.navLabel, color: active ? '#FFFFFF' : '#C9BCD4', fontWeight: active ? 700 : 500 }}>
+                                        {item.label}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                ))}
             </nav>
 
             {/* Logout */}
-            <div style={{ padding: '12px', borderTop: '1px solid #5C1F6E', marginTop: 'auto' }}>
+            <div style={{ padding: '12px', borderTop: '1px solid rgba(255,255,255,0.07)', marginTop: 'auto' }}>
                 <button className="vawc-logout" onClick={handleLogout} style={S.logoutBtn}>
                     <IcoLogout size={16} color="#FFCC99" />
                     <span style={S.logoutLabel}>Sign Out</span>
@@ -298,16 +309,16 @@ export function AdminLayout({ children, breadcrumbs }) {
 const S = {
     layout: { display: 'flex', minHeight: '100vh', backgroundColor: COLORS.bgPage, fontFamily: TEXT.font },
 
-    // Sidebar
-    sidebar: { width: 252, flexShrink: 0, position: 'fixed', top: 0, left: 0, height: '100vh', backgroundColor: '#4A1259', display: 'flex', flexDirection: 'column', zIndex: 100, overflowY: 'auto', borderRight: '1px solid #5C1F6E' },
-    topAccent: { height: 3, backgroundColor: COLORS.primary, flexShrink: 0 },
+    // Sidebar — dark, near-black with a subtle violet cast (brand-consistent)
+    sidebar: { width: 252, flexShrink: 0, position: 'fixed', top: 0, left: 0, height: '100vh', backgroundColor: '#17121D', display: 'flex', flexDirection: 'column', zIndex: 100, overflowY: 'auto', borderRight: '1px solid rgba(255,255,255,0.06)' },
+    topAccent: { height: 3, background: `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.secondary})`, flexShrink: 0 },
 
     logoArea: { display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 18px' },
     logoIconWrap: { width: 64, height: 64, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', padding: 0, boxSizing: 'border-box', background: '#fff', border: '2px solid #FFCC99' },
     logoTitle: { fontSize: 13.5, fontWeight: 700, color: '#FFFFFF', fontFamily: TEXT.font, letterSpacing: '0.2px' },
     logoSub: { fontSize: 9.5, color: '#E1BEE7', textTransform: 'uppercase', letterSpacing: '0.8px', marginTop: 2, fontFamily: TEXT.font },
 
-    divider: { height: 1, backgroundColor: '#5C1F6E', margin: '0 16px' },
+    divider: { height: 1, backgroundColor: 'rgba(255,255,255,0.07)', margin: '0 16px' },
 
     adminCard: { display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px' },
     avatar: { width: 34, height: 34, borderRadius: '50%', background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font },
@@ -316,13 +327,12 @@ const S = {
     rolePill: { display: 'inline-flex', alignItems: 'center', marginTop: 3, fontSize: 10, fontWeight: 700, color: '#E1BEE7', backgroundColor: 'rgba(123,45,139,0.12)', padding: '2px 8px', borderRadius: 9999, fontFamily: TEXT.font, letterSpacing: '0.3px' },
     rolePillSuper: { display: 'inline-flex', alignItems: 'center', marginTop: 3, fontSize: 10, fontWeight: 800, color: '#fff', background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondaryDark})`, padding: '3px 9px', borderRadius: 9999, fontFamily: TEXT.font, letterSpacing: '0.4px', textTransform: 'uppercase', boxShadow: '0 1px 3px rgba(196,94,16,0.3)' },
 
-    nav: { flex: 1, padding: '12px 10px 0' },
-    navSection: { fontSize: 10, fontWeight: 700, color: '#C4A6D1', letterSpacing: '1.2px', textTransform: 'uppercase', padding: '6px 10px 10px', fontFamily: TEXT.font },
-    navBtn: { position: 'relative', display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 8, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', marginBottom: 2 },
-    navBtnActive: { backgroundColor: 'rgba(244,121,32,0.18)' },
-    navActiveBar: { position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: 2, backgroundColor: COLORS.primary },
-    navIconWrap: { width: 30, height: 30, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#5C1F6E', flexShrink: 0 },
-    navIconActive: { backgroundColor: COLORS.primary },
+    nav: { flex: 1, padding: '10px 12px 0' },
+    navGroup: { marginBottom: 14 },
+    navSection: { fontSize: 10, fontWeight: 700, color: '#8A7C96', letterSpacing: '1.3px', textTransform: 'uppercase', padding: '4px 12px 8px', margin: 0, fontFamily: TEXT.font },
+    navBtn: { position: 'relative', display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', marginBottom: 3, textAlign: 'left' },
+    navBtnActive: { backgroundColor: 'rgba(244,121,32,0.15)' },
+    navActiveBar: { position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: '0 3px 3px 0', backgroundColor: COLORS.primary },
     navLabel: { fontSize: 13.5, fontFamily: TEXT.font },
     badge: { marginLeft: 'auto', minWidth: 18, height: 18, borderRadius: 9, background: COLORS.primary, color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px', fontFamily: TEXT.font },
 

@@ -80,7 +80,7 @@ const InfoRow = ({ label, value, mono, muted, highlight }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
     <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>{label}</span>
     {highlight ? (
-      <span style={{ alignSelf: "flex-start", background: "var(--adm-primary-bg)", color: "#C45E10", fontWeight: 700, fontSize: 13, padding: "3px 12px", borderRadius: 9999, border: "1px solid #FFCC99", fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap" }}>{value || "-"}</span>
+      <span style={{ alignSelf: "flex-start", maxWidth: "100%", background: "var(--adm-primary-bg)", color: "#C45E10", fontWeight: 700, fontSize: 12.5, lineHeight: 1.35, padding: "3px 12px", borderRadius: 12, border: "1px solid #FFCC99", fontFamily: "'Lexend',sans-serif", whiteSpace: "normal", overflowWrap: "anywhere" }}>{value || "-"}</span>
     ) : (
       <span style={{ fontSize: 13.5, color: muted ? "#94A3B8" : "var(--adm-text)", fontWeight: 500, fontStyle: muted ? "italic" : "normal", fontFamily: mono ? "monospace" : "'Lexend',sans-serif" }}>{value || "-"}</span>
     )}

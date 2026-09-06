@@ -409,7 +409,20 @@ export default function AdminManagement() {
 
   const onNameSaved = (updated) => {
     setAdmins(p => p.map(a => a.id === updated.id ? { ...a, ...updated } : a));
-    if (currentAdmin && updated.id === currentAdmin.id) setCurrentAdmin(c => ({ ...c, ...updated }));
+    if (currentAdmin && updated.id === currentAdmin.id) {
+      setCurrentAdmin(c => ({ ...c, ...updated }));
+      // Keep the cached admin (used by the greeting, sidebar, top bar) in sync
+      // so the new name shows everywhere without a re-login.
+      try {
+        const cached = JSON.parse(localStorage.getItem("admin_user") || "{}");
+        localStorage.setItem("admin_user", JSON.stringify({
+          ...cached,
+          first_name:  updated.first_name,
+          middle_name: updated.middle_name,
+          last_name:   updated.last_name,
+        }));
+      } catch {}
+    }
     setEditingAdmin(null);
     showToast("Name updated.");
   };
