@@ -43,8 +43,11 @@ if (!document.getElementById('vawc-home-css')) {
         .vh-hero-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.18) !important; }
         .vh-hero-btn:active { transform: scale(0.97); }
         .vh-report-btn { transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease; }
-        .vh-report-btn:hover { filter: brightness(1.04); transform: translateY(-2px); box-shadow: 0 14px 30px rgba(196,94,16,0.38) !important; }
-        .vh-report-btn:active { transform: scale(0.985); }
+        .vh-report-btn:hover { filter: brightness(1.04); transform: translateY(-2px); box-shadow: 0 16px 32px rgba(196,94,16,0.4), inset 0 1px 0 rgba(255,255,255,0.3) !important; }
+        .vh-report-btn:active { transform: translateY(0) scale(0.99); }
+        /* Arrow nudges on hover: 3px of feedback, no layout shift. */
+        .vh-report-arrow { transition: transform 0.18s ease; }
+        .vh-report-btn:hover .vh-report-arrow { transform: translateX(3px); }
         /* Soft highlight that drifts across the CTA so it catches the eye without
            blinking at the user. Stops entirely under reduced-motion. */
         .vh-report-glow {
@@ -275,15 +278,17 @@ function Home() {
                 </div>
 
                 {/* Bottom report CTA */}
-                <button className="vh-report-btn" style={S.reportBtn} onClick={() => navigate('/report')}>
-                    <span className="vh-report-glow" aria-hidden="true" />
-                    <span style={S.reportIcon} aria-hidden="true"><IcoFile /></span>
-                    <span style={{ minWidth: 0, flex: 1, textAlign: 'left', position: 'relative' }}>
-                        <span style={S.reportTitle}>Report an Incident</span>
-                        <span style={S.reportSub}>Takes a few minutes. Confidential under RA 9262.</span>
-                    </span>
-                    <span style={S.reportArrow} aria-hidden="true"><IcoArrow c="#fff" /></span>
-                </button>
+                <div>
+                    <button className="vh-report-btn" style={S.reportBtn} onClick={() => navigate('/report')}>
+                        <span className="vh-report-glow" aria-hidden="true" />
+                        <span style={S.reportLabel}>
+                            <IcoFile />
+                            Report an Incident
+                            <span className="vh-report-arrow" style={{ display: 'inline-flex' }}><IcoArrow c="#fff" /></span>
+                        </span>
+                    </button>
+                    <p style={S.reportCaption}>Takes a few minutes. Confidential under Republic Act 9262.</p>
+                </div>
 
             </main>
 
@@ -338,11 +343,11 @@ const S = {
     awareDesc:   { fontSize: 11.5, color: 'var(--text-body)', lineHeight: 1.5, flex: 1, margin: '2px 0 0', fontFamily: FF },
     awareBtn:    { display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, width: 'fit-content' },
 
-    reportBtn:   { position: 'relative', overflow: 'hidden', width: '100%', padding: '14px 16px', background: 'linear-gradient(135deg, #F47920 0%, #C45E10 100%)', color: '#fff', border: 'none', borderRadius: 16, cursor: 'pointer', fontFamily: FF, boxShadow: '0 8px 20px rgba(196,94,16,0.3)', display: 'flex', alignItems: 'center', gap: 13, textAlign: 'left' },
-    reportIcon:  { position: 'relative', width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: 'rgba(255,255,255,0.20)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
-    reportTitle: { display: 'block', fontSize: 16, fontWeight: 800, letterSpacing: '-0.2px', lineHeight: 1.2 },
-    reportSub:   { display: 'block', marginTop: 2, fontSize: 11.5, fontWeight: 500, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' },
-    reportArrow: { position: 'relative', width: 30, height: 30, borderRadius: '50%', flexShrink: 0, background: 'rgba(255,255,255,0.20)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    // Matches the Hotlines button's shape and height so the two read as one
+    // family; only the colour separates report from emergency.
+    reportBtn:   { position: 'relative', overflow: 'hidden', width: '100%', minHeight: 56, padding: '0 20px', background: 'linear-gradient(180deg, #F47920 0%, #C45E10 100%)', color: '#fff', border: 'none', borderRadius: 14, cursor: 'pointer', touchAction: 'manipulation', fontFamily: FF, boxShadow: '0 10px 24px rgba(196,94,16,0.34), inset 0 1px 0 rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    reportLabel: { position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 10, fontSize: 16.5, fontWeight: 800, letterSpacing: '-0.2px', fontFamily: FF },
+    reportCaption:{ margin: '9px 2px 0', fontSize: 11.5, lineHeight: 1.5, color: 'var(--text-muted)', textAlign: 'center', fontFamily: FF },
 };
 
 export default Home;

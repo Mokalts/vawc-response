@@ -110,16 +110,17 @@ function SOSButton({ variant = 'block' }) {
                     <span>Hotlines</span>
                 </button>
             ) : (
-                <button type="button" className="sos-btn" style={S.blockBtn} onClick={() => setOpen(true)} aria-label="Open emergency hotlines">
-                    <span style={S.blockIcon} aria-hidden="true"><IcoSOS size={21} /></span>
-                    <span style={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
-                        <span style={S.blockTitle}>Hotlines</span>
-                        <span style={S.blockSub}>Police, VAWC desk, and DSWD numbers you can call now</span>
-                    </span>
-                    <span style={S.blockChev} aria-hidden="true">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                    </span>
-                </button>
+                <div>
+                    <button type="button" className="sos-btn" style={S.blockBtn} onClick={() => setOpen(true)} aria-describedby="sos-caption">
+                        <IcoPhone size={18} />
+                        <span>Hotlines</span>
+                    </button>
+                    {/* The explanation sits under the button, not inside it, so the
+                        button keeps a single confident line. */}
+                    <p id="sos-caption" style={S.blockCaption}>
+                        Police, VAWC desk, and DSWD. Works even without signing in.
+                    </p>
+                </div>
             )}
 
             {open && ReactDOM.createPortal(
@@ -177,18 +178,21 @@ function SOSButton({ variant = 'block' }) {
 
 const S = {
     // ── SOS button variants
+    // One line, centred, tall. A CTA has to read as pressable at a glance; the
+    // inset top highlight gives it a lit edge without adding another element.
     blockBtn: {
-        width: '100%', padding: '14px 16px',
-        background: 'linear-gradient(135deg, #E8641C 0%, #B91C1C 100%)',
-        color: '#fff', border: 'none', borderRadius: 16, cursor: 'pointer',
-        display: 'flex', alignItems: 'center', gap: 13, textAlign: 'left',
+        width: '100%', minHeight: 56, padding: '0 20px',
+        background: 'linear-gradient(180deg, #DC2626 0%, #B0181C 100%)',
+        color: '#fff', fontSize: 16.5, fontWeight: 800, letterSpacing: '-0.2px',
+        border: 'none', borderRadius: 14, cursor: 'pointer', touchAction: 'manipulation',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
         fontFamily: "'Lexend', sans-serif",
-        boxShadow: '0 8px 22px rgba(185,28,28,0.26)',
+        boxShadow: '0 10px 24px rgba(176,24,28,0.34), inset 0 1px 0 rgba(255,255,255,0.28)',
     },
-    blockIcon:  { width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: 'rgba(255,255,255,0.18)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
-    blockTitle: { display: 'block', fontSize: 16, fontWeight: 800, letterSpacing: '-0.2px', lineHeight: 1.2 },
-    blockSub:   { display: 'block', marginTop: 2, fontSize: 11.5, fontWeight: 500, lineHeight: 1.4, color: 'rgba(255,255,255,0.88)' },
-    blockChev:  { flexShrink: 0, opacity: 0.85, display: 'inline-flex' },
+    blockCaption: {
+        margin: '9px 2px 0', fontSize: 11.5, lineHeight: 1.5,
+        color: 'var(--text-muted)', textAlign: 'center', fontFamily: "'Lexend', sans-serif",
+    },
     compactBtn: {
         minHeight: 44, padding: '10px 16px',
         background: 'linear-gradient(135deg, #E8641C 0%, #B91C1C 100%)',
