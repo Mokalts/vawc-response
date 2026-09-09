@@ -168,18 +168,6 @@ function SignIn() {
                 <ThemeToggle size={44} />
             </div>
 
-            {/* Brand header */}
-            <div style={S.brand}>
-                <div style={S.brandIcon}>
-                    <img src="/barangay-logo.png" alt="Barangay Palanginan Seal"
-                         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', imageRendering: '-webkit-optimize-contrast' }}
-                         onError={(e) => { e.target.style.display = 'none'; }} />
-                </div>
-                <h1 style={S.brandTitle}>VAWC-Response</h1>
-                <p style={S.brandSub}>Barangay Palanginan, Iba, Zambales</p>
-                <p style={S.brandTag}>Your safety matters. Sign in to continue.</p>
-            </div>
-
             {/* Success banners */}
             {(accountCreated || recovered) && (
                 <div style={{ width: '100%', maxWidth: 420, marginBottom: 16 }}>
@@ -189,8 +177,21 @@ function SignIn() {
                 </div>
             )}
 
-            {/* Card */}
+            {/* Card. The brand block sits inside it, matching the admin portal,
+                so the two sign-ins read as one product. */}
             <div style={S.card}>
+                <div style={S.cardAccent} aria-hidden="true" />
+
+                <div style={S.brand}>
+                    <div style={S.brandIcon}>
+                        <img src="/barangay-logo.png" alt="Barangay Palanginan Seal"
+                             style={S.brandImg}
+                             onError={(e) => { e.target.style.display = 'none'; }} />
+                    </div>
+                    <h1 style={S.brandTitle}>VAWC-Response</h1>
+                    <p style={S.brandSub}>Barangay Palanginan · Iba, Zambales</p>
+                    <p style={S.brandTag}>Your safety matters. Sign in to continue.</p>
+                </div>
 
                 <div style={S.field}>
                     <label htmlFor="signin-email" style={S.label}>Email Address</label>
@@ -281,12 +282,19 @@ function SignIn() {
 
 const S = {
     page: { minHeight: '100vh', background: 'var(--page-grad)', color: 'var(--text)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'Lexend', sans-serif" },
-    brand: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 3, marginBottom: 22, width: '100%', maxWidth: 420 },
-    brandIcon: { width: 104, height: 104, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: '#fff', border: '3px solid #FFCC99', boxShadow: '0 6px 20px rgba(244,121,32,0.18)', marginBottom: 12 },
+    brand: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 3, marginBottom: 24 },
+    brandIcon: { width: 104, height: 104, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: '#fff', border: '3px solid #FFCC99', boxShadow: '0 6px 20px rgba(244,121,32,0.18)', marginBottom: 14 },
+    // The seal PNG has white padding baked around the artwork, so a plain fit
+    // leaves it sitting low and small inside the ring. Scale up and nudge so the
+    // seal is centred in the circle.
+    brandImg: { width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scale(1.16) translateY(1%)', transformOrigin: 'center', imageRendering: '-webkit-optimize-contrast' },
     brandTitle: { fontSize: 24, fontWeight: 800, color: 'var(--accent-text)', margin: 0, fontFamily: "'Lexend', sans-serif", letterSpacing: '-0.5px' },
-    brandSub: { fontSize: 12.5, fontWeight: 600, color: '#B45309', margin: 0, fontFamily: "'Lexend', sans-serif" },
-    brandTag: { fontSize: 12.5, color: 'var(--text-muted)', margin: '5px 0 0', fontFamily: "'Lexend', sans-serif" },
-    card: { backgroundColor: 'var(--surface)', borderRadius: 22, padding: '28px 24px', width: '100%', maxWidth: 420, boxShadow: '0 12px 36px rgba(244,121,32,0.13)', border: '1px solid var(--border)' },
+    // Sized so the full "Barangay Palanginan · Iba, Zambales" stays on one line
+    // at 375px; uppercase plus wide tracking wrapped it awkwardly.
+    brandSub: { fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', margin: '5px 0 0', fontFamily: "'Lexend', sans-serif", textTransform: 'uppercase', letterSpacing: '0.055em', whiteSpace: 'nowrap' },
+    brandTag: { fontSize: 12.5, color: 'var(--text-muted)', margin: '9px 0 0', fontFamily: "'Lexend', sans-serif" },
+    card: { position: 'relative', overflow: 'hidden', backgroundColor: 'var(--surface)', borderRadius: 20, padding: '32px 26px 26px', width: '100%', maxWidth: 420, boxShadow: '0 12px 36px rgba(244,121,32,0.13)', border: '1px solid var(--border)' },
+    cardAccent: { position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#F47920' },
     field: { marginBottom: 18 },
     label: { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--accent-text)', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: "'Lexend', sans-serif" },
     input: { width: '100%', boxSizing: 'border-box', padding: '13px 15px', borderRadius: 12, border: '1.5px solid var(--border)', fontSize: 15, color: 'var(--text)', backgroundColor: 'var(--surface-alt)', outline: 'none', fontFamily: "'Lexend', sans-serif" },

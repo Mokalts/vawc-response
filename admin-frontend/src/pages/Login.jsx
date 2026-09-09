@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/api';
+import ThemeToggle from '../components/ThemeToggle';
+import { COLORS, RADIUS } from '../theme';
 
 // ─── Google Font ──────────────────────────────────────────────────────────────
 if (!document.getElementById('vawc-font')) {
@@ -14,8 +16,8 @@ if (!document.getElementById('vawc-admin-login-css')) {
     const s = document.createElement('style'); s.id = 'vawc-admin-login-css';
     s.textContent = `
         @keyframes spin { to { transform: rotate(360deg); } }
-        .al-input:focus { border-color: #F47920 !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.12) !important; }
-        .al-pwwrap:focus-within { border-color: #F47920 !important; background: #fff !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.12); }
+        .al-input:focus { border-color: #F47920 !important; background: var(--adm-card) !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.14) !important; }
+        .al-pwwrap:focus-within { border-color: #F47920 !important; background: var(--adm-card) !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.14); }
         .al-btn:hover:not([disabled]) { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 10px 24px rgba(196,94,16,0.32) !important; }
         .al-btn { transition: all 0.18s ease; }
     `;
@@ -119,13 +121,16 @@ function Login() {
 
     return (
         <div style={S.page}>
+            <div style={S.toggleSlot}><ThemeToggle /></div>
             <div style={S.formCard}>
+                {/* Same 3px accent bar the dashboard cards carry */}
+                <div style={S.cardAccent} aria-hidden="true" />
 
                 {/* Header */}
                 <div style={S.formHeader}>
                     <div style={S.logoWrap}>
                         <img src="/barangay-logo.png" alt="Barangay Palanginan Seal"
-                             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                             style={S.logoImg}
                              onError={(e) => { e.target.style.display = 'none'; }} />
                     </div>
                     <h2 style={S.formTitle}>VAWC-Response</h2>
@@ -134,25 +139,27 @@ function Login() {
 
                 {/* Username */}
                 <div style={S.field}>
-                    <label style={S.label}>Username</label>
+                    <label style={S.label} htmlFor="al-username">Username</label>
                     <input
                         className="al-input"
+                        id="al-username"
                         type="text"
                         name="username"
                         placeholder="Enter your username"
                         value={formData.username}
                         onChange={handleChange}
                         onKeyDown={handleKeyDown}
-                        style={{ ...S.input, borderColor: error ? '#FDA4AF' : '#FFE4CC' }}
+                        style={{ ...S.input, borderColor: error ? '#FDA4AF' : COLORS.border }}
                         autoComplete="username"
                     />
                 </div>
 
                 {/* Password */}
                 <div style={S.field}>
-                    <label style={S.label}>Password</label>
-                    <div className="al-pwwrap" style={{ ...S.pwWrap, borderColor: error ? '#FDA4AF' : '#FFE4CC' }}>
+                    <label style={S.label} htmlFor="al-password">Password</label>
+                    <div className="al-pwwrap" style={{ ...S.pwWrap, borderColor: error ? '#FDA4AF' : COLORS.border }}>
                         <input
+                            id="al-password"
                             type={showPassword ? 'text' : 'password'}
                             name="password"
                             placeholder="Enter your password"
@@ -165,6 +172,7 @@ function Login() {
                         <button
                             type="button"
                             style={S.eyeBtn}
+                            aria-label={showPassword ? 'Hide password' : 'Show password'}
                             onClick={() => setShowPassword(!showPassword)}
                         >
                             {showPassword ? <EyeClosed /> : <EyeOpen />}
@@ -198,7 +206,10 @@ function Login() {
 
                 {/* 2FA Notice */}
                 <div style={S.notice}>
-                    <span style={S.noticeIcon}></span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke={COLORS.secondary} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M9 12l2 2 4-4" stroke={COLORS.secondary} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                     <p style={S.noticeText}>
                         Face recognition is required as a second step after signing in.
                     </p>
@@ -211,39 +222,49 @@ function Login() {
 }
 
 const FF = "'Lexend', sans-serif";
+// Login now draws from the same tokens as the dashboard (neutral --adm-page
+// behind a --adm-card panel, the 3px accent bar, uppercase micro-labels,
+// RADIUS scale) instead of its own peach gradient and hardcoded hex, so the
+// portal does not change character the moment an admin signs in. This also
+// makes it theme-aware for free.
 const S = {
-    page: { minHeight: '100vh', background: 'linear-gradient(180deg, #FFF9F3 0%, #FFF3E0 55%, #FFE9D6 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: FF },
+    page: { position: 'relative', minHeight: '100vh', background: COLORS.bgPage, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: FF },
+    toggleSlot: { position: 'absolute', top: 20, right: 20 },
 
     // Form card
-    formCard: { backgroundColor: '#fff', borderRadius: 22, padding: '36px 30px', width: '100%', maxWidth: '420px', boxShadow: '0 12px 36px rgba(244,121,32,0.13)', border: '1px solid #FFF0E1' },
+    formCard: { position: 'relative', overflow: 'hidden', backgroundColor: COLORS.bgCard, borderRadius: RADIUS.lg, padding: '34px 30px 28px', width: '100%', maxWidth: '420px', boxShadow: 'var(--adm-card-shadow)', border: `1px solid ${COLORS.border}` },
+    cardAccent: { position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: COLORS.primary },
     formHeader: { textAlign: 'center', marginBottom: '26px' },
-    logoWrap: { width: '108px', height: '108px', borderRadius: '50%', backgroundColor: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', border: '3px solid #FFCC99', boxShadow: '0 6px 20px rgba(244,121,32,0.18)', overflow: 'hidden', padding: 0, boxSizing: 'border-box' },
-    formTitle: { fontSize: '24px', fontWeight: '800', color: '#C45E10', marginBottom: '4px', fontFamily: FF, letterSpacing: '-0.5px' },
-    formSub: { fontSize: '13px', fontWeight: '600', color: '#9B4DAB', fontFamily: FF },
+    logoWrap: { width: '104px', height: '104px', borderRadius: '50%', backgroundColor: '#fff', margin: '0 auto 16px', border: `3px solid ${COLORS.primaryBorder}`, boxShadow: '0 6px 20px rgba(244,121,32,0.18)', overflow: 'hidden', padding: 0, boxSizing: 'border-box' },
+    // The seal PNG carries white padding around the artwork, so a plain fit
+    // leaves the ring looking off-centre. Scale up and nudge to sit the seal
+    // squarely inside the circle.
+    logoImg: { width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scale(1.16) translateY(1%)', transformOrigin: 'center' },
+    formTitle: { fontSize: '23px', fontWeight: '800', color: COLORS.textPrimary, marginBottom: '5px', fontFamily: FF, letterSpacing: '-0.5px' },
+    formSub: { fontSize: '11px', fontWeight: '700', color: COLORS.textMuted, fontFamily: FF, textTransform: 'uppercase', letterSpacing: '0.09em' },
 
     // Form
-    field: { marginBottom: '18px' },
-    label: { display: 'block', fontSize: '11px', fontWeight: '700', color: '#C45E10', marginBottom: '7px', textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: FF },
-    input: { width: '100%', boxSizing: 'border-box', padding: '13px 15px', borderRadius: 12, border: '1.5px solid #FFE4CC', fontSize: '14px', color: '#0F172A', backgroundColor: '#FFFBF7', outline: 'none', fontFamily: FF },
-    pwWrap: { display: 'flex', alignItems: 'center', border: '1.5px solid #FFE4CC', borderRadius: 12, backgroundColor: '#FFFBF7', overflow: 'hidden' },
-    pwInput: { flex: 1, padding: '13px 15px', border: 'none', fontSize: '14px', color: '#0F172A', backgroundColor: 'transparent', outline: 'none', fontFamily: FF },
-    eyeBtn: { padding: '0 14px', background: 'none', border: 'none', cursor: 'pointer', color: '#94A3B8', display: 'flex', alignItems: 'center' },
+    field: { marginBottom: '16px' },
+    label: { display: 'block', fontSize: '10.5px', fontWeight: '700', color: COLORS.textMuted, marginBottom: '7px', textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: FF },
+    input: { width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: RADIUS.md, border: `1.5px solid ${COLORS.border}`, fontSize: '14px', color: COLORS.textPrimary, backgroundColor: COLORS.bgMuted, outline: 'none', fontFamily: FF },
+    pwWrap: { display: 'flex', alignItems: 'center', border: `1.5px solid ${COLORS.border}`, borderRadius: RADIUS.md, backgroundColor: COLORS.bgMuted, overflow: 'hidden' },
+    pwInput: { flex: 1, padding: '12px 14px', border: 'none', fontSize: '14px', color: COLORS.textPrimary, backgroundColor: 'transparent', outline: 'none', fontFamily: FF },
+    eyeBtn: { padding: '0 14px', minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', color: COLORS.textMuted, display: 'flex', alignItems: 'center' },
 
     // Error
-    errorBox: { display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 12, padding: '10px 14px', marginBottom: '16px' },
+    errorBox: { display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: RADIUS.md, padding: '10px 14px', marginBottom: '16px' },
     errorDot: { width: '6px', height: '6px', borderRadius: 8, backgroundColor: '#FB7185', flexShrink: 0 },
     errorText: { fontSize: '13px', color: '#BE123C', fontFamily: FF },
 
     // Submit — orange primary
-    submitBtn: { width: '100%', padding: '14px', background: 'linear-gradient(135deg, #F47920 0%, #E8641C 100%)', color: '#fff', fontSize: '15px', fontWeight: '700', border: 'none', borderRadius: 12, cursor: 'pointer', marginBottom: '20px', fontFamily: FF, boxShadow: '0 8px 20px rgba(196,94,16,0.28)' },
+    submitBtn: { width: '100%', minHeight: 46, padding: '13px', background: COLORS.primary, color: '#fff', fontSize: '15px', fontWeight: '700', border: 'none', borderRadius: RADIUS.md, cursor: 'pointer', marginTop: 4, marginBottom: '18px', fontFamily: FF, boxShadow: '0 6px 16px rgba(196,94,16,0.24)' },
     loadingRow: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' },
     spinner: { width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' },
 
-    // Notice — violet secondary accent
-    notice: { display: 'flex', gap: '10px', backgroundColor: '#F3E5F5', border: '1px solid #E1BEE7', borderRadius: 12, padding: '12px 14px', marginBottom: '22px' },
-    noticeIcon: { fontSize: '14px', flexShrink: 0 },
-    noticeText: { fontSize: '12.5px', color: '#7B2D8B', lineHeight: '1.6', fontFamily: FF },
-    footerText: { textAlign: 'center', fontSize: '11px', color: '#CBD5E1', fontFamily: FF },
+    // Notice — neutral panel with a violet accent, matching the dashboard's insets
+    notice: { display: 'flex', gap: '9px', alignItems: 'flex-start', backgroundColor: COLORS.bgMuted, border: `1px solid ${COLORS.border}`, borderLeft: `3px solid ${COLORS.secondary}`, borderRadius: RADIUS.sm, padding: '11px 13px', marginBottom: '18px' },
+    noticeText: { fontSize: '12.5px', color: COLORS.textSecondary, lineHeight: '1.6', fontFamily: FF },
+    footerText: { textAlign: 'center', fontSize: '10.5px', color: COLORS.textMuted, fontFamily: FF },
 };
 
 // Spinner keyframes

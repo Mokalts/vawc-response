@@ -17,13 +17,15 @@ if (!document.getElementById('vawc-sos-css')) {
         .sos-btn { transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease; }
         .sos-btn:hover  { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 12px 26px rgba(185,28,28,0.32); }
         .sos-btn:active { transform: scale(0.98); }
-        .sos-card { transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
-        .sos-card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(244,121,32,0.18); border-color: #FFCC99; }
-        .sos-card:active { transform: scale(0.98); }
-        .sos-call:hover { filter: brightness(1.08); }
+        /* Rows separate by whitespace; hover is a background wash, not a border. */
+        .sos-row { transition: background 0.18s ease; }
+        .sos-row:hover { background: var(--surface-alt); }
+        .sos-row:active { background: var(--surface-tint); }
+        .sos-row:hover .sos-call, .sos-row:focus-visible .sos-call { background: #DC2626; border-color: #DC2626; color: #fff; }
         .sos-overlay { animation: sosFadeIn 0.18s ease; }
         .sos-modal   { animation: sosSlideUp 0.22s ease; }
-        .sos-close:hover { filter: brightness(0.96); }
+        .sos-close { transition: background 0.15s ease; }
+        .sos-close:hover { background: var(--surface-alt); }
     `;
     document.head.appendChild(s);
 }
@@ -32,7 +34,7 @@ if (!document.getElementById('vawc-sos-css')) {
 // Each hotline gets its own glyph. A single generic phone icon repeated down the
 // list tells the reader nothing and makes the rows blur together.
 const IcoSOS    = ({ size = 22, c = '#fff' }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M12 8v5M12 16h.01" stroke={c} strokeWidth="2.4" strokeLinecap="round" /></svg>);
-const IcoX      = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#F47920" strokeWidth="2" strokeLinecap="round" /></svg>);
+const IcoX      = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" style={{ stroke: 'var(--text-muted)' }} strokeWidth="2" strokeLinecap="round" /></svg>);
 const IcoPhone  = ({ c = '#fff', size = 14 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 // Police: badge shield with a star
 const IcoBadge  = ({ c }) => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M12 21.5s7-3.4 7-8.6V5.6L12 2.5 5 5.6v7.3c0 5.2 7 8.6 7 8.6z" stroke={c} strokeWidth="1.8" strokeLinejoin="round" /><path d="M12 8.2l1.3 2.7 3 .4-2.2 2.1.5 3-2.6-1.4-2.6 1.4.5-3-2.2-2.1 3-.4L12 8.2z" stroke={c} strokeWidth="1.5" strokeLinejoin="round" /></svg>);
@@ -45,19 +47,15 @@ const IcoFlask  = ({ c }) => (<svg width="19" height="19" viewBox="0 0 24 24" fi
 
 // ─── Hotlines (edit values for production) ──────────────────────────────────
 const HOTLINES = [
-    { label: 'PNP Emergency',                    dial: '911',           display: '911',           desc: 'Police response for Iba, Zambales and nationwide.',        icon: IcoBadge, tone: 'urgent',  priority: true },
-    { label: 'Barangay Palanginan VAWC Desk',    dial: '+639286673772', display: '0928 667 3772', desc: 'Ms. Maria Theresa M. De Leon, Admin Assistant.',           icon: IcoDesk,  tone: 'primary', priority: true },
-    { label: 'DSWD Hotline',                     dial: '1343',          display: '1343',          desc: 'Open 24/7 for violence and trafficking cases.',            icon: IcoCare,  tone: 'care' },
-    { label: 'Test Number',                      dial: '+639085267335', display: '0908 526 7335', desc: 'System testing only. This is not an official hotline.',    icon: IcoFlask, tone: 'muted',   test: true },
+    { label: 'PNP Emergency',                 dial: '911',           display: '911',           desc: 'Police response for Iba, Zambales and nationwide.',     icon: IcoBadge, critical: true },
+    { label: 'Barangay Palanginan VAWC Desk', dial: '+639286673772', display: '0928 667 3772', desc: 'Ms. Maria Theresa M. De Leon, Admin Assistant.',        icon: IcoDesk },
+    { label: 'DSWD Hotline',                  dial: '1343',          display: '1343',          desc: 'Open 24/7 for violence and trafficking cases.',         icon: IcoCare },
+    { label: 'Test Number',                   dial: '+639085267335', display: '0908 526 7335', desc: 'System testing only. This is not an official hotline.', icon: IcoFlask, test: true },
 ];
 
-// Per-row accent so the list has rhythm instead of four identical orange tiles.
-const TONES = {
-    urgent:  { fg: '#B91C1C', tint: 'rgba(220,38,38,0.10)' },
-    primary: { fg: '#C45E10', tint: 'var(--surface-tint)' },
-    care:    { fg: '#047857', tint: 'rgba(4,120,87,0.10)' },
-    muted:   { fg: 'var(--text-muted)', tint: 'var(--surface-alt)' },
-};
+// One accent for the whole panel. Reserved for the call actions and the 911
+// number, so the eye lands on what to do rather than on four competing colours.
+const ACCENT = '#DC2626';
 
 // ─── Component ──────────────────────────────────────────────────────────────
 function SOSButton({ variant = 'block' }) {
@@ -130,7 +128,7 @@ function SOSButton({ variant = 'block' }) {
                         <div style={S.modalHeader}>
                             <div>
                                 <p id="sos-title" style={S.modalTitle}>Emergency Hotlines</p>
-                                <p style={S.modalSub}>Tap any number to call immediately</p>
+                                <p style={S.modalSub}>Tap any number to call</p>
                             </div>
                             <button type="button" className="sos-close" style={S.closeBtn} onClick={() => setOpen(false)} aria-label="Close">
                                 <IcoX />
@@ -139,26 +137,23 @@ function SOSButton({ variant = 'block' }) {
 
                         <div style={S.list}>
                             {HOTLINES.map(h => {
-                                const tone = TONES[h.tone] || TONES.primary;
-                                const Ico  = h.icon;
+                                const Ico = h.icon;
                                 return (
                                     <a
                                         key={h.dial}
                                         href={`tel:${h.dial}`}
-                                        className="sos-card"
-                                        style={{ ...S.card, ...(h.test ? S.cardTest : {}), ...(h.priority ? { borderColor: '#FFCC99' } : {}) }}
+                                        className="sos-row"
+                                        style={{ ...S.row, ...(h.test ? { opacity: 0.62 } : {}) }}
                                         aria-label={`Call ${h.label} at ${h.display}`}
                                     >
-                                        <span style={{ ...S.cardIcon, background: tone.tint }} aria-hidden="true">
-                                            <Ico c={tone.fg} />
-                                        </span>
+                                        <span style={S.rowIcon} aria-hidden="true"><Ico c="var(--text-body)" /></span>
                                         <span style={{ minWidth: 0, flex: 1 }}>
-                                            <span style={S.cardNumber}>{h.display}</span>
-                                            <span style={S.cardLabel}>{h.label}</span>
-                                            <span style={S.cardDesc}>{h.desc}</span>
+                                            <span style={{ ...S.rowNumber, ...(h.critical ? { color: ACCENT } : {}) }}>{h.display}</span>
+                                            <span style={S.rowLabel}>{h.label}</span>
+                                            <span style={S.rowDesc}>{h.desc}</span>
                                         </span>
-                                        <span className="sos-call" style={{ ...S.callBtn, background: tone.fg }} aria-hidden="true">
-                                            <IcoPhone size={13} /> Call
+                                        <span className="sos-call" style={S.callBtn} aria-hidden="true">
+                                            <IcoPhone size={12.5} c="currentColor" /> Call
                                         </span>
                                     </a>
                                 );
@@ -166,7 +161,7 @@ function SOSButton({ variant = 'block' }) {
                         </div>
 
                         <p style={S.footnote}>
-                            In immediate danger, call <strong style={{ color: '#B91C1C' }}>911</strong> first and stay on the line until help arrives.
+                            In immediate danger, call <strong style={{ color: ACCENT, fontWeight: 700 }}>911</strong> first and stay on the line until help arrives.
                         </p>
                     </div>
                 </div>,
@@ -210,40 +205,51 @@ const S = {
         padding: '20px 14px', backdropFilter: 'blur(4px)',
     },
     modal: {
-        background: 'var(--surface)', borderRadius: 24,
-        width: '100%', maxWidth: 460, maxHeight: '88vh', overflowY: 'auto',
-        padding: '24px 20px 22px',
+        background: 'var(--surface)', borderRadius: 20,
+        width: '100%', maxWidth: 440, maxHeight: '88vh', overflowY: 'auto',
+        padding: '26px 22px 22px',
         boxShadow: 'var(--card-shadow-strong)',
         border: '1px solid var(--border)',
     },
-    modalHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 16 },
-    modalTitle:  { margin: 0, fontSize: 19, fontWeight: 700, color: 'var(--accent-text)', fontFamily: "'Lexend', sans-serif" },
-    modalSub:    { margin: '3px 0 0', fontSize: 12.5, color: 'var(--text-muted)', fontFamily: "'Lexend', sans-serif" },
-    closeBtn:    { width: 44, height: 44, borderRadius: 10, background: 'var(--surface-tint)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 },
+    modalHeader: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 22 },
+    modalTitle:  { margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: '-0.3px', color: 'var(--text)', fontFamily: "'Lexend', sans-serif" },
+    modalSub:    { margin: '4px 0 0', fontSize: 12.5, fontWeight: 400, color: 'var(--text-muted)', fontFamily: "'Lexend', sans-serif" },
+    // Borderless close: the X is enough, a boxed button competes with the rows.
+    closeBtn:    { width: 40, height: 40, borderRadius: '50%', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, marginRight: -6, marginTop: -4 },
 
-    // ── Hotline cards
-    list: { display: 'flex', flexDirection: 'column', gap: 9, marginBottom: 14 },
-    card: {
-        display: 'flex', alignItems: 'center', gap: 13,
-        padding: '13px 14px', background: 'var(--surface)',
-        border: '1.5px solid var(--border)', borderRadius: 14,
+    // ── Hotline rows
+    // No per-item borders. Four outlined boxes inside an outlined modal is
+    // nested chrome; the separation comes from space and a hover wash instead.
+    list: { display: 'flex', flexDirection: 'column', marginBottom: 20 },
+    row: {
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '15px 10px', margin: '0 -6px', borderRadius: 12,
+        background: 'transparent', border: 'none',
         textDecoration: 'none', cursor: 'pointer',
     },
-    cardTest:  { borderStyle: 'dashed', borderColor: 'var(--border-soft)', background: 'transparent' },
-    cardIcon:  { width: 40, height: 40, borderRadius: 12, flexShrink: 0, alignSelf: 'flex-start', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-    // The number leads: it is the thing being acted on.
-    cardNumber: { display: 'block', fontSize: 16, fontWeight: 800, color: 'var(--text)', letterSpacing: '0.3px', lineHeight: 1.2, fontVariantNumeric: 'tabular-nums', fontFamily: "'Lexend', sans-serif" },
-    cardLabel:  { display: 'block', margin: '2px 0 0', fontSize: 12.5, fontWeight: 600, color: 'var(--text-body)', lineHeight: 1.35, fontFamily: "'Lexend', sans-serif", overflowWrap: 'break-word' },
-    cardDesc:   { display: 'block', margin: '3px 0 0', fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.45, fontFamily: "'Lexend', sans-serif" },
+    // Soft monochrome disc: uniform across every row so the glyph reads as an
+    // identifier, not as a second colour signal.
+    rowIcon: {
+        width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
+        background: 'var(--surface-alt)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+    },
+    // The number carries the hierarchy; everything else recedes. It is sized
+    // with clamp and never wraps: a phone number broken across two lines is
+    // harder to read than a smaller one that stays intact.
+    rowNumber: { display: 'block', fontSize: 'clamp(17px, 5.2vw, 21px)', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.2px', lineHeight: 1.15, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', fontFamily: "'Lexend', sans-serif" },
+    rowLabel:  { display: 'block', margin: '3px 0 0', fontSize: 12.5, fontWeight: 500, color: 'var(--text-body)', lineHeight: 1.35, fontFamily: "'Lexend', sans-serif", overflowWrap: 'break-word' },
+    rowDesc:   { display: 'block', margin: '2px 0 0', fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', lineHeight: 1.45, fontFamily: "'Lexend', sans-serif" },
     callBtn: {
-        minHeight: 34, padding: '0 13px', borderRadius: 9999,
-        color: '#fff', fontSize: 12, fontWeight: 700, letterSpacing: '0.02em',
+        minHeight: 36, padding: '0 13px', borderRadius: 9999,
+        background: 'transparent', border: `1.5px solid ${ACCENT}40`,
+        color: ACCENT, fontSize: 12.5, fontWeight: 700, letterSpacing: '0.01em',
         display: 'inline-flex', alignItems: 'center', gap: 6,
         flexShrink: 0, alignSelf: 'center', fontFamily: "'Lexend', sans-serif",
-        transition: 'transform 0.15s ease, filter 0.15s ease',
+        transition: 'background 0.18s ease, border-color 0.18s ease, color 0.18s ease',
     },
 
-    footnote: { margin: 0, fontSize: 11.5, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.5, fontFamily: "'Lexend', sans-serif" },
+    footnote: { margin: 0, fontSize: 11.5, color: 'var(--text-muted)', textAlign: 'center', lineHeight: 1.55, fontFamily: "'Lexend', sans-serif" },
 };
 
 export default SOSButton;
