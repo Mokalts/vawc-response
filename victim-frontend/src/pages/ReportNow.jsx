@@ -98,6 +98,7 @@ function ReportNow() {
     const [children,      setChildren]      = useState(draft0.children || []);
     const [photoErr,      setPhotoErr]      = useState('');
     const [draftSaved,    setDraftSaved]    = useState(false);
+    const [waking,        setWaking]        = useState(false);
 
     const canNext1 = statement.trim().length >= MIN_CHARS && offenderName.trim().length >= 2 && incidentDate !== '' && relationship !== '' && abuseTypes.length > 0;
     const toggleAbuse = (id) => setAbuseTypes(a => a.includes(id) ? a.filter(x => x !== id) : [...a, id]);
@@ -169,17 +170,34 @@ function ReportNow() {
         return false;
     };
 
+    // Retry on cold-start. Render's free tier sleeps after ~15 min idle, so the
+    // first request can fail at the network level. A network error (no
+    // err.response) is not a real rejection, so wait and retry before giving up.
+    const withRetry = async (fn, attempts = 3) => {
+        for (let i = 0; i < attempts; i++) {
+            try { return await fn(); }
+            catch (err) {
+                if (err.response) throw err;        // real server answer - don't retry
+                if (i === attempts - 1) throw err;  // out of retries
+                setWaking(true);
+                await new Promise(r => setTimeout(r, 3000));
+            }
+        }
+    };
+
     const doSubmit = async (isForceNew = false) => {
         if (!statement.trim()) { setSubmitErr('Please write your statement before submitting.'); return; }
-        setLoading(true); setSubmitErr('');
+        setLoading(true); setSubmitErr(''); setWaking(false);
         try {
             const photoUrls = [];
             for (const file of imageFiles) {
-                const fd = new FormData(); fd.append("file", file);
-                const res = await api.post("/upload/image", fd, { headers:{ "Content-Type":"multipart/form-data" } });
+                const res = await withRetry(() => {
+                    const fd = new FormData(); fd.append("file", file);
+                    return api.post("/upload/image", fd, { headers:{ "Content-Type":"multipart/form-data" }, timeout: 60000 });
+                });
                 photoUrls.push(res.data.url);
             }
-            await api.post("/cases/", {
+            await withRetry(() => api.post("/cases/", {
                 statement,
                 offender_name: offenderName.trim(),
                 incident_date: incidentDate || null,
@@ -192,13 +210,18 @@ function ReportNow() {
                 longitude:     location?.lng  || null,
                 address:       address || null,
                 force_new:     isForceNew,
-            });
+            }, { timeout: 60000 }));
             clearDraft();
             setSuccess(true);
         } catch (err) {
-            setSubmitErr(err.response?.data?.detail || "Failed to submit report. Please try again.");
+            if (!err.response) {
+                setSubmitErr("Cannot reach the server right now. Your report was NOT sent, but your draft is saved. Please wait a moment and tap Submit again.");
+            } else {
+                const raw = err.response?.data?.detail;
+                setSubmitErr(Array.isArray(raw) ? raw.map(e => e.msg).join(', ') : (raw || "Failed to submit report. Please try again."));
+            }
         } finally {
-            setLoading(false);
+            setLoading(false); setWaking(false);
         }
     };
 
@@ -638,7 +661,7 @@ function ReportNow() {
                         <button className="vrn-btn-hover"
                             style={{ ...S.submitBtn, display:'flex', alignItems:'center', justifyContent:'center', gap:9, opacity: loading?0.75:1 }}
                             onClick={handleSubmit} disabled={loading}>
-                            {loading ? <><Spinner /><span>Submitting…</span></> : 'Submit Report'}
+                            {loading ? <><Spinner /><span>{waking ? 'Waking up server…' : 'Submitting…'}</span></> : 'Submit Report'}
                         </button>
                     )}
                 </div>

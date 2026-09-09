@@ -9,13 +9,13 @@ import api from '../api';
 
 // First-time walkthrough steps (Tagalog)
 const TOUR_STEPS = [
-    { title: 'Maligayang pagdating! 👋', text: 'Ipapakita namin ang mga pangunahing bahagi ng app. Mabilis lang ito.' },
+    { title: 'Maligayang pagdating!', text: 'Ipapakita namin ang mga pangunahing bahagi ng app. Mabilis lang ito.' },
     { target: '[data-tour="report"]',    title: 'Mag-report ng insidente', text: 'Pindutin ito para magsumite ng report. Ligtas at kumpidensyal ang lahat ng iyong impormasyon.' },
     { target: '[data-tour="sos"]',       title: 'Emergency SOS',            text: 'Kung may agarang panganib, dito ka tumawag sa mga hotline. Gumagana ito kahit hindi naka-log in.' },
     { target: '[data-tour="notif"]',     title: 'Mga Abiso',                text: 'Dito lalabas ang mga update at mensahe mula sa barangay VAWC office.' },
     { target: '[data-tour="myreports"]', title: 'Subaybayan ang Kaso',      text: 'Tingnan ang status ng iyong report at mga mensahe mula sa barangay dito.' },
     { target: '[data-tour="menu"]',      title: 'Menu',                     text: 'Dito matatagpuan ang iyong profile, ang gabay, at iba pang settings.' },
-    { title: 'Handa ka na! 🎉', text: 'Pwede mong ulitin ang gabay na ito anumang oras sa Menu → Paano Gamitin. Salamat!' },
+    { title: 'Handa ka na!', text: 'Pwede mong ulitin ang gabay na ito anumang oras sa Menu → Paano Gamitin. Salamat!' },
 ];
 
 // ─── Font + CSS ───────────────────────────────────────────────────────────────

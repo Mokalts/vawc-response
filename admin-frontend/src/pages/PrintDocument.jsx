@@ -10,312 +10,414 @@ const BARANGAY = {
     logo: "/barangay-logo.png",
 };
 
-// ─── CSS - print-aware ──────────────────────────────────────────────────────
+// ─── CSS — mirrors the barangay's paper forms ───────────────────────────────
 const CSS = `
-    @import url('https://fonts.googleapis.com/css2?family=Times:wght@400;700&display=swap');
-    @page { size: A4; margin: 0.75in; }
+    @page { size: A4; margin: 0.6in 0.7in; }
 
     .pd-wrap { background: #E2E8F0; min-height: 100vh; padding: 24px 16px 60px; font-family: 'Lexend', sans-serif; }
     .pd-toolbar { max-width: 8.27in; margin: 0 auto 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-    .pd-toolbar h1 { margin: 0; font-size: 18px; font-weight: 700; color: #0F172A; font-family: 'Lexend', sans-serif; }
-    .pd-toolbar p  { margin: 2px 0 0; font-size: 12.5px; color: #475569; font-family: 'Lexend', sans-serif; }
-    .pd-btn { padding: 10px 18px; border-radius: 8px; border: none; background: #F47920; color: #fff; font-size: 13.5px; font-weight: 700; cursor: pointer; font-family: 'Lexend', sans-serif; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(244,121,32,0.3); }
+    .pd-toolbar h1 { margin: 0; font-size: 18px; font-weight: 700; color: #0F172A; }
+    .pd-toolbar p  { margin: 2px 0 0; font-size: 12.5px; color: #475569; }
+    .pd-btn { padding: 10px 18px; border-radius: 8px; border: none; background: #F47920; color: #fff; font-size: 13.5px; font-weight: 700; cursor: pointer; font-family: 'Lexend', sans-serif; display: inline-flex; align-items: center; gap: 8px; }
     .pd-btn:hover { background: #C45E10; }
     .pd-btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .pd-btn-ghost { padding: 10px 16px; border-radius: 8px; border: 1.5px solid #CBD5E1; background: #fff; color: #475569; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Lexend', sans-serif; }
     .pd-banner { max-width: 8.27in; margin: 0 auto 16px; background: #FFF3E0; border: 1.5px solid #FFCC99; border-radius: 8px; padding: 12px 16px; font-size: 12.5px; color: #C45E10; font-family: 'Lexend', sans-serif; }
 
-    .pd-paper { background: #fff; max-width: 8.27in; min-height: 11.69in; margin: 0 auto; padding: 0.75in 0.85in; box-shadow: 0 4px 20px rgba(15,23,42,0.12); font-family: 'Times New Roman', Times, serif; color: #000; font-size: 13px; line-height: 1.55; }
+    /* One sheet of paper */
+    .pd-paper {
+        background: #fff; max-width: 8.27in; min-height: 11.2in; margin: 0 auto 22px;
+        padding: 0.6in 0.7in; box-shadow: 0 4px 20px rgba(15,23,42,0.12);
+        font-family: Arial, Helvetica, sans-serif; color: #000; font-size: 12.5px; line-height: 1.45;
+        box-sizing: border-box;
+    }
+    .pd-page-break { break-after: page; page-break-after: always; }
 
-    .pd-header { display: grid; grid-template-columns: 100px 1fr 100px; align-items: center; margin-bottom: 20px; }
-    .pd-header img { width: 90px; height: 90px; object-fit: contain; }
-    .pd-header .pd-title { text-align: center; }
-    .pd-header .pd-title p { margin: 0; font-family: 'Times New Roman', Times, serif; font-size: 13px; }
-    .pd-header .pd-title .pd-brgy { font-weight: 700; font-size: 14px; margin-top: 2px; }
-    .pd-header .pd-title .pd-office { margin-top: 8px; font-weight: 700; font-size: 13px; }
+    /* Header block — matches the paper exactly */
+    .pd-head { display: grid; grid-template-columns: 78px 1fr 78px; align-items: center; margin-bottom: 12px; }
+    .pd-head img { width: 74px; height: 74px; object-fit: contain; }
+    .pd-head-txt { text-align: center; line-height: 1.35; }
+    .pd-head-txt p { margin: 0; font-size: 12.5px; }
+    .pd-head-txt .brgy { font-weight: 700; }
+    .pd-office { text-align: center; font-weight: 700; font-size: 13px; margin: 10px 0 4px; }
+    .pd-formtitle { text-align: center; font-weight: 700; font-size: 13px; margin: 10px 0 14px; }
 
-    .pd-doctitle { text-align: center; font-weight: 700; font-size: 15px; letter-spacing: 0.06em; margin: 14px 0 18px; text-decoration: underline; }
-    .pd-case-no { text-align: right; margin: 0 0 14px; font-size: 13px; }
-    .pd-para { margin: 0 0 12px; text-align: justify; }
-    .pd-para.indent { text-indent: 2em; }
-    .pd-block { margin-bottom: 12px; }
-    .pd-label { font-style: italic; font-size: 12px; }
-    .pd-warn { font-weight: 700; }
-    .pd-row { display: flex; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; align-items: baseline; }
-    .pd-fieldlabel { font-weight: 700; }
+    /* Fill-in fields */
+    .fill { border: none; border-bottom: 1px solid #000; background: transparent; font-family: inherit; font-size: 12.5px; padding: 0 3px; outline: none; }
+    .fill:focus { background: #FFF3E0; }
+    .fill.b { font-weight: 700; }
+    .fill.c { text-align: center; }
+    .ta { width: 100%; box-sizing: border-box; border: none; background: transparent; font-family: inherit; font-size: 12.5px; line-height: 1.9; outline: none; resize: vertical;
+          background-image: repeating-linear-gradient(transparent, transparent 27px, #000 27px, #000 28px); }
+    .ta:focus { background-color: #FFF9F0; }
+    .cap { font-size: 11px; text-align: center; display: block; }
 
-    .pd-input { border: none; border-bottom: 1px solid #000; background: transparent; padding: 0 4px; font-family: 'Times New Roman', Times, serif; font-size: 13px; outline: none; min-width: 60px; }
-    .pd-input.b { font-weight: 700; }
-    .pd-input.grow { min-width: 180px; flex: 1; }
-    .pd-input:focus { background: #FFF3E0; }
-    .pd-ta { width: 100%; box-sizing: border-box; border: 1px solid #999; background: transparent; padding: 6px 8px; font-family: 'Times New Roman', Times, serif; font-size: 13px; outline: none; resize: vertical; min-height: 90px; }
-    .pd-ta:focus { background: #FFF3E0; }
-    .pd-name { font-weight: 700; text-decoration: underline; }
-    .pd-edit { border: none; border-bottom: 1px dashed #B0B0B0; background: transparent; font-family: inherit; font-size: inherit; font-weight: 700; text-align: center; outline: none; min-width: 180px; }
-    .pd-edit:focus { background: #FFF3E0; }
-    .pd-year { width: 3.6em; min-width: 0; text-align: center; }
+    .row { margin-bottom: 7px; }
+    .lbl { font-weight: 400; }
+    .b { font-weight: 700; }
 
-    .pd-check { list-style: none; padding: 0; margin: 8px 0 14px; }
-    .pd-check li { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; }
-    .pd-box { width: 13px; height: 13px; border: 1.5px solid #000; flex-shrink: 0; margin-top: 3px; display: inline-block; text-align: center; line-height: 11px; font-weight: 700; font-size: 12px; }
+    /* ( ) checkbox exactly like the form */
+    .cb { cursor: pointer; user-select: none; font-family: inherit; }
+    .cbx { display: inline-block; min-width: 20px; }
 
-    .pd-tbl { width: 100%; border-collapse: collapse; margin: 8px 0 14px; }
-    .pd-tbl th, .pd-tbl td { border: 1px solid #000; padding: 4px 6px; font-size: 12px; }
-    .pd-tbl th { font-weight: 700; text-align: center; }
+    .sig-line { border-top: 1px solid #000; width: 260px; margin-top: 2px; }
+    .center { text-align: center; }
+    .right { text-align: right; }
+    .mt24 { margin-top: 24px; } .mt16 { margin-top: 16px; } .mt40 { margin-top: 40px; }
 
-    .pd-signs { display: flex; justify-content: space-between; gap: 40px; margin-top: 44px; }
-    .pd-sign { flex: 1; text-align: center; }
-    .pd-sign .pd-sname { font-weight: 700; text-decoration: underline; }
-    .pd-sign .pd-stitle { font-style: italic; font-size: 12px; }
-    .pd-sign-label { font-style: italic; font-size: 12px; text-align: left; margin-bottom: 26px; }
-
-    .pd-ack { margin-top: 42px; border-top: 1px dashed #999; padding-top: 12px; }
-    .pd-ack h4 { margin: 0 0 12px; font-size: 12.5px; }
-    .pd-ackrow { display: flex; gap: 30px; flex-wrap: wrap; }
+    .tbl3 { width: 100%; border-collapse: collapse; margin: 4px 0 10px; }
+    .tbl3 td { padding: 2px 4px; }
+    .tbl3 .u { border-bottom: 1px solid #000; }
 
     @media print {
-        @page { size: A4; margin: 0; }
+        @page { size: A4; margin: 0.6in 0.7in; }
         html, body { background: #fff !important; margin: 0 !important; }
         .pd-wrap { background: #fff !important; padding: 0 !important; }
-        .pd-toolbar, .pd-banner { display: none !important; }
-        .pd-paper { box-shadow: none !important; margin: 0 !important; padding: 0.7in 0.8in !important; max-width: none !important; min-height: 0 !important; }
-        .pd-input, .pd-ta { border-color: #000 !important; background: transparent !important; }
-        .pd-edit { border-bottom: none !important; background: transparent !important; }
-        .pd-ta { border: 1px solid #000 !important; }
+        .pd-toolbar, .pd-banner, .no-print { display: none !important; }
+        .pd-paper { box-shadow: none !important; margin: 0 !important; padding: 0 !important; max-width: none !important; min-height: 0 !important; }
+        .fill, .ta { background: transparent !important; }
+        .ta { background-image: repeating-linear-gradient(transparent, transparent 27px, #000 27px, #000 28px) !important; }
     }
 `;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-const todayParts = () => { const d = new Date(); return { day: d.getDate(), month: monthNames[d.getMonth()], year: d.getFullYear() }; };
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const today = () => { const d = new Date(); return { day: String(d.getDate()), month: MONTHS[d.getMonth()], year: String(d.getFullYear()) }; };
 const fmtDate = (d) => !d ? "" : new Date(d).toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric" });
+const fmtTime = (d) => !d ? "" : new Date(d).toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" });
+const ageFrom = (dob) => !dob ? "" : String(Math.floor((Date.now() - new Date(dob).getTime()) / 31557600000));
 const INCIDENT_LABEL = { physical: "Physical Abuse", sexual: "Sexual Abuse", psychological: "Psychological Abuse", economic: "Economic Abuse", others: "Other" };
 const abuseText = (r) => {
     if (!r) return "";
-    const list = (r.incident_types && r.incident_types.length ? r.incident_types : (r.incident_type ? [r.incident_type] : []));
-    return list.map(t => INCIDENT_LABEL[t] || t).join(", ");
+    const l = (r.incident_types && r.incident_types.length) ? r.incident_types : (r.incident_type ? [r.incident_type] : []);
+    return l.map(t => INCIDENT_LABEL[t] || t).join(", ");
 };
 
-const DocHeader = ({ office }) => (
-    <div className="pd-header">
-        <img src={BARANGAY.logo} alt="Barangay Palanginan Seal" onError={(e) => { e.target.style.display = "none"; }} />
-        <div className="pd-title">
-            <p>Republic of the Philippines</p>
-            <p>{BARANGAY.province}</p>
-            <p>{BARANGAY.municipality}</p>
-            <p className="pd-brgy">{BARANGAY.name}</p>
-            <p className="pd-office">{office}</p>
+const Head = ({ office }) => (
+    <>
+        <div className="pd-head">
+            <img src={BARANGAY.logo} alt="" onError={(e) => { e.target.style.visibility = "hidden"; }} />
+            <div className="pd-head-txt">
+                <p>Republic of the Philippines</p>
+                <p>{BARANGAY.province}</p>
+                <p>{BARANGAY.municipality}</p>
+                <p className="brgy">{BARANGAY.name}</p>
+            </div>
+            <div />
         </div>
-        <div />
-    </div>
+        <p className="pd-office">{office}</p>
+    </>
 );
 
-const Editable = ({ v, on, ph, cls = "" }) => (
-    <input className={`pd-edit ${cls}`} value={v} onChange={e => on(e.target.value)} placeholder={ph} />
+// Inline fill-in blank
+const F = ({ v, on, w = 200, b, c, ph }) => (
+    <input className={`fill${b ? " b" : ""}${c ? " c" : ""}`} style={{ width: w }} value={v || ""} placeholder={ph || ""} onChange={e => on(e.target.value)} />
+);
+// ( ) checkbox that prints as ( ) or (✓)
+const CB = ({ on, checked, children }) => (
+    <span className="cb" onClick={() => on(!checked)}>
+        <span className="cbx">({checked ? "✓" : "  "})</span> {children}
+    </span>
 );
 
-// ─── 1. Blotter Form ──────────────────────────────────────────────────────────
-const BlotterForm = ({ cas, victim, report, F, set }) => (
+// ─── 1. BLOTTER FORM ─────────────────────────────────────────────────────────
+const BlotterForm = ({ f, set }) => (
     <div className="pd-paper">
-        <DocHeader office="OFFICE OF THE SANGGUNIANG BARANGAY" />
-        <p className="pd-doctitle">BARANGAY BLOTTER</p>
-        <p className="pd-case-no">Blotter/Entry No. <Editable v={F.blotterNo} on={v => set({ blotterNo: v })} ph="___" cls="pd-year" style={{}} /> &nbsp; Date: <Editable v={F.blotterDate} on={v => set({ blotterDate: v })} ph="date" /></p>
+        <Head office="OFFICE OF THE SANGGUNIANG BARANGAY" />
+        <p className="pd-formtitle">BLOTTER FORM</p>
 
-        <div className="pd-row"><span className="pd-fieldlabel">Reporter / Complainant:</span> <Editable v={F.complainantName} on={v => set({ complainantName: v })} ph="name" /></div>
-        <div className="pd-row"><span className="pd-fieldlabel">Address:</span> <Editable v={F.complainantAddress} on={v => set({ complainantAddress: v })} ph="address" cls="pd-input grow" /></div>
-        <div className="pd-row"><span className="pd-fieldlabel">Respondent:</span> <Editable v={F.respondentName} on={v => set({ respondentName: v })} ph="name" /></div>
-        <div className="pd-row"><span className="pd-fieldlabel">Date &amp; place of incident:</span> <Editable v={F.incidentWhen} on={v => set({ incidentWhen: v })} ph="date/place" cls="pd-edit" /></div>
-        <div className="pd-row"><span className="pd-fieldlabel">Nature of complaint:</span> <Editable v={F.nature} on={v => set({ nature: v })} ph="e.g. VAWC (RA 9262)" /></div>
+        <div className="row">Blotter Date: <F v={f.blotterDate} on={v => set({ blotterDate: v })} w={200} /></div>
+        <div className="row mt16">Date &amp; Place of Incident: <F v={f.incidentWhen} on={v => set({ incidentWhen: v })} w={420} /></div>
 
-        <p className="pd-fieldlabel" style={{ margin: "12px 0 4px" }}>Salaysay / Description of the incident:</p>
-        <textarea className="pd-ta" value={F.narrative} onChange={e => set({ narrative: e.target.value })} />
+        <div className="row mt16" style={{ marginLeft: 18 }}>
+            <div className="row">A. Name of reporter/complainant: <F v={f.complainantName} on={v => set({ complainantName: v })} w={330} /></div>
+            <div className="row">Address: <F v={f.complainantAddress} on={v => set({ complainantAddress: v })} w={430} /></div>
+            <div className="row">Contact No. <F v={f.complainantContact} on={v => set({ complainantContact: v })} w={200} /> &nbsp; Edad: <F v={f.complainantAge} on={v => set({ complainantAge: v })} w={60} /></div>
+        </div>
 
-        <p className="pd-fieldlabel" style={{ margin: "14px 0 4px" }}>Purpose ng pagpa-Blotter:</p>
-        <ul className="pd-check">
-            {[["p1", "Para maitala / for record purposes"], ["p2", "Para maghain ng reklamo / to file a complaint"], ["p3", "Para humingi ng tulong / to request assistance"]].map(([k, t]) => (
-                <li key={k}><span className="pd-box" onClick={() => set({ [k]: !F[k] })} style={{ cursor: "pointer" }}>{F[k] ? "✓" : ""}</span> {t}</li>
-            ))}
-        </ul>
-        {/* VAWC: the "schedule respondent for settlement" purpose is intentionally NOT offered (RA 9262 prohibits mediation/settlement). */}
+        <div className="row mt16" style={{ marginLeft: 18 }}>
+            <div className="row">B. Name of the respondent: <F v={f.respondentName} on={v => set({ respondentName: v })} w={360} /></div>
+            <div className="row">Address: <F v={f.respondentAddress} on={v => set({ respondentAddress: v })} w={430} /></div>
+            <div className="row">Contact No. <F v={f.respondentContact} on={v => set({ respondentContact: v })} w={200} /> &nbsp; Edad: <F v={f.respondentAge} on={v => set({ respondentAge: v })} w={60} /></div>
+        </div>
 
-        <div className="pd-signs">
-            <div className="pd-sign">
-                <div style={{ height: 30 }} />
-                <p className="pd-sname"><Editable v={F.complainantName} on={v => set({ complainantName: v })} ph="complainant" /></p>
-                <p className="pd-stitle">Signature of Complainant · Date &amp; Time</p>
-            </div>
-            <div className="pd-sign">
-                <div style={{ height: 30 }} />
-                <p className="pd-sname"><Editable v={F.vawcOfficer} on={v => set({ vawcOfficer: v })} ph="VAWC officer" /></p>
-                <p className="pd-stitle">Assisted by (VAWC Officer)</p>
-            </div>
+        <div className="row mt16" style={{ marginLeft: 18 }}>C. Complaint: <F v={f.complaint} on={v => set({ complaint: v })} w={420} /></div>
+
+        <div className="row mt16" style={{ marginLeft: 18 }}>D. Description of Incident:</div>
+        <textarea className="ta" rows={13} value={f.narrative} onChange={e => set({ narrative: e.target.value })} />
+
+        <div className="mt24" style={{ marginLeft: 18 }}>
+            <div className="row">Signature of reporter/complainant: <F v={f.sigName} on={v => set({ sigName: v })} w={330} /></div>
+            <div className="row">Name of reporter/complainant: <F v={f.complainantName} on={v => set({ complainantName: v })} w={340} /></div>
+            <div className="row">Date: <F v={f.sigDate} on={v => set({ sigDate: v })} w={200} /> &nbsp; Time: <F v={f.sigTime} on={v => set({ sigTime: v })} w={140} /></div>
+        </div>
+
+        <div className="mt16">
+            <p style={{ margin: "0 0 4px", fontStyle: "italic" }}>Purpose ng pagpa Blotter:</p>
+            <ol style={{ margin: 0, paddingLeft: 20 }}>
+                <li><CB checked={f.p1} on={v => set({ p1: v })}>Blotter purpose lang, pero hindi ipapatawag ang attention ng respondent(s).</CB></li>
+                <li><CB checked={f.p2} on={v => set({ p2: v })}>Blotter purpose lang, kasi hindi pa identified o hindi pa kilala ang respondent(s).</CB></li>
+                <li><CB checked={f.p3} on={v => set({ p3: v })}>Blotter purpose lang, para maimbistigahan o ma identify o makilala ang respondent(s).</CB></li>
+                {/* Item 4 ("...for settlement") is intentionally NOT rendered for VAWC cases:
+                    RA 9262 / JMC 2010-2 prohibit mediation, conciliation and settlement. */}
+            </ol>
+        </div>
+
+        <div className="mt24" style={{ marginLeft: 18 }}>
+            Assisted by: <F v={f.assistedBy} on={v => set({ assistedBy: v })} w={300} />
+            <div style={{ marginLeft: 90 }}><span className="cap">Tanod On Duty</span></div>
         </div>
     </div>
 );
 
-// ─── 2. Pormal na Reklamo (VAWC complaint form) ────────────────────────────────
-const ReklamoForm = ({ cas, victim, report, F, set }) => (
+// ─── 2. PORMAL NA REKLAMO ────────────────────────────────────────────────────
+const ReklamoForm = ({ f, set }) => (
     <div className="pd-paper">
-        <DocHeader office="BARANGAY VAW DESK" />
-        <p className="pd-doctitle">PORMAL NA REKLAMO<br />LABAN SA PANG-AABUSO SA KABABAIHAN AT SA KANILANG ANAK</p>
-        <p className="pd-case-no">VAWC Case No. <u>{cas.case_number || "____"}</u></p>
+        <Head office="OFFICE OF THE KATARUNGANG PAMBARANGAY" />
+        <p className="pd-formtitle">PORMAL NA REKLAMO LABAN SA PANG-AABUSO SA KABABAIHAN AT<br />SA KANILANG ANAK</p>
 
-        <div className="pd-row"><span className="pd-fieldlabel">Nagrereklamo (Complainant):</span> <Editable v={F.complainantName} on={v => set({ complainantName: v })} ph="name" /></div>
-        <div className="pd-row"><span className="pd-fieldlabel">Tirahan:</span> <Editable v={F.complainantAddress} on={v => set({ complainantAddress: v })} ph="address" cls="pd-input grow" /></div>
-        <p className="pd-para" style={{ margin: "8px 0" }}>-laban kay-</p>
-        <div className="pd-row"><span className="pd-fieldlabel">Inirereklamo (Respondent):</span> <Editable v={F.respondentName} on={v => set({ respondentName: v })} ph="name" /></div>
-        <div className="pd-row"><span className="pd-fieldlabel">Kaugnayan (Relationship):</span> <Editable v={F.relationship} on={v => set({ relationship: v })} ph="e.g. Asawa / Live-in / Kasintahan / Kasambahay" cls="pd-input grow" /></div>
-        <div className="pd-row"><span className="pd-fieldlabel">Uri ng pang-aabuso:</span> <Editable v={F.abuse} on={v => set({ abuse: v })} ph="physical / psychological / …" cls="pd-input grow" /></div>
-
-        <p className="pd-fieldlabel" style={{ margin: "12px 0 4px" }}>Salaysay:</p>
-        <textarea className="pd-ta" value={F.narrative} onChange={e => set({ narrative: e.target.value })} />
-
-        <p className="pd-para" style={{ marginTop: 14 }}>Nilagdaan ngayong ika-<Editable v={F.day} on={v => set({ day: v })} ph="araw" cls="pd-year" /> ng <Editable v={F.month} on={v => set({ month: v })} ph="buwan" />, <input className="pd-input pd-year" value={F.year} onChange={e => set({ year: e.target.value })} />.</p>
-
-        <div className="pd-signs">
-            <div className="pd-sign">
-                <div style={{ height: 30 }} />
-                <p className="pd-sname"><Editable v={F.complainantName} on={v => set({ complainantName: v })} ph="complainant" /></p>
-                <p className="pd-stitle">Lagda ng Nagrereklamo</p>
-            </div>
-            <div className="pd-sign">
-                <div style={{ height: 30 }} />
-                <p className="pd-sname"><Editable v={F.vawcOfficer} on={v => set({ vawcOfficer: v })} ph="VAWC officer" /></p>
-                <p className="pd-stitle">Tinulungan ni (VAWC Officer)</p>
-            </div>
-        </div>
-    </div>
-);
-
-// ─── 3. BPO Application ─────────────────────────────────────────────────────────
-const BpoApplication = ({ cas, victim, report, F, set }) => {
-    const children = cas.children || [];
-    return (
-        <div className="pd-paper">
-            <DocHeader office="BARANGAY VAW DESK" />
-            <p className="pd-doctitle">APPLICATION FOR BARANGAY PROTECTION ORDER</p>
-
-            <div className="pd-row"><span className="pd-fieldlabel">1. Applicant:</span> <Editable v={F.applicantName} on={v => set({ applicantName: v })} ph="applicant" /></div>
-            <div className="pd-row"><span className="pd-fieldlabel">Address / Contact:</span> <Editable v={F.applicantAddress} on={v => set({ applicantAddress: v })} ph="address / contact" cls="pd-input grow" /></div>
-            <div className="pd-row"><span className="pd-fieldlabel">2. Victim:</span> <Editable v={F.complainantName} on={v => set({ complainantName: v })} ph="victim" /></div>
-            <div className="pd-row"><span className="pd-fieldlabel">3. Respondent:</span> <Editable v={F.respondentName} on={v => set({ respondentName: v })} ph="respondent" /></div>
-            <div className="pd-row"><span className="pd-fieldlabel">Relationship to respondent:</span> <Editable v={F.relationship} on={v => set({ relationship: v })} ph="relationship" cls="pd-input grow" /></div>
-
-            <p className="pd-fieldlabel" style={{ margin: "12px 0 4px" }}>4. Children (if any):</p>
-            <table className="pd-tbl">
-                <thead><tr><th>Name</th><th>Date of Birth</th><th>Sex</th><th>Under applicant's care?</th></tr></thead>
-                <tbody>
-                    {children.length ? children.map((c, i) => (
-                        <tr key={i}><td>{c.name || "-"}</td><td>{c.date_of_birth || "-"}</td><td style={{ textAlign: "center" }}>{c.sex || "-"}</td><td style={{ textAlign: "center" }}>{c.under_her_care ? "Yes" : "No"}</td></tr>
-                    )) : <tr><td colSpan={4} style={{ textAlign: "center", fontStyle: "italic" }}>None recorded</td></tr>}
-                </tbody>
-            </table>
-
-            <div className="pd-row"><span className="pd-fieldlabel">5. Acts complained of:</span> <Editable v={F.abuse} on={v => set({ abuse: v })} ph="acts of violence" cls="pd-input grow" /></div>
-            <div className="pd-row"><span className="pd-fieldlabel">6. Date &amp; place of incident:</span> <Editable v={F.incidentWhen} on={v => set({ incidentWhen: v })} ph="date / place" cls="pd-input grow" /></div>
-
-            <p className="pd-fieldlabel" style={{ margin: "12px 0 4px" }}>10. If the applicant is not the victim, state the circumstances / consent:</p>
-            <textarea className="pd-ta" value={F.consent} onChange={e => set({ consent: e.target.value })} style={{ minHeight: 60 }} />
-
-            <div className="pd-signs">
-                <div className="pd-sign">
-                    <div style={{ height: 30 }} />
-                    <p className="pd-sname"><Editable v={F.applicantName} on={v => set({ applicantName: v })} ph="applicant" /></p>
-                    <p className="pd-stitle">Signature of Applicant</p>
-                </div>
-                <div className="pd-sign">
-                    <div style={{ height: 30 }} />
-                    <p className="pd-sname"><Editable v={F.vawcOfficer} on={v => set({ vawcOfficer: v })} ph="VAWC officer" /></p>
-                    <p className="pd-stitle">Assisted by (VAWC Officer)</p>
+        <div style={{ marginLeft: 24 }}>
+            <div className="row">Kasalukuyang Petsa: <F v={f.petsa} on={v => set({ petsa: v })} w={160} /> &nbsp;&nbsp; Kasalukuyang Oras: <F v={f.oras} on={v => set({ oras: v })} w={150} /></div>
+            <div className="row mt16">Pangalan ng Nagrereklamo: <F v={f.complainantName} on={v => set({ complainantName: v })} w={250} /> &nbsp; Edad: <F v={f.complainantAge} on={v => set({ complainantAge: v })} w={80} /></div>
+            <div className="row mt16">Tirahan: <F v={f.complainantAddress} on={v => set({ complainantAddress: v })} w={450} /></div>
+            <div className="row mt16">Pangalan ng Inirereklamo: <F v={f.respondentName} on={v => set({ respondentName: v })} w={250} /> &nbsp; Edad: <F v={f.respondentAge} on={v => set({ respondentAge: v })} w={70} /></div>
+            <div className="row mt16">
+                Relasyon sa Inerereklamo: &nbsp;
+                <CB checked={f.rel_asawa} on={v => set({ rel_asawa: v })}>Asawa(kasal)</CB> &nbsp;&nbsp;
+                <CB checked={f.rel_livein} on={v => set({ rel_livein: v })}>Live-in Partner</CB>
+                <div style={{ marginLeft: 150, marginTop: 4 }}>
+                    <CB checked={f.rel_kasintahan} on={v => set({ rel_kasintahan: v })}>Kasintahan</CB> &nbsp;&nbsp;
+                    <CB checked={f.rel_kasambahay} on={v => set({ rel_kasambahay: v })}>Kasambahay</CB>
                 </div>
             </div>
+            <p className="row mt16 b">SALAYSAY/BUOD NG BUONG PANGYAYARI:</p>
         </div>
+        <textarea className="ta" rows={16} value={f.narrative} onChange={e => set({ narrative: e.target.value })} />
+
+        <div className="mt40" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+            <div>
+                <div className="sig-line" style={{ width: 220 }} />
+                <span className="cap" style={{ width: 220 }}>Lagda ng Nagsasalaysay</span>
+                <div style={{ height: 34 }} />
+                <div className="sig-line" style={{ width: 220 }} />
+                <span className="cap" style={{ width: 220 }}>BSDO/Desk Officer</span>
+            </div>
+            <div style={{ border: "1px solid #000", padding: "8px 10px", minWidth: 150 }}>
+                VAWC Complaint<br />No. <F v={f.vawcNo} on={v => set({ vawcNo: v })} w={80} />
+            </div>
+        </div>
+    </div>
+);
+
+// ─── 3. APPLICATION FOR BARANGAY PROTECTION ORDER ────────────────────────────
+const BpoApplication = ({ f, set, kids }) => {
+    const rows = (list, n) => {
+        const out = [];
+        for (let i = 0; i < n; i++) {
+            const c = list[i];
+            out.push(
+                <tr key={i}>
+                    <td className="u" style={{ width: "45%" }}>{c ? c.name : " "}</td>
+                    <td className="u" style={{ width: "30%" }}>{c ? (c.date_of_birth || "") : " "}</td>
+                    <td className="u" style={{ width: "25%" }}>{c ? (c.sex || "") : " "}</td>
+                </tr>
+            );
+        }
+        return out;
+    };
+    const own = (kids || []).filter(c => !c.under_her_care);
+    const under = (kids || []).filter(c => c.under_her_care);
+    const CS = ({ pfx }) => (
+        <>
+            CIVIL STATUS: <CB checked={f[pfx + "_single"]} on={v => set({ [pfx + "_single"]: v })}>Single</CB> &nbsp;
+            <CB checked={f[pfx + "_married"]} on={v => set({ [pfx + "_married"]: v })}>Married</CB> &nbsp;
+            <CB checked={f[pfx + "_widow"]} on={v => set({ [pfx + "_widow"]: v })}>Widow</CB> &nbsp;
+            <CB checked={f[pfx + "_separated"]} on={v => set({ [pfx + "_separated"]: v })}>Separated</CB> &nbsp;
+            <CB checked={f[pfx + "_legally"]} on={v => set({ [pfx + "_legally"]: v })}>Legally Separated</CB>
+        </>
     );
-};
-
-// ─── 4. Barangay Protection Order ─────────────────────────────────────────────
-const BpoOrder = ({ cas, victim, report, F, set, bpo }) => {
-    const reliefs = [];
-    if (bpo?.relief_stop_physical_harm) reliefs.push("(a) prohibiting the respondent from causing physical harm to the victim;");
-    if (bpo?.relief_stop_threats) reliefs.push("(b) prohibiting the respondent from threatening to cause the victim physical harm;");
-    if (bpo?.relief_stay_away_100m) reliefs.push("(c) ordering the respondent to stay away from the victim at a distance of at least 100 meters.");
     return (
         <div className="pd-paper">
-            <DocHeader office="OFFICE OF THE PUNONG BARANGAY" />
-            <p className="pd-doctitle">BARANGAY PROTECTION ORDER</p>
-            <p className="pd-case-no">BPO No. <u>{bpo?.bpo_number || "____"}</u>{bpo?.control_number ? <> · Control No. <u>{bpo.control_number}</u></> : null}</p>
+            <Head office="" />
+            <p className="right" style={{ margin: "-14px 0 6px" }}>Control No. <F v={f.controlNo} on={v => set({ controlNo: v })} w={170} /></p>
+            <p className="pd-formtitle" style={{ marginTop: 0 }}>APPLICATION FOR BARANGAY PROTECTION ORDER</p>
 
-            <div className="pd-row"><span className="pd-fieldlabel">Petitioner / Victim:</span> <Editable v={F.complainantName} on={v => set({ complainantName: v })} ph="victim" /></div>
-            <div className="pd-row"><span className="pd-fieldlabel">Respondent:</span> <Editable v={F.respondentName} on={v => set({ respondentName: v })} ph="respondent" /></div>
+            <ol style={{ margin: 0, paddingLeft: 22 }}>
+                <li className="row">
+                    NAME OF APPLICANT: <F v={f.applicantName} on={v => set({ applicantName: v })} w={250} /> Age: <F v={f.applicantAge} on={v => set({ applicantAge: v })} w={90} />
+                    <div className="row">ADDRESS: <F v={f.applicantAddress} on={v => set({ applicantAddress: v })} w={300} /> CONTACT NO. <F v={f.applicantContact} on={v => set({ applicantContact: v })} w={140} /></div>
+                    <div className="row">RELATIONSHIP TO VICTIM: <F v={f.applicantRelation} on={v => set({ applicantRelation: v })} w={160} /> OCCUPATION: <F v={f.applicantOccupation} on={v => set({ applicantOccupation: v })} w={130} /></div>
+                </li>
+                <li className="row">
+                    NAME OF VICTIM/S: <F v={f.victimName} on={v => set({ victimName: v })} w={230} /> DATE OF BIRTH: <F v={f.victimDob} on={v => set({ victimDob: v })} w={130} />
+                    <div className="row">ADDRESS: <F v={f.victimAddress} on={v => set({ victimAddress: v })} w={290} /> CONTACT NO. <F v={f.victimContact} on={v => set({ victimContact: v })} w={140} /></div>
+                    <div className="row"><CS pfx="v" /></div>
+                </li>
+                <li className="row">OCCUPATION/SOURCE OF INCOME: <F v={f.victimOccupation} on={v => set({ victimOccupation: v })} w={300} /></li>
+                <li className="row">
+                    <table className="tbl3"><tbody>
+                        <tr><td>NAME OF CHILDREN:</td><td>DATE OF BIRTH:</td><td>SEX:</td></tr>
+                        {rows(own, 4)}
+                    </tbody></table>
+                </li>
+            </ol>
+            <div style={{ marginLeft: 22 }} className="row">4a. Other Children under her care:
+                <table className="tbl3"><tbody>
+                    <tr><td>NAME OF CHILDREN:</td><td>DATE OF BIRTH:</td><td>SEX:</td></tr>
+                    {rows(under, 2)}
+                </tbody></table>
+            </div>
+            <ol start={5} style={{ margin: 0, paddingLeft: 22 }}>
+                <li className="row">
+                    NAME OF RESPONDENT: <F v={f.respondentName} on={v => set({ respondentName: v })} w={220} /> Age: <F v={f.respondentAge} on={v => set({ respondentAge: v })} w={80} />
+                    <div className="row">OCCUPATION/SOURCE OF INCOME: <F v={f.respondentOccupation} on={v => set({ respondentOccupation: v })} w={270} /></div>
+                    <div className="row">ADDRESS: <F v={f.respondentAddress} on={v => set({ respondentAddress: v })} w={250} /> CONTACT NO. <F v={f.respondentContact} on={v => set({ respondentContact: v })} w={150} /></div>
+                    <div className="row"><CS pfx="r" /></div>
+                </li>
+                <li className="row">Relationship of Complainant to Respondent:
+                    <div className="center" style={{ marginTop: 2 }}>
+                        <CB checked={f.rel_wife} on={v => set({ rel_wife: v })}>Wife</CB> &nbsp;
+                        <CB checked={f.rel_formerwife} on={v => set({ rel_formerwife: v })}>Former Wife</CB> &nbsp;
+                        <CB checked={f.rel_common} on={v => set({ rel_common: v })}>Common Law/Live-in Relationship</CB>
+                    </div>
+                    <div className="center">
+                        <CB checked={f.rel_dating} on={v => set({ rel_dating: v })}>Dating Relationship</CB> &nbsp;
+                        <CB checked={f.rel_sexual} on={v => set({ rel_sexual: v })}>Sexual Relationship</CB>
+                    </div>
+                </li>
+                <li className="row">Acts Complained of: (Please Check)
+                    <div className="center" style={{ marginTop: 2 }}>
+                        <CB checked={f.act_threats} on={v => set({ act_threats: v })}>Threats</CB> &nbsp;
+                        <CB checked={f.act_physical} on={v => set({ act_physical: v })}>Physical Relationship</CB>
+                    </div>
+                </li>
+                <li className="row">Date of Commission of the Offense: <F v={f.offenseDate} on={v => set({ offenseDate: v })} w={330} /></li>
+                <li className="row">Place Where the Offense was Committed: <F v={f.offensePlace} on={v => set({ offensePlace: v })} w={300} /></li>
+                <li className="row">If the Applicant is not the Victim, state circumstances of consent of the victim:
+                    <textarea className="ta" rows={2} value={f.consent} onChange={e => set({ consent: e.target.value })} />
+                </li>
+            </ol>
 
-            <p className="pd-para indent" style={{ marginTop: 12 }}>Finding the application sufficient, and pursuant to Republic Act No. 9262, the respondent is hereby ORDERED as follows:</p>
-            {reliefs.length ? reliefs.map((r, i) => <p key={i} className="pd-para" style={{ textIndent: "1em" }}>{r}</p>)
-                : <p className="pd-para" style={{ fontStyle: "italic" }}>(No reliefs recorded on the BPO — set them on the case before printing.)</p>}
+            <div className="mt24 right">
+                <div className="sig-line" style={{ width: 300, marginLeft: "auto" }} />
+                <span className="cap" style={{ width: 300, marginLeft: "auto" }}>Signature of Applicant Over Printed Name</span>
+                <div style={{ marginTop: 4 }}>Date: <F v={f.appDate} on={v => set({ appDate: v })} w={230} /></div>
+            </div>
 
-            <p className="pd-para indent" style={{ fontWeight: 700 }}>
-                This Barangay Protection Order is EFFECTIVE FOR FIFTEEN (15) DAYS from the date of issue and shall expire on {bpo?.expires_at ? fmtDate(bpo.expires_at) : "____________"}. It cannot be extended or renewed; a new order requires a new application based on a new act of violence.
+            <p className="mt16" style={{ textIndent: "2em", textAlign: "justify" }}>
+                I certify that the applicant for BPO who personally appeared before me is a bona fide resident of this
+                barangay and is the same person that who supplied above information and attest to the said information.
             </p>
 
-            <p className="pd-para" style={{ marginTop: 12 }}>Issued this {bpo?.issued_at ? fmtDate(bpo.issued_at) : "____________"}.</p>
-
-            <div className="pd-signs">
-                <div className="pd-sign" style={{ marginLeft: "auto", maxWidth: 280 }}>
-                    <div style={{ height: 34 }} />
-                    <p className="pd-sname"><Editable v={F.punongBarangay} on={v => set({ punongBarangay: v })} ph="Punong Barangay" style={{ textAlign: "center" }} /></p>
-                    <p className="pd-stitle">Punong Barangay</p>
-                </div>
+            <div className="mt24 right">
+                <p style={{ margin: 0, fontWeight: 700 }}>{f.punongBarangay || " "}</p>
+                <p style={{ margin: 0 }}>Punong Barangay</p>
             </div>
         </div>
     );
 };
 
-// ─── 5. 1st Endorsement ────────────────────────────────────────────────────────
-const Endorsement1st = ({ cas, victim, report, F, set, endorsement }) => {
-    const docs = (endorsement?.attached_documents && endorsement.attached_documents.length)
-        ? endorsement.attached_documents.join(", ")
-        : F.attachedDocs;
-    const office = endorsement?.to_office_display || F.toOffice;
+// ─── 4. BARANGAY PROTECTION ORDER ────────────────────────────────────────────
+const BpoOrder = ({ f, set, bpo, showValidity }) => (
+    <div className="pd-paper">
+        <Head office="OFFICE OF THE PUNONG BARANGAY" />
+        <p className="center" style={{ marginTop: 14 }}>BARANGAY CASE NO.: <F v={f.caseNo} on={v => set({ caseNo: v })} w={220} /></p>
+        <p className="row mt16">IN RE: COMPLAINT AGAINST <F v={f.respondentName} on={v => set({ respondentName: v })} w={380} /></p>
+        <div style={{ marginLeft: 250 }}><span className="cap" style={{ width: 160, textAlign: "left" }}>Respondent</span></div>
+
+        <p className="pd-formtitle" style={{ fontSize: 14 }}>BARANGAY PROTECTION ORDER (BPO)</p>
+
+        <p style={{ textIndent: "2em", textAlign: "justify" }}>BY VIRTUE OF THE AUTHORITY VESTED IN ME BY LAW, I HEREBY ORDER</p>
+        <p style={{ margin: "2px 0 0" }}>
+            <F v={f.respondentName} on={v => set({ respondentName: v })} w={280} /> of <F v={f.respondentAddress} on={v => set({ respondentAddress: v })} w={290} />
+        </p>
+        <div style={{ display: "flex", gap: 80 }}>
+            <span className="cap" style={{ width: 280, textAlign: "center" }}>(Name of Respondent)</span>
+            <span className="cap" style={{ width: 290, textAlign: "center" }}>(Address)</span>
+        </div>
+
+        <div className="mt24" style={{ marginLeft: 24 }}>
+            <p className="row">
+                <CB checked={f.a} on={v => set({ a: v })}>a. Desist/Refrain/Stop causing physical harm to <F v={f.complainantName} on={v => set({ complainantName: v })} w={230} /></CB>
+                <br /><span style={{ marginLeft: 40 }}>and/or her children.</span>
+                <span className="cap" style={{ display: "inline-block", width: 230, marginLeft: 130 }}>(Name of Complainant)</span>
+            </p>
+            <p className="row mt16">
+                <CB checked={f.b} on={v => set({ b: v })}>b. Desist/Refrain/Stop threatening to cause physical harm to <F v={f.complainantName} on={v => set({ complainantName: v })} w={150} /></CB>
+                <br /><span style={{ marginLeft: 40 }}>and /or her children.</span>
+                <span className="cap" style={{ display: "inline-block", width: 230, marginLeft: 120 }}>(Name of Complainant)</span>
+            </p>
+            <p className="row mt16" style={{ textAlign: "justify" }}>
+                <CB checked={f.c} on={v => set({ c: v })}>c. Desist from going near her and her children at a distance of 100 meters away.</CB>
+            </p>
+        </div>
+
+        <p className="mt24" style={{ marginLeft: 24 }}>
+            Issued this <F v={f.issueDay} on={v => set({ issueDay: v })} w={50} c /> day of <F v={f.issueMonth} on={v => set({ issueMonth: v })} w={170} />, <F v={f.issueYear} on={v => set({ issueYear: v })} w={80} c />.
+        </p>
+
+        {showValidity && (
+            <p className="mt16" style={{ marginLeft: 24, fontWeight: 700 }}>
+                This Order is effective for fifteen (15) days from the date of issue and shall expire on{" "}
+                {bpo?.expires_at ? fmtDate(bpo.expires_at) : "____________________"}.
+            </p>
+        )}
+
+        <div className="mt40 right" style={{ marginRight: 30 }}>
+            <p style={{ margin: 0, fontWeight: 700 }}>{f.punongBarangay || " "}</p>
+            <p style={{ margin: 0 }}>Punong Barangay</p>
+        </div>
+
+        <p className="center mt40 b">"VIOLATION OF THIS ORDER IS PUNISHABLE BY LAW"</p>
+    </div>
+);
+
+// ─── 5. 1st ENDORSEMENT (form not yet supplied — kept from spec wording) ─────
+const Endorsement1st = ({ f, set, endorsement }) => {
     const num = endorsement?.endorsement_number || 1;
     const ord = num === 1 ? "1st" : num === 2 ? "2nd" : num === 3 ? "3rd" : `${num}th`;
     return (
         <div className="pd-paper">
-            <DocHeader office="OFFICE OF THE PUNONG BARANGAY" />
-            <p className="pd-doctitle">{ord.toUpperCase()} ENDORSEMENT</p>
-            <p className="pd-case-no">{endorsement?.date_endorsed ? fmtDate(endorsement.date_endorsed) : <Editable v={F.endorseDate} on={v => set({ endorseDate: v })} ph="date" />}</p>
+            <Head office="OFFICE OF THE PUNONG BARANGAY" />
+            <p className="pd-formtitle">{ord.toUpperCase()} ENDORSEMENT</p>
+            <p className="right">{endorsement?.date_endorsed ? fmtDate(endorsement.date_endorsed) : <F v={f.endorseDate} on={v => set({ endorseDate: v })} w={200} />}</p>
 
-            <p className="pd-para indent" style={{ marginTop: 12 }}>
-                Respectfully endorsed to the <Editable v={endorsement ? office : F.toOffice} on={v => set({ toOffice: v })} ph="receiving office" cls="pd-input grow" /> the attached <Editable v={endorsement ? docs : F.attachedDocs} on={v => set({ attachedDocs: v })} ph="documents" cls="pd-input grow" /> on the complaint of{" "}
-                <Editable v={F.complainantName} on={v => set({ complainantName: v })} ph="complainant" /> of <Editable v={F.complainantAddress} on={v => set({ complainantAddress: v })} ph="address" cls="pd-input" /> against the respondent{" "}
-                <Editable v={F.respondentName} on={v => set({ respondentName: v })} ph="respondent" /> of <Editable v={F.respondentAddress} on={v => set({ respondentAddress: v })} ph="address" cls="pd-input" /> for{" "}
-                <Editable v={endorsement?.purpose || F.purpose} on={v => set({ purpose: v })} ph="purpose" cls="pd-input grow" />.
+            <p className="mt16" style={{ textIndent: "2em", textAlign: "justify" }}>
+                Respectfully endorsed to the <F v={f.toOffice} on={v => set({ toOffice: v })} w={280} /> the attached{" "}
+                <F v={f.attachedDocs} on={v => set({ attachedDocs: v })} w={220} /> on the complaint of{" "}
+                <F v={f.complainantName} on={v => set({ complainantName: v })} w={230} /> of <F v={f.complainantAddress} on={v => set({ complainantAddress: v })} w={220} /> against the respondent{" "}
+                <F v={f.respondentName} on={v => set({ respondentName: v })} w={230} /> of <F v={f.respondentAddress} on={v => set({ respondentAddress: v })} w={220} /> for{" "}
+                <F v={f.purpose} on={v => set({ purpose: v })} w={260} />.
             </p>
 
-            <div className="pd-signs">
-                <div className="pd-sign" style={{ marginLeft: "auto", maxWidth: 280 }}>
-                    <div style={{ height: 34 }} />
-                    <p className="pd-sname"><Editable v={F.punongBarangay} on={v => set({ punongBarangay: v })} ph="Punong Barangay" style={{ textAlign: "center" }} /></p>
-                    <p className="pd-stitle">Punong Barangay</p>
-                </div>
+            <div className="mt40 right" style={{ marginRight: 30 }}>
+                <p style={{ margin: 0, fontWeight: 700 }}>{f.punongBarangay || " "}</p>
+                <p style={{ margin: 0 }}>Punong Barangay</p>
             </div>
 
-            {/* Acknowledgment block — the paper 1st Endorsement omits this; it closes the monitoring gap. */}
-            <div className="pd-ack">
-                <h4>ACKNOWLEDGMENT (to be completed by the receiving office)</h4>
-                <div className="pd-ackrow">
-                    <div>Received by: <span style={{ display: "inline-block", minWidth: 180, borderBottom: "1px solid #000" }}>{endorsement?.received_by || ""}</span></div>
-                    <div>Designation: <span style={{ display: "inline-block", minWidth: 140, borderBottom: "1px solid #000" }}>&nbsp;</span></div>
-                    <div>Date &amp; Time: <span style={{ display: "inline-block", minWidth: 140, borderBottom: "1px solid #000" }}>{endorsement?.received_at ? fmtDate(endorsement.received_at) : ""}</span></div>
-                </div>
+            <div className="mt40" style={{ borderTop: "1px dashed #000", paddingTop: 10 }}>
+                <p className="b" style={{ margin: "0 0 10px" }}>ACKNOWLEDGMENT (to be completed by the receiving office)</p>
+                <div className="row">Received by: <F v={f.receivedBy} on={v => set({ receivedBy: v })} w={250} /> &nbsp; Designation: <F v={f.receivedDesignation} on={v => set({ receivedDesignation: v })} w={180} /></div>
+                <div className="row">Date &amp; Time: <F v={f.receivedAt} on={v => set({ receivedAt: v })} w={250} /></div>
             </div>
         </div>
     );
 };
 
+// ─── BPO packet: the 3 pages the barangay files together ────────────────────
+const BpoPacket = (props) => (
+    <>
+        <div className="pd-page-break"><BpoApplication {...props} /></div>
+        <div className="pd-page-break"><ReklamoForm {...props} /></div>
+        <BpoOrder {...props} />
+    </>
+);
+
 // ─── Main page ──────────────────────────────────────────────────────────────
 const DOC_TYPES = {
     blotter:     { component: BlotterForm,    title: "Blotter Form",      office: "Sangguniang Barangay" },
-    reklamo:     { component: ReklamoForm,    title: "Pormal na Reklamo", office: "Barangay VAW Desk" },
-    "bpo-app":   { component: BpoApplication, title: "BPO Application",   office: "Barangay VAW Desk" },
+    reklamo:     { component: ReklamoForm,    title: "Pormal na Reklamo", office: "Katarungang Pambarangay" },
+    "bpo-app":   { component: BpoPacket,      title: "BPO Application (3 pages)", office: "Application + Reklamo + BPO" },
     bpo:         { component: BpoOrder,       title: "Barangay Protection Order", office: "Punong Barangay" },
     endorsement: { component: Endorsement1st, title: "1st Endorsement",   office: "Punong Barangay" },
 };
@@ -324,51 +426,79 @@ export default function PrintDocument() {
     const { type, caseId } = useParams();
     const navigate = useNavigate();
     const [cas, setCas] = useState(null);
-    const [officials, setOfficials] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const today = todayParts();
-    const [fields, setFields] = useState({
-        blotterNo: "", blotterDate: fmtDate(new Date()),
-        complainantName: "", complainantAddress: "",
-        respondentName: "", respondentAddress: "",
-        applicantName: "", applicantAddress: "",
-        relationship: "", abuse: "", nature: "VAWC (RA 9262)",
-        incidentWhen: "", narrative: "", consent: "",
-        vawcOfficer: "", punongBarangay: "",
-        toOffice: "PNP - Iba MPS (Women & Children Protection Desk)", attachedDocs: "blotter, complaint", purpose: "",
-        endorseDate: fmtDate(new Date()),
-        day: String(today.day), month: today.month, year: String(today.year),
+    const [showValidity, setShowValidity] = useState(false);
+    const t = today();
+    const [f, setF] = useState({
+        blotterDate: fmtDate(new Date()), incidentWhen: "", complaint: "VAWC (RA 9262)", narrative: "",
+        complainantName: "", complainantAddress: "", complainantContact: "", complainantAge: "",
+        respondentName: "", respondentAddress: "", respondentContact: "", respondentAge: "",
+        sigName: "", sigDate: fmtDate(new Date()), sigTime: fmtTime(new Date()), assistedBy: "",
         p1: true, p2: false, p3: false,
+        petsa: fmtDate(new Date()), oras: fmtTime(new Date()), vawcNo: "",
+        rel_asawa: false, rel_livein: false, rel_kasintahan: false, rel_kasambahay: false,
+        controlNo: "", applicantName: "", applicantAge: "", applicantAddress: "", applicantContact: "",
+        applicantRelation: "", applicantOccupation: "",
+        victimName: "", victimDob: "", victimAddress: "", victimContact: "", victimOccupation: "",
+        respondentOccupation: "", consent: "", appDate: fmtDate(new Date()),
+        v_single: false, v_married: false, v_widow: false, v_separated: false, v_legally: false,
+        r_single: false, r_married: false, r_widow: false, r_separated: false, r_legally: false,
+        rel_wife: false, rel_formerwife: false, rel_common: false, rel_dating: false, rel_sexual: false,
+        act_threats: false, act_physical: false, offenseDate: "", offensePlace: "",
+        caseNo: "", a: false, b: false, c: false,
+        issueDay: t.day, issueMonth: t.month, issueYear: t.year,
+        punongBarangay: "",
+        toOffice: "PNP - Iba MPS (Women & Children Protection Desk)", attachedDocs: "blotter, complaint",
+        purpose: "", endorseDate: fmtDate(new Date()), receivedBy: "", receivedDesignation: "", receivedAt: "",
     });
-    const set = (patch) => setFields(f => ({ ...f, ...patch }));
+    const set = (patch) => setF(p => ({ ...p, ...patch }));
 
     useEffect(() => {
         Promise.all([
             api.get(`/admin/cases/${caseId}`),
             api.get(`/admin/officials`).catch(() => ({ data: { officials: [] } })),
         ]).then(([cr, or]) => {
-            const c = cr.data;
-            setCas(c);
+            const c = cr.data; setCas(c);
             const offs = {};
             (or.data.officials || []).filter(o => o.is_active).forEach(o => { offs[o.role] = o.full_name; });
-            setOfficials(offs);
-            const report = (c.reports || [])[0];
-            setFields(f => ({
-                ...f,
-                complainantName: f.complainantName || c.victim?.full_name || "",
-                complainantAddress: f.complainantAddress || c.victim?.address || "",
-                respondentName: f.respondentName || c.offender_name || "",
-                applicantName: f.applicantName || c.applicant_name || c.victim?.full_name || "",
-                applicantAddress: f.applicantAddress || c.applicant_address || c.victim?.address || "",
-                relationship: f.relationship || c.relationship_to_offender_display || "",
-                abuse: f.abuse || abuseText(report),
-                incidentWhen: f.incidentWhen || [fmtDate(report?.incident_date), report?.address].filter(Boolean).join(" · "),
-                narrative: f.narrative || report?.statement || "",
-                consent: f.consent || c.applicant_consent_note || "",
-                vawcOfficer: f.vawcOfficer || offs.vawc_officer || "",
-                punongBarangay: f.punongBarangay || offs.punong_barangay || "",
-                purpose: f.purpose || (c.endorsements || [])[0]?.purpose || "",
+            const r = (c.reports || [])[0];
+            const bpo = (c.bpos || []).slice().reverse().find(b => ["issued", "served"].includes(b.status)) || (c.bpos || [])[0];
+            const v = c.victim || {};
+            setF(p => ({
+                ...p,
+                caseNo: p.caseNo || c.case_number || "",
+                controlNo: p.controlNo || bpo?.control_number || "",
+                complainantName: p.complainantName || v.full_name || "",
+                complainantAddress: p.complainantAddress || v.address || "",
+                complainantContact: p.complainantContact || v.phone_number || "",
+                complainantAge: p.complainantAge || ageFrom(v.date_of_birth),
+                sigName: p.sigName || v.full_name || "",
+                respondentName: p.respondentName || c.offender_name || "",
+                applicantName: p.applicantName || c.applicant_name || v.full_name || "",
+                applicantAddress: p.applicantAddress || c.applicant_address || v.address || "",
+                applicantContact: p.applicantContact || c.applicant_contact || v.phone_number || "",
+                applicantRelation: p.applicantRelation || c.applicant_relation || "Self (victim)",
+                victimName: p.victimName || v.full_name || "",
+                victimDob: p.victimDob || (v.date_of_birth ? fmtDate(v.date_of_birth) : ""),
+                victimAddress: p.victimAddress || v.address || "",
+                victimContact: p.victimContact || v.phone_number || "",
+                incidentWhen: p.incidentWhen || [fmtDate(r?.incident_date), r?.address].filter(Boolean).join(" - "),
+                offenseDate: p.offenseDate || fmtDate(r?.incident_date),
+                offensePlace: p.offensePlace || (r?.address || ""),
+                narrative: p.narrative || r?.statement || "",
+                complaint: p.complaint || (abuseText(r) || "VAWC (RA 9262)"),
+                consent: p.consent || c.applicant_consent_note || "",
+                assistedBy: p.assistedBy || offs.bsdo || offs.vawc_officer || "",
+                punongBarangay: p.punongBarangay || bpo?.issued_by_official || offs.punong_barangay || "",
+                purpose: p.purpose || (c.endorsements || [])[0]?.purpose || "",
+                // Reliefs a/b/c come straight from the recorded BPO
+                a: bpo ? !!bpo.relief_stop_physical_harm : p.a,
+                b: bpo ? !!bpo.relief_stop_threats : p.b,
+                c: bpo ? !!bpo.relief_stay_away_100m : p.c,
+                issueDay: bpo?.issued_at ? String(new Date(bpo.issued_at).getDate()) : p.issueDay,
+                issueMonth: bpo?.issued_at ? MONTHS[new Date(bpo.issued_at).getMonth()] : p.issueMonth,
+                issueYear: bpo?.issued_at ? String(new Date(bpo.issued_at).getFullYear()) : p.issueYear,
             }));
         }).catch(err => setError(err.response?.data?.detail || "Failed to load case."))
           .finally(() => setLoading(false));
@@ -387,13 +517,10 @@ export default function PrintDocument() {
     if (error)  return <div style={{ padding: 40, textAlign: "center", color: "#C62828", fontFamily: "'Lexend',sans-serif" }}>{error}</div>;
     if (!cas)   return null;
 
-    const victim = cas.victim || {};
-    const report = (cas.reports || [])[0] || null;
     const isRestricted = !!cas.restricted;
     const Doc = cfg.component;
-    // Prefer the active/issued BPO for the order; the latest endorsement for the endorsement.
-    const bpo = (cas.bpos || []).slice().reverse().find(b => ["issued", "served"].includes(b.status)) || (cas.bpos || [])[cas.bpos?.length - 1] || null;
-    const endorsement = (cas.endorsements || [])[cas.endorsements?.length - 1] || null;
+    const bpo = (cas.bpos || []).slice().reverse().find(b => ["issued", "served"].includes(b.status)) || (cas.bpos || [])[0] || null;
+    const endorsement = (cas.endorsements || [])[(cas.endorsements || []).length - 1] || null;
 
     return (
         <>
@@ -404,20 +531,22 @@ export default function PrintDocument() {
                         <h1>{cfg.title}</h1>
                         <p>{cfg.office} · Case {cas.case_number}</p>
                     </div>
-                    <div style={{ display: "flex", gap: 10 }}>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                        {(type === "bpo" || type === "bpo-app") && (
+                            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "#475569", fontFamily: "'Lexend',sans-serif" }}>
+                                <input type="checkbox" checked={showValidity} onChange={e => setShowValidity(e.target.checked)} />
+                                Add 15-day validity line
+                            </label>
+                        )}
                         <button className="pd-btn-ghost" onClick={() => navigate(`/reports/${caseId}`)}>← Back to case</button>
-                        <button className="pd-btn" onClick={() => window.print()} disabled={isRestricted}>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><rect x="6" y="14" width="12" height="8" rx="1" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                            Print Document
-                        </button>
+                        <button className="pd-btn" onClick={() => window.print()} disabled={isRestricted}>Print Document</button>
                     </div>
                 </div>
 
                 {isRestricted && <div className="pd-banner"><strong>Restricted view -</strong> Sensitive fields are masked. Super Admin access is required to produce a printable official document.</div>}
-                {type === "bpo" && !bpo && <div className="pd-banner">No BPO has been applied/issued for this case yet. Apply for a BPO from the case actions first.</div>}
-                {type === "endorsement" && !endorsement && <div className="pd-banner">No endorsement recorded yet — this prints a blank endorsement you can fill in. Create one from the case actions to auto-fill and track acknowledgment.</div>}
+                {(type === "bpo" || type === "bpo-app") && !bpo && <div className="pd-banner">No BPO recorded for this case yet — the reliefs and issue date will print blank. Apply for a BPO from the case actions to auto-fill them.</div>}
 
-                <Doc cas={cas} victim={victim} report={report} F={fields} set={set} bpo={bpo} endorsement={endorsement} />
+                <Doc f={f} set={set} bpo={bpo} endorsement={endorsement} kids={cas.children || []} showValidity={showValidity} />
             </div>
         </>
     );
