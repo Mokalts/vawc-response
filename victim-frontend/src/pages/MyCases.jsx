@@ -399,16 +399,34 @@ function MyCases() {
     const [detailLoading, setDetailLoading] = useState(false);
 
     useEffect(()=>{
-        const fetch = async()=>{
+        // Wake the backend immediately (free tier sleeps after ~15 min idle, and
+        // the first connection can time out rather than waiting).
+        try {
+            const base = api.defaults.baseURL;
+            if (base) fetch(base + '/', { method:'GET', mode:'no-cors', cache:'no-store' }).catch(()=>{});
+        } catch (e) {}
+
+        const load = async()=>{
             setLoading(true); setError('');
-            try {
-                const res = await api.get('/cases/');
-                setCases(res.data);
-            } catch {
-                setError('Failed to load your cases. Please try again.');
-            } finally { setLoading(false); }
+            for (let attempt = 0; attempt < 4; attempt++) {
+                try {
+                    const res = await api.get('/cases/', { timeout: 60000 });
+                    setCases(res.data);
+                    setLoading(false);
+                    return;
+                } catch (err) {
+                    // A real server answer (e.g. 401) should not be retried.
+                    if (err.response) break;
+                    if (attempt < 3) {
+                        setError('Waking up the server, please wait…');
+                        await new Promise(r => setTimeout(r, 3000));
+                    }
+                }
+            }
+            setError('Cannot reach the server right now. Please check your internet and tap Retry.');
+            setLoading(false);
         };
-        fetch();
+        load();
     },[]);
 
     const openCase = async(cas) => {

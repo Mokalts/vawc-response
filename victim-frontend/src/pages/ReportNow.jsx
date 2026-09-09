@@ -173,7 +173,16 @@ function ReportNow() {
     // Retry on cold-start. Render's free tier sleeps after ~15 min idle, so the
     // first request can fail at the network level. A network error (no
     // err.response) is not a real rejection, so wait and retry before giving up.
-    const withRetry = async (fn, attempts = 3) => {
+    // Wake the backend as soon as the form opens, so it is up by the time the
+    // victim finishes typing and taps Submit.
+    useEffect(() => {
+        try {
+            const base = api.defaults.baseURL;
+            if (base) fetch(base + '/', { method: 'GET', mode: 'no-cors', cache: 'no-store' }).catch(() => {});
+        } catch (e) {}
+    }, []);
+
+    const withRetry = async (fn, attempts = 4) => {
         for (let i = 0; i < attempts; i++) {
             try { return await fn(); }
             catch (err) {
