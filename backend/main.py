@@ -66,6 +66,26 @@ app.include_router(admin_dashboard.router)
 app.include_router(cases.router)
 app.include_router(admin_cases.router)
 app.include_router(admin_users.router)
+# Unhandled errors bypass the CORS middleware, so the browser reports them as an
+# opaque CORS/network failure instead of a 500. Return JSON with the CORS headers
+# attached so the frontend can show the real problem.
+@app.exception_handler(Exception)
+async def _unhandled_exception_handler(request: Request, exc: Exception):
+    import traceback
+    traceback.print_exc()   # shows up in the Render logs
+    headers = {}
+    origin = request.headers.get("origin")
+    if origin and origin in ALLOWED_ORIGINS:
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+        headers["Vary"] = "Origin"
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "A server error occurred while processing your request. Please try again."},
+        headers=headers,
+    )
+
+
 app.include_router(admin_bpo.router)
 app.include_router(admin_endorsement.router)
 app.include_router(admin_officials.router)

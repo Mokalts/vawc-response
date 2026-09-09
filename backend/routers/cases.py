@@ -34,14 +34,22 @@ def _fuzzy_match(a: str, b: str) -> bool:
 
 
 def _generate_case_number(db: Session) -> str:
-    """Generate next case number in format YYYY-000-NNN."""
+    """Next case number in format YYYY-000-NNN.
+
+    Uses the HIGHEST existing sequence for the year, not a count: if any case is
+    ever permanently deleted the count no longer matches the numbering and a
+    count-based value collides with an existing case_number (unique), which
+    surfaced as a 500 on submit.
+    """
     year = datetime.utcnow().year
     prefix = f"{year}-000-"
-    # Count existing cases this year
-    count = db.query(Case).filter(
-        Case.case_number.like(f"{year}-%")
-    ).count()
-    return f"{prefix}{str(count + 1).zfill(3)}"
+    highest = 0
+    for (cn,) in db.query(Case.case_number).filter(Case.case_number.like(f"{year}-%")).all():
+        try:
+            highest = max(highest, int(str(cn).rsplit("-", 1)[-1]))
+        except (ValueError, TypeError):
+            continue
+    return f"{prefix}{str(highest + 1).zfill(3)}"
 
 
 def _decrypt_report(r: Report) -> dict:
