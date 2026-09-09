@@ -12,6 +12,7 @@ from models.barangay_official import BarangayOfficial, OfficialRole
 from models.admin import Admin
 from core.admin_dependencies import get_current_admin_full_access
 from core.status_labels import ENDORSEMENT_OFFICE_DISPLAY
+from core.case_status import recompute_case_status
 
 router = APIRouter(prefix="/admin", tags=["Admin Endorsement"])
 
@@ -115,3 +116,42 @@ def acknowledge_endorsement(
     e.receipt_proof = payload.receipt_proof
     db.commit(); db.refresh(e)
     return {"message": "Endorsement acknowledged.", "endorsement": _serialize(e)}
+
+
+# ── PATCH /admin/endorsements/{id}/unacknowledge ──────────────────────────────
+@router.patch("/endorsements/{endorsement_id}/unacknowledge")
+def unacknowledge_endorsement(
+    endorsement_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Undo an acknowledgment recorded by mistake."""
+    e = db.query(Endorsement).filter(Endorsement.id == endorsement_id).first()
+    if not e:
+        raise HTTPException(status_code=404, detail="Endorsement not found.")
+    if not e.received_at:
+        raise HTTPException(status_code=409, detail="This endorsement is not acknowledged.")
+    e.received_by = None; e.received_at = None; e.receipt_proof = None
+    db.commit(); db.refresh(e)
+    return {"message": "Acknowledgment removed.", "endorsement": _serialize(e)}
+
+
+# ── DELETE /admin/endorsements/{id} ───────────────────────────────────────────
+@router.delete("/endorsements/{endorsement_id}")
+def delete_endorsement(
+    endorsement_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Remove an endorsement created by mistake, and step the case back."""
+    e = db.query(Endorsement).filter(Endorsement.id == endorsement_id).first()
+    if not e:
+        raise HTTPException(status_code=404, detail="Endorsement not found.")
+    case = db.query(Case).filter(Case.id == e.case_id).first()
+    db.delete(e); db.flush()
+    if case:
+        db.refresh(case)
+        case.status = recompute_case_status(case)
+        case.updated_at = datetime.utcnow()
+    db.commit()
+    return {"message": "Endorsement deleted."}

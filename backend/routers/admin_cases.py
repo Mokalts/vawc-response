@@ -23,6 +23,7 @@ from core.status_labels import (
     RELATIONSHIP_DISPLAY, SEVERITY_DISPLAY,
 )
 from models.case import ClosureReason, RelationshipToOffender, CaseSeverity
+from core.case_status import recompute_case_status
 
 # Abuse types (RA 9262 forms) for the report incident-type patch.
 VALID_INCIDENT_TYPES = ["physical", "sexual", "psychological", "economic", "others"]
@@ -46,6 +47,7 @@ class SeverityPayload(BaseModel):
 class MandatoryReportPayload(BaseModel):
     office: str            # "pnp" | "mswdo"
     reported_at: Optional[str] = None   # ISO; defaults to now
+    clear: bool = False    # true = undo an accidental mark
 
 class DeletePayload(BaseModel):
     reason: Optional[str] = None
@@ -608,6 +610,31 @@ def close_case(
             "closure_reason_display": CLOSURE_REASON_DISPLAY.get(reason.value)}
 
 
+# ── PATCH /admin/cases/{case_id}/reopen ───────────────────────────────────────
+@router.patch("/{case_id}/reopen")
+def reopen_case(
+    case_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Undo a closure (e.g. closed by mistake). Clears the closure record and
+    returns the case to the stage its records support."""
+    case = _get_active_case(db, case_id)
+    if case.status != ReportStatus.closed and not case.closure_reason:
+        raise HTTPException(status_code=409, detail="This case is not closed.")
+    case.closure_reason     = None
+    case.closure_note       = None
+    case.closed_at          = None
+    case.closed_by_admin_id = None
+    case.status             = recompute_case_status(case)
+    case.admin_id           = current_admin.id
+    case.has_status_update  = True
+    case.updated_at         = datetime.utcnow()
+    db.commit()
+    return {"message": "Case reopened.", "status": case.status.value,
+            "status_display": STATUS_DISPLAY.get(case.status.value)}
+
+
 # ── PATCH /admin/cases/{case_id}/severity ─────────────────────────────────────
 @router.patch("/{case_id}/severity")
 def set_severity(
@@ -645,10 +672,11 @@ def set_mandatory_report(
             when = datetime.fromisoformat(payload.reported_at.replace("Z", "+00:00")).replace(tzinfo=None)
         except ValueError:
             pass
+    value = None if payload.clear else when
     if payload.office == "pnp":
-        case.reported_to_pnp_at = when
+        case.reported_to_pnp_at = value
     elif payload.office == "mswdo":
-        case.reported_to_mswdo_at = when
+        case.reported_to_mswdo_at = value
     else:
         raise HTTPException(status_code=422, detail="office must be 'pnp' or 'mswdo'.")
     case.updated_at = datetime.utcnow()

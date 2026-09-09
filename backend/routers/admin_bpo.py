@@ -11,6 +11,7 @@ from models.report import ReportStatus
 from models.barangay_official import BarangayOfficial, OfficialRole
 from models.admin import Admin
 from core.admin_dependencies import get_current_admin_full_access
+from core.case_status import recompute_case_status
 
 router = APIRouter(prefix="/admin", tags=["Admin BPO"])
 
@@ -160,6 +161,62 @@ def serve_bpo(
         case.updated_at = datetime.utcnow()
     db.commit(); db.refresh(bpo)
     return {"message": "BPO served.", "bpo": _serialize(bpo)}
+
+
+# ── PATCH /admin/bpos/{bpo_id}/revert ─────────────────────────────────────────
+@router.patch("/bpos/{bpo_id}/revert")
+def revert_bpo(
+    bpo_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Step a BPO back one stage after an accidental click:
+    served -> issued, issued -> applied (clears the issue/expiry record)."""
+    bpo = db.query(BPO).filter(BPO.id == bpo_id).first()
+    if not bpo:
+        raise HTTPException(status_code=404, detail="BPO not found.")
+
+    if bpo.status == BPOStatus.served:
+        bpo.status = BPOStatus.issued
+        bpo.served_at = None; bpo.served_by = None; bpo.proof_of_service = None
+        moved_to = "issued"
+    elif bpo.status == BPOStatus.issued:
+        bpo.status = BPOStatus.applied
+        bpo.issued_at = None; bpo.expires_at = None; bpo.issued_by_official = None
+        moved_to = "applied"
+    else:
+        raise HTTPException(status_code=409, detail="Only an issued or served BPO can be reverted. Delete an application instead.")
+
+    case = db.query(Case).filter(Case.id == bpo.case_id).first()
+    if case:
+        case.status = recompute_case_status(case)
+        case.updated_at = datetime.utcnow()
+    db.commit(); db.refresh(bpo)
+    return {"message": f"BPO reverted to {moved_to}.", "bpo": _serialize(bpo)}
+
+
+# ── DELETE /admin/bpos/{bpo_id} ───────────────────────────────────────────────
+@router.delete("/bpos/{bpo_id}")
+def delete_bpo(
+    bpo_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Remove a BPO application created by mistake. Only an application that was
+    never issued can be deleted — an issued BPO is an official record (revert it first)."""
+    bpo = db.query(BPO).filter(BPO.id == bpo_id).first()
+    if not bpo:
+        raise HTTPException(status_code=404, detail="BPO not found.")
+    if bpo.status != BPOStatus.applied:
+        raise HTTPException(status_code=409, detail="Only a BPO application that has not been issued can be deleted. Revert it first.")
+    case = db.query(Case).filter(Case.id == bpo.case_id).first()
+    db.delete(bpo); db.flush()
+    if case:
+        db.refresh(case)
+        case.status = recompute_case_status(case)
+        case.updated_at = datetime.utcnow()
+    db.commit()
+    return {"message": "BPO application deleted."}
 
 
 # ── GET /admin/bpos/expiring ──────────────────────────────────────────────────

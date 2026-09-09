@@ -306,6 +306,9 @@ const CaseTimeline = ({ cas, onUpdateStatus }) => {
 // ── Case actions (lawful VAWC): severity, mandatory report, BPO, endorsement, close ──
 const inp = { width: "100%", boxSizing: "border-box", padding: "8px 10px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 13, fontFamily: "'Lexend',sans-serif", outline: "none" };
 const btnP = { padding: "9px 14px", borderRadius: 8, border: "none", background: "#9B4DAB", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif", display: "inline-flex", alignItems: "center", gap: 7 };
+// Small secondary button for undo / revert actions (accidental clicks).
+const btnU = { padding: "4px 9px", borderRadius: 6, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" };
+const btnUDanger = { ...btnU, borderColor: "#FECACA", color: "#B91C1C" };
 const lbl = { fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", marginBottom: 4, display: "block" };
 const HRS4 = 4 * 60 * 60 * 1000;
 
@@ -361,7 +364,13 @@ const CaseActions = ({ cas, refetch, showToast }) => {
               <div key={office} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--adm-text)", minWidth: 74, fontFamily: "'Lexend',sans-serif" }}>{name}</span>
                 {at
-                  ? <span style={{ fontSize: 12, color: "#059669", fontFamily: "'Lexend',sans-serif" }}>Reported {fmt(at)}</span>
+                  ? <>
+                      <span style={{ fontSize: 12, color: "#059669", fontFamily: "'Lexend',sans-serif" }}>Reported {fmt(at)}</span>
+                      <button style={btnU} disabled={busy === "undo" + office} title="Undo an accidental mark"
+                        onClick={() => call("undo" + office, () => api.patch(`/admin/cases/${cas.id}/mandatory-report`, { office, clear: true }), `Cleared ${name} report.`)}>
+                        Undo
+                      </button>
+                    </>
                   : <>
                       {overdue && <span style={{ fontSize: 10.5, fontWeight: 700, color: "#991B1B", background: "#FEF2F2", border: "1px solid #FECACA", padding: "1px 7px", borderRadius: 9999 }}>OVERDUE</span>}
                       <button className="rd-btn" style={{ ...btnP, background: "#0E7490", padding: "5px 10px", fontSize: 12 }} disabled={busy === "rpt" + office}
@@ -388,14 +397,30 @@ const CaseActions = ({ cas, refetch, showToast }) => {
                       <span style={{ color: "#7B2D8B", fontWeight: 700, textTransform: "capitalize" }}>{b.status}</span>
                     </div>
                     {b.issued_at && <div style={{ color: "var(--adm-text-muted)", marginTop: 2 }}>Issued {fmtDate(b.issued_at)} · Expires {fmtDate(b.expires_at)}{dl != null && b.status === "issued" ? ` (${dl} day${dl === 1 ? "" : "s"} left)` : ""}</div>}
-                    {b.status === "applied" && !cas.is_deleted && (
-                      <button className="rd-btn" style={{ ...btnP, background: "#C45E10", marginTop: 6, padding: "5px 12px", fontSize: 12 }} disabled={busy === "issue" + b.id}
-                        onClick={() => call("issue" + b.id, () => api.patch(`/admin/bpos/${b.id}/issue`), "BPO issued (valid 15 days).")}>Issue BPO</button>
-                    )}
-                    {b.status === "issued" && !cas.is_deleted && (
-                      <button className="rd-btn" style={{ ...btnP, background: "#B45309", marginTop: 6, padding: "5px 12px", fontSize: 12 }} disabled={busy === "serve" + b.id}
-                        onClick={() => call("serve" + b.id, () => api.patch(`/admin/bpos/${b.id}/serve`, {}), "BPO marked served.")}>Mark Served</button>
-                    )}
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 6 }}>
+                      {b.status === "applied" && !cas.is_deleted && (
+                        <button className="rd-btn" style={{ ...btnP, background: "#C45E10", padding: "5px 12px", fontSize: 12 }} disabled={busy === "issue" + b.id}
+                          onClick={() => call("issue" + b.id, () => api.patch(`/admin/bpos/${b.id}/issue`), "BPO issued (valid 15 days).")}>Issue BPO</button>
+                      )}
+                      {b.status === "issued" && !cas.is_deleted && (
+                        <button className="rd-btn" style={{ ...btnP, background: "#B45309", padding: "5px 12px", fontSize: 12 }} disabled={busy === "serve" + b.id}
+                          onClick={() => call("serve" + b.id, () => api.patch(`/admin/bpos/${b.id}/serve`, {}), "BPO marked served.")}>Mark Served</button>
+                      )}
+                      {/* Undo an accidental click */}
+                      {["issued", "served"].includes(b.status) && !cas.is_deleted && (
+                        <button style={btnU} disabled={busy === "rev" + b.id}
+                          title={b.status === "served" ? "Undo 'served' (back to issued)" : "Undo 'issued' (back to application; clears issue date and expiry)"}
+                          onClick={() => { if (window.confirm(b.status === "served" ? "Undo 'served'? This clears the service details." : "Undo 'issued'? This clears the issue date, expiry and signing official.")) call("rev" + b.id, () => api.patch(`/admin/bpos/${b.id}/revert`), "BPO reverted."); }}>
+                          Undo {b.status === "served" ? "serve" : "issue"}
+                        </button>
+                      )}
+                      {b.status === "applied" && !cas.is_deleted && (
+                        <button style={btnUDanger} disabled={busy === "del" + b.id} title="Delete this BPO application"
+                          onClick={() => { if (window.confirm("Delete this BPO application? It was never issued, so nothing official is lost.")) call("del" + b.id, () => api.delete(`/admin/bpos/${b.id}`), "BPO application deleted."); }}>
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -430,12 +455,26 @@ const CaseActions = ({ cas, refetch, showToast }) => {
                 <span style={{ color: e.acknowledged ? "#059669" : "#C45E10", fontWeight: 700 }}>{e.acknowledged ? "Acknowledged" : "Awaiting ack"}</span>
               </div>
               <div style={{ color: "var(--adm-text-muted)", marginTop: 2 }}>Endorsed {fmtDate(e.date_endorsed)}{e.received_at ? ` · Received ${fmtDate(e.received_at)} by ${e.received_by || "-"}` : ""}</div>
-              {!e.acknowledged && !cas.is_deleted && (
-                <button className="rd-btn" style={{ ...btnP, background: "#059669", marginTop: 6, padding: "5px 12px", fontSize: 12 }} disabled={busy === "ack" + e.id}
-                  onClick={() => { const who = window.prompt("Received by (name / designation):"); if (who) call("ack" + e.id, () => api.patch(`/admin/endorsements/${e.id}/acknowledge`, { received_by: who }), "Endorsement acknowledged."); }}>
-                  Mark Acknowledged
-                </button>
-              )}
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 6 }}>
+                {!e.acknowledged && !cas.is_deleted && (
+                  <button className="rd-btn" style={{ ...btnP, background: "#059669", padding: "5px 12px", fontSize: 12 }} disabled={busy === "ack" + e.id}
+                    onClick={() => { const who = window.prompt("Received by (name / designation):"); if (who) call("ack" + e.id, () => api.patch(`/admin/endorsements/${e.id}/acknowledge`, { received_by: who }), "Endorsement acknowledged."); }}>
+                    Mark Acknowledged
+                  </button>
+                )}
+                {e.acknowledged && !cas.is_deleted && (
+                  <button style={btnU} disabled={busy === "unack" + e.id} title="Undo an accidental acknowledgment"
+                    onClick={() => { if (window.confirm("Remove this acknowledgment? The endorsement goes back to awaiting receipt.")) call("unack" + e.id, () => api.patch(`/admin/endorsements/${e.id}/unacknowledge`), "Acknowledgment removed."); }}>
+                    Undo ack
+                  </button>
+                )}
+                {!cas.is_deleted && (
+                  <button style={btnUDanger} disabled={busy === "dele" + e.id} title="Delete this endorsement"
+                    onClick={() => { if (window.confirm("Delete this endorsement? The case will step back to its previous stage.")) call("dele" + e.id, () => api.delete(`/admin/endorsements/${e.id}`), "Endorsement deleted."); }}>
+                    Delete
+                  </button>
+                )}
+              </div>
             </div>
           ))}
           {!cas.is_deleted && (
@@ -474,6 +513,14 @@ const CaseActions = ({ cas, refetch, showToast }) => {
         {cas.closure_reason && (
           <div style={{ padding: "10px 12px", borderRadius: 8, background: "#F1F5F9", border: "1px solid #CBD5E1", fontSize: 12, fontFamily: "'Lexend',sans-serif" }}>
             <strong style={{ color: "#334155" }}>Closed:</strong> {cas.closure_reason_display || cas.closure_reason}{cas.closure_note ? ` — ${cas.closure_note}` : ""}
+            {!cas.is_deleted && (
+              <div style={{ marginTop: 8 }}>
+                <button style={btnU} disabled={busy === "reopen"} title="Undo an accidental closure"
+                  onClick={() => { if (window.confirm("Reopen this case? The closure reason will be cleared and the case returns to its previous stage.")) call("reopen", () => api.patch(`/admin/cases/${cas.id}/reopen`), "Case reopened."); }}>
+                  Reopen case
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
