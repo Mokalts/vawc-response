@@ -69,12 +69,26 @@ const CSS = `
     .tbl3 td { padding: 2px 4px; }
     .tbl3 .u { border-bottom: 1px solid #000; }
 
+    /* Blocks that must never be split across two sheets */
+    .keep { break-inside: avoid; page-break-inside: avoid; }
+    /* Denser variant so a long form still lands on a single sheet */
+    .pd-compact { font-size: 11.4px; line-height: 1.3; }
+    .pd-compact .row { margin-bottom: 3px; }
+    .pd-compact .pd-formtitle { margin: 8px 0 10px; }
+    .pd-compact .tbl3 { margin: 2px 0 6px; }
+    .pd-compact .tbl3 td { padding: 1px 4px; }
+    .pd-compact .fill { font-size: 11.4px; }
+    .pd-compact ol { margin: 0; }
+    .pd-compact li { margin-bottom: 4px; }
+
     @media print {
-        @page { size: A4; margin: 0.6in 0.7in; }
+        /* margin:0 removes the browser's auto date / URL / page-number header and
+           footer; the page margins live on .pd-paper instead. */
+        @page { size: A4; margin: 0; }
         html, body { background: #fff !important; margin: 0 !important; }
         .pd-wrap { background: #fff !important; padding: 0 !important; }
         .pd-toolbar, .pd-banner, .no-print { display: none !important; }
-        .pd-paper { box-shadow: none !important; margin: 0 !important; padding: 0 !important; max-width: none !important; min-height: 0 !important; }
+        .pd-paper { box-shadow: none !important; margin: 0 !important; padding: 0.5in 0.6in !important; max-width: none !important; min-height: 0 !important; }
         .fill, .ta { background: transparent !important; }
         .ta { background-image: repeating-linear-gradient(transparent, transparent 27px, #000 27px, #000 28px) !important; }
     }
@@ -150,7 +164,7 @@ const BlotterForm = ({ f, set }) => (
         <div className="row mt16" style={{ marginLeft: 18 }}>D. Description of Incident:</div>
         <textarea className="ta" rows={13} value={f.narrative} onChange={e => set({ narrative: e.target.value })} />
 
-        <div className="mt24" style={{ marginLeft: 18 }}>
+        <div className="mt24 keep" style={{ marginLeft: 18 }}>
             <div className="row">Signature of reporter/complainant: <F v={f.sigName} on={v => set({ sigName: v })} w={330} /></div>
             <div className="row">Name of reporter/complainant: <F v={f.complainantName} on={v => set({ complainantName: v })} w={340} /></div>
             <div className="row">Date: <F v={f.sigDate} on={v => set({ sigDate: v })} w={200} /> &nbsp; Time: <F v={f.sigTime} on={v => set({ sigTime: v })} w={140} /></div>
@@ -198,7 +212,7 @@ const ReklamoForm = ({ f, set }) => (
         </div>
         <textarea className="ta" rows={16} value={f.narrative} onChange={e => set({ narrative: e.target.value })} />
 
-        <div className="mt40" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div className="mt40 keep" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
             <div>
                 <div className="sig-line" style={{ width: 220 }} />
                 <span className="cap" style={{ width: 220 }}>Lagda ng Nagsasalaysay</span>
@@ -241,7 +255,7 @@ const BpoApplication = ({ f, set, kids }) => {
         </>
     );
     return (
-        <div className="pd-paper">
+        <div className="pd-paper pd-compact">
             <Head office="" />
             <p className="right" style={{ margin: "-14px 0 6px" }}>Control No. <F v={f.controlNo} on={v => set({ controlNo: v })} w={170} /></p>
             <p className="pd-formtitle" style={{ marginTop: 0 }}>APPLICATION FOR BARANGAY PROTECTION ORDER</p>
@@ -302,20 +316,23 @@ const BpoApplication = ({ f, set, kids }) => {
                 </li>
             </ol>
 
-            <div className="mt24 right">
-                <div className="sig-line" style={{ width: 300, marginLeft: "auto" }} />
-                <span className="cap" style={{ width: 300, marginLeft: "auto" }}>Signature of Applicant Over Printed Name</span>
-                <div style={{ marginTop: 4 }}>Date: <F v={f.appDate} on={v => set({ appDate: v })} w={230} /></div>
-            </div>
+            {/* Signature, certification and signatory must stay on one sheet */}
+            <div className="keep">
+                <div className="mt16 right">
+                    <div className="sig-line" style={{ width: 300, marginLeft: "auto" }} />
+                    <span className="cap" style={{ width: 300, marginLeft: "auto" }}>Signature of Applicant Over Printed Name</span>
+                    <div style={{ marginTop: 4 }}>Date: <F v={f.appDate} on={v => set({ appDate: v })} w={230} /></div>
+                </div>
 
-            <p className="mt16" style={{ textIndent: "2em", textAlign: "justify" }}>
-                I certify that the applicant for BPO who personally appeared before me is a bona fide resident of this
-                barangay and is the same person that who supplied above information and attest to the said information.
-            </p>
+                <p className="mt16" style={{ textIndent: "2em", textAlign: "justify" }}>
+                    I certify that the applicant for BPO who personally appeared before me is a bona fide resident of this
+                    barangay and is the same person that who supplied above information and attest to the said information.
+                </p>
 
-            <div className="mt24 right">
-                <p style={{ margin: 0, fontWeight: 700 }}>{f.punongBarangay || " "}</p>
-                <p style={{ margin: 0 }}>Punong Barangay</p>
+                <div className="mt16 right">
+                    <p style={{ margin: 0, fontWeight: 700 }}>{f.punongBarangay || " "}</p>
+                    <p style={{ margin: 0 }}>Punong Barangay</p>
+                </div>
             </div>
         </div>
     );
@@ -367,7 +384,7 @@ const BpoOrder = ({ f, set, bpo, showValidity }) => (
             </p>
         )}
 
-        <div className="mt40 right" style={{ marginRight: 30 }}>
+        <div className="mt40 right keep" style={{ marginRight: 30 }}>
             <p style={{ margin: 0, fontWeight: 700 }}>{f.punongBarangay || " "}</p>
             <p style={{ margin: 0 }}>Punong Barangay</p>
         </div>
@@ -401,7 +418,7 @@ const Endorsement1st = ({ f, set, endorsement, showAck }) => {
                     style={{ width: `${Math.max(11, String(f.purpose || "CASE NAME").length + 1)}ch`, textDecoration: "underline", textTransform: "uppercase" }} />.
             </p>
 
-            <div style={{ marginTop: 96, textAlign: "center" }}>
+            <div className="keep" style={{ marginTop: 96, textAlign: "center" }}>
                 <p style={{ margin: 0, fontWeight: 700 }}>{f.punongBarangay || " "}</p>
                 <p style={{ margin: 0 }}>Punong Barangay</p>
             </div>
@@ -420,12 +437,11 @@ const Endorsement1st = ({ f, set, endorsement, showAck }) => {
 };
 
 // ─── BPO packet: the 3 pages the barangay files together ────────────────────
-// Page order follows the barangay's own packet: BPO, then the Application,
-// then the Pormal na Reklamo.
+// The barangay's packet: Application first, then the BPO, then the Reklamo.
 const BpoPacket = (props) => (
     <>
-        <div className="pd-page-break"><BpoOrder {...props} /></div>
         <div className="pd-page-break"><BpoApplication {...props} /></div>
+        <div className="pd-page-break"><BpoOrder {...props} /></div>
         <ReklamoForm {...props} />
     </>
 );
@@ -434,7 +450,7 @@ const BpoPacket = (props) => (
 const DOC_TYPES = {
     blotter:     { component: BlotterForm,    title: "Blotter Form",      office: "Sangguniang Barangay" },
     reklamo:     { component: ReklamoForm,    title: "Pormal na Reklamo", office: "Katarungang Pambarangay" },
-    "bpo-app":   { component: BpoPacket,      title: "BPO Application (3 pages)", office: "BPO + Application + Pormal na Reklamo" },
+    "bpo-app":   { component: BpoPacket,      title: "BPO Application (3 pages)", office: "Application + BPO + Pormal na Reklamo" },
     bpo:         { component: BpoOrder,       title: "Barangay Protection Order", office: "Punong Barangay" },
     endorsement: { component: Endorsement1st, title: "1st Endorsement",   office: "Punong Barangay" },
 };

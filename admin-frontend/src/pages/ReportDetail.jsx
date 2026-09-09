@@ -575,12 +575,12 @@ const CaseActions = ({ cas, refetch, showToast }) => {
 
 const PrintPanel = ({ cas }) => {
   const navigate = useNavigate();
+  // The BPO packet already contains the Application, the BPO and the Pormal na
+  // Reklamo, so those are not listed separately — print a page range instead.
   const docs = [
-    { key: "blotter",     label: "Blotter Form",           sub: "Office of the Sangguniang Barangay" },
-    { key: "reklamo",     label: "Pormal na Reklamo",      sub: "VAWC complaint form" },
-    { key: "bpo-app",     label: "BPO Application",        sub: "Application for Barangay Protection Order" },
-    { key: "bpo",         label: "Barangay Protection Order", sub: "Valid 15 days · Punong Barangay" },
-    { key: "endorsement", label: "1st Endorsement",        sub: "Referral to PNP / C-MSWDO / Court" },
+    { key: "blotter",     label: "Blotter Form",     sub: "Statement, first step in filing" },
+    { key: "bpo-app",     label: "BPO Application",  sub: "3 pages: Application, BPO, Pormal na Reklamo" },
+    { key: "endorsement", label: "1st Endorsement",  sub: "Referral to the Chief of Police, Iba MPS" },
   ];
   return (
     <Card title="Print Documents" icon={<IcoPrint size={16} color="#475569" />}>
