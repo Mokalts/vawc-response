@@ -143,8 +143,8 @@ function PeriodTabs({ period, onChange }) {
 function StatusBadge({ rawStatus, displayLabel }) {
     const cfg = sCfg(rawStatus);
     return (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 4, fontSize: 11.5, fontWeight: 600, color: cfg.color, backgroundColor: cfg.bg, whiteSpace: 'nowrap', fontFamily: "'Lexend',sans-serif" }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: cfg.dot, flexShrink: 0 }} />
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 4, fontSize: 11.5, fontWeight: 600, color: 'var(--adm-text-2)', backgroundColor: 'var(--adm-muted)', border: '1px solid var(--adm-border)', whiteSpace: 'nowrap', fontFamily: "'Lexend',sans-serif" }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: cfg.dot, flexShrink: 0 }} />
             {displayLabel || cfg.label}
         </span>
     );
@@ -377,56 +377,86 @@ function IncidentBars({ data, loading }) {
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 const ABUSE_LABEL = { physical: "Physical", sexual: "Sexual", psychological: "Psychological", economic: "Economic", others: "Others" };
+
+// Monitoring uses the same widget language as the rest of the dashboard:
+// square-cornered stat cards and table cards with an accent bar + uppercase title.
 function MonitoringSection({ m, expiring }) {
-    const Tile = ({ label, value, sub, tone = "#7B2D8B" }) => (
-        <div style={{ background: 'var(--adm-card)', border: '1px solid var(--adm-border)', borderRadius: 10, padding: '14px 16px', boxShadow: 'var(--adm-card-shadow)' }}>
-            <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>{label}</p>
-            <p style={{ margin: '4px 0 0', fontSize: 22, fontWeight: 800, color: tone, fontFamily: "'Lexend',sans-serif" }}>{value}</p>
-            {sub && <p style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>{sub}</p>}
+    const md = m.mandatory_report || {};
+    const Stat = ({ label, value, sub }) => (
+        <div style={S.statCard}>
+            <div>
+                <p style={S.statNum}>{value}</p>
+                <p style={S.statLabel}>{label}</p>
+            </div>
+            {sub && <div style={S.statMeta}><span style={{ fontSize: 11.5, color: '#64748B', fontFamily: FF }}>{sub}</span></div>}
         </div>
     );
-    const Breakdown = ({ title, data }) => {
-        const entries = Object.entries(data || {});
-        return (
-            <div style={{ background: 'var(--adm-card)', border: '1px solid var(--adm-border)', borderRadius: 10, padding: '14px 16px', boxShadow: 'var(--adm-card-shadow)' }}>
-                <p style={{ margin: '0 0 10px', fontSize: 12.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: "'Lexend',sans-serif" }}>{title}</p>
-                {entries.length ? entries.map(([k, v]) => (
-                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 12.5, padding: '3px 0', color: 'var(--adm-text-2)', fontFamily: "'Lexend',sans-serif" }}>
-                        <span>{ABUSE_LABEL[k] || k}</span><strong style={{ color: 'var(--adm-text)' }}>{v}</strong>
-                    </div>
-                )) : <p style={{ margin: 0, fontSize: 12, color: 'var(--adm-text-muted)', fontStyle: 'italic', fontFamily: "'Lexend',sans-serif" }}>No data yet.</p>}
+    const Panel = ({ title, tag, children }) => (
+        <div style={S.tableCard}>
+            <div style={S.tableHeader}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={S.cardAccent} />
+                    <span style={S.cardTitle}>{title}</span>
+                </div>
+                {tag && <span style={S.periodTag}>{tag}</span>}
             </div>
-        );
+            <div style={{ padding: '14px 20px' }}>{children}</div>
+        </div>
+    );
+    const List = ({ data, labelMap }) => {
+        const rows = Object.entries(data || {});
+        if (!rows.length) return <p style={{ margin: 0, fontSize: 12.5, color: '#64748B', fontFamily: FF }}>No data yet.</p>;
+        return rows.map(([k, v]) => (
+            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '5px 0', borderBottom: '1px solid var(--adm-muted)', fontSize: 13, color: 'var(--adm-text-2)', fontFamily: FF }}>
+                <span>{(labelMap && labelMap[k]) || k}</span>
+                <strong style={{ color: 'var(--adm-text)' }}>{v}</strong>
+            </div>
+        ));
     };
-    const md = m.mandatory_report || {};
+
     return (
         <div style={{ marginTop: 18 }}>
-            <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 800, color: 'var(--adm-text)', fontFamily: "'Lexend',sans-serif" }}>VAWC Monitoring <span style={{ fontSize: 11.5, fontWeight: 500, color: 'var(--adm-text-muted)' }}>· RA 9262 / JMC 2010-2 compliance</span></h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 14 }}>
-                <Tile label="BPOs issued same-day" value={`${m.bpo?.same_day_pct ?? 0}%`} sub={`${m.bpo?.issued_same_day ?? 0} of ${m.bpo?.ever_issued ?? 0}`} tone="#C45E10" />
-                <Tile label="Reported to PNP ≤4h" value={`${md.pnp_within_4h_pct ?? 0}%`} sub={`${md.pnp_within_4h ?? 0} of ${m.total_cases ?? 0} cases`} tone="#0E7490" />
-                <Tile label="Reported to C/MSWDO ≤4h" value={`${md.mswdo_within_4h_pct ?? 0}%`} sub={`${md.mswdo_within_4h ?? 0} of ${m.total_cases ?? 0} cases`} tone="#0E7490" />
-                <Tile label="Endorsements outstanding" value={m.endorsements?.outstanding ?? 0} sub={`${m.endorsements?.acknowledged ?? 0} ack / ${m.endorsements?.sent ?? 0} sent`} tone="#DC2626" />
-                <Tile label="BPOs (issued / served)" value={`${m.bpo?.issued ?? 0} / ${m.bpo?.served ?? 0}`} sub={`${m.bpo?.applied ?? 0} applied · ${m.bpo?.expired ?? 0} expired`} tone="#7B2D8B" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <div style={S.cardAccent} />
+                <span style={S.cardTitle}>VAWC Monitoring</span>
+                <span style={S.periodTag}>RA 9262 / JMC 2010-2</span>
             </div>
 
-            {expiring && expiring.length > 0 && (
-                <div style={{ background: '#FFFBEB', border: '1.5px solid #FDE68A', borderRadius: 10, padding: '12px 16px', marginBottom: 14 }}>
-                    <p style={{ margin: '0 0 8px', fontSize: 12.5, fontWeight: 800, color: '#92400E', fontFamily: "'Lexend',sans-serif" }}>⚠ BPOs expiring / expired ({expiring.length})</p>
-                    {expiring.map(b => (
-                        <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 12.5, padding: '3px 0', color: '#78350F', fontFamily: "'Lexend',sans-serif" }}>
-                            <span>{b.bpo_number}</span>
-                            <span>{b.expired ? 'EXPIRED' : `${b.days_left} day${b.days_left === 1 ? '' : 's'} left`}</span>
-                        </div>
-                    ))}
-                    <p style={{ margin: '6px 0 0', fontSize: 11, color: '#92400E', fontStyle: 'italic', fontFamily: "'Lexend',sans-serif" }}>A BPO cannot be extended or renewed. Options: a new incident then a new BPO, or endorse to court / PAO for a TPO.</p>
-                </div>
-            )}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14, marginBottom: 18 }}>
+                <Stat label="BPOs issued same day" value={`${m.bpo?.same_day_pct ?? 0}%`} sub={`${m.bpo?.issued_same_day ?? 0} of ${m.bpo?.ever_issued ?? 0} issued`} />
+                <Stat label="Reported to PNP within 4 hours" value={`${md.pnp_within_4h_pct ?? 0}%`} sub={`${md.pnp_within_4h ?? 0} of ${m.total_cases ?? 0} cases`} />
+                <Stat label="Reported to C/MSWDO within 4 hours" value={`${md.mswdo_within_4h_pct ?? 0}%`} sub={`${md.mswdo_within_4h ?? 0} of ${m.total_cases ?? 0} cases`} />
+                <Stat label="Endorsements awaiting receipt" value={m.endorsements?.outstanding ?? 0} sub={`${m.endorsements?.acknowledged ?? 0} acknowledged of ${m.endorsements?.sent ?? 0} sent`} />
+            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-                <Breakdown title="Cases by abuse type" data={m.by_abuse_type} />
-                <Breakdown title="Cases by relationship to offender" data={m.by_relationship} />
-                <Breakdown title="Closed cases by reason" data={m.closed_by_reason} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
+                <Panel title="Barangay Protection Orders" tag={`${m.bpo?.ever_issued ?? 0} issued`}>
+                    <List data={{ Applied: m.bpo?.applied ?? 0, Issued: m.bpo?.issued ?? 0, Served: m.bpo?.served ?? 0, Expired: m.bpo?.expired ?? 0 }} />
+                    {expiring && expiring.length > 0 && (
+                        <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--adm-border)' }}>
+                            <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 700, color: '#92400E', fontFamily: FF }}>Expiring or expired ({expiring.length})</p>
+                            {expiring.map(b => (
+                                <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '3px 0', fontSize: 12.5, color: '#78350F', fontFamily: FF }}>
+                                    <span>{b.bpo_number}</span>
+                                    <span>{b.expired ? 'Expired' : `${b.days_left} day${b.days_left === 1 ? '' : 's'} left`}</span>
+                                </div>
+                            ))}
+                            <p style={{ margin: '6px 0 0', fontSize: 11, color: '#92400E', fontFamily: FF }}>A BPO cannot be extended or renewed. A new order needs a new incident, or endorse to court or PAO for a TPO.</p>
+                        </div>
+                    )}
+                </Panel>
+
+                <Panel title="Cases by abuse type">
+                    <List data={m.by_abuse_type} labelMap={ABUSE_LABEL} />
+                </Panel>
+
+                <Panel title="Cases by relationship to offender">
+                    <List data={m.by_relationship} />
+                </Panel>
+
+                <Panel title="Closed cases by reason">
+                    <List data={m.closed_by_reason} />
+                </Panel>
             </div>
         </div>
     );

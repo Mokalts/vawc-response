@@ -56,8 +56,8 @@ function SkelRow({ cols = 5 }) {
 function StatusBadge({ rawStatus, displayLabel }) {
   const cfg = sCfg(rawStatus);
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 4, background: cfg.bg, color: cfg.color, fontSize: 11.5, fontWeight: 600, whiteSpace: "nowrap", fontFamily: "'Lexend',sans-serif" }}>
-      <span style={{ width: 8, height: 8, borderRadius: '50%', background: cfg.dot, flexShrink: 0 }} />
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 4, background: "var(--adm-muted)", color: "var(--adm-text-2)", border: "1px solid var(--adm-border)", fontSize: 11.5, fontWeight: 600, whiteSpace: "nowrap", fontFamily: "'Lexend',sans-serif" }}>
+      <span style={{ width: 7, height: 7, borderRadius: '50%', background: cfg.dot, flexShrink: 0 }} />
       {displayLabel || cfg.label}
     </span>
   );

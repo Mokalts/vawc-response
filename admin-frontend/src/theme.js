@@ -196,17 +196,19 @@ export const statusPill = (rawStatus) => {
     label: rawStatus || "Unknown",
     color: COLORS.textMuted, bg: COLORS.bgMuted, border: COLORS.border, dot: COLORS.borderStrong,
   };
+  // Uniform chip: one neutral shape for every status, colour carried only by the
+  // dot. Keeps the tables calm instead of a different coloured block per status.
   return {
     style: {
-      display: "inline-flex", alignItems: "center", gap: 5,
-      padding: "3px 10px", borderRadius: RADIUS.pill,
+      display: "inline-flex", alignItems: "center", gap: 6,
+      padding: "4px 10px", borderRadius: 4,
       fontSize: 11.5, fontWeight: 600,
-      color: cfg.color, backgroundColor: cfg.bg,
-      border: `1px solid ${cfg.border}`,
+      color: "var(--adm-text-2)", backgroundColor: "var(--adm-muted)",
+      border: "1px solid var(--adm-border)",
       fontFamily: TEXT.font, whiteSpace: "nowrap",
     },
     dotStyle: {
-      width: 6, height: 6, borderRadius: RADIUS.circle,
+      width: 7, height: 7, borderRadius: RADIUS.circle,
       backgroundColor: cfg.dot, flexShrink: 0,
     },
     label: cfg.label,

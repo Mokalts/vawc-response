@@ -332,6 +332,9 @@ const CaseActions = ({ cas, refetch, showToast }) => {
   const [endo, setEndo] = useState({ to_office: "pnp_iba_mps", purpose: "", docs: "" });
   // Close form
   const [close, setClose] = useState({ reason: "", note: "" });
+  // Acknowledgment modal (replaces a raw browser prompt)
+  const [ackFor, setAckFor] = useState(null);
+  const [ackName, setAckName] = useState("");
 
   const overduePnp = !cas.reported_to_pnp_at && cas.created_at && (Date.now() - new Date(cas.created_at).getTime() > HRS4);
   const overdueMswdo = !cas.reported_to_mswdo_at && cas.created_at && (Date.now() - new Date(cas.created_at).getTime() > HRS4);
@@ -367,7 +370,10 @@ const CaseActions = ({ cas, refetch, showToast }) => {
                   ? <>
                       <span style={{ fontSize: 12, color: "#059669", fontFamily: "'Lexend',sans-serif" }}>Reported {fmt(at)}</span>
                       <button style={btnU} disabled={busy === "undo" + office} title="Undo an accidental mark"
-                        onClick={() => call("undo" + office, () => api.patch(`/admin/cases/${cas.id}/mandatory-report`, { office, clear: true }), `Cleared ${name} report.`)}>
+                        onClick={async () => {
+                          if (await confirmDialog({ title: `Undo ${name} report?`, message: `The recorded date and time of reporting to ${name} will be cleared. The 4-hour compliance clock will show this case as not yet reported.`, confirmLabel: "Undo" }))
+                            call("undo" + office, () => api.patch(`/admin/cases/${cas.id}/mandatory-report`, { office, clear: true }), `Cleared ${name} report.`);
+                        }}>
                         Undo
                       </button>
                     </>
@@ -410,13 +416,21 @@ const CaseActions = ({ cas, refetch, showToast }) => {
                       {["issued", "served"].includes(b.status) && !cas.is_deleted && (
                         <button style={btnU} disabled={busy === "rev" + b.id}
                           title={b.status === "served" ? "Undo 'served' (back to issued)" : "Undo 'issued' (back to application; clears issue date and expiry)"}
-                          onClick={() => { if (window.confirm(b.status === "served" ? "Undo 'served'? This clears the service details." : "Undo 'issued'? This clears the issue date, expiry and signing official.")) call("rev" + b.id, () => api.patch(`/admin/bpos/${b.id}/revert`), "BPO reverted."); }}>
+                          onClick={async () => {
+                            const ok = await confirmDialog(b.status === "served"
+                              ? { title: "Undo 'served'?", message: `BPO ${b.bpo_number} will go back to Issued. The service date, server and proof of service will be cleared.`, confirmLabel: "Undo serve" }
+                              : { title: "Undo 'issued'?", message: `BPO ${b.bpo_number} will go back to an application. The issue date, 15-day expiry and signing official will be cleared.`, confirmLabel: "Undo issue" });
+                            if (ok) call("rev" + b.id, () => api.patch(`/admin/bpos/${b.id}/revert`), "BPO reverted.");
+                          }}>
                           Undo {b.status === "served" ? "serve" : "issue"}
                         </button>
                       )}
                       {b.status === "applied" && !cas.is_deleted && (
                         <button style={btnUDanger} disabled={busy === "del" + b.id} title="Delete this BPO application"
-                          onClick={() => { if (window.confirm("Delete this BPO application? It was never issued, so nothing official is lost.")) call("del" + b.id, () => api.delete(`/admin/bpos/${b.id}`), "BPO application deleted."); }}>
+                          onClick={async () => {
+                            if (await confirmDialog({ title: "Delete BPO application?", message: `${b.bpo_number} was never issued, so no official order is lost. This cannot be undone.`, confirmLabel: "Delete", danger: true }))
+                              call("del" + b.id, () => api.delete(`/admin/bpos/${b.id}`), "BPO application deleted.");
+                          }}>
                           Delete
                         </button>
                       )}
@@ -458,19 +472,25 @@ const CaseActions = ({ cas, refetch, showToast }) => {
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 6 }}>
                 {!e.acknowledged && !cas.is_deleted && (
                   <button className="rd-btn" style={{ ...btnP, background: "#059669", padding: "5px 12px", fontSize: 12 }} disabled={busy === "ack" + e.id}
-                    onClick={() => { const who = window.prompt("Received by (name / designation):"); if (who) call("ack" + e.id, () => api.patch(`/admin/endorsements/${e.id}/acknowledge`, { received_by: who }), "Endorsement acknowledged."); }}>
+                    onClick={() => { setAckFor(e); setAckName(""); }}>
                     Mark Acknowledged
                   </button>
                 )}
                 {e.acknowledged && !cas.is_deleted && (
                   <button style={btnU} disabled={busy === "unack" + e.id} title="Undo an accidental acknowledgment"
-                    onClick={() => { if (window.confirm("Remove this acknowledgment? The endorsement goes back to awaiting receipt.")) call("unack" + e.id, () => api.patch(`/admin/endorsements/${e.id}/unacknowledge`), "Acknowledgment removed."); }}>
+                    onClick={async () => {
+                      if (await confirmDialog({ title: "Remove acknowledgment?", message: `Endorsement #${e.endorsement_number} will go back to awaiting receipt. The receiver's name and date will be cleared.`, confirmLabel: "Remove" }))
+                        call("unack" + e.id, () => api.patch(`/admin/endorsements/${e.id}/unacknowledge`), "Acknowledgment removed.");
+                    }}>
                     Undo ack
                   </button>
                 )}
                 {!cas.is_deleted && (
                   <button style={btnUDanger} disabled={busy === "dele" + e.id} title="Delete this endorsement"
-                    onClick={() => { if (window.confirm("Delete this endorsement? The case will step back to its previous stage.")) call("dele" + e.id, () => api.delete(`/admin/endorsements/${e.id}`), "Endorsement deleted."); }}>
+                    onClick={async () => {
+                      if (await confirmDialog({ title: "Delete endorsement?", message: `Endorsement #${e.endorsement_number} will be removed and the case steps back to its previous stage. This cannot be undone.`, confirmLabel: "Delete", danger: true }))
+                        call("dele" + e.id, () => api.delete(`/admin/endorsements/${e.id}`), "Endorsement deleted.");
+                    }}>
                     Delete
                   </button>
                 )}
@@ -512,11 +532,14 @@ const CaseActions = ({ cas, refetch, showToast }) => {
         )}
         {cas.closure_reason && (
           <div style={{ padding: "10px 12px", borderRadius: 8, background: "#F1F5F9", border: "1px solid #CBD5E1", fontSize: 12, fontFamily: "'Lexend',sans-serif" }}>
-            <strong style={{ color: "#334155" }}>Closed:</strong> {cas.closure_reason_display || cas.closure_reason}{cas.closure_note ? ` — ${cas.closure_note}` : ""}
+            <strong style={{ color: "#334155" }}>Closed:</strong> {cas.closure_reason_display || cas.closure_reason}{cas.closure_note ? `. ${cas.closure_note}` : ""}
             {!cas.is_deleted && (
               <div style={{ marginTop: 8 }}>
                 <button style={btnU} disabled={busy === "reopen"} title="Undo an accidental closure"
-                  onClick={() => { if (window.confirm("Reopen this case? The closure reason will be cleared and the case returns to its previous stage.")) call("reopen", () => api.patch(`/admin/cases/${cas.id}/reopen`), "Case reopened."); }}>
+                  onClick={async () => {
+                    if (await confirmDialog({ title: "Reopen this case?", message: "The recorded closure reason will be cleared and the case returns to the stage its records support.", confirmLabel: "Reopen" }))
+                      call("reopen", () => api.patch(`/admin/cases/${cas.id}/reopen`), "Case reopened.");
+                  }}>
                   Reopen case
                 </button>
               </div>
@@ -524,6 +547,28 @@ const CaseActions = ({ cas, refetch, showToast }) => {
           </div>
         )}
       </div>
+
+      {/* Acknowledgment modal */}
+      {ackFor && (
+        <div style={M.backdrop} onClick={() => setAckFor(null)}>
+          <div style={{ ...M.modal, maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+            <p style={M.title}>Acknowledge Endorsement #{ackFor.endorsement_number}</p>
+            <p style={M.sub}>Record who at {ackFor.to_office_display || ackFor.to_office} received it.</p>
+            <input autoFocus value={ackName} onChange={e => setAckName(e.target.value)}
+              placeholder="Received by (name / designation)"
+              onKeyDown={e => { if (e.key === "Enter" && ackName.trim()) { const t = ackFor; setAckFor(null); call("ack" + t.id, () => api.patch(`/admin/endorsements/${t.id}/acknowledge`, { received_by: ackName.trim() }), "Endorsement acknowledged."); } }}
+              style={{ ...inp, marginTop: 14 }} />
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 16 }}>
+              <button style={M.cancelBtn} onClick={() => setAckFor(null)}>Cancel</button>
+              <button style={{ ...M.saveBtn, background: ackName.trim() ? "#059669" : "var(--adm-border)", cursor: ackName.trim() ? "pointer" : "not-allowed" }}
+                disabled={!ackName.trim()}
+                onClick={() => { const t = ackFor; setAckFor(null); call("ack" + t.id, () => api.patch(`/admin/endorsements/${t.id}/acknowledge`, { received_by: ackName.trim() }), "Endorsement acknowledged."); }}>
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Card>
   );
 };
@@ -746,7 +791,7 @@ export default function ReportDetail() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
                 <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>{cas.case_number}</h1>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 4, fontSize: 12.5, fontWeight: 600, color: cfg.color, background: cfg.bg, fontFamily: "'Lexend',sans-serif" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 4, fontSize: 12.5, fontWeight: 600, color: "var(--adm-text-2)", background: "var(--adm-muted)", border: "1px solid var(--adm-border)", fontFamily: "'Lexend',sans-serif" }}>
                   <span style={{ width: 7, height: 7, borderRadius: '50%', background: cfg.dot }} />{cas.status_display || cfg.label}
                 </span>
                 {isMinor && (

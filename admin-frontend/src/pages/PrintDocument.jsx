@@ -109,9 +109,13 @@ const Head = ({ office }) => (
     </>
 );
 
-// Inline fill-in blank
-const F = ({ v, on, w = 200, b, c, ph }) => (
-    <input className={`fill${b ? " b" : ""}${c ? " c" : ""}`} style={{ width: w }} value={v || ""} placeholder={ph || ""} onChange={e => on(e.target.value)} />
+// Inline fill-in blank. `auto` grows the field to fit its text so nothing is
+// truncated and the surrounding sentence can wrap naturally.
+const F = ({ v, on, w = 200, b, c, ph, auto, min = 14 }) => (
+    <input
+        className={`fill${b ? " b" : ""}${c ? " c" : ""}`}
+        style={auto ? { width: `${Math.max(min, String(v || ph || "").length + 1)}ch`, maxWidth: "100%" } : { width: w }}
+        value={v || ""} placeholder={ph || ""} onChange={e => on(e.target.value)} />
 );
 // ( ) checkbox that prints as ( ) or (✓)
 const CB = ({ on, checked, children }) => (
@@ -382,12 +386,14 @@ const Endorsement1st = ({ f, set, endorsement }) => {
             <p className="pd-formtitle">{ord.toUpperCase()} ENDORSEMENT</p>
             <p className="right">{endorsement?.date_endorsed ? fmtDate(endorsement.date_endorsed) : <F v={f.endorseDate} on={v => set({ endorseDate: v })} w={200} />}</p>
 
-            <p className="mt16" style={{ textIndent: "2em", textAlign: "justify" }}>
-                Respectfully endorsed to the <F v={f.toOffice} on={v => set({ toOffice: v })} w={280} /> the attached{" "}
-                <F v={f.attachedDocs} on={v => set({ attachedDocs: v })} w={220} /> on the complaint of{" "}
-                <F v={f.complainantName} on={v => set({ complainantName: v })} w={230} /> of <F v={f.complainantAddress} on={v => set({ complainantAddress: v })} w={220} /> against the respondent{" "}
-                <F v={f.respondentName} on={v => set({ respondentName: v })} w={230} /> of <F v={f.respondentAddress} on={v => set({ respondentAddress: v })} w={220} /> for{" "}
-                <F v={f.purpose} on={v => set({ purpose: v })} w={260} />.
+            <p className="mt16" style={{ textIndent: "2em", textAlign: "justify", lineHeight: 2.35 }}>
+                Respectfully endorsed to the <F auto v={f.toOffice} on={v => set({ toOffice: v })} /> the attached{" "}
+                <F auto v={f.attachedDocs} on={v => set({ attachedDocs: v })} /> on the complaint of{" "}
+                <F auto v={f.complainantName} on={v => set({ complainantName: v })} /> of{" "}
+                <F auto v={f.complainantAddress} on={v => set({ complainantAddress: v })} /> against the respondent{" "}
+                <F auto v={f.respondentName} on={v => set({ respondentName: v })} /> of{" "}
+                <F auto v={f.respondentAddress} on={v => set({ respondentAddress: v })} /> for{" "}
+                <F auto v={f.purpose} on={v => set({ purpose: v })} ph="purpose" />.
             </p>
 
             <div className="mt40 right" style={{ marginRight: 30 }}>
