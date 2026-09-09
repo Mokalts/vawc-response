@@ -376,7 +376,6 @@ function IncidentBars({ data, loading }) {
 }
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
-const ABUSE_LABEL = { physical: "Physical", sexual: "Sexual", psychological: "Psychological", economic: "Economic", others: "Others" };
 
 // Monitoring uses the same widget language as the rest of the dashboard:
 // square-cornered stat cards and table cards with an accent bar + uppercase title.
@@ -426,7 +425,6 @@ function MonitoringSection({ m, expiring }) {
                 <Stat label="BPOs issued same day" value={`${m.bpo?.same_day_pct ?? 0}%`} sub={`${m.bpo?.issued_same_day ?? 0} of ${m.bpo?.ever_issued ?? 0} issued`} />
                 <Stat label="Reported to PNP within 4 hours" value={`${md.pnp_within_4h_pct ?? 0}%`} sub={`${md.pnp_within_4h ?? 0} of ${m.total_cases ?? 0} cases`} />
                 <Stat label="Reported to C/MSWDO within 4 hours" value={`${md.mswdo_within_4h_pct ?? 0}%`} sub={`${md.mswdo_within_4h ?? 0} of ${m.total_cases ?? 0} cases`} />
-                <Stat label="Endorsements awaiting receipt" value={m.endorsements?.outstanding ?? 0} sub={`${m.endorsements?.acknowledged ?? 0} acknowledged of ${m.endorsements?.sent ?? 0} sent`} />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
@@ -446,16 +444,9 @@ function MonitoringSection({ m, expiring }) {
                     )}
                 </Panel>
 
-                <Panel title="Cases by abuse type">
-                    <List data={m.by_abuse_type} labelMap={ABUSE_LABEL} />
-                </Panel>
-
-                <Panel title="Cases by relationship to offender">
-                    <List data={m.by_relationship} />
-                </Panel>
-
-                <Panel title="Closed cases by reason">
-                    <List data={m.closed_by_reason} />
+                <Panel title="Referral follow-up" tag={`${m.endorsements?.outstanding ?? 0} awaiting`}>
+                    <List data={{ 'Endorsements sent': m.endorsements?.sent ?? 0, 'Acknowledged by receiving office': m.endorsements?.acknowledged ?? 0, 'Still awaiting receipt': m.endorsements?.outstanding ?? 0 }} />
+                    <p style={{ margin: '8px 0 0', fontSize: 11, color: 'var(--adm-text-muted)', fontFamily: FF }}>An endorsement is not complete until the receiving office acknowledges it.</p>
                 </Panel>
             </div>
         </div>
@@ -538,7 +529,11 @@ export default function Dashboard() {
     const canApply    = customStart && customEnd;
 
     // Exclude submitted (unconfirmed) cases from the dashboard table
-    const reports = (stats?.recent_reports || []).filter(r => r.status !== 'submitted');
+    // Recent cases: confirmed cases only, newest first, capped at 10.
+    const RECENT_LIMIT = 10;
+    const reports = (stats?.recent_reports || [])
+        .filter(r => r.status !== 'submitted')
+        .slice(0, RECENT_LIMIT);
 
     return (
         <AdminLayout>
@@ -685,12 +680,14 @@ export default function Dashboard() {
                     </div>
                 </div>
 
+                {monitoring && <MonitoringSection m={monitoring} expiring={expiring} />}
+
                 {/* ── Analytics ────────────────────────────────────────────── */}
                 <div style={S.analyticsRow}>
                     <ChartCard title="Cases by Status" subtitle={periodDesc}>
                         <StatusDonut byStatus={stats?.by_status} loading={loading} />
                     </ChartCard>
-                    <ChartCard title="Incident Types" subtitle={periodDesc}>
+                    <ChartCard title="Cases by Abuse Type" subtitle={periodDesc}>
                         <IncidentBars data={stats?.incident_types} loading={loading} />
                     </ChartCard>
                 </div>
@@ -701,7 +698,7 @@ export default function Dashboard() {
                     <div style={S.tableHeader}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <div style={S.cardAccent} />
-                            <span style={S.cardTitle}>Cases</span>
+                            <span style={S.cardTitle}>Recent Cases</span>
                             <span style={S.periodTag}>{activeLabel}</span>
                             {!loading && subtitle && (
                                 <span style={{ fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>
@@ -783,8 +780,6 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
-
-            {monitoring && <MonitoringSection m={monitoring} expiring={expiring} />}
 
             {showModal && <NewReportsModal onClose={() => setShowModal(false)} onConfirmed={handleConfirmed} />}
         </AdminLayout>

@@ -53,6 +53,8 @@ function SkelRow({ cols = 5 }) {
   );
 }
 
+const initials = (name) => (name || "").trim().split(/\s+/).filter(Boolean).slice(0, 2).map(n => n[0]).join("").toUpperCase() || "-";
+
 function StatusBadge({ rawStatus, displayLabel }) {
   const cfg = sCfg(rawStatus);
   return (
@@ -252,14 +254,14 @@ export default function Reports() {
                     <tr key={v.user_id} className="row-hover" onClick={() => openCases(v)}>
                       <td style={S.td}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <div style={{ width: 36, height: 36, borderRadius: 4, background: "#F3E5F5", border: "1.5px solid #E1BEE7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><IcoUser size={18} color="#9B4DAB" /></div>
+                          <div style={{ width: 36, height: 36, borderRadius: 4, background: "var(--adm-muted)", border: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 12, fontWeight: 700, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif", letterSpacing: "0.02em" }}>{initials(v.full_name)}</div>
                           <div><p style={S.victimName}>{v.full_name}</p><p style={S.victimSub}>{v.email || "-"}</p></div>
                         </div>
                       </td>
                       <td style={S.td}><span style={{ fontSize: 13, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>{v.phone_number || "-"}</span></td>
                       <td style={{ ...S.td, textAlign: "center" }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 4, background: "#F3E5F5", color: "#7B2D8B", fontSize: 12, fontWeight: 700, fontFamily: "'Lexend',sans-serif" }}>
-                          <IcoFolder size={13} color="#7B2D8B" />{v.case_count} {v.case_count === 1 ? "case" : "cases"}
+                        <span style={{ fontSize: 13, color: "var(--adm-text)", fontWeight: 600, fontFamily: "'Lexend',sans-serif" }}>
+                          {v.case_count} <span style={{ fontWeight: 400, color: "var(--adm-text-muted)" }}>{v.case_count === 1 ? "case" : "cases"}</span>
                         </span>
                       </td>
                       <td style={{ ...S.td, textAlign: "center" }}><StatusBadge rawStatus={v.latest_status} displayLabel={v.latest_status_display} /></td>
