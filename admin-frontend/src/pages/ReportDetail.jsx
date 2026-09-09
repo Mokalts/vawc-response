@@ -114,15 +114,15 @@ const Card = ({ title, icon, children, style = {}, headerRight }) => (
 const DateChip = ({ prefix, children, wrap }) => (
   <span style={{
     display: "inline-flex", alignItems: "center", gap: 6, maxWidth: "100%",
-    background: "var(--adm-primary-bg)", color: "#C45E10",
-    fontSize: 11.5, fontWeight: 700, lineHeight: 1.45,
-    padding: "4px 11px", borderRadius: 9999, border: "1px solid #FFCC99",
+    background: "transparent", color: "var(--adm-text)",
+    fontSize: 12, fontWeight: 500, lineHeight: 1.45,
+    padding: "4px 10px", borderRadius: 9999, border: "1px solid var(--adm-border)",
     fontFamily: "'Lexend',sans-serif", fontVariantNumeric: "tabular-nums",
     whiteSpace: wrap ? "normal" : "nowrap", overflowWrap: "anywhere",
   }}>
-    <IcoCal size={12.5} color="#C45E10" />
-    {prefix && <span style={{ fontWeight: 600, opacity: 0.8 }}>{prefix}</span>}
-    {children}
+    <IcoCal size={12.5} color="var(--adm-text-muted)" />
+    {prefix && <span style={{ color: "var(--adm-text-muted)" }}>{prefix}</span>}
+    <span style={{ fontWeight: 600 }}>{children}</span>
   </span>
 );
 

@@ -11,7 +11,7 @@ import api from '../api';
 const TOUR_STEPS = [
     { title: 'Maligayang pagdating!', text: 'Ipapakita namin ang mga pangunahing bahagi ng app. Mabilis lang ito.' },
     { target: '[data-tour="report"]',    title: 'Mag-report ng insidente', text: 'Pindutin ito para magsumite ng report. Ligtas at kumpidensyal ang lahat ng iyong impormasyon.' },
-    { target: '[data-tour="sos"]',       title: 'Emergency SOS',            text: 'Kung may agarang panganib, dito ka tumawag sa mga hotline. Gumagana ito kahit hindi naka-log in.' },
+    { target: '[data-tour="sos"]',       title: 'Mga Hotline',              text: 'Kung may agarang panganib, dito ka tumawag sa pulis, VAWC desk, at DSWD. Gumagana ito kahit hindi naka-log in.' },
     { target: '[data-tour="notif"]',     title: 'Mga Abiso',                text: 'Dito lalabas ang mga update at mensahe mula sa barangay VAWC office.' },
     { target: '[data-tour="myreports"]', title: 'Subaybayan ang Kaso',      text: 'Tingnan ang status ng iyong report at mga mensahe mula sa barangay dito.' },
     { target: '[data-tour="menu"]',      title: 'Menu',                     text: 'Dito matatagpuan ang iyong profile, ang gabay, at iba pang settings.' },
@@ -42,9 +42,23 @@ if (!document.getElementById('vawc-home-css')) {
         .vh-hero-btn { transition: all 0.15s ease; }
         .vh-hero-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.18) !important; }
         .vh-hero-btn:active { transform: scale(0.97); }
-        .vh-report-btn { transition: all 0.18s ease; }
-        .vh-report-btn:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 10px 24px rgba(196,94,16,0.34) !important; }
-        .vh-report-btn:active { transform: scale(0.98); }
+        .vh-report-btn { transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease; }
+        .vh-report-btn:hover { filter: brightness(1.04); transform: translateY(-2px); box-shadow: 0 14px 30px rgba(196,94,16,0.38) !important; }
+        .vh-report-btn:active { transform: scale(0.985); }
+        /* Soft highlight that drifts across the CTA so it catches the eye without
+           blinking at the user. Stops entirely under reduced-motion. */
+        .vh-report-glow {
+            position: absolute; top: -60%; left: -30%; width: 45%; height: 220%;
+            background: linear-gradient(100deg, transparent, rgba(255,255,255,0.22), transparent);
+            transform: translateX(-120%); pointer-events: none;
+            animation: reportSheen 5.5s ease-in-out 1.5s infinite;
+        }
+        @keyframes reportSheen {
+            0%, 62% { transform: translateX(-120%); }
+            88%, 100% { transform: translateX(420%); }
+        }
+        @media (prefers-reduced-motion: reduce) { .vh-report-glow { display: none; } }
+        .vh-report-btn:hover .vh-report-glow { animation-duration: 2.4s; }
         .vh-icon-btn { transition: all 0.15s ease; }
         .vh-icon-btn:hover { filter: brightness(0.97); transform: translateY(-1px); }
         .vh-icon-btn:active { transform: scale(0.95); }
@@ -76,6 +90,7 @@ if (!document.getElementById('vawc-home-css')) {
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
 const IcoMenu   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#C45E10" strokeWidth="2" strokeLinecap="round" /></svg>);
 const IcoArrow  = ({ c = '#fff' }) => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M13 6L19 12L13 18" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>);
+const IcoFile   = ({ c = '#fff' }) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke={c} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6" stroke={c} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 14.5l2 2 4-4.5" stroke={c} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoAlert  = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#EC4899" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 12l2 2 4-4" stroke="#EC4899" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoDoc    = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#7B2D8B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="#7B2D8B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoHands  = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#059669" strokeWidth="1.8" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" /></svg>);
@@ -261,7 +276,13 @@ function Home() {
 
                 {/* Bottom report CTA */}
                 <button className="vh-report-btn" style={S.reportBtn} onClick={() => navigate('/report')}>
-                    Report an Incident Now
+                    <span className="vh-report-glow" aria-hidden="true" />
+                    <span style={S.reportIcon} aria-hidden="true"><IcoFile /></span>
+                    <span style={{ minWidth: 0, flex: 1, textAlign: 'left', position: 'relative' }}>
+                        <span style={S.reportTitle}>Report an Incident</span>
+                        <span style={S.reportSub}>Takes a few minutes. Confidential under RA 9262.</span>
+                    </span>
+                    <span style={S.reportArrow} aria-hidden="true"><IcoArrow c="#fff" /></span>
                 </button>
 
             </main>
@@ -317,7 +338,11 @@ const S = {
     awareDesc:   { fontSize: 11.5, color: 'var(--text-body)', lineHeight: 1.5, flex: 1, margin: '2px 0 0', fontFamily: FF },
     awareBtn:    { display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, width: 'fit-content' },
 
-    reportBtn:   { width: '100%', padding: 16, background: 'linear-gradient(135deg, #F47920 0%, #E8641C 100%)', color: '#fff', fontSize: 16, fontWeight: 700, border: 'none', borderRadius: 16, cursor: 'pointer', fontFamily: FF, boxShadow: '0 8px 20px rgba(196,94,16,0.3)', letterSpacing: '-0.2px' },
+    reportBtn:   { position: 'relative', overflow: 'hidden', width: '100%', padding: '14px 16px', background: 'linear-gradient(135deg, #F47920 0%, #C45E10 100%)', color: '#fff', border: 'none', borderRadius: 16, cursor: 'pointer', fontFamily: FF, boxShadow: '0 8px 20px rgba(196,94,16,0.3)', display: 'flex', alignItems: 'center', gap: 13, textAlign: 'left' },
+    reportIcon:  { position: 'relative', width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: 'rgba(255,255,255,0.20)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    reportTitle: { display: 'block', fontSize: 16, fontWeight: 800, letterSpacing: '-0.2px', lineHeight: 1.2 },
+    reportSub:   { display: 'block', marginTop: 2, fontSize: 11.5, fontWeight: 500, lineHeight: 1.4, color: 'rgba(255,255,255,0.9)' },
+    reportArrow: { position: 'relative', width: 30, height: 30, borderRadius: '50%', flexShrink: 0, background: 'rgba(255,255,255,0.20)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
 };
 
 export default Home;

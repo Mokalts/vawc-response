@@ -16,7 +16,16 @@
      Highlight (orange/purple) identity stays the same across themes; only
      surfaces, text, and borders flip. Defaults below = LIGHT. */
   --page:         #FFF3E0;                                   /* solid page bg */
-  --page-grad:    linear-gradient(180deg, #FFF9F3 0%, #FFF3E0 100%);
+  /* Page backdrop: four soft blobs, one per palette accent (orange, violet,
+     pink, green), placed off-centre and off-canvas so the shapes read as
+     designed rather than as a symmetric wash. Defined once here, so every page
+     using var(--page-grad) picks it up. */
+  --page-grad:
+      radial-gradient(46vw 46vw at 88% -6%,  rgba(244, 121, 32, 0.17), transparent 68%),
+      radial-gradient(38vw 38vw at -10% 12%, rgba(155,  77, 171, 0.13), transparent 66%),
+      radial-gradient(34vw 34vw at 110% 58%, rgba(190,  24,  93, 0.10), transparent 64%),
+      radial-gradient(42vw 42vw at 2%   98%, rgba(  4, 120,  87, 0.09), transparent 66%),
+      linear-gradient(180deg, #FFF9F3 0%, #FFF3E0 100%);
   --surface:      #FFFFFF;                                   /* card surface */
   --surface-tint: #FFF3E0;                                   /* orange-tint fills, icon boxes */
   --surface-alt:  #F8FAFC;                                   /* neutral inset (inputs, review rows) */
@@ -49,7 +58,13 @@
 
 :root[data-theme="dark"] {
   --page:         #171311;
-  --page-grad:    linear-gradient(180deg, #1B1512 0%, #171311 100%);
+  /* Same four shapes, dimmer, so the dark page keeps depth without glowing. */
+  --page-grad:
+      radial-gradient(46vw 46vw at 88% -6%,  rgba(255, 154,  77, 0.10), transparent 68%),
+      radial-gradient(38vw 38vw at -10% 12%, rgba(192, 132, 252, 0.09), transparent 66%),
+      radial-gradient(34vw 34vw at 110% 58%, rgba(244, 114, 182, 0.07), transparent 64%),
+      radial-gradient(42vw 42vw at 2%   98%, rgba( 52, 211, 153, 0.06), transparent 66%),
+      linear-gradient(180deg, #1B1512 0%, #171311 100%);
   --surface:      #221B17;
   --surface-tint: #33251A;                                   /* dark warm tint (was peach) */
   --surface-alt:  #211A16;
