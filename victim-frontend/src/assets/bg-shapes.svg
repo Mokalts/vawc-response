@@ -1,66 +1,79 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1400" preserveAspectRatio="xMidYMid slice">
-  <!-- Decorative page backdrop for the victim portal (light theme).
-       Geometric shapes in the brand palette: orange #F47920 / #C45E10,
-       violet #7B2D8B, pink #BE185D, green #047857.
+  <!-- Victim portal page backdrop (light theme).
 
-       The viewBox is PORTRAIT on purpose. This is a phone-first app, and a
-       landscape composition scaled with `cover` on a 375x812 screen crops to a
-       narrow centre slice, throwing away most of the shapes. Shapes are also
-       weighted toward the edges so they sit beside content rather than under
-       headings, and every opacity stays low enough not to affect text
-       contrast. Keep bg-shapes-dark.svg in sync when editing the layout. -->
+       Brief: strictly minimal. Themes of safety, protection and support, drawn
+       as gentle interlocking curves, soft flowing lines, and two highly
+       abstracted shield outlines. Nothing here is meant to be identified as an
+       object; it should read as texture. Everything sits at 0.05 to 0.10
+       opacity so foreground cards and body copy stay fully readable.
+
+       Palette: orange #F47920 / #C45E10, violet #7B2D8B, pink #BE185D,
+       green #047857 (the app's accent tokens).
+
+       Portrait viewBox on purpose: this is a phone-first app, and a landscape
+       composition scaled with `cover` on a 375x812 screen crops to a narrow
+       centre slice. Keep bg-shapes-dark.svg in sync. -->
   <defs>
-    <pattern id="dotO" width="18" height="18" patternUnits="userSpaceOnUse">
-      <circle cx="2.4" cy="2.4" r="1.8" fill="#C45E10"/>
-    </pattern>
-    <pattern id="dotV" width="16" height="16" patternUnits="userSpaceOnUse">
-      <circle cx="2" cy="2" r="1.6" fill="#7B2D8B"/>
-    </pattern>
-    <pattern id="hatchP" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-      <line x1="0" y1="0" x2="0" y2="9" stroke="#BE185D" stroke-width="2"/>
-    </pattern>
-    <pattern id="hatchG" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)">
-      <line x1="0" y1="0" x2="0" y2="10" stroke="#047857" stroke-width="2"/>
-    </pattern>
+    <!-- Smooth depth washes, no hard edges -->
+    <radialGradient id="gWarm" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#F47920" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#F47920" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="gViolet" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#7B2D8B" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#7B2D8B" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="gRose" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#BE185D" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#BE185D" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="gGreen" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#047857" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#047857" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="lineWarm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#C45E10" stop-opacity="0"/>
+      <stop offset="50%"  stop-color="#C45E10" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#C45E10" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="lineViolet" x1="1" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#7B2D8B" stop-opacity="0"/>
+      <stop offset="50%"  stop-color="#7B2D8B" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#7B2D8B" stop-opacity="0"/>
+    </linearGradient>
   </defs>
 
-  <!-- Corner blobs -->
-  <path d="M900 0v352c-142 44-286 4-352-88-52-72-8-186 96-264Z" fill="#F47920" opacity="0.16"/>
-  <path d="M0 1400v-330c150-64 316 30 366 146 44 100-34 184-152 184Z" fill="#7B2D8B" opacity="0.10"/>
-  <path d="M0 96v268c104 32 190-24 208-104 16-72-40-142-118-164Z" fill="#047857" opacity="0.075"/>
-  <path d="M900 1400v-206c-108-44-232 8-274 86-34 62 10 120 84 120Z" fill="#BE185D" opacity="0.085"/>
+  <!-- 1. Depth: four soft washes, corner-weighted so the middle stays clean -->
+  <ellipse cx="760" cy="130"  rx="430" ry="360" fill="url(#gWarm)"/>
+  <ellipse cx="110" cy="1180" rx="420" ry="380" fill="url(#gViolet)"/>
+  <ellipse cx="880" cy="960"  rx="330" ry="300" fill="url(#gRose)"/>
+  <ellipse cx="40"  cy="300"  rx="300" ry="280" fill="url(#gGreen)"/>
 
-  <!-- Dot grids, hugging the left and right margins -->
-  <rect x="24" y="468" width="150" height="150" fill="url(#dotO)" opacity="0.32"/>
-  <rect x="726" y="856" width="150" height="132" fill="url(#dotV)" opacity="0.28"/>
-  <rect x="700" y="470" width="104" height="88" fill="url(#dotO)" opacity="0.18"/>
-  <rect x="60" y="1188" width="132" height="96" fill="url(#dotV)" opacity="0.20"/>
-
-  <!-- Hatched discs -->
-  <circle cx="806" cy="676" r="92" fill="url(#hatchP)" opacity="0.18"/>
-  <circle cx="112" cy="852" r="70" fill="url(#hatchG)" opacity="0.18"/>
-  <circle cx="640" cy="1216" r="54" fill="url(#hatchP)" opacity="0.13"/>
-
-  <!-- Outlined rings -->
-  <circle cx="156" cy="288" r="66" fill="none" stroke="#C45E10" stroke-width="2" opacity="0.30"/>
-  <circle cx="792" cy="1042" r="44" fill="none" stroke="#BE185D" stroke-width="2" opacity="0.26"/>
-  <circle cx="252" cy="1044" r="28" fill="none" stroke="#7B2D8B" stroke-width="2" opacity="0.28"/>
-  <circle cx="700" cy="196" r="34" fill="none" stroke="#047857" stroke-width="2" opacity="0.22"/>
-
-  <!-- Small solid accents -->
-  <circle cx="836" cy="392" r="10" fill="#F47920" opacity="0.30"/>
-  <circle cx="64"  cy="668" r="8"  fill="#047857" opacity="0.26"/>
-  <circle cx="860" cy="1256" r="12" fill="#BE185D" opacity="0.20"/>
-  <circle cx="196" cy="132" r="7"  fill="#7B2D8B" opacity="0.24"/>
-
-  <!-- Slash marks -->
-  <g stroke="#C45E10" stroke-width="2.6" stroke-linecap="round" opacity="0.26">
-    <path d="M700 790l28-40M730 790l28-40M760 790l28-40"/>
+  <!-- 2. Shelter: interlocking curves, one arc cradling another. The gradient
+          strokes fade out at both ends so no line terminates abruptly. -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M-40 470 C 170 380, 360 470, 470 620" stroke="url(#lineWarm)"   stroke-width="2.5" opacity="0.5"/>
+    <path d="M-40 530 C 190 440, 400 540, 520 700" stroke="url(#lineWarm)"   stroke-width="1.6" opacity="0.35"/>
+    <path d="M940 820 C 740 740, 560 830, 470 980" stroke="url(#lineViolet)" stroke-width="2.5" opacity="0.45"/>
+    <path d="M940 880 C 720 800, 520 900, 430 1060" stroke="url(#lineViolet)" stroke-width="1.6" opacity="0.3"/>
   </g>
-  <g stroke="#7B2D8B" stroke-width="2.6" stroke-linecap="round" opacity="0.22">
-    <path d="M84 1010l26-36M112 1010l26-36M140 1010l26-36"/>
+
+  <!-- 3. Protection: two highly abstracted shields, outline only, very faint -->
+  <g fill="none" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M726 250 c56 22 92 30 92 30 v78 c0 92-92 140-92 140 s-92-48-92-140 v-78 c0 0 36-8 92-30 z"
+          stroke="#C45E10" stroke-width="2" opacity="0.10"/>
+    <path d="M170 1046 c38 15 62 20 62 20 v53 c0 62-62 95-62 95 s-62-33-62-95 v-53 c0 0 24-5 62-20 z"
+          stroke="#7B2D8B" stroke-width="2" opacity="0.09"/>
   </g>
-  <g stroke="#BE185D" stroke-width="2.6" stroke-linecap="round" opacity="0.20">
-    <path d="M118 606l24-34M144 606l24-34"/>
+
+  <!-- 4. Support: open, cupped curves. Two hands suggested, never drawn. -->
+  <g fill="none" stroke-linecap="round">
+    <path d="M300 1290 c0-70 58-124 128-124 s128 54 128 124" stroke="#C45E10" stroke-width="2.2" opacity="0.10"/>
+    <path d="M262 1300 c0-92 76-164 166-164 s166 72 166 164"  stroke="#BE185D" stroke-width="1.8" opacity="0.07"/>
+    <path d="M596 96 c0-52 43-92 95-92 s95 40 95 92"          stroke="#047857" stroke-width="1.8" opacity="0.07"/>
   </g>
+
+  <!-- 5. Two quiet rings for rhythm, nothing more -->
+  <circle cx="182" cy="742" r="86" fill="none" stroke="#C45E10" stroke-width="1.6" opacity="0.10"/>
+  <circle cx="812" cy="560" r="54" fill="none" stroke="#BE185D" stroke-width="1.6" opacity="0.08"/>
 </svg>

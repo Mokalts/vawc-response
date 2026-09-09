@@ -181,7 +181,7 @@ function Sidebar() {
             <div style={S.logoArea}>
                 <div style={S.logoIconWrap}>
                     <img src="/barangay-logo.png" alt="Barangay Palanginan Seal"
-                         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', imageRendering: '-webkit-optimize-contrast' }}
+                         style={S.logoImg}
                          onError={(e) => { e.target.style.display = 'none'; }} />
                 </div>
                 <div>
@@ -370,6 +370,9 @@ const S = {
 
     logoArea: { display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 18px' },
     logoIconWrap: { width: 64, height: 64, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', padding: 0, boxSizing: 'border-box', background: '#fff', border: '2px solid #FFCC99' },
+    // The seal PNG has white padding baked around the artwork, so a plain fit
+    // leaves it small and sitting low inside the ring. Matches the login logo.
+    logoImg: { width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scale(1.16) translateY(1%)', transformOrigin: 'center', imageRendering: '-webkit-optimize-contrast' },
     logoTitle: { fontSize: 14, fontWeight: 700, color: '#FFFFFF', fontFamily: NAVFONT, letterSpacing: '0.3px' },
     logoSub: { fontSize: 9.5, color: '#E1BEE7', textTransform: 'uppercase', letterSpacing: '0.8px', marginTop: 2, fontFamily: TEXT.font },
 
