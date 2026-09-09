@@ -376,36 +376,45 @@ const BpoOrder = ({ f, set, bpo, showValidity }) => (
     </div>
 );
 
-// ─── 5. 1st ENDORSEMENT (form not yet supplied — kept from spec wording) ─────
-const Endorsement1st = ({ f, set, endorsement }) => {
+// ─── 5. 1st ENDORSEMENT — matches the barangay's letter ─────────────────────
+const Endorsement1st = ({ f, set, endorsement, showAck }) => {
     const num = endorsement?.endorsement_number || 1;
-    const ord = num === 1 ? "1st" : num === 2 ? "2nd" : num === 3 ? "3rd" : `${num}th`;
+    const sup = num === 1 ? "ST" : num === 2 ? "ND" : num === 3 ? "RD" : "TH";
     return (
         <div className="pd-paper">
             <Head office="OFFICE OF THE PUNONG BARANGAY" />
-            <p className="pd-formtitle">{ord.toUpperCase()} ENDORSEMENT</p>
-            <p className="right">{endorsement?.date_endorsed ? fmtDate(endorsement.date_endorsed) : <F v={f.endorseDate} on={v => set({ endorseDate: v })} w={200} />}</p>
 
-            <p className="mt16" style={{ textIndent: "2em", textAlign: "justify", lineHeight: 2.35 }}>
-                Respectfully endorsed to the <F auto v={f.toOffice} on={v => set({ toOffice: v })} /> the attached{" "}
-                <F auto v={f.attachedDocs} on={v => set({ attachedDocs: v })} /> on the complaint of{" "}
-                <F auto v={f.complainantName} on={v => set({ complainantName: v })} /> of{" "}
-                <F auto v={f.complainantAddress} on={v => set({ complainantAddress: v })} /> against the respondent{" "}
-                <F auto v={f.respondentName} on={v => set({ respondentName: v })} /> of{" "}
-                <F auto v={f.respondentAddress} on={v => set({ respondentAddress: v })} /> for{" "}
-                <F auto v={f.purpose} on={v => set({ purpose: v })} ph="purpose" />.
+            <p style={{ margin: "30px 0 0" }}>{num}<sup style={{ fontSize: "0.7em" }}>{sup}</sup> Endorsement</p>
+            <p style={{ margin: 0 }}>
+                {endorsement?.date_endorsed ? fmtDate(endorsement.date_endorsed) : <F auto v={f.endorseDate} on={v => set({ endorseDate: v })} />}
             </p>
 
-            <div className="mt40 right" style={{ marginRight: 30 }}>
-                <p style={{ margin: 0, fontWeight: 700 }}>{f.punongBarangay || " "}</p>
+            <p style={{ marginTop: 34, textIndent: "3em", textAlign: "justify", lineHeight: 2.4 }}>
+                Respectfully endorsed to the <F auto v={f.toOffice} on={v => set({ toOffice: v })} /> the attached{" "}
+                <F auto v={f.attachedDocs} on={v => set({ attachedDocs: v })} /> on the{" "}
+                complaint of <F auto b v={f.complainantName} on={v => set({ complainantName: v })} /> of{" "}
+                <F auto b v={f.complainantAddress} on={v => set({ complainantAddress: v })} /> against the respondent{" "}
+                <F auto b v={f.respondentName} on={v => set({ respondentName: v })} /> of{" "}
+                <F auto b v={f.respondentAddress} on={v => set({ respondentAddress: v })} /> for{" "}
+                <input className="fill b" value={f.purpose || ""} placeholder="CASE NAME"
+                    onChange={e => set({ purpose: e.target.value })}
+                    style={{ width: `${Math.max(11, String(f.purpose || "CASE NAME").length + 1)}ch`, textDecoration: "underline", textTransform: "uppercase" }} />.
+            </p>
+
+            <div style={{ marginTop: 96, textAlign: "center" }}>
+                <p style={{ margin: 0, fontWeight: 700 }}>{f.punongBarangay || " "}</p>
                 <p style={{ margin: 0 }}>Punong Barangay</p>
             </div>
 
-            <div className="mt40" style={{ borderTop: "1px dashed #000", paddingTop: 10 }}>
-                <p className="b" style={{ margin: "0 0 10px" }}>ACKNOWLEDGMENT (to be completed by the receiving office)</p>
-                <div className="row">Received by: <F v={f.receivedBy} on={v => set({ receivedBy: v })} w={250} /> &nbsp; Designation: <F v={f.receivedDesignation} on={v => set({ receivedDesignation: v })} w={180} /></div>
-                <div className="row">Date &amp; Time: <F v={f.receivedAt} on={v => set({ receivedAt: v })} w={250} /></div>
-            </div>
+            {/* Not on the barangay's paper letter. Optional, so the system can still
+                record WHEN the receiving office got the case (the monitoring gap). */}
+            {showAck && (
+                <div className="mt40" style={{ borderTop: "1px dashed #000", paddingTop: 10 }}>
+                    <p className="b" style={{ margin: "0 0 10px" }}>ACKNOWLEDGMENT (to be completed by the receiving office)</p>
+                    <div className="row">Received by: <F v={f.receivedBy} on={v => set({ receivedBy: v })} w={250} /> &nbsp; Designation: <F v={f.receivedDesignation} on={v => set({ receivedDesignation: v })} w={180} /></div>
+                    <div className="row">Date &amp; Time: <F v={f.receivedAt} on={v => set({ receivedAt: v })} w={250} /></div>
+                </div>
+            )}
         </div>
     );
 };
@@ -435,6 +444,7 @@ export default function PrintDocument() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showValidity, setShowValidity] = useState(false);
+    const [showAck, setShowAck] = useState(false);
     const t = today();
     const [f, setF] = useState({
         blotterDate: fmtDate(new Date()), incidentWhen: "", complaint: "VAWC (RA 9262)", narrative: "",
@@ -455,7 +465,7 @@ export default function PrintDocument() {
         caseNo: "", a: false, b: false, c: false,
         issueDay: t.day, issueMonth: t.month, issueYear: t.year,
         punongBarangay: "",
-        toOffice: "PNP - Iba MPS (Women & Children Protection Desk)", attachedDocs: "blotter, complaint",
+        toOffice: "Chief of Police, Iba MPS", attachedDocs: "blotter",
         purpose: "", endorseDate: fmtDate(new Date()), receivedBy: "", receivedDesignation: "", receivedAt: "",
     });
     const set = (patch) => setF(p => ({ ...p, ...patch }));
@@ -544,6 +554,12 @@ export default function PrintDocument() {
                                 Add 15-day validity line
                             </label>
                         )}
+                        {type === "endorsement" && (
+                            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "#475569", fontFamily: "'Lexend',sans-serif" }}>
+                                <input type="checkbox" checked={showAck} onChange={e => setShowAck(e.target.checked)} />
+                                Add acknowledgment block
+                            </label>
+                        )}
                         <button className="pd-btn-ghost" onClick={() => navigate(`/reports/${caseId}`)}>← Back to case</button>
                         <button className="pd-btn" onClick={() => window.print()} disabled={isRestricted}>Print Document</button>
                     </div>
@@ -552,7 +568,7 @@ export default function PrintDocument() {
                 {isRestricted && <div className="pd-banner"><strong>Restricted view -</strong> Sensitive fields are masked. Super Admin access is required to produce a printable official document.</div>}
                 {(type === "bpo" || type === "bpo-app") && !bpo && <div className="pd-banner">No BPO recorded for this case yet — the reliefs and issue date will print blank. Apply for a BPO from the case actions to auto-fill them.</div>}
 
-                <Doc f={f} set={set} bpo={bpo} endorsement={endorsement} kids={cas.children || []} showValidity={showValidity} />
+                <Doc f={f} set={set} bpo={bpo} endorsement={endorsement} kids={cas.children || []} showValidity={showValidity} showAck={showAck} />
             </div>
         </>
     );
