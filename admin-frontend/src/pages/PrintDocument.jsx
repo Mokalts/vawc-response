@@ -420,11 +420,13 @@ const Endorsement1st = ({ f, set, endorsement, showAck }) => {
 };
 
 // ─── BPO packet: the 3 pages the barangay files together ────────────────────
+// Page order follows the barangay's own packet: BPO, then the Application,
+// then the Pormal na Reklamo.
 const BpoPacket = (props) => (
     <>
+        <div className="pd-page-break"><BpoOrder {...props} /></div>
         <div className="pd-page-break"><BpoApplication {...props} /></div>
-        <div className="pd-page-break"><ReklamoForm {...props} /></div>
-        <BpoOrder {...props} />
+        <ReklamoForm {...props} />
     </>
 );
 
@@ -432,7 +434,7 @@ const BpoPacket = (props) => (
 const DOC_TYPES = {
     blotter:     { component: BlotterForm,    title: "Blotter Form",      office: "Sangguniang Barangay" },
     reklamo:     { component: ReklamoForm,    title: "Pormal na Reklamo", office: "Katarungang Pambarangay" },
-    "bpo-app":   { component: BpoPacket,      title: "BPO Application (3 pages)", office: "Application + Reklamo + BPO" },
+    "bpo-app":   { component: BpoPacket,      title: "BPO Application (3 pages)", office: "BPO + Application + Pormal na Reklamo" },
     bpo:         { component: BpoOrder,       title: "Barangay Protection Order", office: "Punong Barangay" },
     endorsement: { component: Endorsement1st, title: "1st Endorsement",   office: "Punong Barangay" },
 };
