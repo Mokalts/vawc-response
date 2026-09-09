@@ -379,17 +379,55 @@ function IncidentBars({ data, loading }) {
 
 // Monitoring uses the same widget language as the rest of the dashboard:
 // square-cornered stat cards and table cards with an accent bar + uppercase title.
-function MonitoringSection({ m, expiring }) {
-    const md = m.mandatory_report || {};
-    const Stat = ({ label, value, sub }) => (
+// Compliance ring — a percentage against a legal deadline.
+const Ring = ({ pct, label, sub, color }) => {
+    const r = 32, c = 2 * Math.PI * r;
+    const p = Math.max(0, Math.min(100, Number(pct) || 0));
+    return (
         <div style={S.statCard}>
-            <div>
-                <p style={S.statNum}>{value}</p>
-                <p style={S.statLabel}>{label}</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <svg width="80" height="80" viewBox="0 0 80 80" style={{ flexShrink: 0 }}>
+                    <circle cx="40" cy="40" r={r} fill="none" strokeWidth="8" style={{ stroke: 'var(--adm-border)' }} />
+                    <circle cx="40" cy="40" r={r} fill="none" strokeWidth="8" strokeLinecap="round"
+                        style={{ stroke: color, transition: 'stroke-dashoffset 0.6s ease' }}
+                        strokeDasharray={c} strokeDashoffset={c - (p / 100) * c}
+                        transform="rotate(-90 40 40)" />
+                    <text x="40" y="45" textAnchor="middle" style={{ fontSize: 16, fontWeight: 800, fill: 'var(--adm-text)', fontFamily: FF }}>{p}%</text>
+                </svg>
+                <div style={{ minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--adm-text)', fontFamily: FF, lineHeight: 1.35 }}>{label}</p>
+                    <p style={{ margin: '3px 0 0', fontSize: 11.5, color: '#64748B', fontFamily: FF }}>{sub}</p>
+                </div>
             </div>
-            {sub && <div style={S.statMeta}><span style={{ fontSize: 11.5, color: '#64748B', fontFamily: FF }}>{sub}</span></div>}
         </div>
     );
+};
+
+// Proportional stacked bar with a legend.
+const StackBar = ({ segments }) => {
+    const total = segments.reduce((a, s) => a + s.value, 0);
+    return (
+        <>
+            <div style={{ display: 'flex', height: 12, borderRadius: 3, overflow: 'hidden', background: 'var(--adm-muted)', border: '1px solid var(--adm-border)' }}>
+                {total > 0 && segments.map(s => s.value > 0 && (
+                    <div key={s.label} title={`${s.label}: ${s.value}`} style={{ width: `${(s.value / total) * 100}%`, background: s.color }} />
+                ))}
+            </div>
+            <div style={{ marginTop: 12 }}>
+                {segments.map(s => (
+                    <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0', fontSize: 13, color: 'var(--adm-text-2)', fontFamily: FF }}>
+                        <span style={{ width: 9, height: 9, borderRadius: 2, background: s.color, flexShrink: 0 }} />
+                        <span style={{ flex: 1 }}>{s.label}</span>
+                        <strong style={{ color: 'var(--adm-text)' }}>{s.value}</strong>
+                    </div>
+                ))}
+            </div>
+        </>
+    );
+};
+
+function MonitoringSection({ m, expiring }) {
+    const md = m.mandatory_report || {};
     const Panel = ({ title, tag, children }) => (
         <div style={S.tableCard}>
             <div style={S.tableHeader}>
@@ -399,39 +437,36 @@ function MonitoringSection({ m, expiring }) {
                 </div>
                 {tag && <span style={S.periodTag}>{tag}</span>}
             </div>
-            <div style={{ padding: '14px 20px' }}>{children}</div>
+            <div style={{ padding: '16px 20px' }}>{children}</div>
         </div>
     );
-    const List = ({ data, labelMap }) => {
-        const rows = Object.entries(data || {});
-        if (!rows.length) return <p style={{ margin: 0, fontSize: 12.5, color: '#64748B', fontFamily: FF }}>No data yet.</p>;
-        return rows.map(([k, v]) => (
-            <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '5px 0', borderBottom: '1px solid var(--adm-muted)', fontSize: 13, color: 'var(--adm-text-2)', fontFamily: FF }}>
-                <span>{(labelMap && labelMap[k]) || k}</span>
-                <strong style={{ color: 'var(--adm-text)' }}>{v}</strong>
-            </div>
-        ));
-    };
 
     return (
         <div style={{ marginTop: 18 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <div style={S.cardAccent} />
                 <span style={S.cardTitle}>VAWC Monitoring</span>
-                <span style={S.periodTag}>RA 9262 / JMC 2010-2</span>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 14, marginBottom: 18 }}>
-                <Stat label="BPOs issued same day" value={`${m.bpo?.same_day_pct ?? 0}%`} sub={`${m.bpo?.issued_same_day ?? 0} of ${m.bpo?.ever_issued ?? 0} issued`} />
-                <Stat label="Reported to PNP within 4 hours" value={`${md.pnp_within_4h_pct ?? 0}%`} sub={`${md.pnp_within_4h ?? 0} of ${m.total_cases ?? 0} cases`} />
-                <Stat label="Reported to C/MSWDO within 4 hours" value={`${md.mswdo_within_4h_pct ?? 0}%`} sub={`${md.mswdo_within_4h ?? 0} of ${m.total_cases ?? 0} cases`} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14, marginBottom: 18 }}>
+                <Ring pct={m.bpo?.same_day_pct} color="#7B2D8B" label="BPOs issued same day"
+                      sub={`${m.bpo?.issued_same_day ?? 0} of ${m.bpo?.ever_issued ?? 0} issued`} />
+                <Ring pct={md.pnp_within_4h_pct} color="#0E7490" label="Reported to PNP within 4 hours"
+                      sub={`${md.pnp_within_4h ?? 0} of ${m.total_cases ?? 0} cases`} />
+                <Ring pct={md.mswdo_within_4h_pct} color="#C45E10" label="Reported to C/MSWDO within 4 hours"
+                      sub={`${md.mswdo_within_4h ?? 0} of ${m.total_cases ?? 0} cases`} />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14 }}>
                 <Panel title="Barangay Protection Orders" tag={`${m.bpo?.ever_issued ?? 0} issued`}>
-                    <List data={{ Applied: m.bpo?.applied ?? 0, Issued: m.bpo?.issued ?? 0, Served: m.bpo?.served ?? 0, Expired: m.bpo?.expired ?? 0 }} />
+                    <StackBar segments={[
+                        { label: 'Applied', value: m.bpo?.applied ?? 0, color: '#9B4DAB' },
+                        { label: 'Issued', value: m.bpo?.issued ?? 0, color: '#F47920' },
+                        { label: 'Served', value: m.bpo?.served ?? 0, color: '#059669' },
+                        { label: 'Expired', value: m.bpo?.expired ?? 0, color: '#94A3B8' },
+                    ]} />
                     {expiring && expiring.length > 0 && (
-                        <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--adm-border)' }}>
+                        <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--adm-border)' }}>
                             <p style={{ margin: '0 0 6px', fontSize: 12, fontWeight: 700, color: '#92400E', fontFamily: FF }}>Expiring or expired ({expiring.length})</p>
                             {expiring.map(b => (
                                 <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '3px 0', fontSize: 12.5, color: '#78350F', fontFamily: FF }}>
@@ -439,14 +474,17 @@ function MonitoringSection({ m, expiring }) {
                                     <span>{b.expired ? 'Expired' : `${b.days_left} day${b.days_left === 1 ? '' : 's'} left`}</span>
                                 </div>
                             ))}
-                            <p style={{ margin: '6px 0 0', fontSize: 11, color: '#92400E', fontFamily: FF }}>A BPO cannot be extended or renewed. A new order needs a new incident, or endorse to court or PAO for a TPO.</p>
+                            <p style={{ margin: '6px 0 0', fontSize: 11, color: '#92400E', fontFamily: FF }}>A BPO cannot be extended or renewed. A new order needs a new incident, or a referral to court or PAO.</p>
                         </div>
                     )}
                 </Panel>
 
                 <Panel title="Referral follow-up" tag={`${m.endorsements?.outstanding ?? 0} awaiting`}>
-                    <List data={{ 'Endorsements sent': m.endorsements?.sent ?? 0, 'Acknowledged by receiving office': m.endorsements?.acknowledged ?? 0, 'Still awaiting receipt': m.endorsements?.outstanding ?? 0 }} />
-                    <p style={{ margin: '8px 0 0', fontSize: 11, color: 'var(--adm-text-muted)', fontFamily: FF }}>An endorsement is not complete until the receiving office acknowledges it.</p>
+                    <StackBar segments={[
+                        { label: 'Acknowledged by receiving office', value: m.endorsements?.acknowledged ?? 0, color: '#059669' },
+                        { label: 'Still awaiting receipt', value: m.endorsements?.outstanding ?? 0, color: '#F47920' },
+                    ]} />
+                    <p style={{ margin: '10px 0 0', fontSize: 11, color: 'var(--adm-text-muted)', fontFamily: FF }}>An endorsement is not complete until the receiving office acknowledges it.</p>
                 </Panel>
             </div>
         </div>

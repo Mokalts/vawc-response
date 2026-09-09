@@ -215,7 +215,13 @@ function ReportNow() {
             setSuccess(true);
         } catch (err) {
             if (!err.response) {
-                setSubmitErr("Cannot reach the server right now. Your report was NOT sent, but your draft is saved. Please wait a moment and tap Submit again.");
+                const timedOut = err.code === "ECONNABORTED" || /timeout/i.test(err.message || "");
+                setSubmitErr(
+                    (timedOut
+                        ? "The server took too long to respond. Your report was NOT sent, but your draft is saved. Please try again in a moment."
+                        : "Cannot reach the server right now. Your report was NOT sent, but your draft is saved. Please check your internet and tap Submit again.")
+                    + ` [${err.code || "network"}${imageFiles.length ? ", " + imageFiles.length + " photo(s)" : ""}]`
+                );
             } else {
                 const raw = err.response?.data?.detail;
                 setSubmitErr(Array.isArray(raw) ? raw.map(e => e.msg).join(', ') : (raw || "Failed to submit report. Please try again."));
