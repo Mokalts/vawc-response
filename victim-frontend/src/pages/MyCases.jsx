@@ -57,19 +57,20 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-PH',{year:'numeric
 const fmtTime = (d) => d ? new Date(d).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'}) : '';
 const trunc   = (s,n) => !s?'-':s.length>n?s.slice(0,n)+'…':s;
 
-// Timeline steps (lawful VAWC flow)
+// Timeline steps (lawful VAWC flow). Each carries a plain-language sub-message so
+// the victim can read what a stage actually means without asking the desk.
 const STATUS_STEPS = [
-    { key:'submitted',             label:'Submitted' },
-    { key:'under_assessment',      label:'Under Assessment' },
-    { key:'awaiting_onsite_visit', label:'Awaiting Onsite Visit' },
-    { key:'bpo_applied',           label:'BPO Applied' },
-    { key:'bpo_issued',            label:'BPO Issued' },
-    { key:'bpo_served',            label:'BPO Served' },
+    { key:'submitted',             label:'Submitted',             detail:'Your report reached the Barangay VAWC Desk.' },
+    { key:'under_assessment',      label:'Under Assessment',      detail:'The VAWC officer is reviewing your statement.' },
+    { key:'awaiting_onsite_visit', label:'Awaiting Onsite Visit', detail:'You will be asked to come to the desk in person to confirm and sign.' },
+    { key:'bpo_applied',           label:'BPO Applied',           detail:'An application for a Barangay Protection Order was prepared.' },
+    { key:'bpo_issued',            label:'BPO Issued',            detail:'The Punong Barangay issued the order. It is valid for 15 days.' },
+    { key:'bpo_served',            label:'BPO Served',            detail:'The order was delivered to the respondent.' },
 ];
 // Terminal states (a case ends at exactly one of these).
 const ENDPOINT_STEPS = [
-    { key:'endorsed', label:'Endorsed' },
-    { key:'closed',   label:'Closed' },
+    { key:'endorsed', label:'Endorsed', detail:'Your case was forwarded to the police, the social welfare office, or the court.' },
+    { key:'closed',   label:'Closed',   detail:'The barangay recorded an outcome and closed the case file.' },
 ];
 
 // ─── Skeleton ──────────────────────────────────────────────────────────────────
@@ -82,45 +83,71 @@ const Skel = () => (
 );
 
 // ─── Status Timeline ──────────────────────────────────────────────────────────
+// One row of the timeline. The connector is absolutely positioned so it stretches
+// to whatever height the sub-message needs instead of a fixed 18px stub.
+function TimelineRow({ label, detail, done, current, dotColor, textColor, last }) {
+    return (
+        <div style={{ display:'flex', gap:12, position:'relative', paddingBottom: last ? 0 : 16 }}>
+            {!last && (
+                <span aria-hidden="true" style={{
+                    position:'absolute', left:9, top:22, bottom:2, width:2,
+                    background: done && !current ? '#059669' : 'var(--border)',
+                }}/>
+            )}
+            <span aria-hidden="true" style={{
+                width:20, height:20, borderRadius:'50%', flexShrink:0, zIndex:1,
+                background: current ? dotColor : done ? '#059669' : 'var(--surface)',
+                border: current ? `2px solid ${dotColor}` : done ? 'none' : '2px solid var(--border)',
+                display:'flex', alignItems:'center', justifyContent:'center',
+            }}>
+                {done && !current && <svg width="10" height="10" fill="none" viewBox="0 0 20 20"><path d="M4 10l5 5 7-9" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                {current && <span style={{ width:7, height:7, borderRadius:'50%', background:'var(--surface)' }}/>}
+            </span>
+            <div style={{ minWidth:0, paddingTop:1 }}>
+                <p style={{ margin:0, fontSize:13, fontWeight: current ? 700 : done ? 600 : 500, color: textColor, fontFamily:"'Lexend',sans-serif", display:'flex', alignItems:'center', gap:7, flexWrap:'wrap' }}>
+                    {label}
+                    {current && <span style={{ fontSize:9.5, background:'var(--surface-tint)', color:'var(--accent-text)', padding:'2px 8px', borderRadius:9999, fontWeight:800, letterSpacing:'0.05em', textTransform:'uppercase' }}>Now</span>}
+                </p>
+                {detail && (
+                    <p style={{ margin:'3px 0 0', fontSize:11.5, lineHeight:1.55, color:'var(--text-muted)', opacity: done || current ? 1 : 0.75, fontFamily:"'Lexend',sans-serif" }}>
+                        {detail}
+                    </p>
+                )}
+            </div>
+        </div>
+    );
+}
+
 function StatusTimeline({ currentStatus }) {
     const isEndpoint = ENDPOINT_STEPS.some(e => e.key === currentStatus);
     const linearIdx = STATUS_STEPS.findIndex(s => s.key === currentStatus);
+    const rows = [
+        ...STATUS_STEPS.map((step, idx) => ({
+            step,
+            done:    isEndpoint ? true : idx <= linearIdx,
+            current: !isEndpoint && idx === linearIdx,
+        })),
+        ...ENDPOINT_STEPS.map(step => ({
+            step,
+            done:    false,
+            current: step.key === currentStatus,
+        })),
+    ];
     return (
-        <div style={{display:'flex',flexDirection:'column',gap:0}}>
-            {STATUS_STEPS.map((step,idx)=>{
-                const done=isEndpoint ? true : idx<=linearIdx, current=!isEndpoint && idx===linearIdx;
+        <div style={{ display:'flex', flexDirection:'column' }}>
+            {rows.map(({ step, done, current }, i) => {
                 const st = getSt(step.key);
                 return (
-                    <div key={step.key} style={{display:'flex',alignItems:'flex-start',gap:10}}>
-                        <div style={{display:'flex',flexDirection:'column',alignItems:'center',flexShrink:0}}>
-                            <div style={{width:20,height:20,borderRadius: '50%',background:current?st.dot:done?'#059669':'var(--border)',display:'flex',alignItems:'center',justifyContent:'center',border:current?`2px solid ${st.dot}`:'none'}}>
-                                {done&&!current&&<svg width="10" height="10" fill="none" viewBox="0 0 20 20"><path d="M4 10l5 5 7-9" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                                {current&&<div style={{width:7,height:7,borderRadius: '50%',background:'var(--surface)'}}/>}
-                            </div>
-                            <div style={{width:2,height:18,background:done&&!current?'#059669':'var(--border)',marginTop:2}}/>
-                        </div>
-                        <p style={{margin:'2px 0 18px',fontSize:13,fontWeight:current?700:500,color:current?st.color:done?'#059669':'#64748B',fontFamily:"'Lexend',sans-serif"}}>
-                            {step.label}
-                            {current&&<span style={{marginLeft:6,fontSize:10.5,background:'var(--surface-tint)',color:'var(--accent-text)',padding:'2px 7px',borderRadius: 9999,fontWeight:700}}>Current</span>}
-                        </p>
-                    </div>
-                );
-            })}
-            {ENDPOINT_STEPS.map((step)=>{
-                const current = step.key===currentStatus;
-                const st = getSt(step.key);
-                return (
-                    <div key={step.key} style={{display:'flex',alignItems:'flex-start',gap:10}}>
-                        <div style={{flexShrink:0}}>
-                            <div style={{width:20,height:20,borderRadius: '50%',background:current?st.dot:'var(--border)',display:'flex',alignItems:'center',justifyContent:'center',border:current?`2px solid ${st.dot}`:'none'}}>
-                                {current&&<div style={{width:7,height:7,borderRadius: '50%',background:'var(--surface)'}}/>}
-                            </div>
-                        </div>
-                        <p style={{margin:'2px 0 10px',fontSize:13,fontWeight:current?700:400,color:current?st.color:'#94A3B8',fontFamily:"'Lexend',sans-serif"}}>
-                            {step.label}
-                            {current&&<span style={{marginLeft:6,fontSize:10.5,background:'var(--surface-tint)',color:'var(--accent-text)',padding:'2px 7px',borderRadius: 9999,fontWeight:700}}>Current</span>}
-                        </p>
-                    </div>
+                    <TimelineRow
+                        key={step.key}
+                        label={step.label}
+                        detail={step.detail}
+                        done={done}
+                        current={current}
+                        dotColor={st.dot}
+                        textColor={current ? st.color : done ? '#047857' : 'var(--text-muted)'}
+                        last={i === rows.length - 1}
+                    />
                 );
             })}
         </div>

@@ -283,23 +283,23 @@ function LocationPicker({ location, address, onChange, onClear, error, onError }
             {/* ── Captured location summary ──────────────────────────────── */}
             {location && (
                 <div style={S.capturedCard}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 8 }}>
-                        <IcoCheck c="#2E7D32" />
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#1B4D1E', fontFamily: "'Lexend', sans-serif" }}>Crime scene location set</p>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+                        <div style={{ display: 'flex', gap: 9, minWidth: 0 }}>
+                            <span style={{ marginTop: 2, flexShrink: 0 }}><IcoCheck c="#2E7D32" /></span>
+                            <div style={{ minWidth: 0 }}>
+                                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: 'var(--text)', lineHeight: 1.5, fontFamily: "'Lexend', sans-serif" }}>
+                                    {address || 'Pin dropped'}
+                                </p>
+                                <p style={{ margin: '3px 0 0', fontSize: 11, color: 'var(--text-body)', fontFamily: 'monospace', opacity: 0.75 }}>
+                                    {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+                                </p>
+                            </div>
+                        </div>
+                        <button type="button" onClick={handleClear} aria-label="Remove the pinned location" style={S.clearBtn}>
+                            <IcoX c="#C62828" size={12} />
+                            Remove
+                        </button>
                     </div>
-                    {address && (
-                        <p style={{ margin: '0 0 6px', fontSize: 13, color: 'var(--text)', lineHeight: 1.55, fontFamily: "'Lexend', sans-serif" }}>
-                            {address}
-                        </p>
-                    )}
-                    <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-body)', fontFamily: 'monospace' }}>
-                        {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
-                    </p>
-                    <button type="button" onClick={handleClear}
-                        style={S.clearBtn}>
-                        <IcoX c="#C62828" size={12} />
-                        Remove location
-                    </button>
                 </div>
             )}
 
@@ -365,7 +365,7 @@ const S = {
         padding: 14, border: '1.5px solid #A7F3D0',
     },
     clearBtn: {
-        marginTop: 10,
+        flexShrink: 0, minHeight: 44,
         display: 'inline-flex', alignItems: 'center', gap: 5,
         background: 'none', border: 'none',
         color: '#C62828', fontSize: 12, fontWeight: 700,

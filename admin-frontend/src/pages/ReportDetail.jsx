@@ -86,6 +86,7 @@ const IcoShield = ({ size = 16, color = "currentColor" }) => (<svg width={size} 
 const IcoPrint = ({ size = 16, color = "currentColor" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><rect x="6" y="14" width="12" height="8" rx="1" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoTrash = ({ size = 16, color = "currentColor" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoCal = ({ size = 16, color = "currentColor" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke={color} strokeWidth="1.8" /><path d="M16 2v4M8 2v4M3 10h18" stroke={color} strokeWidth="1.8" strokeLinecap="round" /></svg>);
+const IcoEdit = ({ size = 16, color = "currentColor" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoGuardian = ({ size = 16, color = "currentColor" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><circle cx="9" cy="7" r="4" stroke={color} strokeWidth="1.8" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 
 const Spinner = ({ size = 14, color = "#fff" }) => (
@@ -108,11 +109,30 @@ const Card = ({ title, icon, children, style = {}, headerRight }) => (
   </div>
 );
 
-const InfoRow = ({ label, value, mono, muted, highlight }) => (
+// One chip treatment for every submitted-date surface (report card header and the
+// Case Information row) so the same fact never appears in two different shapes.
+const DateChip = ({ prefix, children, wrap }) => (
+  <span style={{
+    display: "inline-flex", alignItems: "center", gap: 6, maxWidth: "100%",
+    background: "var(--adm-primary-bg)", color: "#C45E10",
+    fontSize: 11.5, fontWeight: 700, lineHeight: 1.45,
+    padding: "4px 11px", borderRadius: 9999, border: "1px solid #FFCC99",
+    fontFamily: "'Lexend',sans-serif", fontVariantNumeric: "tabular-nums",
+    whiteSpace: wrap ? "normal" : "nowrap", overflowWrap: "anywhere",
+  }}>
+    <IcoCal size={12.5} color="#C45E10" />
+    {prefix && <span style={{ fontWeight: 600, opacity: 0.8 }}>{prefix}</span>}
+    {children}
+  </span>
+);
+
+const InfoRow = ({ label, value, mono, muted, highlight, action }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-    <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>{label}</span>
+    <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+      {label}{action}
+    </span>
     {highlight ? (
-      <span style={{ alignSelf: "flex-start", maxWidth: "100%", background: "var(--adm-primary-bg)", color: "#C45E10", fontWeight: 700, fontSize: 12.5, lineHeight: 1.35, padding: "3px 12px", borderRadius: 12, border: "1px solid #FFCC99", fontFamily: "'Lexend',sans-serif", whiteSpace: "normal", overflowWrap: "anywhere" }}>{value || "-"}</span>
+      <span style={{ alignSelf: "flex-start", maxWidth: "100%" }}><DateChip wrap>{value || "-"}</DateChip></span>
     ) : (
       <span style={{ fontSize: 13.5, color: muted ? "#94A3B8" : "var(--adm-text)", fontWeight: 500, fontStyle: muted ? "italic" : "normal", fontFamily: mono ? "monospace" : "'Lexend',sans-serif" }}>{value || "-"}</span>
     )}
@@ -193,6 +213,56 @@ const DELETE_REASONS = [
   { id: "other", label: "Other" },
 ];
 
+const RespondentModal = ({ current, onClose, onSave, saving }) => {
+  const [name, setName] = useState(current || "");
+  const [err, setErr] = useState("");
+  const trimmed = name.trim();
+  const unchanged = trimmed === (current || "").trim();
+  const submit = () => {
+    if (!trimmed) { setErr("Respondent name cannot be empty."); return; }
+    if (unchanged) { onClose(); return; }
+    onSave(trimmed);
+  };
+  return (
+    <div style={M.backdrop} onClick={!saving ? onClose : undefined}>
+      <div style={{ ...M.modal, maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+          <div>
+            <p style={M.title}>Edit Respondent Name</p>
+            <p style={M.sub}>Correct a misspelling before it reaches the printed forms</p>
+          </div>
+          <CloseX onClick={onClose} />
+        </div>
+        <label htmlFor="resp-name" style={{ display: "block", margin: "0 0 6px", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+          Respondent
+        </label>
+        <input
+          id="resp-name"
+          autoFocus
+          value={name}
+          maxLength={120}
+          onChange={e => { setName(e.target.value); setErr(""); }}
+          onBlur={() => { if (!name.trim()) setErr("Respondent name cannot be empty."); }}
+          onKeyDown={e => { if (e.key === "Enter" && !saving) submit(); }}
+          style={{ width: "100%", boxSizing: "border-box", border: `1.5px solid ${err ? "#EF4444" : "var(--adm-border)"}`, borderRadius: 4, padding: "11px 12px", fontSize: 14, fontFamily: "'Lexend',sans-serif", color: "var(--adm-text)", background: "var(--adm-card)", outline: "none" }}
+        />
+        {err
+          ? <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "#EF4444", fontFamily: "'Lexend',sans-serif" }}>{err}</p>
+          : <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
+              The victim typed this name when filing. It appears on the BPO application and the endorsement letter.
+            </p>}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 20 }}>
+          <button className="rd-btn" style={M.cancelBtn} onClick={onClose} disabled={saving}>Cancel</button>
+          <button className="rd-btn" style={{ ...M.saveBtn, background: "#9B4DAB", opacity: saving || !trimmed ? 0.6 : 1, cursor: saving || !trimmed ? "not-allowed" : "pointer" }}
+            onClick={submit} disabled={saving || !trimmed}>
+            {saving && <Spinner />}{saving ? "Saving…" : "Save Name"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const DeleteModal = ({ caseId, onClose, onConfirm, loading }) => {
   const [reason, setReason] = useState("");
   const [otherText, setOtherText] = useState("");
@@ -242,46 +312,114 @@ const ENDPOINT_NOTE = {
   closed:   { title: "Closed",   body: "Case closed with a recorded reason. It is not marked resolved or settled.", color: "#475569", bg: "#F1F5F9", border: "#CBD5E1", sub: "#334155" },
 };
 
+// Sub-message under each timeline step. Prefers the real recorded fact (who, when,
+// which office) and falls back to what the step means while it has not happened yet.
+const stepDetail = (key, cas) => {
+  const bpo  = (cas.bpos || [])[0];
+  const endo = (cas.endorsements || [])[0];
+  const on   = (d) => (d ? fmtDate(d) : null);   // date only; the chips carry the time
+  switch (key) {
+    case "submitted":
+      return `Filed by the complainant${on(cas.created_at) ? ` on ${on(cas.created_at)}` : ""}.`;
+    case "under_assessment":
+      return cas.handled_by ? `${cas.handled_by} is reviewing the statement.` : "VAWC officer reviews the statement and severity.";
+    case "awaiting_onsite_visit":
+      return "Complainant asked to appear at the desk to confirm and sign.";
+    case "bpo_applied":
+      return bpo?.applied_at ? `Application recorded on ${on(bpo.applied_at)}.` : "BPO application prepared for the Punong Barangay.";
+    case "bpo_issued":
+      return bpo?.issued_at
+        ? `Issued ${on(bpo.issued_at)}${bpo.expires_at ? `, expires ${on(bpo.expires_at)}` : ""}.`
+        : "Punong Barangay issues the order. Valid 15 days, non-extendable.";
+    case "bpo_served":
+      return bpo?.served_at
+        ? `Served ${on(bpo.served_at)}${bpo.served_by ? ` by ${bpo.served_by}` : ""}.`
+        : "Order delivered to the respondent and proof of service recorded.";
+    case "endorsed":
+      return endo?.date_endorsed
+        ? `Sent to ${endo.to_office_display || endo.to_office_other || "the receiving office"} on ${on(endo.date_endorsed)}.`
+        : "Case forwarded to PNP, C/MSWDO, PAO, or the court.";
+    case "closed":
+      return cas.closure_reason_display
+        ? `${cas.closure_reason_display}${on(cas.closed_at) ? ` on ${on(cas.closed_at)}` : ""}.`
+        : "Outcome recorded and the case file closed.";
+    default:
+      return null;
+  }
+};
+
+// Shared row so the linear steps and the two endpoints cannot drift apart.
+const TimelineRow = ({ label, detail, dot, color, bg, icon, isDone, isCurrent, last }) => (
+  <div style={{ display: "flex", gap: 12, position: "relative", paddingBottom: last ? 2 : 16 }}>
+    {!last && (
+      <span aria-hidden="true" style={{
+        position: "absolute", left: 9, top: 22, bottom: 2, width: 2,
+        background: isDone ? dot : "var(--adm-border)",
+      }} />
+    )}
+    <span aria-hidden="true" style={{
+      width: 20, height: 20, borderRadius: "50%", flexShrink: 0, zIndex: 1,
+      border: `2px solid ${isCurrent || isDone ? dot : "var(--adm-border)"}`,
+      background: isCurrent ? (icon ? bg : dot) : isDone ? bg : "var(--adm-card)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+    }}>
+      {icon
+        ? icon
+        : isCurrent
+          ? <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--adm-card)" }} />
+          : isDone && <svg width="9" height="9" fill="none" viewBox="0 0 20 20"><path d="M5 10l4 4 6-8" stroke={dot} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>}
+    </span>
+    <div style={{ minWidth: 0, paddingTop: 1 }}>
+      <p style={{ margin: 0, fontSize: 12.5, fontWeight: isCurrent ? 700 : isDone ? 600 : 400, color: isCurrent ? color : isDone ? "var(--adm-text)" : "#94A3B8", fontFamily: "'Lexend',sans-serif", display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+        {label}
+        {isCurrent && <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color, background: bg, border: `1px solid ${dot}33`, padding: "2px 7px", borderRadius: 9999 }}>Now</span>}
+      </p>
+      {detail && (
+        <p style={{ margin: "3px 0 0", fontSize: 11, lineHeight: 1.5, color: "var(--adm-text-muted)", opacity: isDone || isCurrent ? 1 : 0.8, fontFamily: "'Lexend',sans-serif" }}>
+          {detail}
+        </p>
+      )}
+    </div>
+  </div>
+);
+
 const CaseTimeline = ({ cas, onUpdateStatus }) => {
   const isEndpoint = ENDPOINT_STATES.includes(cas.status);
   const isDeleted = cas.is_deleted;
   const currentIdx = TIMELINE_STEPS.indexOf(cas.status);
   const canPatch = ["submitted", "under_assessment", "awaiting_onsite_visit", "bpo_applied"].includes(cas.status);
+  const rows = [
+    ...TIMELINE_STEPS.map((s, i) => ({
+      key: s,
+      isDone: isEndpoint ? true : i < currentIdx,
+      isCurrent: !isEndpoint && i === currentIdx,
+      icon: null,
+    })),
+    ...ENDPOINT_STATES.map((key) => ({
+      key,
+      isDone: false,
+      isCurrent: cas.status === key,
+      icon: cas.status === key ? ENDPOINT_ICON[key] : null,
+    })),
+  ];
   return (
     <Card title="Case Timeline" icon={<IcoCheck size={16} color="#9B4DAB" />}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 0, marginBottom: 4 }}>
-        {TIMELINE_STEPS.map((s, i) => {
-          const cfg = sCfg(s), isDone = isEndpoint ? true : i < currentIdx, isCurrent = !isEndpoint && i === currentIdx;
+      <div style={{ display: "flex", flexDirection: "column", marginBottom: 4 }}>
+        {rows.map((row, i) => {
+          const cfg = sCfg(row.key);
           return (
-            <div key={s} style={{ display: "flex", gap: 12, paddingBottom: 14 }}>
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-                <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${isCurrent ? cfg.dot : isDone ? cfg.dot : "var(--adm-border)"}`, background: isCurrent ? cfg.dot : isDone ? cfg.bg : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {isDone && !isCurrent && <svg width="9" height="9" fill="none" viewBox="0 0 20 20"><path d="M5 10l4 4 6-8" stroke={cfg.dot} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                  {isCurrent && <div style={{ width: 7, height: 7, borderRadius: '50%', background: "var(--adm-card)" }} />}
-                </div>
-                {i < TIMELINE_STEPS.length - 1 && <div style={{ width: 2, flex: 1, minHeight: 14, background: isDone ? cfg.dot : "var(--adm-border)", marginTop: 3 }} />}
-              </div>
-              <div style={{ paddingTop: 2 }}>
-                <p style={{ margin: 0, fontSize: 12.5, fontWeight: isCurrent ? 700 : isDone ? 500 : 400, color: isCurrent ? cfg.color : isDone ? "#374151" : "#94A3B8", fontFamily: "'Lexend',sans-serif" }}>{cfg.label}</p>
-                {isCurrent && <span style={{ fontSize: 10.5, color: cfg.dot, fontWeight: 500, fontFamily: "'Lexend',sans-serif" }}>Current</span>}
-              </div>
-            </div>
-          );
-        })}
-        {ENDPOINT_STATES.map((key) => {
-          const cfg = sCfg(key), isCurrent = cas.status === key;
-          return (
-            <div key={key} style={{ display: "flex", gap: 12, paddingBottom: 8 }}>
-              <div style={{ flexShrink: 0 }}>
-                <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${isCurrent ? cfg.dot : "var(--adm-border)"}`, background: isCurrent ? cfg.bg : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {isCurrent ? ENDPOINT_ICON[key] : <span style={{ width: 6, height: 6, borderRadius: '50%', background: "var(--adm-border)" }} />}
-                </div>
-              </div>
-              <div style={{ paddingTop: 2 }}>
-                <p style={{ margin: 0, fontSize: 12.5, fontWeight: isCurrent ? 700 : 400, color: isCurrent ? cfg.color : "#94A3B8", fontFamily: "'Lexend',sans-serif" }}>{cfg.label}</p>
-                {isCurrent && <span style={{ fontSize: 10.5, color: cfg.dot, fontWeight: 500, fontFamily: "'Lexend',sans-serif" }}>Current</span>}
-              </div>
-            </div>
+            <TimelineRow
+              key={row.key}
+              label={cfg.label}
+              detail={stepDetail(row.key, cas)}
+              dot={cfg.dot}
+              color={cfg.color}
+              bg={cfg.bg}
+              icon={row.icon}
+              isDone={row.isDone}
+              isCurrent={row.isCurrent}
+              last={i === rows.length - 1}
+            />
           );
         })}
       </div>
@@ -624,6 +762,8 @@ export default function ReportDetail() {
   const [sendSms, setSendSms] = useState(false);
   const [showMessageLogs, setShowMessageLogs] = useState(false);
   const [deletingMsgId, setDeletingMsgId] = useState(null);
+  const [editRespondent, setEditRespondent] = useState(false);
+  const [savingRespondent, setSavingRespondent] = useState(false);
 
   const currentAdmin = (() => { try { return JSON.parse(localStorage.getItem("admin_user") || localStorage.getItem("admin") || "{}"); } catch { return {}; } })();
   const isSuperAdmin = !!currentAdmin.is_super_admin;
@@ -697,6 +837,17 @@ export default function ReportDetail() {
       showToast("Status updated.");
     } catch (err) { showToast(err.response?.data?.detail || "Failed to update.", false); }
     finally { setStatusSaving(false); }
+  };
+
+  const handleRespondentSave = async (name) => {
+    setSavingRespondent(true);
+    try {
+      const res = await api.patch(`/admin/cases/${id}/respondent`, { offender_name: name });
+      setCas(c => ({ ...c, offender_name: res.data?.offender_name || name }));
+      setEditRespondent(false);
+      showToast("Respondent name updated.");
+    } catch (err) { showToast(err.response?.data?.detail || "Failed to update respondent.", false); }
+    finally { setSavingRespondent(false); }
   };
 
   const handleIncidentTypeSave = async (reportId) => {
@@ -898,13 +1049,11 @@ export default function ReportDetail() {
                 <Card title={`Report ${reportNo(idx)}`} icon={<IcoClip size={16} color="#9B4DAB" />}
                   headerRight={
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11.5, fontFamily: "'Lexend',sans-serif" }}>
-                        <span style={{ background: "var(--adm-primary-bg)", color: "#C45E10", fontWeight: 700, padding: "3px 10px", borderRadius: 9999, border: "1px solid #FFCC99", whiteSpace: "nowrap" }}>
-                          Submitted: {fmt(r.created_at)}
-                        </span>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11.5, fontFamily: "'Lexend',sans-serif" }}>
+                        <DateChip prefix="Submitted">{fmt(r.created_at)}</DateChip>
                         {r.updated_at && new Date(r.updated_at) - new Date(r.created_at) > 60000 && (
-                          <span style={{ fontSize: 10.5, color: "#9B4DAB", fontWeight: 600 }}>
-                            · edited {fmt(r.updated_at)}
+                          <span style={{ fontSize: 10.5, color: "var(--adm-text-muted)", fontWeight: 500, fontVariantNumeric: "tabular-nums" }}>
+                            edited {fmt(r.updated_at)}
                           </span>
                         )}
                       </span>
@@ -1015,11 +1164,23 @@ export default function ReportDetail() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "16px 24px" }}>
                 <InfoRow label="Case Number" value={cas.case_number} mono />
                 <InfoRow label="Current Status" value={cas.status_display || cfg.label} />
-                <InfoRow label="Respondent" value={cas.offender_name} />
+                <InfoRow
+                  label="Respondent"
+                  value={cas.offender_name}
+                  action={!cas.is_deleted && (
+                    <button
+                      type="button"
+                      className="rd-btn"
+                      onClick={() => setEditRespondent(true)}
+                      title="Correct the respondent's name"
+                      style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "1px 7px", borderRadius: 9999, border: "1px solid var(--adm-border)", background: "transparent", color: "var(--adm-text-muted)", fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                      <IcoEdit size={10} color="currentColor" /> Edit
+                    </button>
+                  )}
+                />
                 <InfoRow label="Date Submitted" value={fmt(cas.created_at)} highlight />
                 <InfoRow label="Last Updated" value={fmt(cas.updated_at)} />
                 {cas.admin_id && <InfoRow label="Handled By" value={cas.handled_by || `Admin #${cas.admin_id}`} />}
-                <InfoRow label="Total Reports" value={`${reports.length} ${reports.length === 1 ? "testimony" : "testimonies"}`} />
                 {cas.has_status_update && (
                   <InfoRow label="Victim Notification" value="Sent - awaiting victim to open the case in their portal" muted />
                 )}
@@ -1110,6 +1271,7 @@ export default function ReportDetail() {
       )}
 
       {showStatusModal && <StatusModal current={cas.status} onClose={() => setShowStatusModal(false)} onSave={handleStatusSave} saving={statusSaving} />}
+      {editRespondent && <RespondentModal current={cas.offender_name} onClose={() => setEditRespondent(false)} onSave={handleRespondentSave} saving={savingRespondent} />}
       {showDeleteConfirm && <DeleteModal caseId={cas.case_number} loading={actionLoading} onConfirm={handleDelete} onClose={() => setShowDeleteConfirm(false)} />}
       {showRecover && <ConfirmModal title="Recover Case" message={`Restore case ${cas.case_number}?`} confirmLabel="Recover" danger={false} loading={actionLoading} onConfirm={handleRecover} onClose={() => setShowRecover(false)} />}
 

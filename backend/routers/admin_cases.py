@@ -9,7 +9,7 @@ from models.report import Report, ReportStatus
 from models.user import User
 from models.admin import Admin
 from core.admin_dependencies import get_current_admin_full_access, require_super_admin
-from core.encryption import decrypt, decrypt_float
+from core.encryption import encrypt, decrypt, decrypt_float
 from core.masking import mask_case_dict, mark_unrestricted, mask_phone, mask_email, mask_address, mask_last_initial
 from utils.otp_helper import send_sms
 from typing import Optional
@@ -51,6 +51,9 @@ class MandatoryReportPayload(BaseModel):
 
 class DeletePayload(BaseModel):
     reason: Optional[str] = None
+
+class RespondentPayload(BaseModel):
+    offender_name: str
 
 class IncidentTypePayload(BaseModel):
     incident_type: str
@@ -654,6 +657,32 @@ def set_severity(
     return {"message": "Severity updated.", "severity": sev.value,
             "severity_display": SEVERITY_DISPLAY.get(sev.value),
             "suggest_immediate_endorsement": sev == CaseSeverity.critical}
+
+
+# ── PATCH /admin/cases/{case_id}/respondent ───────────────────────────────────
+@router.patch("/{case_id}/respondent")
+def update_respondent(
+    case_id: int,
+    payload: RespondentPayload,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Correct the respondent's name.
+
+    The victim types this name at submission, so misspellings are common and they
+    end up on the printed BPO and endorsement forms. The stored value is
+    encrypted, so it has to be re-encrypted rather than assigned directly.
+    """
+    case = _get_active_case(db, case_id)
+    name = (payload.offender_name or "").strip()
+    if not name:
+        raise HTTPException(status_code=422, detail="Respondent name cannot be empty.")
+    if len(name) > 120:
+        raise HTTPException(status_code=422, detail="Respondent name is too long.")
+    case.offender_name = encrypt(name)
+    case.updated_at    = datetime.utcnow()
+    db.commit()
+    return {"message": "Respondent name updated.", "offender_name": name}
 
 
 # ── PATCH /admin/cases/{case_id}/mandatory-report ─────────────────────────────
