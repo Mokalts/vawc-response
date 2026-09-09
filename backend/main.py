@@ -11,8 +11,14 @@ from models import User, Report, OTP
 from models.case import Case
 from models.case_message import CaseMessage
 from models.admin import Admin
+# New lawful-flow models — imported so create_all registers their tables.
+from models.bpo import BPO
+from models.child import Child
+from models.endorsement import Endorsement
+from models.barangay_official import BarangayOfficial
 from database import Base
 from routers import auth, reports, cases, users, upload, admin_auth, admin_cases, admin_dashboard, admin_users
+from routers import admin_bpo, admin_endorsement, admin_officials
 
 Base.metadata.create_all(bind=engine)
 
@@ -60,6 +66,9 @@ app.include_router(admin_dashboard.router)
 app.include_router(cases.router)
 app.include_router(admin_cases.router)
 app.include_router(admin_users.router)
+app.include_router(admin_bpo.router)
+app.include_router(admin_endorsement.router)
+app.include_router(admin_officials.router)
 
 # Accept both GET and HEAD so uptime monitors (which use HEAD by default) get a
 # 200 instead of a 405 — keeps the free instance awake without false "down" alerts.

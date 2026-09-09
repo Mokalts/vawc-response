@@ -9,10 +9,86 @@ from models.admin import Admin
 from core.admin_dependencies import get_current_admin_full_access, require_super_admin
 from core.encryption import decrypt
 from core.masking import mask_last_initial, mask_name
-from datetime import datetime
+from core.status_labels import CLOSURE_REASON_DISPLAY, RELATIONSHIP_DISPLAY
+from datetime import datetime, timedelta
 import calendar
 
 router = APIRouter(prefix="/admin", tags=["Admin Dashboard"])
+
+
+# ── GET /admin/monitoring ─────────────────────────────────────────────────────
+# The measurable, legally-grounded metrics (spec Section 8).
+@router.get("/monitoring")
+def monitoring(
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    cases = db.query(Case).filter(Case.is_deleted == False).all()
+    FOURH = timedelta(hours=4)
+
+    bpo = {"applied": 0, "issued": 0, "served": 0, "expired": 0, "superseded": 0}
+    bpo_ever_issued = 0
+    bpo_issued_same_day = 0
+    endo_sent = endo_ack = 0
+    pnp_reported = pnp_4h = mswdo_reported = mswdo_4h = 0
+    by_abuse, by_rel, by_closure = {}, {}, {}
+
+    for c in cases:
+        # Mandatory reporting (4-hour clock)
+        if c.reported_to_pnp_at:
+            pnp_reported += 1
+            if c.created_at and (c.reported_to_pnp_at - c.created_at) <= FOURH:
+                pnp_4h += 1
+        if c.reported_to_mswdo_at:
+            mswdo_reported += 1
+            if c.created_at and (c.reported_to_mswdo_at - c.created_at) <= FOURH:
+                mswdo_4h += 1
+        # Relationship
+        if c.relationship_to_offender:
+            k = c.relationship_to_offender.value
+            by_rel[k] = by_rel.get(k, 0) + 1
+        # Closure
+        if c.status == ReportStatus.closed and c.closure_reason:
+            k = c.closure_reason.value
+            by_closure[k] = by_closure.get(k, 0) + 1
+        # Abuse types (from reports)
+        for r in c.reports:
+            types = (r.incident_types or ([r.incident_type] if r.incident_type else []))
+            for t in types:
+                if t:
+                    by_abuse[t] = by_abuse.get(t, 0) + 1
+        # BPOs
+        for b in c.bpos:
+            sv = b.status.value if b.status else None
+            if sv in bpo:
+                bpo[sv] += 1
+            if b.issued_at:
+                bpo_ever_issued += 1
+                if b.applied_at and b.issued_at.date() == b.applied_at.date():
+                    bpo_issued_same_day += 1
+        # Endorsements
+        for e in c.endorsements:
+            endo_sent += 1
+            if e.received_at:
+                endo_ack += 1
+
+    def pct(a, b):
+        return round(100 * a / b) if b else 0
+
+    return {
+        "total_cases": len(cases),
+        "bpo": {**bpo, "ever_issued": bpo_ever_issued,
+                "issued_same_day": bpo_issued_same_day,
+                "same_day_pct": pct(bpo_issued_same_day, bpo_ever_issued)},
+        "mandatory_report": {
+            "pnp_reported": pnp_reported, "pnp_within_4h": pnp_4h, "pnp_within_4h_pct": pct(pnp_4h, len(cases)),
+            "mswdo_reported": mswdo_reported, "mswdo_within_4h": mswdo_4h, "mswdo_within_4h_pct": pct(mswdo_4h, len(cases)),
+        },
+        "endorsements": {"sent": endo_sent, "acknowledged": endo_ack, "outstanding": endo_sent - endo_ack},
+        "by_abuse_type": by_abuse,
+        "by_relationship": {RELATIONSHIP_DISPLAY.get(k, k): v for k, v in by_rel.items()},
+        "closed_by_reason": {CLOSURE_REASON_DISPLAY.get(k, k): v for k, v in by_closure.items()},
+    }
 
 
 def _resolve_range(period: str, start: str = None, end: str = None):
@@ -64,17 +140,7 @@ def _resolve_range(period: str, start: str = None, end: str = None):
     return s, e, label
 
 
-STATUS_DISPLAY = {
-    "submitted":             "Submitted",
-    "awaiting_onsite_visit": "Awaiting Onsite Visit",
-    "under_process":         "Under Process",
-    "summon_issued":         "Summons Issued",
-    "summon_acknowledged":   "Respondent Appeared",
-    "resolved":              "Resolved",
-    "cfa_issued":            "CFA Issued",
-    "endorsed":              "Endorsed",
-    "referred_to_police":    "Referred to Authorities",
-}
+from core.status_labels import STATUS_DISPLAY
 
 def _full_name(user) -> str:
     first  = getattr(user, "first_name",  "") or ""
@@ -82,11 +148,6 @@ def _full_name(user) -> str:
     last   = getattr(user, "last_name",   "") or ""
     parts  = [p for p in [first, middle, last] if p.strip()]
     return " ".join(parts) if parts else "—"
-
-
-# Cases at (or past) these statuses count as "Settled" on the monthly report;
-# everything still in progress is "Pending".
-_SETTLED_STATUSES = {"resolved", "cfa_issued", "endorsed", "referred_to_police"}
 
 
 @router.get("/monthly-report")
@@ -120,7 +181,7 @@ def monthly_report(
             "complainant": _full_name(c.user),
             "respondent":  decrypt(c.offender_name),
             "title":       title,
-            "remark":      "Settled" if status_val in _SETTLED_STATUSES else "Pending",
+            "remark":      STATUS_DISPLAY.get(status_val, status_val or ""),
         })
 
     return {"year": year, "month": month, "rows": rows}

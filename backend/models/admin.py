@@ -33,7 +33,7 @@ class Admin(Base):
     deleted_at = Column(DateTime, nullable=True)        # Set when deleted, cleared on recovery
 
     # Relationships
-    handled_cases = relationship("Case", back_populates="handled_by")
+    handled_cases = relationship("Case", back_populates="handled_by", foreign_keys="Case.admin_id")
 
     @property
     def full_name(self):

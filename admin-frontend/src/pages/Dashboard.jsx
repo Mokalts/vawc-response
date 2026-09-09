@@ -74,14 +74,13 @@ const incidentColor = (t) => INCIDENT_COLORS[t] || '#7B2D8B';
 
 const STATUS_CFG = {
     submitted: { label: 'Submitted', color: '#BE185D', bg: '#FDF2F8', dot: '#EC4899' },
+    under_assessment: { label: 'Under Assessment', color: '#0E7490', bg: '#ECFEFF', dot: '#06B6D4' },
     awaiting_onsite_visit: { label: 'Awaiting Onsite Visit', color: '#92400E', bg: '#FFFBEB', dot: '#F59E0B' },
-    under_process: { label: 'Under Process', color: '#0E7490', bg: '#ECFEFF', dot: '#06B6D4' },
-    summon_issued: { label: 'Summons Issued', color: '#C45E10', bg: '#FFF3E0', dot: '#F47920' },
-    summon_acknowledged: { label: 'Respondent Appeared', color: '#4A1259', bg: '#F3E5F5', dot: '#9B4DAB' },
-    resolved: { label: 'Resolved', color: '#065F46', bg: '#ECFDF5', dot: '#10B981' },
-    cfa_issued: { label: 'CFA Issued', color: '#92400E', bg: '#FFFBEB', dot: '#D97706' },
+    bpo_applied: { label: 'BPO Applied', color: '#7B2D8B', bg: '#F3E5F5', dot: '#9B4DAB' },
+    bpo_issued: { label: 'BPO Issued', color: '#C45E10', bg: '#FFF3E0', dot: '#F47920' },
+    bpo_served: { label: 'BPO Served', color: '#92400E', bg: '#FFFBEB', dot: '#D97706' },
     endorsed: { label: 'Endorsed', color: '#991B1B', bg: '#FEF2F2', dot: '#EF4444' },
-    referred_to_police: { label: 'Referred to Authorities', color: '#991B1B', bg: '#FEF2F2', dot: '#EF4444' },
+    closed: { label: 'Closed', color: '#475569', bg: '#F1F5F9', dot: '#64748B' },
 };
 const sCfg = (s) => STATUS_CFG[s] || { label: s || '-', color: 'var(--adm-text-muted)', bg: 'var(--adm-border)', dot: '#CBD5E1' };
 
@@ -377,6 +376,62 @@ function IncidentBars({ data, loading }) {
 }
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
+const ABUSE_LABEL = { physical: "Physical", sexual: "Sexual", psychological: "Psychological", economic: "Economic", others: "Others" };
+function MonitoringSection({ m, expiring }) {
+    const Tile = ({ label, value, sub, tone = "#7B2D8B" }) => (
+        <div style={{ background: 'var(--adm-card)', border: '1px solid var(--adm-border)', borderRadius: 10, padding: '14px 16px', boxShadow: 'var(--adm-card-shadow)' }}>
+            <p style={{ margin: 0, fontSize: 11, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>{label}</p>
+            <p style={{ margin: '4px 0 0', fontSize: 22, fontWeight: 800, color: tone, fontFamily: "'Lexend',sans-serif" }}>{value}</p>
+            {sub && <p style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>{sub}</p>}
+        </div>
+    );
+    const Breakdown = ({ title, data }) => {
+        const entries = Object.entries(data || {});
+        return (
+            <div style={{ background: 'var(--adm-card)', border: '1px solid var(--adm-border)', borderRadius: 10, padding: '14px 16px', boxShadow: 'var(--adm-card-shadow)' }}>
+                <p style={{ margin: '0 0 10px', fontSize: 12.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: "'Lexend',sans-serif" }}>{title}</p>
+                {entries.length ? entries.map(([k, v]) => (
+                    <div key={k} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 12.5, padding: '3px 0', color: 'var(--adm-text-2)', fontFamily: "'Lexend',sans-serif" }}>
+                        <span>{ABUSE_LABEL[k] || k}</span><strong style={{ color: 'var(--adm-text)' }}>{v}</strong>
+                    </div>
+                )) : <p style={{ margin: 0, fontSize: 12, color: 'var(--adm-text-muted)', fontStyle: 'italic', fontFamily: "'Lexend',sans-serif" }}>No data yet.</p>}
+            </div>
+        );
+    };
+    const md = m.mandatory_report || {};
+    return (
+        <div style={{ marginTop: 18 }}>
+            <h2 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 800, color: 'var(--adm-text)', fontFamily: "'Lexend',sans-serif" }}>VAWC Monitoring <span style={{ fontSize: 11.5, fontWeight: 500, color: 'var(--adm-text-muted)' }}>· RA 9262 / JMC 2010-2 compliance</span></h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 14 }}>
+                <Tile label="BPOs issued same-day" value={`${m.bpo?.same_day_pct ?? 0}%`} sub={`${m.bpo?.issued_same_day ?? 0} of ${m.bpo?.ever_issued ?? 0}`} tone="#C45E10" />
+                <Tile label="Reported to PNP ≤4h" value={`${md.pnp_within_4h_pct ?? 0}%`} sub={`${md.pnp_within_4h ?? 0} of ${m.total_cases ?? 0} cases`} tone="#0E7490" />
+                <Tile label="Reported to C/MSWDO ≤4h" value={`${md.mswdo_within_4h_pct ?? 0}%`} sub={`${md.mswdo_within_4h ?? 0} of ${m.total_cases ?? 0} cases`} tone="#0E7490" />
+                <Tile label="Endorsements outstanding" value={m.endorsements?.outstanding ?? 0} sub={`${m.endorsements?.acknowledged ?? 0} ack / ${m.endorsements?.sent ?? 0} sent`} tone="#DC2626" />
+                <Tile label="BPOs (issued / served)" value={`${m.bpo?.issued ?? 0} / ${m.bpo?.served ?? 0}`} sub={`${m.bpo?.applied ?? 0} applied · ${m.bpo?.expired ?? 0} expired`} tone="#7B2D8B" />
+            </div>
+
+            {expiring && expiring.length > 0 && (
+                <div style={{ background: '#FFFBEB', border: '1.5px solid #FDE68A', borderRadius: 10, padding: '12px 16px', marginBottom: 14 }}>
+                    <p style={{ margin: '0 0 8px', fontSize: 12.5, fontWeight: 800, color: '#92400E', fontFamily: "'Lexend',sans-serif" }}>⚠ BPOs expiring / expired ({expiring.length})</p>
+                    {expiring.map(b => (
+                        <div key={b.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, fontSize: 12.5, padding: '3px 0', color: '#78350F', fontFamily: "'Lexend',sans-serif" }}>
+                            <span>{b.bpo_number}</span>
+                            <span>{b.expired ? 'EXPIRED' : `${b.days_left} day${b.days_left === 1 ? '' : 's'} left`}</span>
+                        </div>
+                    ))}
+                    <p style={{ margin: '6px 0 0', fontSize: 11, color: '#92400E', fontStyle: 'italic', fontFamily: "'Lexend',sans-serif" }}>A BPO cannot be extended or renewed. Options: a new incident then a new BPO, or endorse to court / PAO for a TPO.</p>
+                </div>
+            )}
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
+                <Breakdown title="Cases by abuse type" data={m.by_abuse_type} />
+                <Breakdown title="Cases by relationship to offender" data={m.by_relationship} />
+                <Breakdown title="Closed cases by reason" data={m.closed_by_reason} />
+            </div>
+        </div>
+    );
+}
+
 export default function Dashboard() {
     const navigate = useNavigate();
     const [period, setPeriod] = useState('quarterly');
@@ -384,6 +439,8 @@ export default function Dashboard() {
     const [customEnd, setCustomEnd] = useState('');
     const [showCustom, setShowCustom] = useState(false);
     const [stats, setStats] = useState(null);
+    const [monitoring, setMonitoring] = useState(null);
+    const [expiring, setExpiring] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [newCount, setNewCount] = useState(0);
@@ -402,11 +459,15 @@ export default function Dashboard() {
             const params = period === 'custom'
                 ? { period: 'custom', start: customStart, end: customEnd }
                 : { period };
-            const [sRes, uRes] = await Promise.all([
+            const [sRes, uRes, mRes, eRes] = await Promise.all([
                 api.get('/admin/dashboard', { params }),
                 api.get('/admin/cases/unread-count'),
+                api.get('/admin/monitoring').catch(() => ({ data: null })),
+                api.get('/admin/bpos/expiring').catch(() => ({ data: { expiring: [] } })),
             ]);
             setStats(sRes.data);
+            setMonitoring(mRes.data);
+            setExpiring(eRes.data.expiring || []);
             setNewCount(uRes.data.unread || 0);
             setBurstAlert(uRes.data.multi_alert || null);
         } catch {
@@ -692,6 +753,8 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
+
+            {monitoring && <MonitoringSection m={monitoring} expiring={expiring} />}
 
             {showModal && <NewReportsModal onClose={() => setShowModal(false)} onConfirmed={handleConfirmed} />}
         </AdminLayout>

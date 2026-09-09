@@ -648,6 +648,11 @@ export default function AdminManagement() {
           </div>
         )}
 
+        {/* Barangay Officials — super admin only, on the Admins tab */}
+        {tab === "admins" && currentAdmin?.is_super_admin && !search && !showDeleted && (
+          <OfficialsPanel showToast={showToast} />
+        )}
+
         {/* Active Admins Table - only on Admins tab */}
         {tab === "admins" && (
         <div className="tab-fade" style={S.tableCard}>
@@ -1255,6 +1260,79 @@ function ResetAdminPasswordModal({ admin, onClose, onDone, onError }) {
           <button type="submit" disabled={saving} style={{ ...S2.btnPrimary, opacity: saving ? 0.7 : 1 }}>{saving ? "Saving…" : "Reset Password"}</button>
         </div>
       </form>
+    </div>
+  );
+}
+
+// ─── Barangay Officials panel (super admin) ────────────────────────────────
+const OFFICIAL_ROLES = [
+  { id: "punong_barangay", label: "Punong Barangay" },
+  { id: "vawc_officer", label: "VAWC Officer" },
+  { id: "bsdo", label: "BSDO" },
+  { id: "secretary", label: "Barangay Secretary" },
+];
+function OfficialsPanel({ showToast }) {
+  const [officials, setOfficials] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [adding, setAdding] = useState({ role: "punong_barangay", full_name: "" });
+  const [editId, setEditId] = useState(null);
+  const [editName, setEditName] = useState("");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try { const r = await api.get("/admin/officials"); setOfficials(r.data.officials || []); }
+    catch { /* ignore */ }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const add = async () => {
+    if (!adding.full_name.trim()) return;
+    try { await api.post("/admin/officials", adding); setAdding({ role: adding.role, full_name: "" }); showToast("Official added."); load(); }
+    catch (e) { showToast(e.response?.data?.detail || "Failed to add.", false); }
+  };
+  const saveName = async (o) => {
+    try { await api.patch(`/admin/officials/${o.id}`, { full_name: editName }); setEditId(null); showToast("Official updated."); load(); }
+    catch (e) { showToast(e.response?.data?.detail || "Failed.", false); }
+  };
+  const toggle = async (o) => {
+    try { await api.patch(`/admin/officials/${o.id}`, { is_active: !o.is_active }); load(); }
+    catch (e) { showToast(e.response?.data?.detail || "Failed.", false); }
+  };
+
+  return (
+    <div className="tab-fade" style={{ ...S.tableCard, marginBottom: 16 }}>
+      <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--adm-border)", background: "var(--adm-muted)" }}>
+        <p style={{ margin: 0, fontSize: 12.5, fontWeight: 800, color: "var(--adm-text)", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'Lexend',sans-serif" }}>Barangay Officials</p>
+        <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>The active official for each role is auto-filled on printed documents (BPO, Endorsement).</p>
+      </div>
+      <div style={{ padding: 16 }}>
+        {loading ? <p style={{ fontSize: 13, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Loading…</p> : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {officials.map(o => (
+              <div key={o.id} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--adm-border)" }}>
+                <span style={{ minWidth: 140, fontSize: 12, fontWeight: 700, color: "#7B2D8B", fontFamily: "'Lexend',sans-serif" }}>{o.role_display || o.role}</span>
+                {editId === o.id
+                  ? <><input style={{ ...S2.input, flex: 1, marginBottom: 0 }} value={editName} onChange={e => setEditName(e.target.value)} />
+                      <button style={S2.btnPrimary} onClick={() => saveName(o)}>Save</button>
+                      <button style={S2.btnGhost} onClick={() => setEditId(null)}>Cancel</button></>
+                  : <><span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>{o.full_name}</span>
+                      <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 9999, background: o.is_active ? "#ECFDF5" : "var(--adm-border)", color: o.is_active ? "#059669" : "#94A3B8" }}>{o.is_active ? "Active" : "Inactive"}</span>
+                      <button style={S2.btnGhost} onClick={() => { setEditId(o.id); setEditName(o.full_name); }}>Edit</button>
+                      <button style={S2.btnGhost} onClick={() => toggle(o)}>{o.is_active ? "Deactivate" : "Activate"}</button></>}
+              </div>
+            ))}
+            {officials.length === 0 && <p style={{ fontSize: 13, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>No officials yet. Add them below.</p>}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4, paddingTop: 12, borderTop: "1px dashed var(--adm-border)" }}>
+              <select style={{ ...S2.input, width: 180, marginBottom: 0 }} value={adding.role} onChange={e => setAdding(a => ({ ...a, role: e.target.value }))}>
+                {OFFICIAL_ROLES.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+              </select>
+              <input style={{ ...S2.input, flex: 1, marginBottom: 0 }} placeholder="Full name (e.g. HON. …)" value={adding.full_name} onChange={e => setAdding(a => ({ ...a, full_name: e.target.value }))} />
+              <button style={S2.btnPrimary} onClick={add}>Add Official</button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

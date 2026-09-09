@@ -30,6 +30,25 @@ const MIN_CHARS = 10;
 const MAX_PHOTOS = 5;              // cap per report to control cloud storage
 const MAX_MB = 10;                 // per-photo size limit (matches backend)
 const ALLOWED_IMG = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
+const RELATIONSHIP_OPTS = [
+    { id: 'current_spouse_partner', label: 'Current spouse / partner' },
+    { id: 'former_spouse_partner', label: 'Former spouse / partner' },
+    { id: 'current_dating', label: 'Current dating relationship' },
+    { id: 'former_dating', label: 'Former dating relationship' },
+    { id: 'immediate_family', label: 'Immediate family' },
+    { id: 'other_relative', label: 'Other relative' },
+    { id: 'neighbor_coworker', label: 'Neighbor / co-worker' },
+    { id: 'person_of_authority', label: 'Person of authority' },
+    { id: 'stranger', label: 'Stranger' },
+    { id: 'others', label: 'Others' },
+];
+const ABUSE_OPTS = [
+    { id: 'physical', label: 'Physical' },
+    { id: 'sexual', label: 'Sexual' },
+    { id: 'psychological', label: 'Psychological / emotional' },
+    { id: 'economic', label: 'Economic' },
+    { id: 'others', label: 'Others' },
+];
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const IcoArrow  = ({ dir='left', c='#C45E10' }) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d={dir==='left'?"M15 18l-6-6 6-6":"M9 18l6-6-6-6"} stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
@@ -74,10 +93,17 @@ function ReportNow() {
     const [forceNew,      setForceNew]      = useState(false);
     const [offenderName,  setOffenderName]  = useState(draft0.offenderName || '');
     const [incidentDate,  setIncidentDate]  = useState(draft0.incidentDate || '');
+    const [relationship,  setRelationship]  = useState(draft0.relationship || '');
+    const [abuseTypes,    setAbuseTypes]    = useState(draft0.abuseTypes || []);
+    const [children,      setChildren]      = useState(draft0.children || []);
     const [photoErr,      setPhotoErr]      = useState('');
     const [draftSaved,    setDraftSaved]    = useState(false);
 
-    const canNext1 = statement.trim().length >= MIN_CHARS && offenderName.trim().length >= 2 && incidentDate !== '';
+    const canNext1 = statement.trim().length >= MIN_CHARS && offenderName.trim().length >= 2 && incidentDate !== '' && relationship !== '' && abuseTypes.length > 0;
+    const toggleAbuse = (id) => setAbuseTypes(a => a.includes(id) ? a.filter(x => x !== id) : [...a, id]);
+    const addChild = () => setChildren(c => [...c, { name: '', date_of_birth: '', sex: '', under_her_care: false }]);
+    const setChild = (i, k, v) => setChildren(c => c.map((x, idx) => idx === i ? { ...x, [k]: v } : x));
+    const removeChild = (i) => setChildren(c => c.filter((_, idx) => idx !== i));
 
     // Auto-save the text draft (debounced) so a back/refresh/close does not lose it.
     // Photos are intentionally NOT persisted. Cleared on successful submit or discard.
@@ -86,7 +112,7 @@ function ReportNow() {
         if (!hasContent) return;
         const t = setTimeout(() => {
             try {
-                localStorage.setItem(DRAFT_KEY, JSON.stringify({ statement, offenderName, incidentDate, address, location, savedAt: Date.now() }));
+                localStorage.setItem(DRAFT_KEY, JSON.stringify({ statement, offenderName, incidentDate, relationship, abuseTypes, children, address, location, savedAt: Date.now() }));
                 setDraftSaved(true);
             } catch {}
         }, 600);
@@ -95,7 +121,7 @@ function ReportNow() {
 
     const discardDraft = () => {
         clearDraft();
-        setStatement(''); setOffenderName(''); setIncidentDate(''); setAddress(''); setLocation(null);
+        setStatement(''); setOffenderName(''); setIncidentDate(''); setRelationship(''); setAbuseTypes([]); setChildren([]); setAddress(''); setLocation(null);
         setImageFiles([]); setImagePreviews([]); setPhotoErr(''); setDraftSaved(false); setStep(1);
     };
 
@@ -158,6 +184,9 @@ function ReportNow() {
                 offender_name: offenderName.trim(),
                 incident_date: incidentDate || null,
                 incident_type: null,
+                incident_types: abuseTypes,
+                relationship_to_offender: relationship || null,
+                children: children.filter(c => (c.name || '').trim()).map(c => ({ name: c.name.trim(), date_of_birth: c.date_of_birth || null, sex: c.sex || null, under_her_care: !!c.under_her_care })),
                 photo_urls:    photoUrls,
                 latitude:      location?.lat  || null,
                 longitude:     location?.lng  || null,
@@ -351,6 +380,72 @@ function ReportNow() {
                                     onChange={e => setIncidentDate(e.target.value)}
                                     style={{ ...S.textarea, resize:'none', padding:'12px 14px', minHeight:'unset', colorScheme:'light' }}
                                 />
+                            </div>
+
+                            {/* Relationship to offender */}
+                            <div style={S.card}>
+                                <div style={S.cardHeader}>
+                                    <div style={{ ...S.iconBox, backgroundColor:'var(--surface-tint)', borderColor:'var(--border)' }}><IcoEdit /></div>
+                                    <div>
+                                        <h2 id="lbl-rel" style={S.cardTitle}>Relationship to the Offender</h2>
+                                        <p style={S.cardSub}>Ugnayan sa nang-abuso - required</p>
+                                    </div>
+                                </div>
+                                <select aria-labelledby="lbl-rel" value={relationship} onChange={e => setRelationship(e.target.value)}
+                                    style={{ ...S.textarea, resize:'none', padding:'12px 14px', minHeight:'unset', colorScheme:'light' }}>
+                                    <option value="">- Select relationship -</option>
+                                    {RELATIONSHIP_OPTS.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+                                </select>
+                            </div>
+
+                            {/* Type(s) of abuse */}
+                            <div style={S.card}>
+                                <div style={S.cardHeader}>
+                                    <div style={{ ...S.iconBox, backgroundColor:'var(--surface-tint)', borderColor:'var(--border)' }}><IcoEdit /></div>
+                                    <div>
+                                        <h2 style={S.cardTitle}>Type of Abuse</h2>
+                                        <p style={S.cardSub}>Uri ng pang-aabuso - piliin lahat ng angkop</p>
+                                    </div>
+                                </div>
+                                <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                                    {ABUSE_OPTS.map(o => (
+                                        <label key={o.id} style={{ display:'flex', alignItems:'center', gap:10, fontSize:14, color:'var(--text-body)', fontFamily:"'Lexend', sans-serif", cursor:'pointer' }}>
+                                            <input type="checkbox" checked={abuseTypes.includes(o.id)} onChange={() => toggleAbuse(o.id)} style={{ width:18, height:18, accentColor:'#C45E10' }} />
+                                            {o.label}
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Children (optional) */}
+                            <div style={S.card}>
+                                <div style={S.cardHeader}>
+                                    <div style={{ ...S.iconBox, backgroundColor:'var(--surface-tint)', borderColor:'var(--border)' }}><IcoEdit /></div>
+                                    <div>
+                                        <h2 style={S.cardTitle}>Children (optional)</h2>
+                                        <p style={S.cardSub}>Mga anak na apektado - kung mayroon</p>
+                                    </div>
+                                </div>
+                                {children.map((c, i) => (
+                                    <div key={i} style={{ display:'flex', flexDirection:'column', gap:8, padding:'12px', border:'1px solid var(--border)', borderRadius:8, marginBottom:10 }}>
+                                        <input placeholder="Name / Pangalan" value={c.name} onChange={e => setChild(i, 'name', e.target.value)}
+                                            style={{ ...S.textarea, resize:'none', padding:'10px 12px', minHeight:'unset' }} />
+                                        <div style={{ display:'flex', gap:8, flexWrap:'wrap' }}>
+                                            <input type="date" value={c.date_of_birth} max={new Date().toISOString().slice(0,10)} onChange={e => setChild(i, 'date_of_birth', e.target.value)}
+                                                style={{ ...S.textarea, resize:'none', padding:'10px 12px', minHeight:'unset', flex:1, colorScheme:'light' }} />
+                                            <select value={c.sex} onChange={e => setChild(i, 'sex', e.target.value)}
+                                                style={{ ...S.textarea, resize:'none', padding:'10px 12px', minHeight:'unset', flex:1, colorScheme:'light' }}>
+                                                <option value="">Sex</option><option value="Female">Female</option><option value="Male">Male</option>
+                                            </select>
+                                        </div>
+                                        <label style={{ display:'flex', alignItems:'center', gap:8, fontSize:13.5, color:'var(--text-body)', fontFamily:"'Lexend', sans-serif" }}>
+                                            <input type="checkbox" checked={!!c.under_her_care} onChange={e => setChild(i, 'under_her_care', e.target.checked)} style={{ width:17, height:17, accentColor:'#C45E10' }} />
+                                            Under my care / Nasa aking pangangalaga
+                                        </label>
+                                        <button type="button" onClick={() => removeChild(i)} style={{ alignSelf:'flex-start', background:'none', border:'none', color:'#BE123C', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:"'Lexend', sans-serif" }}>Remove</button>
+                                    </div>
+                                ))}
+                                <button type="button" onClick={addChild} style={{ padding:'9px 14px', borderRadius:8, border:'1.5px dashed var(--border)', background:'var(--surface)', color:'var(--text-body)', fontSize:13.5, fontWeight:600, cursor:'pointer', fontFamily:"'Lexend', sans-serif" }}>+ Add a child</button>
                             </div>
 
                             {/* Statement */}

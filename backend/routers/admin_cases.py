@@ -18,46 +18,34 @@ import threading
 
 router = APIRouter(prefix="/admin/cases", tags=["Admin Cases"])
 
-STATUS_DISPLAY = {
-    "submitted":             "Submitted",
-    "awaiting_onsite_visit": "Awaiting Onsite Visit",
-    "under_process":         "Under Process",
-    "summon_issued":         "Summons Issued",
-    "summon_acknowledged":   "Respondent Appeared",
-    "resolved":              "Resolved",
-    "cfa_issued":            "CFA Issued",
-    "endorsed":              "Endorsed",
-    "referred_to_police":    "Referred to Authorities",
-}
+from core.status_labels import (
+    STATUS_DISPLAY, STATUS_EMAIL_MSG, CLOSURE_REASON_DISPLAY,
+    RELATIONSHIP_DISPLAY, SEVERITY_DISPLAY,
+)
+from models.case import ClosureReason, RelationshipToOffender, CaseSeverity
 
-STATUS_EMAIL_MSG = {
-    "awaiting_onsite_visit": "The barangay VAWC officer will be scheduling an onsite visit to follow up on your case.",
-    "under_process":         "Your case is now being processed by the barangay VAWC office following your visit.",
-    "summon_issued":         "Summons have been issued to the respondent in your case.",
-    "summon_acknowledged":   "The respondent has appeared before the barangay for your case.",
-    "resolved":              "Your case has been successfully resolved at the barangay level.",
-    "cfa_issued":            "A Certificate to File Action has been issued for your case, as it could not be resolved at the barangay level.",
-    "endorsed":              "Your case has been endorsed to the appropriate authorities (WCPD/Prosecutor) for further action.",
-    "referred_to_police":    "Your case has been referred to the appropriate authorities for further action.",
-}
+# Abuse types (RA 9262 forms) for the report incident-type patch.
+VALID_INCIDENT_TYPES = ["physical", "sexual", "psychological", "economic", "others"]
 
-VALID_INCIDENT_TYPES = [
-    "Physical Abuse", "Sexual Abuse", "Psychological Abuse",
-    "Economic Abuse", "Other",
-]
+# Generic status PATCH may only move a case through the assessment/investigation
+# steps. BPO issue/serve, endorsement, and close are driven by their own endpoints.
+STATUS_PATCHABLE = {"submitted", "under_assessment", "awaiting_onsite_visit", "bpo_applied"}
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
 class StatusPayload(BaseModel):
     status: str
 
-class SummonWeek(BaseModel):
-    week: int
-    date: Optional[str] = None
-    note: Optional[str] = None
+class ClosePayload(BaseModel):
+    closure_reason: str
+    closure_note: Optional[str] = None
 
-class SummonTrackingPayload(BaseModel):
-    weeks: list[SummonWeek]
+class SeverityPayload(BaseModel):
+    severity: str
+
+class MandatoryReportPayload(BaseModel):
+    office: str            # "pnp" | "mswdo"
+    reported_at: Optional[str] = None   # ISO; defaults to now
 
 class DeletePayload(BaseModel):
     reason: Optional[str] = None
@@ -116,6 +104,47 @@ def _serialize_case(c: Case, *, include_reports: bool = False, is_super_admin: b
     return mask_case_dict(data)
 
 
+def _bpo_dict(b) -> dict:
+    return {
+        "id": b.id, "bpo_number": b.bpo_number, "control_number": b.control_number,
+        "status": b.status.value if b.status else None,
+        "relief_stop_physical_harm": b.relief_stop_physical_harm,
+        "relief_stop_threats": b.relief_stop_threats,
+        "relief_stay_away_100m": b.relief_stay_away_100m,
+        "applied_at": b.applied_at, "issued_at": b.issued_at, "expires_at": b.expires_at,
+        "served_at": b.served_at, "served_by": b.served_by, "proof_of_service": b.proof_of_service,
+        "issued_by_official": b.issued_by_official,
+        "created_at": b.created_at,
+    }
+
+
+def _endorsement_dict(e) -> dict:
+    from core.status_labels import ENDORSEMENT_OFFICE_DISPLAY
+    return {
+        "id": e.id, "endorsement_number": e.endorsement_number,
+        "to_office": e.to_office.value if e.to_office else None,
+        "to_office_display": ENDORSEMENT_OFFICE_DISPLAY.get(e.to_office.value if e.to_office else None),
+        "to_office_other": e.to_office_other, "purpose": e.purpose,
+        "attached_documents": e.attached_documents or [],
+        "date_endorsed": e.date_endorsed, "signed_by_official": e.signed_by_official,
+        "received_by": e.received_by, "received_at": e.received_at, "receipt_proof": e.receipt_proof,
+        "acknowledged": e.received_at is not None,
+        "created_at": e.created_at,
+    }
+
+
+def _child_dict(ch) -> dict:
+    # Minors' data — decrypt then mask (last name only) for non-super requesters
+    # is handled by mask_case_dict downstream; here we return decrypted values.
+    return {
+        "id": ch.id,
+        "name": decrypt(ch.name) if ch.name else None,
+        "date_of_birth": decrypt(ch.date_of_birth) if ch.date_of_birth else None,
+        "sex": ch.sex,
+        "under_her_care": ch.under_her_care,
+    }
+
+
 def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
     raw_status = c.status.value if c.status else None
     handled_by = c.handled_by.full_name if c.handled_by else None
@@ -130,7 +159,24 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
         "offender_name":       decrypt(c.offender_name),
         "status":              raw_status,
         "status_display":      STATUS_DISPLAY.get(raw_status, raw_status),
-        "summon_tracking":     c.summon_tracking or [],
+        "severity":            (c.severity.value if c.severity else None),
+        "severity_display":    SEVERITY_DISPLAY.get(c.severity.value if c.severity else None),
+        "relationship_to_offender":         (c.relationship_to_offender.value if c.relationship_to_offender else None),
+        "relationship_to_offender_display": RELATIONSHIP_DISPLAY.get(c.relationship_to_offender.value if c.relationship_to_offender else None),
+        "closure_reason":         (c.closure_reason.value if c.closure_reason else None),
+        "closure_reason_display": CLOSURE_REASON_DISPLAY.get(c.closure_reason.value if c.closure_reason else None),
+        "closure_note":           c.closure_note,
+        "closed_at":              c.closed_at,
+        "applicant_name":      decrypt(c.applicant_name) if c.applicant_name else None,
+        "applicant_address":   decrypt(c.applicant_address) if c.applicant_address else None,
+        "applicant_contact":   decrypt(c.applicant_contact) if c.applicant_contact else None,
+        "applicant_relation":  c.applicant_relation,
+        "applicant_consent_note": c.applicant_consent_note,
+        "reported_to_pnp_at":     c.reported_to_pnp_at,
+        "reported_to_mswdo_at":   c.reported_to_mswdo_at,
+        "bpos":                [_bpo_dict(b) for b in (c.bpos or [])],
+        "endorsements":        [_endorsement_dict(e) for e in (c.endorsements or [])],
+        "children":            [_child_dict(ch) for ch in (c.children or [])],
         "has_status_update":   c.has_status_update,
         "admin_message":       c.admin_message,
         "admin_message_at":    c.admin_message_at,
@@ -479,11 +525,22 @@ def update_case_status(
     if not case:
         raise HTTPException(status_code=404, detail="Case not found.")
     try:
-        case.status = ReportStatus(payload.status)
+        new = ReportStatus(payload.status)
     except ValueError:
         valid = [s.value for s in ReportStatus]
         raise HTTPException(status_code=400, detail=f"Invalid status. Valid: {valid}")
 
+    # BPO/endorsement/close statuses are driven by their own endpoints so their
+    # required records (dates, reasons) are captured. Block them here.
+    if new.value not in STATUS_PATCHABLE:
+        raise HTTPException(
+            status_code=422,
+            detail=("This status is set by its own action: "
+                    "use the BPO, Endorsement, or Close-case actions. "
+                    f"Directly settable here: {sorted(STATUS_PATCHABLE)}"),
+        )
+
+    case.status            = new
     case.admin_id          = current_admin.id
     case.has_status_update = True
     case.updated_at        = datetime.utcnow()
@@ -511,32 +568,94 @@ def update_case_status(
     }
 
 
-# ── PATCH /admin/cases/{case_id}/summon-tracking ──────────────────────────────
-@router.patch("/{case_id}/summon-tracking")
-def update_summon_tracking(
+def _get_active_case(db, case_id):
+    case = db.query(Case).filter(Case.id == case_id, Case.is_deleted == False).first()
+    if not case:
+        raise HTTPException(status_code=404, detail="Case not found.")
+    return case
+
+
+# ── PATCH /admin/cases/{case_id}/close ────────────────────────────────────────
+@router.patch("/{case_id}/close")
+def close_case(
     case_id: int,
-    payload: SummonTrackingPayload,
+    payload: ClosePayload,
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin_full_access),
 ):
-    """Save the 3-week warrant-officer compliance tracking (date + note per week)."""
-    case = db.query(Case).filter(
-        Case.id == case_id, Case.is_deleted == False
-    ).first()
-    if not case:
-        raise HTTPException(status_code=404, detail="Case not found.")
+    """Close a case WITH a reason. Never 'resolved'/'settled'. The legacy
+    reason is not selectable for new closures."""
+    case = _get_active_case(db, case_id)
+    try:
+        reason = ClosureReason(payload.closure_reason)
+    except ValueError:
+        valid = [r.value for r in ClosureReason if r != ClosureReason.legacy_settled_at_barangay]
+        raise HTTPException(status_code=422, detail=f"Invalid closure reason. Valid: {valid}")
+    if reason == ClosureReason.legacy_settled_at_barangay:
+        raise HTTPException(status_code=422, detail="The legacy reason cannot be selected for a new closure.")
 
-    # Keep only weeks 1-3, store as plain dicts.
-    weeks = [
-        {"week": w.week, "date": w.date or None, "note": (w.note or "").strip() or None}
-        for w in payload.weeks if 1 <= w.week <= 3
-    ]
-    weeks.sort(key=lambda w: w["week"])
-    case.summon_tracking = weeks
-    case.updated_at       = datetime.utcnow()
+    case.status             = ReportStatus.closed
+    case.closure_reason     = reason
+    case.closure_note       = (payload.closure_note or "").strip() or None
+    case.closed_at          = datetime.utcnow()
+    case.closed_by_admin_id = current_admin.id
+    case.admin_id           = current_admin.id
+    case.has_status_update  = True
+    case.updated_at         = datetime.utcnow()
     db.commit()
+    return {"message": "Case closed.", "status": "closed",
+            "closure_reason": reason.value,
+            "closure_reason_display": CLOSURE_REASON_DISPLAY.get(reason.value)}
 
-    return {"message": "Summon tracking updated.", "summon_tracking": weeks}
+
+# ── PATCH /admin/cases/{case_id}/severity ─────────────────────────────────────
+@router.patch("/{case_id}/severity")
+def set_severity(
+    case_id: int,
+    payload: SeverityPayload,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    case = _get_active_case(db, case_id)
+    try:
+        sev = CaseSeverity(payload.severity)
+    except ValueError:
+        raise HTTPException(status_code=422, detail=f"Invalid severity. Valid: {[s.value for s in CaseSeverity]}")
+    case.severity   = sev
+    case.updated_at = datetime.utcnow()
+    db.commit()
+    return {"message": "Severity updated.", "severity": sev.value,
+            "severity_display": SEVERITY_DISPLAY.get(sev.value),
+            "suggest_immediate_endorsement": sev == CaseSeverity.critical}
+
+
+# ── PATCH /admin/cases/{case_id}/mandatory-report ─────────────────────────────
+@router.patch("/{case_id}/mandatory-report")
+def set_mandatory_report(
+    case_id: int,
+    payload: MandatoryReportPayload,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Record that the case was reported to PNP and/or C/MSWDO (JMC 2010-2: within 4 hours)."""
+    case = _get_active_case(db, case_id)
+    when = datetime.utcnow()
+    if payload.reported_at:
+        try:
+            when = datetime.fromisoformat(payload.reported_at.replace("Z", "+00:00")).replace(tzinfo=None)
+        except ValueError:
+            pass
+    if payload.office == "pnp":
+        case.reported_to_pnp_at = when
+    elif payload.office == "mswdo":
+        case.reported_to_mswdo_at = when
+    else:
+        raise HTTPException(status_code=422, detail="office must be 'pnp' or 'mswdo'.")
+    case.updated_at = datetime.utcnow()
+    db.commit()
+    return {"message": "Mandatory report recorded.",
+            "reported_to_pnp_at": case.reported_to_pnp_at,
+            "reported_to_mswdo_at": case.reported_to_mswdo_at}
 
 
 # ── PATCH /admin/cases/{case_id}/reports/{report_id}/incident-type ────────────

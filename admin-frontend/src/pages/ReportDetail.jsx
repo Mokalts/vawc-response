@@ -22,24 +22,56 @@ const CSS = `
   .msg-log-body::-webkit-scrollbar-thumb:hover { background:#9B4DAB; }
 `;
 
+// Lawful VAWC flow (RA 9262 / JMC 2010-2). No CFA, no Summons, no "resolved/settled".
 const STATUS_CONFIG = {
   submitted: { label: "Submitted", color: "#BE185D", bg: "#FDF2F8", dot: "#EC4899" },
+  under_assessment: { label: "Under Assessment", color: "#0E7490", bg: "#ECFEFF", dot: "#06B6D4" },
   awaiting_onsite_visit: { label: "Awaiting Onsite Visit", color: "#D97706", bg: "#FFFBEB", dot: "#F59E0B" },
-  under_process: { label: "Under Process", color: "#0E7490", bg: "#ECFEFF", dot: "#06B6D4" },
-  summon_issued: { label: "Summons Issued", color: "#C45E10", bg: "#FFF3E0", dot: "#F47920" },
-  summon_acknowledged: { label: "Respondent Appeared", color: "#9B4DAB", bg: "#F3E5F5", dot: "#9B4DAB" },
-  resolved: { label: "Resolved", color: "#059669", bg: "#ECFDF5", dot: "#10B981" },
-  cfa_issued: { label: "CFA Issued", color: "#B45309", bg: "#FFFBEB", dot: "#D97706" },
+  bpo_applied: { label: "BPO Applied", color: "#7B2D8B", bg: "#F3E5F5", dot: "#9B4DAB" },
+  bpo_issued: { label: "BPO Issued", color: "#C45E10", bg: "#FFF3E0", dot: "#F47920" },
+  bpo_served: { label: "BPO Served", color: "#B45309", bg: "#FFFBEB", dot: "#D97706" },
   endorsed: { label: "Endorsed", color: "#DC2626", bg: "#FEF2F2", dot: "#EF4444" },
-  referred_to_police: { label: "Referred to Authorities", color: "#DC2626", bg: "#FEF2F2", dot: "#EF4444" },
+  closed: { label: "Closed", color: "#475569", bg: "#F1F5F9", dot: "#64748B" },
 };
 const sCfg = (s) => STATUS_CONFIG[s] || { label: s || "Unknown", color: "#64748B", bg: "var(--adm-border)", dot: "#CBD5E1" };
-// Picker excludes 'submitted' (initial) and legacy 'referred_to_police'.
-const ALL_STATUSES = ["awaiting_onsite_visit", "under_process", "summon_issued", "summon_acknowledged", "resolved", "cfa_issued", "endorsed"];
+// Directly settable via the status picker (assessment/investigation steps only).
+// BPO / endorsement / close are driven by their own actions.
+const ALL_STATUSES = ["under_assessment", "awaiting_onsite_visit"];
 
-const TIMELINE_STEPS = ["submitted", "awaiting_onsite_visit", "under_process", "summon_issued", "summon_acknowledged"];
-const ENDPOINT_STATES = ["resolved", "cfa_issued", "endorsed"];
-const INCIDENT_TYPES = ["Physical Abuse", "Sexual Abuse", "Psychological Abuse", "Economic Abuse", "Other"];
+const TIMELINE_STEPS = ["submitted", "under_assessment", "awaiting_onsite_visit", "bpo_applied", "bpo_issued", "bpo_served"];
+const ENDPOINT_STATES = ["endorsed", "closed"];
+
+const CLOSURE_REASONS = [
+  { id: "lost_interest_to_file", label: "Complainant lost interest to file" },
+  { id: "reconciled_without_mediation", label: "Reconciled with the perpetrator (without mediation)" },
+  { id: "transferred_residence", label: "Transferred residence" },
+  { id: "lack_of_support", label: "Lack of support" },
+  { id: "lack_of_confidence_in_provider", label: "Lack of confidence in the service provider" },
+  { id: "referred_and_completed", label: "Referred and completed" },
+  { id: "others", label: "Others" },
+];
+const SEVERITIES = [
+  { id: "low", label: "Low" },
+  { id: "moderate", label: "Moderate" },
+  { id: "high", label: "High" },
+  { id: "critical", label: "Critical" },
+];
+const ENDORSE_OFFICES = [
+  { id: "pnp_iba_mps", label: "PNP - Iba MPS (WCPD)" },
+  { id: "cmswdo", label: "C/MSWDO" },
+  { id: "court", label: "Court" },
+  { id: "pao", label: "PAO" },
+  { id: "medical", label: "Medical / Hospital" },
+  { id: "others", label: "Others" },
+];
+// RA 9262 abuse forms (values match backend VALID_INCIDENT_TYPES).
+const INCIDENT_TYPES = [
+  { id: "physical", label: "Physical" },
+  { id: "sexual", label: "Sexual" },
+  { id: "psychological", label: "Psychological" },
+  { id: "economic", label: "Economic" },
+  { id: "others", label: "Others" },
+];
 
 const fmt = (d) => !d ? "-" : new Date(d).toLocaleString("en-PH", { month: "long", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
 const fmtDate = (d) => !d ? "-" : new Date(d).toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric" });
@@ -202,83 +234,38 @@ const DeleteModal = ({ caseId, onClose, onConfirm, loading }) => {
 };
 
 const ENDPOINT_ICON = {
-  resolved: <IcoCheck size={10} color="#059669" />,
-  cfa_issued: <IcoPrint size={10} color="#D97706" />,
   endorsed: <IcoShield size={10} color="#DC2626" />,
+  closed:   <IcoCheck size={10} color="#475569" />,
 };
 const ENDPOINT_NOTE = {
-  resolved:   { title: "Case Resolved",  body: "Successfully settled at the barangay level.", color: "#059669", bg: "#ECFDF5", border: "#A7F3D0", sub: "#065F46" },
-  cfa_issued: { title: "CFA Issued",      body: "Certificate to File Action issued, the barangay has done its part. Print it from Print Documents.", color: "#B45309", bg: "#FFFBEB", border: "#FDE68A", sub: "#92400E" },
-  endorsed:   { title: "Endorsed",        body: "Endorsement Letter issued to WCPD / Prosecutor for further action. Print it from Print Documents.", color: "#DC2626", bg: "#FEF2F2", border: "#FECACA", sub: "#991B1B" },
+  endorsed: { title: "Endorsed", body: "Endorsed to the receiving office. It is not complete until acknowledged (see the Endorsements panel).", color: "#DC2626", bg: "#FEF2F2", border: "#FECACA", sub: "#991B1B" },
+  closed:   { title: "Closed",   body: "Case closed with a recorded reason. It is not marked resolved or settled.", color: "#475569", bg: "#F1F5F9", border: "#CBD5E1", sub: "#334155" },
 };
 
-const SummonWeekTracker = ({ cas, onSave }) => {
-  const seed = () => [1, 2, 3].map(n => {
-    const found = (cas.summon_tracking || []).find(w => w.week === n) || {};
-    return { week: n, date: found.date || "", note: found.note || "" };
-  });
-  const [weeks, setWeeks] = useState(seed);
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  React.useEffect(() => { setWeeks(seed()); setSaved(false); /* eslint-disable-next-line */ }, [cas.id, JSON.stringify(cas.summon_tracking)]);
-  const setField = (i, k, v) => { setWeeks(w => w.map((x, idx) => idx === i ? { ...x, [k]: v } : x)); setSaved(false); };
-  const doSave = async () => {
-    setSaving(true);
-    try { await onSave(weeks.filter(w => w.date || w.note)); setSaved(true); }
-    finally { setSaving(false); }
-  };
-  return (
-    <div style={{ marginTop: 4, marginBottom: 12, marginLeft: 32, padding: "12px 14px", borderRadius: 8, background: "var(--adm-muted)", border: "1px solid var(--adm-border)" }}>
-      <p style={{ margin: "0 0 4px", fontSize: 11.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>Warrant officer 3-week tracking</p>
-      <p style={{ margin: "0 0 10px", fontSize: 11, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>Record each week's attempt to serve the summons (date + short note).</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {weeks.map((w, i) => (
-          <div key={w.week} style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ fontSize: 11.5, fontWeight: 700, color: "#C45E10", minWidth: 52, fontFamily: "'Lexend',sans-serif" }}>Week {w.week}</span>
-            <input type="date" value={w.date} onChange={e => setField(i, "date", e.target.value)}
-              style={{ padding: "6px 8px", borderRadius: 6, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 12, fontFamily: "'Lexend',sans-serif" }} />
-            <input type="text" value={w.note} placeholder="Note (e.g. attempted, not home)" onChange={e => setField(i, "note", e.target.value)}
-              style={{ flex: 1, minWidth: 140, padding: "6px 8px", borderRadius: 6, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 12, fontFamily: "'Lexend',sans-serif" }} />
-          </div>
-        ))}
-      </div>
-      <button className="rd-btn" onClick={doSave} disabled={saving}
-        style={{ marginTop: 10, padding: "7px 14px", borderRadius: 7, border: "none", background: saved ? "#059669" : "#C45E10", color: "#fff", fontSize: 12, fontWeight: 600, cursor: saving ? "default" : "pointer", display: "inline-flex", alignItems: "center", gap: 6, fontFamily: "'Lexend',sans-serif", opacity: saving ? 0.7 : 1 }}>
-        {saving ? <Spinner size={12} /> : saved ? <IcoCheck size={13} color="#fff" /> : null}
-        {saving ? "Saving..." : saved ? "Saved" : "Save tracking"}
-      </button>
-    </div>
-  );
-};
-
-const CaseTimeline = ({ cas, onUpdateStatus, onSaveTracking }) => {
+const CaseTimeline = ({ cas, onUpdateStatus }) => {
   const isEndpoint = ENDPOINT_STATES.includes(cas.status);
   const isDeleted = cas.is_deleted;
   const currentIdx = TIMELINE_STEPS.indexOf(cas.status);
+  const canPatch = ["submitted", "under_assessment", "awaiting_onsite_visit", "bpo_applied"].includes(cas.status);
   return (
     <Card title="Case Timeline" icon={<IcoCheck size={16} color="#9B4DAB" />}>
       <div style={{ display: "flex", flexDirection: "column", gap: 0, marginBottom: 4 }}>
         {TIMELINE_STEPS.map((s, i) => {
-          // At an endpoint, all linear steps read as completed.
           const cfg = sCfg(s), isDone = isEndpoint ? true : i < currentIdx, isCurrent = !isEndpoint && i === currentIdx;
-          const showTracker = s === "summon_issued" && !isDeleted && (isCurrent || isDone || (cas.summon_tracking || []).length > 0);
           return (
-            <React.Fragment key={s}>
-              <div style={{ display: "flex", gap: 12, paddingBottom: 14 }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-                  <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${isCurrent ? cfg.dot : isDone ? cfg.dot : "var(--adm-border)"}`, background: isCurrent ? cfg.dot : isDone ? cfg.bg : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {isDone && !isCurrent && <svg width="9" height="9" fill="none" viewBox="0 0 20 20"><path d="M5 10l4 4 6-8" stroke={cfg.dot} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>}
-                    {isCurrent && <div style={{ width: 7, height: 7, borderRadius: '50%', background: "var(--adm-card)" }} />}
-                  </div>
-                  {i < TIMELINE_STEPS.length - 1 && <div style={{ width: 2, flex: 1, minHeight: 14, background: isDone ? cfg.dot : "var(--adm-border)", marginTop: 3 }} />}
+            <div key={s} style={{ display: "flex", gap: 12, paddingBottom: 14 }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+                <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${isCurrent ? cfg.dot : isDone ? cfg.dot : "var(--adm-border)"}`, background: isCurrent ? cfg.dot : isDone ? cfg.bg : "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {isDone && !isCurrent && <svg width="9" height="9" fill="none" viewBox="0 0 20 20"><path d="M5 10l4 4 6-8" stroke={cfg.dot} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" /></svg>}
+                  {isCurrent && <div style={{ width: 7, height: 7, borderRadius: '50%', background: "var(--adm-card)" }} />}
                 </div>
-                <div style={{ paddingTop: 2 }}>
-                  <p style={{ margin: 0, fontSize: 12.5, fontWeight: isCurrent ? 700 : isDone ? 500 : 400, color: isCurrent ? cfg.color : isDone ? "#374151" : "#94A3B8", fontFamily: "'Lexend',sans-serif" }}>{cfg.label}</p>
-                  {isCurrent && <span style={{ fontSize: 10.5, color: cfg.dot, fontWeight: 500, fontFamily: "'Lexend',sans-serif" }}>Current</span>}
-                </div>
+                {i < TIMELINE_STEPS.length - 1 && <div style={{ width: 2, flex: 1, minHeight: 14, background: isDone ? cfg.dot : "var(--adm-border)", marginTop: 3 }} />}
               </div>
-              {showTracker && <SummonWeekTracker cas={cas} onSave={onSaveTracking} />}
-            </React.Fragment>
+              <div style={{ paddingTop: 2 }}>
+                <p style={{ margin: 0, fontSize: 12.5, fontWeight: isCurrent ? 700 : isDone ? 500 : 400, color: isCurrent ? cfg.color : isDone ? "#374151" : "#94A3B8", fontFamily: "'Lexend',sans-serif" }}>{cfg.label}</p>
+                {isCurrent && <span style={{ fontSize: 10.5, color: cfg.dot, fontWeight: 500, fontFamily: "'Lexend',sans-serif" }}>Current</span>}
+              </div>
+            </div>
           );
         })}
         {ENDPOINT_STATES.map((key) => {
@@ -298,11 +285,11 @@ const CaseTimeline = ({ cas, onUpdateStatus, onSaveTracking }) => {
           );
         })}
       </div>
-      {!isDeleted && (
+      {!isDeleted && canPatch && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
           <button className="rd-btn" onClick={onUpdateStatus}
             style={{ width: "100%", padding: "10px 0", borderRadius: 8, border: "none", background: "#C45E10", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'Lexend',sans-serif" }}>
-            <IcoCheck size={14} color="#fff" /> {isEndpoint ? "Change Status" : "Update Status"}
+            <IcoCheck size={14} color="#fff" /> Update Assessment Status
           </button>
         </div>
       )}
@@ -316,12 +303,192 @@ const CaseTimeline = ({ cas, onUpdateStatus, onSaveTracking }) => {
   );
 };
 
+// ── Case actions (lawful VAWC): severity, mandatory report, BPO, endorsement, close ──
+const inp = { width: "100%", boxSizing: "border-box", padding: "8px 10px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 13, fontFamily: "'Lexend',sans-serif", outline: "none" };
+const btnP = { padding: "9px 14px", borderRadius: 8, border: "none", background: "#9B4DAB", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif", display: "inline-flex", alignItems: "center", gap: 7 };
+const lbl = { fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", marginBottom: 4, display: "block" };
+const HRS4 = 4 * 60 * 60 * 1000;
+
+const CaseActions = ({ cas, refetch, showToast }) => {
+  const [busy, setBusy] = useState("");
+  const activeBpo = (cas.bpos || []).find(b => ["applied", "issued", "served"].includes(b.status));
+  const call = async (key, fn, okMsg) => {
+    setBusy(key);
+    try { await fn(); if (okMsg) showToast(okMsg); await refetch(); }
+    catch (e) { showToast(e.response?.data?.detail || "Action failed.", false); }
+    finally { setBusy(""); }
+  };
+
+  // Severity
+  const [sev, setSev] = useState(cas.severity || "moderate");
+  useEffect(() => { setSev(cas.severity || "moderate"); }, [cas.severity]);
+
+  // BPO application reliefs
+  const [reliefs, setReliefs] = useState({ physical: false, threats: false, stayaway: false });
+  // Endorsement form
+  const [endo, setEndo] = useState({ to_office: "pnp_iba_mps", purpose: "", docs: "" });
+  // Close form
+  const [close, setClose] = useState({ reason: "", note: "" });
+
+  const overduePnp = !cas.reported_to_pnp_at && cas.created_at && (Date.now() - new Date(cas.created_at).getTime() > HRS4);
+  const overdueMswdo = !cas.reported_to_mswdo_at && cas.created_at && (Date.now() - new Date(cas.created_at).getTime() > HRS4);
+  const daysLeft = (b) => b.expires_at ? Math.ceil((new Date(b.expires_at).getTime() - Date.now()) / 86400000) : null;
+
+  return (
+    <Card title="Case Actions" icon={<IcoShield size={16} color="#9B4DAB" />}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+
+        {/* Severity */}
+        <div>
+          <span style={lbl}>Severity / Triage</span>
+          <div style={{ display: "flex", gap: 8 }}>
+            <select style={{ ...inp, flex: 1 }} value={sev} onChange={e => setSev(e.target.value)}>
+              {SEVERITIES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+            </select>
+            <button className="rd-btn" style={{ ...btnP, opacity: busy === "sev" ? 0.7 : 1 }} disabled={busy === "sev" || sev === cas.severity}
+              onClick={() => call("sev", () => api.patch(`/admin/cases/${cas.id}/severity`, { severity: sev }), "Severity updated.")}>
+              {busy === "sev" ? <Spinner size={12} /> : "Set"}
+            </button>
+          </div>
+          {sev === "critical" && <p style={{ margin: "6px 0 0", fontSize: 11.5, color: "#DC2626", fontFamily: "'Lexend',sans-serif" }}>Critical: immediate endorsement to PNP is recommended.</p>}
+        </div>
+
+        {/* Mandatory reporting (4-hour clock) */}
+        <div>
+          <span style={lbl}>Mandatory Report (within 4 hours)</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {[["pnp", "PNP", cas.reported_to_pnp_at, overduePnp], ["mswdo", "C/MSWDO", cas.reported_to_mswdo_at, overdueMswdo]].map(([office, name, at, overdue]) => (
+              <div key={office} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--adm-text)", minWidth: 74, fontFamily: "'Lexend',sans-serif" }}>{name}</span>
+                {at
+                  ? <span style={{ fontSize: 12, color: "#059669", fontFamily: "'Lexend',sans-serif" }}>Reported {fmt(at)}</span>
+                  : <>
+                      {overdue && <span style={{ fontSize: 10.5, fontWeight: 700, color: "#991B1B", background: "#FEF2F2", border: "1px solid #FECACA", padding: "1px 7px", borderRadius: 9999 }}>OVERDUE</span>}
+                      <button className="rd-btn" style={{ ...btnP, background: "#0E7490", padding: "5px 10px", fontSize: 12 }} disabled={busy === "rpt" + office}
+                        onClick={() => call("rpt" + office, () => api.patch(`/admin/cases/${cas.id}/mandatory-report`, { office }), `Marked reported to ${name}.`)}>
+                        Mark reported
+                      </button>
+                    </>}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* BPO */}
+        <div>
+          <span style={lbl}>Barangay Protection Order</span>
+          {(cas.bpos || []).length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
+              {cas.bpos.map(b => {
+                const dl = daysLeft(b);
+                return (
+                  <div key={b.id} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid var(--adm-border)", background: "var(--adm-muted)", fontSize: 12, fontFamily: "'Lexend',sans-serif" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                      <strong style={{ color: "var(--adm-text)" }}>{b.bpo_number}</strong>
+                      <span style={{ color: "#7B2D8B", fontWeight: 700, textTransform: "capitalize" }}>{b.status}</span>
+                    </div>
+                    {b.issued_at && <div style={{ color: "var(--adm-text-muted)", marginTop: 2 }}>Issued {fmtDate(b.issued_at)} · Expires {fmtDate(b.expires_at)}{dl != null && b.status === "issued" ? ` (${dl} day${dl === 1 ? "" : "s"} left)` : ""}</div>}
+                    {b.status === "applied" && !cas.is_deleted && (
+                      <button className="rd-btn" style={{ ...btnP, background: "#C45E10", marginTop: 6, padding: "5px 12px", fontSize: 12 }} disabled={busy === "issue" + b.id}
+                        onClick={() => call("issue" + b.id, () => api.patch(`/admin/bpos/${b.id}/issue`), "BPO issued (valid 15 days).")}>Issue BPO</button>
+                    )}
+                    {b.status === "issued" && !cas.is_deleted && (
+                      <button className="rd-btn" style={{ ...btnP, background: "#B45309", marginTop: 6, padding: "5px 12px", fontSize: 12 }} disabled={busy === "serve" + b.id}
+                        onClick={() => call("serve" + b.id, () => api.patch(`/admin/bpos/${b.id}/serve`, {}), "BPO marked served.")}>Mark Served</button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {!activeBpo && !cas.is_deleted && (
+            <div style={{ padding: "10px", borderRadius: 8, border: "1px dashed var(--adm-border)" }}>
+              <p style={{ margin: "0 0 6px", fontSize: 11.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Reliefs (BPO form a, b, c):</p>
+              {[["physical", "Stop acts of physical harm"], ["threats", "Stop threats of harm"], ["stayaway", "Stay away (100m)"]].map(([k, t]) => (
+                <label key={k} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", marginBottom: 4 }}>
+                  <input type="checkbox" checked={reliefs[k]} onChange={e => setReliefs(r => ({ ...r, [k]: e.target.checked }))} style={{ accentColor: "#9B4DAB" }} />{t}
+                </label>
+              ))}
+              <button className="rd-btn" style={{ ...btnP, marginTop: 6 }} disabled={busy === "bpo"}
+                onClick={() => call("bpo", () => api.post(`/admin/cases/${cas.id}/bpo`, {
+                  relief_stop_physical_harm: reliefs.physical, relief_stop_threats: reliefs.threats, relief_stay_away_100m: reliefs.stayaway,
+                }), "BPO application created.")}>
+                {busy === "bpo" ? <Spinner size={12} /> : "Apply for BPO"}
+              </button>
+            </div>
+          )}
+          {activeBpo && <p style={{ margin: 0, fontSize: 11, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>A BPO cannot be renewed or extended. A new BPO requires a new incident report.</p>}
+        </div>
+
+        {/* Endorsements */}
+        <div>
+          <span style={lbl}>Endorsements</span>
+          {(cas.endorsements || []).map(e => (
+            <div key={e.id} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid var(--adm-border)", background: "var(--adm-muted)", fontSize: 12, fontFamily: "'Lexend',sans-serif", marginBottom: 6 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                <strong style={{ color: "var(--adm-text)" }}>#{e.endorsement_number} → {e.to_office_display || e.to_office}</strong>
+                <span style={{ color: e.acknowledged ? "#059669" : "#C45E10", fontWeight: 700 }}>{e.acknowledged ? "Acknowledged" : "Awaiting ack"}</span>
+              </div>
+              <div style={{ color: "var(--adm-text-muted)", marginTop: 2 }}>Endorsed {fmtDate(e.date_endorsed)}{e.received_at ? ` · Received ${fmtDate(e.received_at)} by ${e.received_by || "-"}` : ""}</div>
+              {!e.acknowledged && !cas.is_deleted && (
+                <button className="rd-btn" style={{ ...btnP, background: "#059669", marginTop: 6, padding: "5px 12px", fontSize: 12 }} disabled={busy === "ack" + e.id}
+                  onClick={() => { const who = window.prompt("Received by (name / designation):"); if (who) call("ack" + e.id, () => api.patch(`/admin/endorsements/${e.id}/acknowledge`, { received_by: who }), "Endorsement acknowledged."); }}>
+                  Mark Acknowledged
+                </button>
+              )}
+            </div>
+          ))}
+          {!cas.is_deleted && (
+            <div style={{ padding: "10px", borderRadius: 8, border: "1px dashed var(--adm-border)", marginTop: 4 }}>
+              <select style={{ ...inp, marginBottom: 6 }} value={endo.to_office} onChange={e => setEndo(x => ({ ...x, to_office: e.target.value }))}>
+                {ENDORSE_OFFICES.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+              </select>
+              <input style={{ ...inp, marginBottom: 6 }} placeholder="Purpose (e.g. for filing / assistance)" value={endo.purpose} onChange={e => setEndo(x => ({ ...x, purpose: e.target.value }))} />
+              <button className="rd-btn" style={btnP} disabled={busy === "endo"}
+                onClick={() => call("endo", () => api.post(`/admin/cases/${cas.id}/endorsements`, {
+                  to_office: endo.to_office, purpose: endo.purpose || null,
+                  attached_documents: endo.docs ? endo.docs.split(",").map(s => s.trim()).filter(Boolean) : [],
+                }), "Endorsement created.")}>
+                {busy === "endo" ? <Spinner size={12} /> : "Create Endorsement"}
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Close */}
+        {cas.status !== "closed" && !cas.is_deleted && (
+          <div>
+            <span style={lbl}>Close Case (with reason)</span>
+            <select style={{ ...inp, marginBottom: 6 }} value={close.reason} onChange={e => setClose(x => ({ ...x, reason: e.target.value }))}>
+              <option value="">Select a reason…</option>
+              {CLOSURE_REASONS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+            </select>
+            <input style={{ ...inp, marginBottom: 6 }} placeholder="Optional note" value={close.note} onChange={e => setClose(x => ({ ...x, note: e.target.value }))} />
+            <button className="rd-btn" style={{ ...btnP, background: "#475569", opacity: close.reason ? 1 : 0.5 }} disabled={!close.reason || busy === "close"}
+              onClick={() => call("close", () => api.patch(`/admin/cases/${cas.id}/close`, { closure_reason: close.reason, closure_note: close.note || null }), "Case closed.")}>
+              {busy === "close" ? <Spinner size={12} /> : "Close Case"}
+            </button>
+            <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>A closed case is never marked "resolved" or "settled".</p>
+          </div>
+        )}
+        {cas.closure_reason && (
+          <div style={{ padding: "10px 12px", borderRadius: 8, background: "#F1F5F9", border: "1px solid #CBD5E1", fontSize: 12, fontFamily: "'Lexend',sans-serif" }}>
+            <strong style={{ color: "#334155" }}>Closed:</strong> {cas.closure_reason_display || cas.closure_reason}{cas.closure_note ? ` — ${cas.closure_note}` : ""}
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+};
+
 const PrintPanel = ({ cas }) => {
   const navigate = useNavigate();
   const docs = [
-    { key: "summon",      label: "Summon Letter",              sub: "Katarungang Pambarangay" },
-    { key: "cfa",         label: "Certificate to File Action", sub: "Lupong Tagapamayapa" },
-    { key: "endorsement", label: "Endorsement Letter",         sub: "Punong Barangay" },
+    { key: "blotter",     label: "Blotter Form",           sub: "Office of the Sangguniang Barangay" },
+    { key: "reklamo",     label: "Pormal na Reklamo",      sub: "VAWC complaint form" },
+    { key: "bpo-app",     label: "BPO Application",        sub: "Application for Barangay Protection Order" },
+    { key: "bpo",         label: "Barangay Protection Order", sub: "Valid 15 days · Punong Barangay" },
+    { key: "endorsement", label: "1st Endorsement",        sub: "Referral to PNP / C-MSWDO / Court" },
   ];
   return (
     <Card title="Print Documents" icon={<IcoPrint size={16} color="#475569" />}>
@@ -438,14 +605,6 @@ export default function ReportDetail() {
       showToast("Status updated.");
     } catch (err) { showToast(err.response?.data?.detail || "Failed to update.", false); }
     finally { setStatusSaving(false); }
-  };
-
-  const handleSaveTracking = async (weeks) => {
-    try {
-      const res = await api.patch(`/admin/cases/${id}/summon-tracking`, { weeks });
-      setCas(c => ({ ...c, summon_tracking: res.data.summon_tracking || [] }));
-      showToast("Summon tracking saved.");
-    } catch (err) { showToast(err.response?.data?.detail || "Failed to save tracking.", false); throw err; }
   };
 
   const handleIncidentTypeSave = async (reportId) => {
@@ -685,7 +844,7 @@ export default function ReportDetail() {
                           onFocus={e => { e.target.style.borderColor = "#9B4DAB"; e.target.style.background = "#fff"; }}
                           onBlur={e => { e.target.style.borderColor = "var(--adm-border)"; e.target.style.background = "var(--adm-muted)"; }}>
                           <option value="">- Not classified -</option>
-                          {INCIDENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                          {INCIDENT_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
                         </select>
                         <button onClick={() => handleIncidentTypeSave(r.id)}
                           disabled={incidentTypes[r.id] === (r.incident_type || "")}
@@ -795,7 +954,8 @@ export default function ReportDetail() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <CaseTimeline cas={cas} onUpdateStatus={() => setShowStatusModal(true)} onSaveTracking={handleSaveTracking} />
+            <CaseTimeline cas={cas} onUpdateStatus={() => setShowStatusModal(true)} />
+            {!cas.is_deleted && <CaseActions cas={cas} refetch={fetchCase} showToast={showToast} />}
 
             {isSuperAdmin && !cas.is_deleted && (
               <Card title="Message to Victim" icon={<IcoClip size={16} color="#F47920" />}>

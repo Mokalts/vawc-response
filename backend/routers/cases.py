@@ -7,33 +7,19 @@ from datetime import datetime
 import re
 
 from database import get_db
-from models.case import Case
+from models.case import Case, RelationshipToOffender
+from models.child import Child
 from models.report import Report, ReportStatus
 from models.user import User
 from core.dependencies import get_current_user
 from core.encryption import encrypt, encrypt_float, decrypt, decrypt_float
 
+from core.status_labels import STATUS_DISPLAY
+
 router = APIRouter(prefix="/cases", tags=["Cases"])
 
-STATUS_DISPLAY = {
-    "submitted":             "Submitted",
-    "awaiting_onsite_visit": "Awaiting Onsite Visit",
-    "under_process":         "Under Process",
-    "summon_issued":         "Summons Issued",
-    "summon_acknowledged":   "Respondent Appeared",
-    "resolved":              "Resolved",
-    "cfa_issued":            "CFA Issued",
-    "endorsed":              "Endorsed",
-    "referred_to_police":    "Referred to Authorities",
-}
-
 # Statuses that are "closed" — no merging into these
-CLOSED_STATUSES = {
-    ReportStatus.resolved,
-    ReportStatus.cfa_issued,
-    ReportStatus.endorsed,
-    ReportStatus.referred_to_police,
-}
+CLOSED_STATUSES = {ReportStatus.endorsed, ReportStatus.closed}
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -85,7 +71,6 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
         "offender_name":       decrypt(c.offender_name),
         "status":              raw_status,
         "status_display":      STATUS_DISPLAY.get(raw_status, raw_status),
-        "summon_tracking":     c.summon_tracking or [],
         "has_status_update":   c.has_status_update,
         "admin_message":       c.admin_message,
         "admin_message_at":    c.admin_message_at,
@@ -111,11 +96,20 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
+class ChildIn(BaseModel):
+    name:           str
+    date_of_birth:  Optional[str] = None
+    sex:            Optional[str] = None
+    under_her_care: bool          = False
+
 class ReportCreate(BaseModel):
     statement:     str
     offender_name: str
     incident_date: Optional[datetime]  = None
-    incident_type: Optional[str]       = None
+    incident_type:  Optional[str]       = None          # legacy single (kept one release)
+    incident_types: Optional[List[str]] = None          # RA 9262 forms (multi)
+    relationship_to_offender: Optional[str] = None
+    children:       Optional[List[ChildIn]] = None
     photo_urls:    Optional[List[str]] = []
     latitude:      Optional[float]     = None
     longitude:     Optional[float]     = None
@@ -205,19 +199,39 @@ def submit_report(
             offender_name = encrypt(payload.offender_name),
             status        = ReportStatus.submitted,
         )
+        # Relationship to offender (RA 9262 classification) — set on new case only.
+        if payload.relationship_to_offender:
+            try:
+                target_case.relationship_to_offender = RelationshipToOffender(payload.relationship_to_offender)
+            except ValueError:
+                pass
         db.add(target_case)
         db.flush()  # get ID without committing
 
+        # Optional children (BPO Application items 4/4a) — encrypted minor data.
+        for ch in (payload.children or []):
+            if ch.name and ch.name.strip():
+                db.add(Child(
+                    case_id=target_case.id,
+                    name=encrypt(ch.name.strip()),
+                    date_of_birth=encrypt(ch.date_of_birth) if ch.date_of_birth else None,
+                    sex=ch.sex or None,
+                    under_her_care=bool(ch.under_her_care),
+                ))
+
+    # Abuse forms: prefer the multi-select list; keep the legacy single populated.
+    itypes = [t for t in (payload.incident_types or []) if t] or ([payload.incident_type] if payload.incident_type else [])
     # Create the report/testimony
     report = Report(
-        case_id       = target_case.id,
-        statement     = encrypt(payload.statement),
-        photo_urls    = payload.photo_urls or [],
-        latitude      = encrypt_float(payload.latitude),
-        longitude     = encrypt_float(payload.longitude),
-        address       = payload.address,
-        incident_type = payload.incident_type,
-        incident_date = payload.incident_date,
+        case_id        = target_case.id,
+        statement      = encrypt(payload.statement),
+        photo_urls     = payload.photo_urls or [],
+        latitude       = encrypt_float(payload.latitude),
+        longitude      = encrypt_float(payload.longitude),
+        address        = payload.address,
+        incident_types = itypes,
+        incident_type  = (itypes[0] if itypes else None),
+        incident_date  = payload.incident_date,
     )
     db.add(report)
 

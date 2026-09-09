@@ -10,19 +10,9 @@ from schemas.report import ReportCreate, ReportResponse, ReportListItem
 from core.dependencies import get_current_user
 from core.encryption import encrypt, encrypt_float, decrypt, decrypt_float
 
-router = APIRouter(prefix="/reports", tags=["Reports"])
+from core.status_labels import STATUS_DISPLAY
 
-STATUS_DISPLAY = {
-    "submitted":             "Submitted",
-    "awaiting_onsite_visit": "Awaiting Onsite Visit",
-    "under_process":         "Under Process",
-    "summon_issued":         "Summons Issued",
-    "summon_acknowledged":   "Respondent Appeared",
-    "resolved":              "Resolved",
-    "cfa_issued":            "CFA Issued",
-    "endorsed":              "Endorsed",
-    "referred_to_police":    "Referred to Authorities",
-}
+router = APIRouter(prefix="/reports", tags=["Reports"])
 
 
 # ── Schemas ───────────────────────────────────────────────────────

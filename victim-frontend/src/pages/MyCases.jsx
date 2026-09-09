@@ -44,33 +44,32 @@ const IcoWarn   = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="n
 // ─── Status config ────────────────────────────────────────────────────────────
 const STATUS_MAP = {
     submitted:             { label:'Submitted',               bg:'var(--border-soft)', color:'var(--text-body)', dot:'#64748B' },
+    under_assessment:      { label:'Under Assessment',        bg:'#ECFEFF', color:'#0E7490', dot:'#06B6D4' },
     awaiting_onsite_visit: { label:'Awaiting Onsite Visit',   bg:'#FFFBEB', color:'#92400E', dot:'#F59E0B' },
-    under_process:         { label:'Under Process',           bg:'#ECFEFF', color:'#0E7490', dot:'#06B6D4' },
-    summon_issued:         { label:'Summons Issued',           bg:'#F3E5F5', color:'#7B2D8B', dot:'#9B4DAB' },
-    summon_acknowledged:   { label:'Respondent Appeared',      bg:'#F0FDF4', color:'#166534', dot:'#22C55E' },
-    resolved:              { label:'Resolved',                 bg:'#ECFDF5', color:'#065F46', dot:'#059669' },
-    cfa_issued:            { label:'CFA Issued',               bg:'#FFFBEB', color:'#92400E', dot:'#D97706' },
-    endorsed:              { label:'Endorsed',                 bg:'var(--surface-tint)', color:'var(--accent-text)', dot:'#F47920' },
-    referred_to_police:    { label:'Referred to Authorities',  bg:'var(--surface-tint)', color:'var(--accent-text)', dot:'#F47920' },
+    bpo_applied:           { label:'BPO Applied',             bg:'#F3E5F5', color:'#7B2D8B', dot:'#9B4DAB' },
+    bpo_issued:            { label:'BPO Issued',              bg:'#FFF3E0', color:'#C45E10', dot:'#F47920' },
+    bpo_served:            { label:'BPO Served',              bg:'#FFFBEB', color:'#92400E', dot:'#D97706' },
+    endorsed:              { label:'Endorsed',                bg:'var(--surface-tint)', color:'var(--accent-text)', dot:'#F47920' },
+    closed:                { label:'Closed',                  bg:'#F1F5F9', color:'#475569', dot:'#64748B' },
 };
 const getSt   = (s) => STATUS_MAP[s] || { label:s||'Unknown', bg:'var(--border-soft)', color:'var(--text-body)', dot:'#64748B' };
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'}) : '-';
 const fmtTime = (d) => d ? new Date(d).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'}) : '';
 const trunc   = (s,n) => !s?'-':s.length>n?s.slice(0,n)+'…':s;
 
-// Timeline steps
+// Timeline steps (lawful VAWC flow)
 const STATUS_STEPS = [
     { key:'submitted',             label:'Submitted' },
+    { key:'under_assessment',      label:'Under Assessment' },
     { key:'awaiting_onsite_visit', label:'Awaiting Onsite Visit' },
-    { key:'under_process',         label:'Under Process' },
-    { key:'summon_issued',         label:'Summons Issued' },
-    { key:'summon_acknowledged',   label:'Respondent Appeared' },
+    { key:'bpo_applied',           label:'BPO Applied' },
+    { key:'bpo_issued',            label:'BPO Issued' },
+    { key:'bpo_served',            label:'BPO Served' },
 ];
 // Terminal states (a case ends at exactly one of these).
 const ENDPOINT_STEPS = [
-    { key:'resolved',   label:'Resolved' },
-    { key:'cfa_issued', label:'CFA Issued' },
-    { key:'endorsed',   label:'Endorsed' },
+    { key:'endorsed', label:'Endorsed' },
+    { key:'closed',   label:'Closed' },
 ];
 
 // ─── Skeleton ──────────────────────────────────────────────────────────────────
@@ -83,25 +82,7 @@ const Skel = () => (
 );
 
 // ─── Status Timeline ──────────────────────────────────────────────────────────
-const fmtWeekDate = (d) => d ? new Date(d).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'}) : null;
-
-function SummonWeeks({ tracking }) {
-    const weeks = (tracking || []).filter(w => w && (w.date || w.note));
-    if (!weeks.length) return null;
-    return (
-        <div style={{marginLeft:30,marginTop:-8,marginBottom:16,padding:'10px 12px',borderRadius:8,background:'var(--surface-tint)',border:'1px solid var(--border-soft)'}}>
-            <p style={{margin:'0 0 6px',fontSize:11,fontWeight:700,color:'var(--accent-text)',fontFamily:"'Lexend',sans-serif"}}>Follow-up progress</p>
-            {weeks.sort((a,b)=>a.week-b.week).map(w=>(
-                <div key={w.week} style={{display:'flex',gap:8,marginBottom:4,fontSize:11.5,color:'var(--text-body)',fontFamily:"'Lexend',sans-serif"}}>
-                    <span style={{fontWeight:700,color:'#7B2D8B',minWidth:46}}>Week {w.week}</span>
-                    <span>{[fmtWeekDate(w.date), w.note].filter(Boolean).join(' — ') || '-'}</span>
-                </div>
-            ))}
-        </div>
-    );
-}
-
-function StatusTimeline({ currentStatus, summonTracking }) {
+function StatusTimeline({ currentStatus }) {
     const isEndpoint = ENDPOINT_STEPS.some(e => e.key === currentStatus);
     const linearIdx = STATUS_STEPS.findIndex(s => s.key === currentStatus);
     return (
@@ -110,22 +91,19 @@ function StatusTimeline({ currentStatus, summonTracking }) {
                 const done=isEndpoint ? true : idx<=linearIdx, current=!isEndpoint && idx===linearIdx;
                 const st = getSt(step.key);
                 return (
-                    <React.Fragment key={step.key}>
-                        <div style={{display:'flex',alignItems:'flex-start',gap:10}}>
-                            <div style={{display:'flex',flexDirection:'column',alignItems:'center',flexShrink:0}}>
-                                <div style={{width:20,height:20,borderRadius: '50%',background:current?st.dot:done?'#059669':'var(--border)',display:'flex',alignItems:'center',justifyContent:'center',border:current?`2px solid ${st.dot}`:'none'}}>
-                                    {done&&!current&&<svg width="10" height="10" fill="none" viewBox="0 0 20 20"><path d="M4 10l5 5 7-9" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>}
-                                    {current&&<div style={{width:7,height:7,borderRadius: '50%',background:'var(--surface)'}}/>}
-                                </div>
-                                <div style={{width:2,height:18,background:done&&!current?'#059669':'var(--border)',marginTop:2}}/>
+                    <div key={step.key} style={{display:'flex',alignItems:'flex-start',gap:10}}>
+                        <div style={{display:'flex',flexDirection:'column',alignItems:'center',flexShrink:0}}>
+                            <div style={{width:20,height:20,borderRadius: '50%',background:current?st.dot:done?'#059669':'var(--border)',display:'flex',alignItems:'center',justifyContent:'center',border:current?`2px solid ${st.dot}`:'none'}}>
+                                {done&&!current&&<svg width="10" height="10" fill="none" viewBox="0 0 20 20"><path d="M4 10l5 5 7-9" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                {current&&<div style={{width:7,height:7,borderRadius: '50%',background:'var(--surface)'}}/>}
                             </div>
-                            <p style={{margin:'2px 0 18px',fontSize:13,fontWeight:current?700:500,color:current?st.color:done?'#059669':'#64748B',fontFamily:"'Lexend',sans-serif"}}>
-                                {step.label}
-                                {current&&<span style={{marginLeft:6,fontSize:10.5,background:'var(--surface-tint)',color:'var(--accent-text)',padding:'2px 7px',borderRadius: 9999,fontWeight:700}}>Current</span>}
-                            </p>
+                            <div style={{width:2,height:18,background:done&&!current?'#059669':'var(--border)',marginTop:2}}/>
                         </div>
-                        {step.key==='summon_issued' && (done||current) && <SummonWeeks tracking={summonTracking} />}
-                    </React.Fragment>
+                        <p style={{margin:'2px 0 18px',fontSize:13,fontWeight:current?700:500,color:current?st.color:done?'#059669':'#64748B',fontFamily:"'Lexend',sans-serif"}}>
+                            {step.label}
+                            {current&&<span style={{marginLeft:6,fontSize:10.5,background:'var(--surface-tint)',color:'var(--accent-text)',padding:'2px 7px',borderRadius: 9999,fontWeight:700}}>Current</span>}
+                        </p>
+                    </div>
                 );
             })}
             {ENDPOINT_STEPS.map((step)=>{
@@ -345,7 +323,7 @@ function CaseDetailModal({ cas, onClose, onStatusRead }) {
                             <span style={{width:8,height:8,borderRadius: '50%',backgroundColor:st.dot,flexShrink:0}}/>
                             {cas.status_display||st.label}
                         </span>
-                        <StatusTimeline currentStatus={cas.status} summonTracking={cas.summon_tracking}/>
+                        <StatusTimeline currentStatus={cas.status}/>
                     </div>
 
                     {/* Onsite verification notice - victim must appear in person */}
