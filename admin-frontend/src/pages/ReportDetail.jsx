@@ -150,7 +150,7 @@ const M = {
   title: { margin: 0, fontSize: 16, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" },
   sub: { margin: "3px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" },
   closeBtn: { background: "none", border: "none", cursor: "pointer", color: "var(--adm-text-muted)", padding: 4, display: "flex" },
-  cancelBtn: { padding: "8px 18px", borderRadius: 10, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "#374151", fontSize: 13.5, fontWeight: 500, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
+  cancelBtn: { padding: "8px 18px", borderRadius: 10, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 13.5, fontWeight: 500, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
   saveBtn: { padding: "8px 20px", borderRadius: 10, border: "none", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontFamily: "'Lexend',sans-serif" },
 };
 
@@ -349,7 +349,7 @@ const DeleteModal = ({ caseId, onClose, onConfirm, loading }) => {
           <div><p style={M.title}>Delete Case</p><p style={M.sub}>Case #{caseId} will be moved to Recently Deleted</p></div>
           <CloseX onClick={onClose} />
         </div>
-        <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600, color: "#374151", fontFamily: "'Lexend',sans-serif" }}>Why are you deleting this case?</p>
+        <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>Why are you deleting this case?</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
           {DELETE_REASONS.map(r => (
             <label key={r.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 4, cursor: "pointer", border: `1.5px solid ${reason === r.id ? "#FECACA" : "var(--adm-border)"}`, background: reason === r.id ? "#FEF2F2" : "#fff" }}>
@@ -411,7 +411,7 @@ const stepDetail = (key, cas) => {
     case "closed":
       return cas.closure_reason_display
         ? `${cas.closure_reason_display}${on(cas.closed_at) ? ` on ${on(cas.closed_at)}` : ""}.`
-        : "Outcome recorded and the case file closed.";
+        : "Barangay assistance ended with a recorded reason. The case itself is not dismissed.";
     default:
       return null;
   }
@@ -740,8 +740,8 @@ const CaseActions = ({ cas, refetch, showToast }) => {
           </div>
         )}
         {cas.closure_reason && (
-          <div style={{ padding: "10px 12px", borderRadius: 8, background: "#F1F5F9", border: "1px solid #CBD5E1", fontSize: 12, fontFamily: "'Lexend',sans-serif" }}>
-            <strong style={{ color: "#334155" }}>Assistance ended:</strong> {cas.closure_reason_display || cas.closure_reason}{cas.closure_note ? `. ${cas.closure_note}` : ""}
+          <div style={{ padding: "10px 12px", borderRadius: 8, background: "var(--adm-muted)", border: "1px solid var(--adm-border)", fontSize: 12, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>
+            <strong style={{ color: "var(--adm-text)" }}>Assistance ended:</strong> {cas.closure_reason_display || cas.closure_reason}{cas.closure_note ? `. ${cas.closure_note}` : ""}
             {!cas.is_deleted && (
               <div style={{ marginTop: 8 }}>
                 <button style={btnU} disabled={busy === "reopen"} title="Undo an accidental entry"
@@ -983,7 +983,7 @@ export default function ReportDetail() {
         <IcoWarn size={36} color="#CBD5E1" />
         <p style={{ fontWeight: 600, color: "var(--adm-text)", margin: "12px 0 6px", fontFamily: "'Lexend',sans-serif" }}>Case not found</p>
         <p style={{ color: "var(--adm-text-muted)", fontSize: 13, margin: "0 0 20px", fontFamily: "'Lexend',sans-serif" }}>{error}</p>
-        <button onClick={() => navigate("/reports")} style={{ padding: "8px 20px", borderRadius: 4, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "#374151", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>← Back to Reports</button>
+        <button onClick={() => navigate("/reports")} style={{ padding: "8px 20px", borderRadius: 4, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>← Back to Reports</button>
       </div>
     </AdminLayout>
   );
@@ -1195,7 +1195,10 @@ export default function ReportDetail() {
                     <div>
                       <p style={{ margin: "0 0 8px", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Statement</p>
                       {r.statement
-                        ? <div style={{ background: "var(--adm-muted)", borderRadius: 4, padding: "14px 16px", fontSize: 13.5, color: "#374151", lineHeight: 1.75, borderLeft: "3px solid #E1BEE7", whiteSpace: "pre-wrap", fontFamily: "'Lexend',sans-serif" }}>{r.statement}</div>
+                        /* The complainant's own words are the most important content
+                           on this page, so they get full-strength text, not the
+                           secondary tone used for supporting copy. */
+                        ? <div style={{ background: "var(--adm-muted)", borderRadius: 4, padding: "14px 16px", fontSize: 13.5, color: "var(--adm-text)", lineHeight: 1.75, borderLeft: "3px solid #E1BEE7", whiteSpace: "pre-wrap", fontFamily: "'Lexend',sans-serif" }}>{r.statement}</div>
                         : <div style={{ background: "var(--adm-muted)", borderRadius: 4, padding: "14px 16px", fontSize: 13, color: "var(--adm-text-muted)", fontStyle: "italic", borderLeft: "3px solid var(--adm-border)", fontFamily: "'Lexend',sans-serif" }}>No statement provided.</div>
                       }
                     </div>
@@ -1333,10 +1336,10 @@ export default function ReportDetail() {
                 {/* Channel selection */}
                 <div style={{ display: "flex", gap: 18, alignItems: "center", margin: "10px 0 3px" }}>
                   <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--adm-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'Lexend',sans-serif" }}>Send via</span>
-                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#374151", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--adm-text-2)", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
                     <input type="checkbox" checked={sendEmail} onChange={e => setSendEmail(e.target.checked)} style={{ accentColor: "#7B2D8B" }} /> Email
                   </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#374151", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--adm-text-2)", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
                     <input type="checkbox" checked={sendSms} onChange={e => setSendSms(e.target.checked)} style={{ accentColor: "#7B2D8B" }} /> SMS
                   </label>
                 </div>
@@ -1425,7 +1428,7 @@ export default function ReportDetail() {
                         <IcoTrash size={15} color="#DC2626" />
                       </button>
                     </div>
-                    <p style={{ margin: "0 0 9px", fontSize: 13.5, color: "#1E1B29", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{m.message}</p>
+                    <p style={{ margin: "0 0 9px", fontSize: 13.5, color: "var(--adm-text)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{m.message}</p>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                       {m.sent_email && (
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#065F46", background: "#ECFDF5", border: "1px solid #A7F3D0", padding: "2px 8px", borderRadius: 9999 }}>

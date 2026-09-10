@@ -16,8 +16,8 @@ if (!document.getElementById('vawc-admin-login-css')) {
     const s = document.createElement('style'); s.id = 'vawc-admin-login-css';
     s.textContent = `
         @keyframes spin { to { transform: rotate(360deg); } }
-        .al-input:focus { border-color: #F47920 !important; background: var(--adm-card) !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.14) !important; }
-        .al-pwwrap:focus-within { border-color: #F47920 !important; background: var(--adm-card) !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.14); }
+        .al-input:focus { border-color: #F47920 !important; background: var(--adm-input) !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.14) !important; }
+        .al-pwwrap:focus-within { border-color: #F47920 !important; background: var(--adm-input) !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.14); }
         .al-btn:hover:not([disabled]) { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 10px 24px rgba(196,94,16,0.32) !important; }
         .al-btn { transition: all 0.18s ease; }
     `;
@@ -199,7 +199,7 @@ function Login() {
                     {loading ? (
                         <span style={S.loadingRow}>
                             <span style={S.spinner} />
-                            {waking ? 'Waking up server...' : 'Signing in...'}
+                            {waking ? 'Still signing you in…' : 'Signing in…'}
                         </span>
                     ) : 'Sign In'}
                 </button>
@@ -246,8 +246,8 @@ const S = {
     // Form
     field: { marginBottom: '16px' },
     label: { display: 'block', fontSize: '10.5px', fontWeight: '700', color: COLORS.textMuted, marginBottom: '7px', textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: FF },
-    input: { width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: RADIUS.md, border: `1.5px solid ${COLORS.border}`, fontSize: '14px', color: COLORS.textPrimary, backgroundColor: COLORS.bgMuted, outline: 'none', fontFamily: FF },
-    pwWrap: { display: 'flex', alignItems: 'center', border: `1.5px solid ${COLORS.border}`, borderRadius: RADIUS.md, backgroundColor: COLORS.bgMuted, overflow: 'hidden' },
+    input: { width: '100%', boxSizing: 'border-box', padding: '12px 14px', borderRadius: RADIUS.md, border: `1.5px solid ${COLORS.border}`, fontSize: '14px', color: COLORS.textPrimary, backgroundColor: 'var(--adm-input)', outline: 'none', fontFamily: FF },
+    pwWrap: { display: 'flex', alignItems: 'center', border: `1.5px solid ${COLORS.border}`, borderRadius: RADIUS.md, backgroundColor: 'var(--adm-input)', overflow: 'hidden' },
     pwInput: { flex: 1, padding: '12px 14px', border: 'none', fontSize: '14px', color: COLORS.textPrimary, backgroundColor: 'transparent', outline: 'none', fontFamily: FF },
     eyeBtn: { padding: '0 14px', minHeight: 44, background: 'none', border: 'none', cursor: 'pointer', color: COLORS.textMuted, display: 'flex', alignItems: 'center' },
 
@@ -262,7 +262,7 @@ const S = {
     spinner: { width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' },
 
     // Notice — neutral panel with a violet accent, matching the dashboard's insets
-    notice: { display: 'flex', gap: '9px', alignItems: 'flex-start', backgroundColor: COLORS.bgMuted, border: `1px solid ${COLORS.border}`, borderLeft: `3px solid ${COLORS.secondary}`, borderRadius: RADIUS.sm, padding: '11px 13px', marginBottom: '18px' },
+    notice: { display: 'flex', gap: '9px', alignItems: 'flex-start', backgroundColor: 'var(--adm-input)', border: `1px solid ${COLORS.border}`, borderLeft: `3px solid ${COLORS.secondary}`, borderRadius: RADIUS.sm, padding: '11px 13px', marginBottom: '18px' },
     noticeText: { fontSize: '12.5px', color: COLORS.textSecondary, lineHeight: '1.6', fontFamily: FF },
     footerText: { textAlign: 'center', fontSize: '10.5px', color: COLORS.textMuted, fontFamily: FF },
 };

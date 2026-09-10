@@ -263,7 +263,7 @@ const ActionBtn = ({ label, variant = "default", onClick }) => (
     style={{
       padding: "5px 12px", borderRadius: 4, border: "1.5px solid var(--adm-border)",
       background: "var(--adm-card)", fontSize: 12, fontWeight: 500, cursor: "pointer",
-      whiteSpace: "nowrap", color: "#374151", fontFamily: "'Lexend', sans-serif",
+      whiteSpace: "nowrap", color: "var(--adm-text-2)", fontFamily: "'Lexend', sans-serif",
     }}
   >
     {label}
@@ -1387,7 +1387,7 @@ const S = {
   modalSub:          { margin: 0, fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend', sans-serif" },
   modalMsg:          { margin: "0 0 20px", fontSize: 13.5, color: "#64748B", lineHeight: 1.6, fontFamily: "'Lexend', sans-serif" },
   modalFooter:       { display: "flex", gap: 10, justifyContent: "flex-end" },
-  cancelBtn:         { padding: "9px 18px", borderRadius: 4, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "#374151", fontSize: 13.5, fontWeight: 500, cursor: "pointer", fontFamily: "'Lexend', sans-serif" },
+  cancelBtn:         { padding: "9px 18px", borderRadius: 4, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 13.5, fontWeight: 500, cursor: "pointer", fontFamily: "'Lexend', sans-serif" },
   confirmBtn:        { padding: "9px 20px", borderRadius: 4, border: "none", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 7, fontFamily: "'Lexend', sans-serif" },
   closeBtn:          { background: "none", border: "none", cursor: "pointer", color: "var(--adm-text-muted)", padding: 4, display: "flex" },
   spinner:           { width: 13, height: 13, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: '50%', animation: "spin 0.7s linear infinite", display: "inline-block" },

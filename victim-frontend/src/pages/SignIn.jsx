@@ -228,8 +228,16 @@ function SignIn() {
                 </div>
 
                 <button type="button" className="vi-btn" onClick={handleSubmit} style={{ ...S.submitBtn, opacity: loading ? 0.75 : 1 }} disabled={loading}>
-                    {loading ? <><Spinner /> {waking ? 'Waking up server…' : 'Signing in…'}</> : 'Sign In'}
+                    {/* "Waking up server" was written for the old cold start and reads
+                        as a fault. A slow first sign-in is normally just the database
+                        waking, so the copy stays calm and says what to do: wait. */}
+                    {loading ? <><Spinner /> {waking ? 'Still signing you in…' : 'Signing in…'}</> : 'Sign In'}
                 </button>
+                {waking && (
+                    <p style={S.waitNote} role="status">
+                        This can take a few seconds if no one has used the system for a while. Please wait.
+                    </p>
+                )}
 
                 {/* Recovery states */}
                 {recovery === "recoverable" && (
@@ -304,6 +312,7 @@ const S = {
     errorBox: { display: 'flex', alignItems: 'center', gap: 8, backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 12, padding: '10px 13px', marginBottom: 16 },
     forgot: { fontSize: 13.5, color: '#B45309', cursor: 'pointer', fontWeight: 600, fontFamily: "'Lexend', sans-serif", transition: 'color 0.12s', background: 'none', border: 'none', padding: 0 },
     submitBtn: { width: '100%', padding: 14, background: 'linear-gradient(135deg, #F47920 0%, #E8641C 100%)', color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: "'Lexend', sans-serif", boxShadow: '0 8px 20px rgba(196,94,16,0.28)' },
+    waitNote: { margin: '9px 2px 0', fontSize: 12, lineHeight: 1.55, color: 'var(--text-muted)', textAlign: 'center', fontFamily: "'Lexend', sans-serif" },
     divider: { height: 1, backgroundColor: 'var(--border-soft)', margin: '20px 0' },
     bottomText: { textAlign: 'center', fontSize: 14, color: 'var(--text-muted)', margin: 0, fontFamily: "'Lexend', sans-serif" },
     bottomLink: { color: '#B45309', fontWeight: 700, cursor: 'pointer', transition: 'color 0.12s', background: 'none', border: 'none', padding: 0, fontSize: 14, fontFamily: "'Lexend', sans-serif" },

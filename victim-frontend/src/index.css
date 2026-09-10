@@ -63,7 +63,10 @@
       linear-gradient(180deg, #1B1512 0%, #171311 100%);
   --surface:      #221B17;
   --surface-tint: #33251A;                                   /* dark warm tint (was peach) */
-  --surface-alt:  #211A16;
+  /* Inputs and insets sit ON the card, so in dark mode this has to be LIGHTER
+     than --surface, not darker. It was #211A16 against a #221B17 card — one
+     shade apart, which made text fields all but invisible. */
+  --surface-alt:  #2F251E;
   --topbar:       rgba(28, 22, 18, 0.72);
   --nav:          rgba(30, 24, 20, 0.88);
   --text:         #F3ECE6;
@@ -121,4 +124,23 @@ code {
   outline: 3px solid #C45E10;
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* Chrome paints autofilled inputs with its own near-white background and dark
+   text, which ignores `background-color` entirely — that is why some fields
+   looked white in dark mode while untouched ones looked correct. The supported
+   workaround is a large inset box-shadow (it respects border-radius) plus
+   -webkit-text-fill-color, with an absurd transition delay so Chrome never
+   repaints its own colour over ours. */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-alt) inset !important;
+  box-shadow: 0 0 0 1000px var(--surface-alt) inset !important;
+  -webkit-text-fill-color: var(--text) !important;
+  caret-color: var(--text);
+  transition: background-color 600000s 0s ease-in-out;
 }
