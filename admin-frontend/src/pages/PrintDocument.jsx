@@ -101,10 +101,32 @@ const fmtDate = (d) => !d ? "" : new Date(d).toLocaleDateString("en-PH", { month
 const fmtTime = (d) => !d ? "" : new Date(d).toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" });
 const ageFrom = (dob) => !dob ? "" : String(Math.floor((Date.now() - new Date(dob).getTime()) / 31557600000));
 const INCIDENT_LABEL = { physical: "Physical Abuse", sexual: "Sexual Abuse", psychological: "Psychological Abuse", economic: "Economic Abuse", others: "Other" };
-const abuseText = (r) => {
-    if (!r) return "";
-    const l = (r.incident_types && r.incident_types.length) ? r.incident_types : (r.incident_type ? [r.incident_type] : []);
-    return l.map(t => INCIDENT_LABEL[t] || t).join(", ");
+const reportAbuseTypes = (r) => {
+    if (!r) return [];
+    return (r.incident_types && r.incident_types.length)
+        ? r.incident_types
+        : (r.incident_type ? [r.incident_type] : []);
+};
+const abuseText = (r) => reportAbuseTypes(r).map(t => INCIDENT_LABEL[t] || t).join(", ");
+
+// Abuse types across the WHOLE case, de-duplicated and in canonical order.
+// A case accumulates reports over time (RA 9262 violence is a pattern, not one
+// event), so a BPO application built from a single report would understate the
+// grounds — physical in January and economic in March must both appear.
+const CASE_ABUSE_ORDER = ["physical", "sexual", "psychological", "economic", "others"];
+const caseAbuseText = (c) => {
+    const seen = [];
+    for (const r of (c?.reports || [])) {
+        for (const t of reportAbuseTypes(r)) {
+            const key = String(t || "").trim().toLowerCase();
+            if (key && !seen.includes(key)) seen.push(key);
+        }
+    }
+    seen.sort((a, b) => {
+        const ia = CASE_ABUSE_ORDER.indexOf(a), ib = CASE_ABUSE_ORDER.indexOf(b);
+        return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+    return seen.map(t => INCIDENT_LABEL[t] || t).join(", ");
 };
 
 const Head = ({ office }) => (
@@ -513,6 +535,12 @@ export default function PrintDocument() {
                 applicantAddress: p.applicantAddress || c.applicant_address || v.address || "",
                 applicantContact: p.applicantContact || c.applicant_contact || v.phone_number || "",
                 applicantRelation: p.applicantRelation || c.applicant_relation || "Self (victim)",
+                // Pre-tick "Relasyon sa Inirereklamo" from the victim's stated
+                // relationship, but ONLY where the enum maps to exactly one box.
+                // "current_spouse_partner" covers both married and live-in, so
+                // guessing would make the officer un-tick a wrong box, which is
+                // worse than leaving it blank for them to fill in person.
+                rel_kasintahan: p.rel_kasintahan ?? ["current_dating", "former_dating"].includes(c.relationship_to_offender),
                 victimName: p.victimName || v.full_name || "",
                 victimDob: p.victimDob || (v.date_of_birth ? fmtDate(v.date_of_birth) : ""),
                 victimAddress: p.victimAddress || v.address || "",
@@ -521,7 +549,7 @@ export default function PrintDocument() {
                 offenseDate: p.offenseDate || fmtDate(r?.incident_date),
                 offensePlace: p.offensePlace || (r?.address || ""),
                 narrative: p.narrative || r?.statement || "",
-                complaint: p.complaint || (abuseText(r) || "VAWC (RA 9262)"),
+                complaint: p.complaint || (caseAbuseText(c) || abuseText(r) || "VAWC (RA 9262)"),
                 consent: p.consent || c.applicant_consent_note || "",
                 assistedBy: p.assistedBy || offs.bsdo || offs.vawc_officer || "",
                 punongBarangay: p.punongBarangay || bpo?.issued_by_official || offs.punong_barangay || "",

@@ -220,9 +220,13 @@ def get_dashboard_stats(
     resolved = status_counts.get("resolved", 0)
     new_cases = status_counts.get("submitted", 0)
 
-    # ── Incident-type breakdown (reports within range, non-deleted) ──────────
+    # ── Abuse-type breakdown (cases within range, non-deleted) ───────────────
+    # Counts DISTINCT CASES, not reports. A case accumulates reports over time,
+    # so counting reports would show one case as "physical x3" and no longer
+    # match the chart's own title. A case that involves several forms of abuse
+    # is counted once under each, which is what a barangay reports upward.
     incident_rows = (
-        db.query(Report.incident_type, func.count(Report.id))
+        db.query(Report.case_id, Report.incident_type, Report.incident_types)
         .join(Case, Report.case_id == Case.id)
         .filter(
             Report.is_deleted == False,
@@ -230,19 +234,31 @@ def get_dashboard_stats(
             Report.created_at >= start_dt,
             Report.created_at <= end_dt,
         )
-        .group_by(Report.incident_type)
         .all()
     )
-    # Merge on the canonical label, not the raw column: legacy title-case values
-    # ("Physical Abuse") and current ids ("physical") are the same category.
-    _merged = {}
-    for t, c in incident_rows:
-        label = abuse_label(t) or "Unclassified"
-        _merged[label] = _merged.get(label, 0) + c
+    # label -> set of case ids (dedupes repeat reports of the same type)
+    _by_label = {}
+    _classified_cases = set()
+    _all_cases = set()
+    for case_id, single, multi in incident_rows:
+        _all_cases.add(case_id)
+        raw_types = multi if (multi and isinstance(multi, list)) else ([single] if single else [])
+        for t in raw_types:
+            # Merge on the canonical label: legacy title-case values ("Physical
+            # Abuse") and current ids ("physical") are the same category.
+            label = abuse_label(t)
+            if not label:
+                continue
+            _by_label.setdefault(label, set()).add(case_id)
+            _classified_cases.add(case_id)
+
     incident_types = [
-        {"type": label, "count": count}
-        for label, count in sorted(_merged.items(), key=lambda kv: -kv[1])
+        {"type": label, "count": len(ids)}
+        for label, ids in sorted(_by_label.items(), key=lambda kv: -len(kv[1]))
     ]
+    unclassified = len(_all_cases - _classified_cases)
+    if unclassified:
+        incident_types.append({"type": "Unclassified", "count": unclassified})
 
     recent = (
         db.query(Case)

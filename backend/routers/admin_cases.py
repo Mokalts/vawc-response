@@ -55,6 +55,9 @@ class DeletePayload(BaseModel):
 class RespondentPayload(BaseModel):
     offender_name: str
 
+class RelationshipPayload(BaseModel):
+    relationship_to_offender: str
+
 class IncidentTypePayload(BaseModel):
     incident_type: str
     report_id: int
@@ -683,6 +686,39 @@ def update_respondent(
     case.updated_at    = datetime.utcnow()
     db.commit()
     return {"message": "Respondent name updated.", "offender_name": name}
+
+
+# ── PATCH /admin/cases/{case_id}/relationship ─────────────────────────────────
+@router.patch("/{case_id}/relationship")
+def update_relationship(
+    case_id: int,
+    payload: RelationshipPayload,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Correct the victim's stated relationship to the respondent.
+
+    The victim picks this once at intake and it is then fixed for the life of
+    the case, but it determines whether RA 9262 applies at all and it belongs on
+    the Pormal na Reklamo ("Relasyon sa Inirereklamo"). A mis-tap at intake has
+    to be correctable by the VAWC officer who takes the statement in person.
+    """
+    case = _get_active_case(db, case_id)
+    try:
+        rel = RelationshipToOffender(payload.relationship_to_offender)
+    except ValueError:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid relationship. Valid: {[r.value for r in RelationshipToOffender]}",
+        )
+    case.relationship_to_offender = rel
+    case.updated_at = datetime.utcnow()
+    db.commit()
+    return {
+        "message": "Relationship updated.",
+        "relationship_to_offender": rel.value,
+        "relationship_to_offender_display": RELATIONSHIP_DISPLAY.get(rel.value, rel.value),
+    }
 
 
 # ── PATCH /admin/cases/{case_id}/mandatory-report ─────────────────────────────

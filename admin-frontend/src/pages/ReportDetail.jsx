@@ -263,6 +263,70 @@ const RespondentModal = ({ current, onClose, onSave, saving }) => {
   );
 };
 
+// Mirrors the enum in backend/models/case.py (RelationshipToOffender).
+const RELATIONSHIP_OPTS = [
+  { id: "current_spouse_partner", label: "Current spouse / partner" },
+  { id: "former_spouse_partner",  label: "Former spouse / partner" },
+  { id: "current_dating",         label: "Current dating relationship" },
+  { id: "former_dating",          label: "Former dating relationship" },
+  { id: "employer_supervisor",    label: "Employer / supervisor" },
+  { id: "agent_of_employer",      label: "Agent of employer" },
+  { id: "teacher_instructor",     label: "Teacher / instructor" },
+  { id: "coach_trainer",          label: "Coach / trainer" },
+  { id: "person_of_authority",    label: "Person of authority" },
+  { id: "neighbor_coworker",      label: "Neighbor / co-worker" },
+  { id: "immediate_family",       label: "Immediate family" },
+  { id: "other_relative",         label: "Other relative" },
+  { id: "stranger",               label: "Stranger" },
+  { id: "others",                 label: "Others" },
+];
+
+const RelationshipModal = ({ current, onClose, onSave, saving }) => {
+  const [value, setValue] = useState(current || "");
+  const unchanged = value === (current || "");
+  const submit = () => {
+    if (!value) return;
+    if (unchanged) { onClose(); return; }
+    onSave(value);
+  };
+  return (
+    <div style={M.backdrop} onClick={!saving ? onClose : undefined}>
+      <div style={{ ...M.modal, maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+          <div>
+            <p style={M.title}>Relationship to Respondent</p>
+            <p style={M.sub}>As stated by the complainant at intake</p>
+          </div>
+          <CloseX onClick={onClose} />
+        </div>
+        <label htmlFor="rel-select" style={{ display: "block", margin: "0 0 6px", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+          Relationship
+        </label>
+        <select
+          id="rel-select"
+          autoFocus
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid var(--adm-border)", borderRadius: 4, padding: "11px 12px", fontSize: 14, fontFamily: "'Lexend',sans-serif", color: "var(--adm-text)", background: "var(--adm-card)", outline: "none" }}
+        >
+          <option value="" disabled>Select a relationship…</option>
+          {RELATIONSHIP_OPTS.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+        </select>
+        <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
+          This determines whether RA 9262 applies and fills the "Relasyon sa Inirereklamo" line on the Pormal na Reklamo.
+        </p>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 20 }}>
+          <button className="rd-btn" style={M.cancelBtn} onClick={onClose} disabled={saving}>Cancel</button>
+          <button className="rd-btn" style={{ ...M.saveBtn, background: "#9B4DAB", opacity: saving || !value ? 0.6 : 1, cursor: saving || !value ? "not-allowed" : "pointer" }}
+            onClick={submit} disabled={saving || !value}>
+            {saving && <Spinner />}{saving ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const DeleteModal = ({ caseId, onClose, onConfirm, loading }) => {
   const [reason, setReason] = useState("");
   const [otherText, setOtherText] = useState("");
@@ -764,6 +828,8 @@ export default function ReportDetail() {
   const [deletingMsgId, setDeletingMsgId] = useState(null);
   const [editRespondent, setEditRespondent] = useState(false);
   const [savingRespondent, setSavingRespondent] = useState(false);
+  const [editRelationship, setEditRelationship] = useState(false);
+  const [savingRelationship, setSavingRelationship] = useState(false);
 
   const currentAdmin = (() => { try { return JSON.parse(localStorage.getItem("admin_user") || localStorage.getItem("admin") || "{}"); } catch { return {}; } })();
   const isSuperAdmin = !!currentAdmin.is_super_admin;
@@ -848,6 +914,21 @@ export default function ReportDetail() {
       showToast("Respondent name updated.");
     } catch (err) { showToast(err.response?.data?.detail || "Failed to update respondent.", false); }
     finally { setSavingRespondent(false); }
+  };
+
+  const handleRelationshipSave = async (value) => {
+    setSavingRelationship(true);
+    try {
+      const res = await api.patch(`/admin/cases/${id}/relationship`, { relationship_to_offender: value });
+      setCas(c => ({
+        ...c,
+        relationship_to_offender: res.data?.relationship_to_offender || value,
+        relationship_to_offender_display: res.data?.relationship_to_offender_display || value,
+      }));
+      setEditRelationship(false);
+      showToast("Relationship updated.");
+    } catch (err) { showToast(err.response?.data?.detail || "Failed to update relationship.", false); }
+    finally { setSavingRelationship(false); }
   };
 
   const handleIncidentTypeSave = async (reportId) => {
@@ -1178,6 +1259,24 @@ export default function ReportDetail() {
                     </button>
                   )}
                 />
+                {/* The victim states this at intake and it decides whether RA 9262
+                    applies, so the officer taking the statement in person needs to
+                    see it and be able to correct a mis-tap. */}
+                <InfoRow
+                  label="Relationship to Respondent"
+                  value={cas.relationship_to_offender_display || "Not stated"}
+                  muted={!cas.relationship_to_offender}
+                  action={!cas.is_deleted && (
+                    <button
+                      type="button"
+                      className="rd-btn"
+                      onClick={() => setEditRelationship(true)}
+                      title="Correct the victim's relationship to the respondent"
+                      style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "1px 7px", borderRadius: 9999, border: "1px solid var(--adm-border)", background: "transparent", color: "var(--adm-text-muted)", fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                      <IcoEdit size={10} color="currentColor" /> Edit
+                    </button>
+                  )}
+                />
                 <InfoRow label="Date Submitted" value={fmt(cas.created_at)} highlight />
                 <InfoRow label="Last Updated" value={fmt(cas.updated_at)} />
                 {cas.admin_id && <InfoRow label="Handled By" value={cas.handled_by || `Admin #${cas.admin_id}`} />}
@@ -1272,6 +1371,7 @@ export default function ReportDetail() {
 
       {showStatusModal && <StatusModal current={cas.status} onClose={() => setShowStatusModal(false)} onSave={handleStatusSave} saving={statusSaving} />}
       {editRespondent && <RespondentModal current={cas.offender_name} onClose={() => setEditRespondent(false)} onSave={handleRespondentSave} saving={savingRespondent} />}
+      {editRelationship && <RelationshipModal current={cas.relationship_to_offender} onClose={() => setEditRelationship(false)} onSave={handleRelationshipSave} saving={savingRelationship} />}
       {showDeleteConfirm && <DeleteModal caseId={cas.case_number} loading={actionLoading} onConfirm={handleDelete} onClose={() => setShowDeleteConfirm(false)} />}
       {showRecover && <ConfirmModal title="Recover Case" message={`Restore case ${cas.case_number}?`} confirmLabel="Recover" danger={false} loading={actionLoading} onConfirm={handleRecover} onClose={() => setShowRecover(false)} />}
 
