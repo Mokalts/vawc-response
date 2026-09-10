@@ -465,7 +465,7 @@ function MonitoringSection({ m, expiring }) {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14 }}>
-                <Panel title="Barangay Protection Orders" tag={`${m.bpo?.ever_issued ?? 0} issued`}>
+                <Panel title="Barangay Protection Orders">
                     <StackBar segments={[
                         { label: 'Applied', value: m.bpo?.applied ?? 0, color: '#9B4DAB' },
                         { label: 'Issued', value: m.bpo?.issued ?? 0, color: '#F47920' },
@@ -486,7 +486,7 @@ function MonitoringSection({ m, expiring }) {
                     )}
                 </Panel>
 
-                <Panel title="Referral follow-up" tag={`${m.endorsements?.outstanding ?? 0} awaiting`}>
+                <Panel title="Referral follow-up">
                     <StackBar segments={[
                         { label: 'Acknowledged by receiving office', value: m.endorsements?.acknowledged ?? 0, color: '#059669' },
                         { label: 'Still awaiting receipt', value: m.endorsements?.outstanding ?? 0, color: '#F47920' },
