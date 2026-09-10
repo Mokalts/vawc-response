@@ -8,15 +8,21 @@ from models.report import ReportStatus
 
 # ── Case-level enums ──────────────────────────────────────────────────────────
 class ClosureReason(str, enum.Enum):
-    # First five taken verbatim from the NVAW DocS Barangay Client Card
-    # (Handbook Annex A) as reasons for NOT pursuing a case — reasons, not outcomes.
+    # First five + others taken from the NVAW DocS Barangay Client Card
+    # (Handbook Annex A, printed p. 66), verified against the form. The card
+    # records them when "the victim does not want to continue or pursue the
+    # case" — reasons for non-pursuit, not outcomes.
     lost_interest_to_file          = "lost_interest_to_file"
     reconciled_without_mediation   = "reconciled_without_mediation"
     transferred_residence          = "transferred_residence"
     lack_of_support                = "lack_of_support"
     lack_of_confidence_in_provider = "lack_of_confidence_in_provider"
-    referred_and_completed         = "referred_and_completed"
     others                         = "others"
+    # Additions. Annex A has no category for a case that ended well, so a
+    # successful referral or a protection order that held cannot be recorded
+    # truthfully without these. Documented as a deviation, not as standard.
+    referred_and_completed         = "referred_and_completed"
+    bpo_expired_no_incident        = "bpo_expired_no_incident"
     # Migration only — must never appear in a dropdown for new cases.
     legacy_settled_at_barangay     = "legacy_settled_at_barangay"
 

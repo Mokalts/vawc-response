@@ -31,7 +31,7 @@ const STATUS_CONFIG = {
   bpo_issued: { label: "BPO Issued", color: "#C45E10", bg: "#FFF3E0", dot: "#F47920" },
   bpo_served: { label: "BPO Served", color: "#B45309", bg: "#FFFBEB", dot: "#D97706" },
   endorsed: { label: "Endorsed", color: "#DC2626", bg: "#FEF2F2", dot: "#EF4444" },
-  closed: { label: "Closed", color: "#475569", bg: "#F1F5F9", dot: "#64748B" },
+  closed: { label: "Assistance Ended", color: "#475569", bg: "#F1F5F9", dot: "#64748B" },
 };
 const sCfg = (s) => STATUS_CONFIG[s] || { label: s || "Unknown", color: "#64748B", bg: "var(--adm-border)", dot: "#CBD5E1" };
 // Directly settable via the status picker (assessment/investigation steps only).
@@ -41,14 +41,19 @@ const ALL_STATUSES = ["under_assessment", "awaiting_onsite_visit"];
 const TIMELINE_STEPS = ["submitted", "under_assessment", "awaiting_onsite_visit", "bpo_applied", "bpo_issued", "bpo_served"];
 const ENDPOINT_STATES = ["endorsed", "closed"];
 
+// Wording verified against the NVAW DocS Barangay Client Card (Barangay VAW
+// Desk Handbook, Annex A, printed p. 66). Annex A records these when "the
+// victim does not want to continue or pursue the case" and has no category for
+// a case that ended well, so the last two are documented additions.
 const CLOSURE_REASONS = [
-  { id: "lost_interest_to_file", label: "Complainant lost interest to file" },
-  { id: "reconciled_without_mediation", label: "Reconciled with the perpetrator (without mediation)" },
-  { id: "transferred_residence", label: "Transferred residence" },
+  { id: "lost_interest_to_file", label: "Lost interest to file" },
+  { id: "reconciled_without_mediation", label: "Reconciled with the perpetrator (w/o mediation)" },
+  { id: "transferred_residence", label: "Transfer residence" },
   { id: "lack_of_support", label: "Lack of support" },
-  { id: "lack_of_confidence_in_provider", label: "Lack of confidence in the service provider" },
-  { id: "referred_and_completed", label: "Referred and completed" },
-  { id: "others", label: "Others" },
+  { id: "lack_of_confidence_in_provider", label: "Lack of confidence with service provider" },
+  { id: "referred_and_completed", label: "Referred and successfully turned over" },
+  { id: "bpo_expired_no_incident", label: "BPO expired with no further incident" },
+  { id: "others", label: "Others (please specify)" },
 ];
 const SEVERITIES = [
   { id: "low", label: "Low" },
@@ -373,7 +378,7 @@ const ENDPOINT_ICON = {
 };
 const ENDPOINT_NOTE = {
   endorsed: { title: "Endorsed", body: "Endorsed to the receiving office. It is not complete until acknowledged (see the Endorsements panel).", color: "#DC2626", bg: "#FEF2F2", border: "#FECACA", sub: "#991B1B" },
-  closed:   { title: "Closed",   body: "Case closed with a recorded reason. It is not marked resolved or settled.", color: "#475569", bg: "#F1F5F9", border: "#CBD5E1", sub: "#334155" },
+  closed:   { title: "Assistance Ended",   body: "The barangay ended its assistance with a recorded reason. The case is not dismissed, resolved or settled — only a court can dismiss a VAWC case.", color: "#475569", bg: "#F1F5F9", border: "#CBD5E1", sub: "#334155" },
 };
 
 // Sub-message under each timeline step. Prefers the real recorded fact (who, when,
@@ -719,30 +724,32 @@ const CaseActions = ({ cas, refetch, showToast }) => {
         {/* Close */}
         {cas.status !== "closed" && !cas.is_deleted && (
           <div>
-            <span style={lbl}>Close Case (with reason)</span>
+            <span style={lbl}>End Barangay Assistance (with reason)</span>
             <select style={{ ...inp, marginBottom: 6 }} value={close.reason} onChange={e => setClose(x => ({ ...x, reason: e.target.value }))}>
               <option value="">Select a reason…</option>
               {CLOSURE_REASONS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
             </select>
             <input style={{ ...inp, marginBottom: 6 }} placeholder="Optional note" value={close.note} onChange={e => setClose(x => ({ ...x, note: e.target.value }))} />
             <button className="rd-btn" style={{ ...btnP, background: "#475569", opacity: close.reason ? 1 : 0.5 }} disabled={!close.reason || busy === "close"}
-              onClick={() => call("close", () => api.patch(`/admin/cases/${cas.id}/close`, { closure_reason: close.reason, closure_note: close.note || null }), "Case closed.")}>
-              {busy === "close" ? <Spinner size={12} /> : "Close Case"}
+              onClick={() => call("close", () => api.patch(`/admin/cases/${cas.id}/close`, { closure_reason: close.reason, closure_note: close.note || null }), "Barangay assistance ended.")}>
+              {busy === "close" ? <Spinner size={12} /> : "End Assistance"}
             </button>
-            <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>A closed case is never marked "resolved" or "settled".</p>
+            <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
+              This ends the barangay's assistance only. It does not close or dismiss the case, which only a court can do, and it is never marked "resolved" or "settled".
+            </p>
           </div>
         )}
         {cas.closure_reason && (
           <div style={{ padding: "10px 12px", borderRadius: 8, background: "#F1F5F9", border: "1px solid #CBD5E1", fontSize: 12, fontFamily: "'Lexend',sans-serif" }}>
-            <strong style={{ color: "#334155" }}>Closed:</strong> {cas.closure_reason_display || cas.closure_reason}{cas.closure_note ? `. ${cas.closure_note}` : ""}
+            <strong style={{ color: "#334155" }}>Assistance ended:</strong> {cas.closure_reason_display || cas.closure_reason}{cas.closure_note ? `. ${cas.closure_note}` : ""}
             {!cas.is_deleted && (
               <div style={{ marginTop: 8 }}>
-                <button style={btnU} disabled={busy === "reopen"} title="Undo an accidental closure"
+                <button style={btnU} disabled={busy === "reopen"} title="Undo an accidental entry"
                   onClick={async () => {
-                    if (await confirmDialog({ title: "Reopen this case?", message: "The recorded closure reason will be cleared and the case returns to the stage its records support.", confirmLabel: "Reopen" }))
-                      call("reopen", () => api.patch(`/admin/cases/${cas.id}/reopen`), "Case reopened.");
+                    if (await confirmDialog({ title: "Resume barangay assistance?", message: "The recorded reason will be cleared and the case returns to the stage its records support.", confirmLabel: "Resume" }))
+                      call("reopen", () => api.patch(`/admin/cases/${cas.id}/reopen`), "Assistance resumed.");
                   }}>
-                  Reopen case
+                  Resume assistance
                 </button>
               </div>
             )}

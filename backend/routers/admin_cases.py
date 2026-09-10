@@ -591,8 +591,12 @@ def close_case(
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin_full_access),
 ):
-    """Close a case WITH a reason. Never 'resolved'/'settled'. The legacy
-    reason is not selectable for new closures."""
+    """End the barangay's assistance on a case, WITH a recorded reason.
+
+    This does not close or dismiss the case. Under RA 9262 a VAWC case is a
+    public crime and only a court can dismiss it; what ends here is the
+    barangay's involvement. Never 'resolved'/'settled'. The legacy reason is not
+    selectable for new records. Route path stays /close for compatibility."""
     case = _get_active_case(db, case_id)
     try:
         reason = ClosureReason(payload.closure_reason)
@@ -611,7 +615,7 @@ def close_case(
     case.has_status_update  = True
     case.updated_at         = datetime.utcnow()
     db.commit()
-    return {"message": "Case closed.", "status": "closed",
+    return {"message": "Barangay assistance ended.", "status": "closed",
             "closure_reason": reason.value,
             "closure_reason_display": CLOSURE_REASON_DISPLAY.get(reason.value)}
 

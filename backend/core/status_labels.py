@@ -10,7 +10,11 @@ STATUS_DISPLAY = {
     "bpo_issued":            "BPO Issued",
     "bpo_served":            "BPO Served",
     "endorsed":              "Endorsed",
-    "closed":                "Closed",
+    # Under RA 9262 a VAWC case is a public crime and only a court can dismiss
+    # or close it. What ends at the barangay is its ASSISTANCE, not the case, so
+    # nothing user-facing says "Closed". The enum value stays `closed` (renaming
+    # it would need a data migration for no benefit) — only the label changed.
+    "closed":                "Assistance Ended",
 }
 
 # Victim-facing message per status transition (used in status emails).
@@ -21,19 +25,40 @@ STATUS_EMAIL_MSG = {
     "bpo_issued":            "A Barangay Protection Order has been issued in your case. It is valid for 15 days.",
     "bpo_served":            "The Barangay Protection Order has been served to the respondent.",
     "endorsed":              "Your case has been endorsed to the appropriate authorities for further action.",
-    "closed":                "Your case has been closed. You may reopen it by filing a new report if needed.",
+    "closed":                "The barangay has ended its assistance on your case and recorded the reason. This does not dismiss the case: only a court can do that, and you may still file with the police or the court. You can also ask the barangay to resume by filing a new report.",
 }
 
+# Wording verified against the NVAW Documentation System *Barangay Client Card*
+# (Barangay VAW Desk Handbook, Annex A, printed p. 66). The card frames these as
+# reasons recorded when "the victim does not want to continue or pursue the
+# case" — reasons for non-pursuit, NOT case outcomes. The card offers no
+# category for a case that ended well, which is why the last two below are
+# documented additions rather than standard entries.
 CLOSURE_REASON_DISPLAY = {
-    "lost_interest_to_file":          "Complainant lost interest to file",
-    "reconciled_without_mediation":   "Reconciled with the perpetrator (without mediation)",
-    "transferred_residence":          "Transferred residence",
+    # --- Verbatim from Annex A ---
+    "lost_interest_to_file":          "Lost interest to file",
+    "reconciled_without_mediation":   "Reconciled with the perpetrator (w/o mediation)",
+    "transferred_residence":          "Transfer residence",
     "lack_of_support":                "Lack of support",
-    "lack_of_confidence_in_provider": "Lack of confidence in the service provider",
-    "referred_and_completed":         "Referred and completed",
-    "others":                         "Others",
+    "lack_of_confidence_in_provider": "Lack of confidence with service provider",
+    "others":                         "Others (please specify)",
+    # --- Additions (not in Annex A; barangay-level outcomes it does not model) ---
+    "referred_and_completed":         "Referred and successfully turned over",
+    "bpo_expired_no_incident":        "BPO expired with no further incident",
+    # --- Migration only; never offered for new records ---
     "legacy_settled_at_barangay":     "Legacy record (settled at barangay, pre-system)",
 }
+
+# Reasons that came straight off Annex A, kept separate so the UI can show the
+# provenance and the paper trail can be defended.
+ANNEX_A_CLOSURE_REASONS = (
+    "lost_interest_to_file",
+    "reconciled_without_mediation",
+    "transferred_residence",
+    "lack_of_support",
+    "lack_of_confidence_in_provider",
+    "others",
+)
 
 RELATIONSHIP_DISPLAY = {
     "current_spouse_partner": "Current spouse / partner",

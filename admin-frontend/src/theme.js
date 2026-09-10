@@ -55,7 +55,7 @@ export const COLORS = {
     bpo_issued:            { label: "BPO Issued",            color: "#C45E10", bg: "#FFF3E0", border: "#FFCC99", dot: "#F47920" },
     bpo_served:            { label: "BPO Served",            color: "#92400E", bg: "#FFFBEB", border: "#FDE68A", dot: "#D97706" },
     endorsed:              { label: "Endorsed",              color: "#991B1B", bg: "#FEF2F2", border: "#FECACA", dot: "#EF4444" },
-    closed:                { label: "Closed",                color: "#475569", bg: "#F1F5F9", border: "#CBD5E1", dot: "#64748B" },
+    closed:                { label: "Assistance Ended",                color: "#475569", bg: "#F1F5F9", border: "#CBD5E1", dot: "#64748B" },
   },
 
   // Utility

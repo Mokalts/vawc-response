@@ -12,7 +12,7 @@ const STATUS_CONFIG = {
   bpo_issued: { label: "BPO Issued", color: "#C45E10", bg: "#FFF3E0", dot: "#F47920" },
   bpo_served: { label: "BPO Served", color: "#B45309", bg: "#FFFBEB", dot: "#D97706" },
   endorsed: { label: "Endorsed", color: "#DC2626", bg: "#FEF2F2", dot: "#EF4444" },
-  closed: { label: "Closed", color: "#475569", bg: "#F1F5F9", dot: "#64748B" },
+  closed: { label: "Assistance Ended", color: "#475569", bg: "#F1F5F9", dot: "#64748B" },
 };
 const sCfg = (s) => STATUS_CONFIG[s] || { label: s || "Unknown", color: "#64748B", bg: "var(--adm-border)", dot: "#CBD5E1" };
 

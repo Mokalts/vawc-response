@@ -6,6 +6,9 @@ from models.admin import Admin
 from schemas.admin import AdminCreate, AdminLogin, AdminFaceEnroll, AdminFaceVerify, AdminResponse, AdminTokenResponse
 from core.security import hash_password, verify_password, create_access_token
 from core.admin_dependencies import get_current_admin, require_super_admin
+from core.progressive_limiter import (
+    check_rate_limit, record_failure, record_success, login_keys, IP_LOCKOUT_SCHEDULE,
+)
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 import numpy as np
@@ -108,23 +111,37 @@ def create_admin_account(
 
 # ---------------------------------------------------------------------------
 # Step 1 — Password Login
-# Rate limited: 5 attempts per minute per IP
+# Rate limited per (network, username) on FAILURES only.
+#
+# This replaced a flat slowapi "5/minute" keyed on the remote address, which
+# counted successful logins too and shared one bucket across everyone behind the
+# same address — including, behind a reverse proxy, every user. Five legitimate
+# sign-ins in a minute during a demo would have returned 429.
 # ---------------------------------------------------------------------------
 @router.post("/login")
-@limiter.limit("5/minute")
 def admin_login(
     request: Request,
     response: Response,
     payload: AdminLogin,
     db: Session = Depends(get_db),
 ):
+    limit_key, ip_key = login_keys("admin_login", request, payload.username)
+    for key, sched in ((limit_key, None), (ip_key, IP_LOCKOUT_SCHEDULE)):
+        limit_check = check_rate_limit(key)
+        if not limit_check["allowed"]:
+            raise HTTPException(status_code=429, detail=limit_check["message"])
+
     admin = db.query(Admin).filter(Admin.username == payload.username).first()
     if not admin or not verify_password(payload.password, admin.password_hash):
+        record_failure(limit_key)
+        record_failure(ip_key, IP_LOCKOUT_SCHEDULE)
         raise HTTPException(status_code=401, detail="Invalid username or password.")
     if getattr(admin, "is_deleted", False):
         raise HTTPException(status_code=403, detail="Account has been deleted.")
     if not admin.is_active:
         raise HTTPException(status_code=403, detail="Account is deactivated.")
+
+    record_success(limit_key)
 
     token = create_access_token(data={
         "sub": str(admin.id),

@@ -50,7 +50,7 @@ const STATUS_MAP = {
     bpo_issued:            { label:'BPO Issued',              bg:'#FFF3E0', color:'#C45E10', dot:'#F47920' },
     bpo_served:            { label:'BPO Served',              bg:'#FFFBEB', color:'#92400E', dot:'#D97706' },
     endorsed:              { label:'Endorsed',                bg:'var(--surface-tint)', color:'var(--accent-text)', dot:'#F47920' },
-    closed:                { label:'Closed',                  bg:'#F1F5F9', color:'#475569', dot:'#64748B' },
+    closed:                { label:'Assistance Ended',                  bg:'#F1F5F9', color:'#475569', dot:'#64748B' },
 };
 const getSt   = (s) => STATUS_MAP[s] || { label:s||'Unknown', bg:'var(--border-soft)', color:'var(--text-body)', dot:'#64748B' };
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'}) : '-';
@@ -70,7 +70,7 @@ const STATUS_STEPS = [
 // Terminal states (a case ends at exactly one of these).
 const ENDPOINT_STEPS = [
     { key:'endorsed', label:'Endorsed', detail:'Your case was forwarded to the police, the social welfare office, or the court.' },
-    { key:'closed',   label:'Closed',   detail:'The barangay recorded an outcome and closed the case file.' },
+    { key:'closed',   label:'Assistance Ended',   detail:'The barangay recorded a reason and ended its assistance. Your case is not dismissed: only a court can do that, and you may still go to the police or the court.' },
 ];
 
 // ─── Skeleton ──────────────────────────────────────────────────────────────────

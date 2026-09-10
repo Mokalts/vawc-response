@@ -7,7 +7,9 @@ from models.otp import OTP
 from schemas.user import UserRegister, UserLogin, TokenResponse, UserResponse
 from schemas.otp import OTPRequest, OTPVerify
 from core.security import hash_password, verify_password, create_access_token, create_verify_token, decode_verify_token
-from core.progressive_limiter import check_rate_limit, record_failure, record_success
+from core.progressive_limiter import (
+    check_rate_limit, record_failure, record_success, login_keys, IP_LOCKOUT_SCHEDULE,
+)
 from utils.otp_helper import create_otp, verify_otp, send_otp_sms, send_otp_email
 from pydantic import BaseModel
 from datetime import datetime, timedelta
@@ -149,17 +151,22 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=TokenResponse)
 def login(payload: UserLogin, request: Request, db: Session = Depends(get_db)):
-    client_ip = request.client.host
-    limit_key = f"victim_login:{client_ip}"
+    # Two buckets. The account bucket is per (network, email) so one person's
+    # typos cannot lock out everyone else sharing a venue's wifi — which would
+    # have ended a pilot-testing session. The ip bucket is a flat, forgiving
+    # guard against bulk credential stuffing.
+    limit_key, ip_key = login_keys("victim_login", request, payload.email)
 
-    limit_check = check_rate_limit(limit_key)
-    if not limit_check["allowed"]:
-        raise HTTPException(status_code=429, detail=limit_check["message"])
+    for key, sched in ((limit_key, None), (ip_key, IP_LOCKOUT_SCHEDULE)):
+        limit_check = check_rate_limit(key)
+        if not limit_check["allowed"]:
+            raise HTTPException(status_code=429, detail=limit_check["message"])
 
     user = db.query(User).filter(User.email == payload.email).first()
 
     if not user or not verify_password(payload.password, user.password_hash):
         record_failure(limit_key)
+        record_failure(ip_key, IP_LOCKOUT_SCHEDULE)
         raise HTTPException(status_code=401, detail="Invalid email or password.")
 
     if getattr(user, "is_deleted", False):
