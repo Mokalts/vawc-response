@@ -9,7 +9,7 @@ from models.admin import Admin
 from core.admin_dependencies import get_current_admin_full_access, require_super_admin
 from core.encryption import decrypt
 from core.masking import mask_last_initial, mask_name
-from core.status_labels import CLOSURE_REASON_DISPLAY, RELATIONSHIP_DISPLAY
+from core.status_labels import CLOSURE_REASON_DISPLAY, RELATIONSHIP_DISPLAY, abuse_label
 from datetime import datetime, timedelta
 import calendar
 
@@ -51,12 +51,15 @@ def monitoring(
         if c.status == ReportStatus.closed and c.closure_reason:
             k = c.closure_reason.value
             by_closure[k] = by_closure.get(k, 0) + 1
-        # Abuse types (from reports)
+        # Abuse types (from reports). Canonicalise first: reports filed before
+        # the lawful-flow rebuild stored title-case labels, so grouping on the
+        # raw value splits one category across two buckets.
         for r in c.reports:
             types = (r.incident_types or ([r.incident_type] if r.incident_type else []))
             for t in types:
-                if t:
-                    by_abuse[t] = by_abuse.get(t, 0) + 1
+                label = abuse_label(t)
+                if label:
+                    by_abuse[label] = by_abuse.get(label, 0) + 1
         # BPOs
         for b in c.bpos:
             sv = b.status.value if b.status else None
@@ -173,7 +176,9 @@ def monthly_report(
         title = ""
         if c.reports:
             first_r = sorted(c.reports, key=lambda r: r.created_at)[0]
-            title = first_r.incident_type or ""
+            # Display label, not the raw id — this prints on the Lupon monthly
+            # accomplishment report, where "physical" would look like a bug.
+            title = abuse_label(first_r.incident_type) or ""
         status_val = c.status.value if c.status else ""
         rows.append({
             "case_number": c.case_number,
@@ -228,9 +233,15 @@ def get_dashboard_stats(
         .group_by(Report.incident_type)
         .all()
     )
+    # Merge on the canonical label, not the raw column: legacy title-case values
+    # ("Physical Abuse") and current ids ("physical") are the same category.
+    _merged = {}
+    for t, c in incident_rows:
+        label = abuse_label(t) or "Unclassified"
+        _merged[label] = _merged.get(label, 0) + c
     incident_types = [
-        {"type": (t or "Unclassified"), "count": c}
-        for t, c in incident_rows
+        {"type": label, "count": count}
+        for label, count in sorted(_merged.items(), key=lambda kv: -kv[1])
     ]
 
     recent = (

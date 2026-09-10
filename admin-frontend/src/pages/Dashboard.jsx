@@ -62,15 +62,22 @@ const computeRange = (key, ref = new Date()) => {
 
 const toISO = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
+// Keyed on the canonical id so a colour survives any label wording. The backend
+// sends display labels, so match case-insensitively on the leading word rather
+// than on an exact string.
 const INCIDENT_COLORS = {
-    'Physical Abuse':      '#EF4444',
-    'Sexual Abuse':        '#9B4DAB',
-    'Psychological Abuse': '#F47920',
-    'Economic Abuse':      '#0EA5E9',
-    'Other':               '#64748B',
-    'Unclassified':        '#CBD5E1',
+    physical:      '#EF4444',
+    sexual:        '#9B4DAB',
+    psychological: '#F47920',
+    economic:      '#0EA5E9',
+    other:         '#64748B',
+    others:        '#64748B',
+    unclassified:  '#CBD5E1',
 };
-const incidentColor = (t) => INCIDENT_COLORS[t] || '#7B2D8B';
+const incidentColor = (t) => {
+    const key = String(t || '').trim().toLowerCase().split(/[\s/]+/)[0];
+    return INCIDENT_COLORS[key] || '#7B2D8B';
+};
 
 const STATUS_CFG = {
     submitted: { label: 'Submitted', color: '#BE185D', bg: '#FDF2F8', dot: '#EC4899' },
