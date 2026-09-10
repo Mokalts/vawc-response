@@ -429,7 +429,7 @@ function FaceVerify() {
                     <button
                         type="button"
                         onClick={cancelLiveness}
-                        style={{ ...S.verifyBtn, backgroundColor: '#fff', color: '#7B2D8B', border: '1.5px solid #E1BEE7', boxShadow: 'none' }}
+                        style={{ ...S.verifyBtn, backgroundColor: 'var(--adm-card)', color: '#7B2D8B', border: '1.5px solid #E1BEE7', boxShadow: 'none' }}
                     >
                         Cancel liveness check
                     </button>
@@ -546,13 +546,17 @@ function FaceVerify() {
 }
 
 const S = {
-    page: { minHeight: '100vh', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'Lexend', sans-serif" },
-    card: { backgroundColor: '#fff', borderRadius: 12, padding: '32px', width: '100%', maxWidth: '480px', boxShadow: '0 4px 24px rgba(15,23,42,0.09)', border: '1px solid #E2E8F0' },
+    // Surfaces use the shared --adm-* tokens so this page follows the theme.
+    // It sits between Login and Dashboard, and hardcoded light values made the
+    // admin flash white mid-flow in dark mode. The video letterbox, the scan
+    // line and the violet brand accents stay fixed on purpose.
+    page: { minHeight: '100vh', backgroundColor: 'var(--adm-page)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'Lexend', sans-serif" },
+    card: { backgroundColor: 'var(--adm-card)', borderRadius: 12, padding: '32px', width: '100%', maxWidth: '480px', boxShadow: 'var(--adm-card-shadow)', border: '1px solid var(--adm-border)' },
 
     header: { display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' },
     logoWrap: { width: '48px', height: '48px', borderRadius: 4, backgroundColor: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-    title: { fontSize: '18px', fontWeight: '700', color: '#0F172A', marginBottom: '3px', fontFamily: "'Lexend', sans-serif" },
-    subtitle: { fontSize: '12.5px', color: '#94A3B8', fontFamily: "'Lexend', sans-serif" },
+    title: { fontSize: '18px', fontWeight: '700', color: 'var(--adm-text)', marginBottom: '3px', fontFamily: "'Lexend', sans-serif" },
+    subtitle: { fontSize: '12.5px', color: 'var(--adm-text-muted)', fontFamily: "'Lexend', sans-serif" },
 
     cameraWrap: { position: 'relative', width: '100%', aspectRatio: '4/3', backgroundColor: '#0F172A', borderRadius: 4, overflow: 'hidden', marginBottom: '16px' },
     video: { width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' },
@@ -565,25 +569,25 @@ const S = {
     warmingSpinner: { width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.15)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
     warmingText: { fontSize: '13px', fontWeight: '500', color: 'rgba(255,255,255,0.7)', fontFamily: "'Lexend', sans-serif" },
 
-    status: { fontSize: '13px', color: '#64748B', textAlign: 'center', marginBottom: '16px', lineHeight: '1.5', fontFamily: "'Lexend', sans-serif" },
+    status: { fontSize: '13px', color: 'var(--adm-text-2)', textAlign: 'center', marginBottom: '16px', lineHeight: '1.5', fontFamily: "'Lexend', sans-serif" },
 
     verifyBtn: { width: '100%', padding: '13px', backgroundColor: '#9B4DAB', color: '#fff', fontSize: '14.5px', fontWeight: '600', border: 'none', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(123,45,139,0.25)', marginBottom: '12px', fontFamily: "'Lexend', sans-serif" },
     spinner: { width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 },
 
-    backBtn: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', padding: '10px 0', backgroundColor: 'transparent', color: '#94A3B8', fontSize: '13px', fontWeight: '500', border: '1.5px solid #E2E8F0', borderRadius: 10, cursor: 'pointer', fontFamily: "'Lexend', sans-serif" },
+    backBtn: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', minHeight: 44, padding: '10px 0', backgroundColor: 'transparent', color: 'var(--adm-text-muted)', fontSize: '13px', fontWeight: '500', border: '1.5px solid var(--adm-border)', borderRadius: 10, cursor: 'pointer', fontFamily: "'Lexend', sans-serif" },
 
     // Modal
     backdrop: { position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' },
-    modal: { backgroundColor: '#fff', borderRadius: 16, padding: '32px 28px', width: '100%', maxWidth: '360px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', animation: 'slideUp 0.2s ease' },
+    modal: { backgroundColor: 'var(--adm-card)', borderRadius: 16, padding: '32px 28px', width: '100%', maxWidth: '360px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', animation: 'slideUp 0.2s ease' },
     modalIconWrap: { width: '64px', height: '64px', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' },
     modalTitle: { fontSize: '20px', fontWeight: '700', marginBottom: '10px', fontFamily: "'Lexend', sans-serif" },
-    modalMsg: { fontSize: '13.5px', color: '#64748B', lineHeight: '1.65', marginBottom: '22px', fontFamily: "'Lexend', sans-serif" },
+    modalMsg: { fontSize: '13.5px', color: 'var(--adm-text-2)', lineHeight: '1.65', marginBottom: '22px', fontFamily: "'Lexend', sans-serif" },
 
     modalBtns: { display: 'flex', flexDirection: 'column', gap: '10px' },
     retryBtn: { width: '100%', padding: '12px', backgroundColor: '#9B4DAB', color: '#fff', fontSize: '14px', fontWeight: '600', border: 'none', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', fontFamily: "'Lexend', sans-serif" },
     returnBtn: { width: '100%', padding: '12px', backgroundColor: 'transparent', color: '#7B2D8B', fontSize: '14px', fontWeight: '600', border: '1.5px solid #E1BEE7', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', fontFamily: "'Lexend', sans-serif" },
 
-    successLoader: { height: '4px', backgroundColor: '#E2E8F0', borderRadius: 4, overflow: 'hidden' },
+    successLoader: { height: '4px', backgroundColor: 'var(--adm-border)', borderRadius: 4, overflow: 'hidden' },
     successLoaderBar: { height: '100%', backgroundColor: '#059669', borderRadius: 4, animation: 'slideUp 1.8s linear forwards', width: '100%' },
 };
 

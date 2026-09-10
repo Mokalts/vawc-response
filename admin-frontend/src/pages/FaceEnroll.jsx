@@ -366,18 +366,22 @@ function FaceEnroll() {
 }
 
 const S = {
-    page:          { minHeight: '100vh', backgroundColor: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'Lexend', sans-serif" },
-    card:          { backgroundColor: '#fff', borderRadius: 12, padding: '32px', width: '100%', maxWidth: '480px', boxShadow: '0 4px 24px rgba(15,23,42,0.09)', border: '1px solid #E2E8F0' },
+    // Surfaces use the shared --adm-* tokens so this page follows the theme.
+    // It sits between Login and Dashboard, and hardcoded light values made the
+    // admin flash white mid-flow in dark mode. The video letterbox, the scan
+    // line and the violet brand accents stay fixed on purpose.
+    page:          { minHeight: '100vh', backgroundColor: 'var(--adm-page)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'Lexend', sans-serif" },
+    card:          { backgroundColor: 'var(--adm-card)', borderRadius: 12, padding: '32px', width: '100%', maxWidth: '480px', boxShadow: 'var(--adm-card-shadow)', border: '1px solid var(--adm-border)' },
 
     header:        { display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' },
     logoWrap:      { width: '48px', height: '48px', borderRadius: 4, backgroundColor: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-    title:         { fontSize: '18px', fontWeight: '700', color: '#0F172A', marginBottom: '3px', fontFamily: "'Lexend', sans-serif" },
-    subtitle:      { fontSize: '12.5px', color: '#94A3B8', fontFamily: "'Lexend', sans-serif" },
+    title:         { fontSize: '18px', fontWeight: '700', color: 'var(--adm-text)', marginBottom: '3px', fontFamily: "'Lexend', sans-serif" },
+    subtitle:      { fontSize: '12.5px', color: 'var(--adm-text-muted)', fontFamily: "'Lexend', sans-serif" },
 
     tipsGrid:      { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '20px' },
-    tip:           { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', backgroundColor: '#F8FAFC', borderRadius: 4, border: '1px solid #F1F5F9' },
+    tip:           { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', backgroundColor: 'var(--adm-muted)', borderRadius: 4, border: '1px solid var(--adm-border)' },
     tipIcon:       { flexShrink: 0, display: 'flex', alignItems: 'center' },
-    tipText:       { fontSize: '11.5px', color: '#475569', fontFamily: "'Lexend', sans-serif" },
+    tipText:       { fontSize: '11.5px', color: 'var(--adm-text-2)', fontFamily: "'Lexend', sans-serif" },
 
     cameraWrap:    { position: 'relative', width: '100%', aspectRatio: '4/3', backgroundColor: '#0F172A', borderRadius: 4, overflow: 'hidden', marginBottom: '16px' },
     video:         { width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' },
@@ -391,13 +395,13 @@ const S = {
     doneText:      { fontSize: '15px', fontWeight: '700', color: '#fff', fontFamily: "'Lexend', sans-serif" },
 
     progressWrap:  { marginBottom: '12px' },
-    progressTrack: { height: '6px', backgroundColor: '#F1F5F9', borderRadius: 4, overflow: 'hidden', marginBottom: '6px' },
+    progressTrack: { height: '6px', backgroundColor: 'var(--adm-border)', borderRadius: 4, overflow: 'hidden', marginBottom: '6px' },
     progressFill:  { height: '100%', backgroundColor: '#9B4DAB', borderRadius: 4, transition: 'width 0.3s ease' },
     progressRow:   { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-    progressLabel: { fontSize: '12px', color: '#64748B', fontFamily: "'Lexend', sans-serif" },
+    progressLabel: { fontSize: '12px', color: 'var(--adm-text-2)', fontFamily: "'Lexend', sans-serif" },
     progressPct:   { fontSize: '12px', fontWeight: '700', color: '#9B4DAB', fontFamily: "'Lexend', sans-serif" },
 
-    status:        { fontSize: '13px', color: '#64748B', textAlign: 'center', marginBottom: '16px', lineHeight: '1.5', fontFamily: "'Lexend', sans-serif" },
+    status:        { fontSize: '13px', color: 'var(--adm-text-2)', textAlign: 'center', marginBottom: '16px', lineHeight: '1.5', fontFamily: "'Lexend', sans-serif" },
 
     errorBox:      { display: 'flex', alignItems: 'flex-start', gap: '8px', backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 8, padding: '10px 13px', marginBottom: '14px' },
     errorText:     { fontSize: '12.5px', color: '#BE123C', lineHeight: '1.5', fontFamily: "'Lexend', sans-serif" },
@@ -405,7 +409,7 @@ const S = {
     primaryBtn:    { width: '100%', padding: '13px', backgroundColor: '#9B4DAB', color: '#fff', fontSize: '14.5px', fontWeight: '600', border: 'none', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(123,45,139,0.25)', marginBottom: '16px', fontFamily: "'Lexend', sans-serif" },
     spinner:       { width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 },
 
-    footerNote:    { textAlign: 'center', fontSize: '11.5px', color: '#CBD5E1', lineHeight: '1.6', fontFamily: "'Lexend', sans-serif" },
+    footerNote:    { textAlign: 'center', fontSize: '11.5px', color: 'var(--adm-text-muted)', lineHeight: '1.6', fontFamily: "'Lexend', sans-serif" },
 };
 
 export default FaceEnroll;
