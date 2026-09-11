@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
+import BottomNavbar from '../components/BottomNavbar';
 import api from '../api';
 
 if (!document.getElementById('vawc-font')) {
@@ -132,6 +133,9 @@ function Profile() {
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', flex:1, gap:12 }}>
                 <Spinner /><p style={{ fontSize:14, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>Loading profile…</p>
             </div>
+            {/* Also on the loading screen, so the bar does not pop in once the
+                request resolves on a slow connection. */}
+            <BottomNavbar />
         </div>
     );
 
@@ -270,16 +274,20 @@ function Profile() {
                     </button>
                 )}
             </main>
+
+            <BottomNavbar />
         </div>
     );
 }
 
 const S = {
-    page:          { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', fontFamily:"'Lexend', sans-serif" },
+    page:          { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', paddingBottom:92, fontFamily:"'Lexend', sans-serif" },
     topBar:        { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', backgroundColor:'var(--surface)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100 },
     backBtn:       { width:44, height:44, borderRadius: 10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
     title:         { fontSize:17, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },
-    content:       { padding:'20px', display:'flex', flexDirection:'column', gap:16 },
+    // Capped and centred to match the Home page, which tops out at 1060px.
+    // Without this the page stretched the full window width on a monitor.
+    content:       { padding:'20px 18px', display:'flex', flexDirection:'column', gap:16, width:'100%', maxWidth:1060, marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' },
     avatarSection: { display:'flex', flexDirection:'column', alignItems:'center', gap:6, padding:'12px 0 4px' },
     avatar:        { width:72, height:72, borderRadius: '50%', background:'linear-gradient(135deg,var(--border),#F47920)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, fontWeight:800, color:'#fff', fontFamily:"'Lexend', sans-serif", marginBottom:4 },
     avatarName:    { fontSize:17, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },

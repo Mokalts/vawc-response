@@ -135,7 +135,7 @@ export default function OnboardingTour({ steps = [], run = false, onClose }) {
             )}
 
             {/* Tooltip card */}
-            <div ref={tipRef} className="vt-tip" role="dialog" aria-modal="true" aria-label={`Gabay: ${step.title}`} tabIndex={-1} style={{
+            <div ref={tipRef} className="vt-tip" role="dialog" aria-modal="true" aria-label={`Guide: ${step.title}`} tabIndex={-1} style={{
                 position: 'fixed', ...tipStyle, background: 'var(--surface)', borderRadius: 18,
                 padding: '18px 18px 16px', boxShadow: '0 18px 44px rgba(24,12,28,0.32)',
                 border: '1px solid var(--border)', boxSizing: 'border-box', outline: 'none',
@@ -156,12 +156,12 @@ export default function OnboardingTour({ steps = [], run = false, onClose }) {
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                     <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.5px', color: '#E8843C', textTransform: 'uppercase' }}>
-                        Gabay {index + 1} / {steps.length}
+                        Step {index + 1} of {steps.length}
                     </span>
                     <button className="vt-btn" onClick={finish} style={{
                         background: 'none', border: 'none', color: '#94A3B8', fontSize: 12.5, fontWeight: 700,
                         cursor: 'pointer', fontFamily: FF, padding: 4,
-                    }}>Laktawan</button>
+                    }}>Skip</button>
                 </div>
 
                 <p style={{ margin: '0 0 5px', fontSize: 16.5, fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.2px' }}>
@@ -191,7 +191,7 @@ export default function OnboardingTour({ steps = [], run = false, onClose }) {
                             padding: '9px 18px', background: 'linear-gradient(135deg,#F47920,#E8641C)', color: '#fff',
                             border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 800, cursor: 'pointer', fontFamily: FF,
                             boxShadow: '0 4px 12px rgba(196,94,16,0.3)',
-                        }}>{isLast ? 'Tapos' : 'Susunod'}</button>
+                        }}>{isLast ? 'Done' : 'Next'}</button>
                     </div>
                 </div>
             </div>

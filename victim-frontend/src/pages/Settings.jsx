@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
+import BottomNavbar from '../components/BottomNavbar';
 import api from '../api';
 
 if (!document.getElementById('vawc-font')) {
@@ -153,6 +154,8 @@ function Settings() {
                 <p style={S.version}>VAWC-Response · Barangay Palanginan, Iba, Zambales</p>
             </main>
 
+            <BottomNavbar />
+
             {/* Delete confirm modal */}
             {showDeleteConfirm && (
                 <div style={S.backdrop} onClick={() => !deleting && setShowDeleteConfirm(false)}>
@@ -206,11 +209,12 @@ function Settings() {
 }
 
 const S = {
-    page:       { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', fontFamily:"'Lexend', sans-serif" },
+    page:       { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', paddingBottom:92, fontFamily:"'Lexend', sans-serif" },
     topBar:     { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', backgroundColor:'var(--surface)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100 },
     backBtn:    { width:44, height:44, borderRadius: 10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
     title:      { fontSize:17, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },
-    content:    { padding:'20px', display:'flex', flexDirection:'column', gap:6 },
+    // Capped and centred to match the Home page, which tops out at 1060px.
+    content:    { padding:'20px 18px', display:'flex', flexDirection:'column', gap:6, width:'100%', maxWidth:1060, marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' },
     section:    { display:'flex', flexDirection:'column', gap:6, marginBottom:10 },
     sectionLabel:{ fontSize:10.5, fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.7px', paddingLeft:4, fontFamily:"'Lexend', sans-serif" },
     card:       { backgroundColor:'var(--surface)', borderRadius: 12, overflow:'hidden', border:'1px solid var(--border)', boxShadow:'0 2px 8px rgba(244,121,32,0.05)' },

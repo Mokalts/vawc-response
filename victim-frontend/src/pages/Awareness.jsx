@@ -27,6 +27,35 @@ if (!document.getElementById('vawc-awareness-css')) {
         .va-nav-btn { transition: all 0.15s ease; }
         .va-nav-btn:hover { filter: brightness(0.97); }
 
+        /* Section change: the whole panel slides in from the side the reader is
+           travelling toward, so forward and back feel directional rather than a
+           generic fade. Keyed on the section id, so React remounts it. */
+        @keyframes vaSlideFwd  { from{opacity:0;transform:translateX(26px)}  to{opacity:1;transform:translateX(0)} }
+        @keyframes vaSlideBack { from{opacity:0;transform:translateX(-26px)} to{opacity:1;transform:translateX(0)} }
+        .va-slide-fwd  { animation: vaSlideFwd  0.34s cubic-bezier(0.22,1,0.36,1) both; }
+        .va-slide-back { animation: vaSlideBack 0.34s cubic-bezier(0.22,1,0.36,1) both; }
+
+        /* The active pill itself slides between tabs, rather than a separate
+           underline sitting beneath an already-filled tab. */
+        .va-tabtrack { position: relative; }
+        .va-tabpill {
+            position: absolute; border-radius: 9999px; pointer-events: none; z-index: 0;
+            transition: transform 0.32s cubic-bezier(0.22,1,0.36,1),
+                        width 0.32s cubic-bezier(0.22,1,0.36,1),
+                        background-color 0.32s ease;
+        }
+        .va-tab { position: relative; z-index: 1; }
+
+        /* Reveal blocks as they scroll into view */
+        .va-reveal { opacity: 0; transform: translateY(16px); transition: opacity 0.5s cubic-bezier(0.22,1,0.36,1), transform 0.5s cubic-bezier(0.22,1,0.36,1); }
+        .va-reveal.is-in { opacity: 1; transform: none; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .va-slide-fwd, .va-slide-back { animation: none !important; }
+            .va-reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+            .va-tabpill { transition: none !important; }
+        }
+
         /* Hero responsive layout */
         .va-hero {
             display: flex;
@@ -249,7 +278,7 @@ const CONTENT = {
 function ContentCard({ item, color, bg, border }) {
     if (item.highlight) {
         return (
-            <div className="va-card" style={{
+            <div className="va-card va-reveal" style={{
                 backgroundColor: 'var(--surface-tint)',
                 border: '1px solid var(--border)',
                 borderRadius: 14,
@@ -270,7 +299,7 @@ function ContentCard({ item, color, bg, border }) {
         );
     }
     return (
-        <div className="va-card" style={{
+        <div className="va-card va-reveal" style={{
             backgroundColor: 'var(--surface)',
             borderRadius: 14,
             padding: '20px',
@@ -306,12 +335,66 @@ function Awareness() {
     const current    = CONTENT[activeSection];
     const currentIdx = SECTIONS.findIndex(s => s.id === activeSection);
 
+    // Slide direction: forward when moving to a later section, back otherwise.
+    const [dir, setDir] = useState('fwd');
+    const [bar, setBar] = useState({ left: 0, top: 0, width: 0, height: 0 });
+
     const handleTab = (id) => {
+        const nextIdx = SECTIONS.findIndex(s => s.id === id);
+        setDir(nextIdx >= currentIdx ? 'fwd' : 'back');
         setActiveSection(id);
         const el = document.getElementById(`va-tab-${id}`);
         if (el && tabsRef.current) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+
+    // Position the sliding indicator under the active tab. Recomputed on
+    // section change, on resize, and while the tab strip is scrolled, since the
+    // strip scrolls horizontally on narrow screens.
+    useEffect(() => {
+        const place = () => {
+            const el = document.getElementById(`va-tab-${activeSection}`);
+            const track = tabsRef.current;
+            if (!el || !track) return;
+            setBar({ left: el.offsetLeft, top: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight });
+        };
+        place();
+        const t = setTimeout(place, 320);          // after the smooth scroll settles
+        const track = tabsRef.current;
+        // Lexend loads after first paint and the tabs reflow wider, so a pill
+        // measured too early ends up a few pixels short. Re-measure once the
+        // font is in, and whenever the strip itself resizes.
+        document.fonts?.ready?.then(place).catch(() => {});
+        const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(place) : null;
+        if (ro && track) ro.observe(track);
+        window.addEventListener('resize', place);
+        track?.addEventListener('scroll', place, { passive: true });
+        return () => {
+            clearTimeout(t);
+            ro?.disconnect();
+            window.removeEventListener('resize', place);
+            track?.removeEventListener('scroll', place);
+        };
+    }, [activeSection]);
+
+    // Reveal content blocks on scroll. Re-runs per section so the freshly
+    // mounted panel gets observed too.
+    useEffect(() => {
+        const nodes = Array.from(document.querySelectorAll('.va-reveal:not(.is-in)'));
+        if (!nodes.length) return;
+        const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        if (reduced || typeof IntersectionObserver === 'undefined') {
+            nodes.forEach(n => n.classList.add('is-in'));
+            return;
+        }
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        nodes.forEach(n => io.observe(n));
+        return () => io.disconnect();
+    }, [activeSection]);
 
     return (
         <div style={S.page}>
@@ -328,15 +411,26 @@ function Awareness() {
             {/* Tabs */}
             <div style={S.tabsWrapper}>
                 <div style={{ position: 'relative' }}>
-                    <div className="tabs-scroll" ref={tabsRef} style={S.tabs}>
+                    <div className="tabs-scroll va-tabtrack" ref={tabsRef} style={S.tabs}>
+                        <span className="va-tabpill" aria-hidden="true"
+                            style={{
+                                width: bar.width, height: bar.height,
+                                transform: `translate(${bar.left}px, ${bar.top}px)`,
+                                backgroundColor: current.color,
+                                opacity: bar.width ? 1 : 0,
+                            }} />
                         {SECTIONS.map(sec => (
                             <button id={`va-tab-${sec.id}`} key={sec.id} className="va-tab"
+                                aria-current={activeSection === sec.id ? 'true' : undefined}
                                 style={{
                                     ...S.tab,
-                                    backgroundColor: activeSection === sec.id ? CONTENT[sec.id].color : 'transparent',
+                                    // Fill comes from the sliding pill behind, not from the
+                                    // button, so the colour travels instead of jumping.
+                                    backgroundColor: 'transparent',
                                     color: activeSection === sec.id ? '#fff' : 'var(--accent-text)',
-                                    border: `1.5px solid ${activeSection === sec.id ? CONTENT[sec.id].color : 'var(--border)'}`,
+                                    border: `1.5px solid ${activeSection === sec.id ? 'transparent' : 'var(--border)'}`,
                                     fontWeight: activeSection === sec.id ? 700 : 500,
+                                    transition: 'color 0.2s ease, border-color 0.2s ease',
                                 }}
                                 onClick={() => handleTab(sec.id)}>
                                 {sec.label}
@@ -347,8 +441,9 @@ function Awareness() {
                 </div>
             </div>
 
-            {/* Content */}
-            <main style={S.content}>
+            {/* Content. Keyed on the section so React remounts it and the slide
+                animation replays on every tab change. */}
+            <main key={activeSection} className={dir === 'fwd' ? 'va-slide-fwd' : 'va-slide-back'} style={S.content}>
 
                 {/* ── Hero: responsive image + text ── */}
                 <div

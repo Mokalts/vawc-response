@@ -43,7 +43,8 @@ function BottomNavbar({ active }) {
     };
 
     // Active = orange; inactive = theme-aware muted (AA in both light and dark)
-    const color = (key) => active === key ? '#F47920' : 'var(--text-muted)';
+    // Label text uses the AA-safe token; the circle FILL below stays brand orange.
+    const color = (key) => active === key ? 'var(--accent-text)' : 'var(--text-muted)';
 
     return (
         <nav style={S.nav} aria-label="Pangunahing nabigasyon">
@@ -65,7 +66,7 @@ function BottomNavbar({ active }) {
                 }}>
                     <IcoPlus color={active === 'report' ? '#fff' : '#F47920'} />
                 </div>
-                <span className="vn-label" style={{ color: active === 'report' ? '#F47920' : 'var(--text-muted)' }}>Report Now</span>
+                <span className="vn-label" style={{ color: active === 'report' ? 'var(--accent-text)' : 'var(--text-muted)' }}>Report Now</span>
             </button>
 
             {/* My Reports */}

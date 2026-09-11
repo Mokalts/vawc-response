@@ -35,7 +35,10 @@
   --text-muted:   #64748B;                                   /* captions/hints */
   --border:       #FFE4CC;                                   /* warm hairline */
   --border-soft:  #F1F5F9;                                   /* neutral hairline */
-  --accent-text:  #C45E10;                                   /* orange text/links (AA on surface) */
+  /* Measured, not guessed: #C45E10 gives 4.24:1 on white, just under the
+     4.5 AA floor for normal text. #AD530F gives 5.22 on white, 4.76 on the
+     tint and 5.07 on the nav surface. Brand FILLS are unchanged. */
+  --accent-text:  #AD530F;
   --card-shadow:  0 6px 22px rgba(196, 94, 16, 0.08);
   --card-shadow-strong: 0 12px 30px rgba(196, 94, 16, 0.14);
   --overlay:      rgba(24, 12, 28, 0.55);

@@ -7,15 +7,15 @@ import OnboardingTour from '../components/OnboardingTour';
 import ThemeToggle from '../components/ThemeToggle';
 import api from '../api';
 
-// First-time walkthrough steps (Tagalog)
+// First-time walkthrough. English, to match the rest of the interface.
 const TOUR_STEPS = [
-    { title: 'Maligayang pagdating!', text: 'Ipapakita namin ang mga pangunahing bahagi ng app. Mabilis lang ito.' },
-    { target: '[data-tour="report"]',    title: 'Mag-report ng insidente', text: 'Pindutin ito para magsumite ng report. Ligtas at kumpidensyal ang lahat ng iyong impormasyon.' },
-    { target: '[data-tour="sos"]',       title: 'Mga Hotline',              text: 'Kung may agarang panganib, dito ka tumawag sa pulis, VAWC desk, at DSWD. Gumagana ito kahit hindi naka-log in.' },
-    { target: '[data-tour="notif"]',     title: 'Mga Abiso',                text: 'Dito lalabas ang mga update at mensahe mula sa barangay VAWC office.' },
-    { target: '[data-tour="myreports"]', title: 'Subaybayan ang Kaso',      text: 'Tingnan ang status ng iyong report at mga mensahe mula sa barangay dito.' },
-    { target: '[data-tour="menu"]',      title: 'Menu',                     text: 'Dito matatagpuan ang iyong profile, ang gabay, at iba pang settings.' },
-    { title: 'Handa ka na!', text: 'Pwede mong ulitin ang gabay na ito anumang oras sa Menu → Paano Gamitin. Salamat!' },
+    { title: 'Welcome', text: 'A quick look at the main parts of the app. This will only take a moment.' },
+    { target: '[data-tour="report"]',    title: 'Report an incident', text: 'Tap here to file a report. Everything you share is encrypted and kept confidential.' },
+    { target: '[data-tour="sos"]',       title: 'Hotlines',           text: 'In immediate danger, call the police, the VAWC desk, or DSWD from here. This works even without signing in.' },
+    { target: '[data-tour="notif"]',     title: 'Notifications',      text: 'Updates and messages from the barangay VAWC office appear here.' },
+    { target: '[data-tour="myreports"]', title: 'Track your case',    text: 'Check the status of your report and read messages from the barangay.' },
+    { target: '[data-tour="menu"]',      title: 'Menu',               text: 'Your profile, this guide, and other settings live here.' },
+    { title: 'You are all set', text: 'You can replay this guide any time from Menu, then How to Report.' },
 ];
 
 // ─── Font + CSS ───────────────────────────────────────────────────────────────
@@ -83,9 +83,17 @@ if (!document.getElementById('vawc-home-css')) {
         .vh-card:hover .vh-card-glyph { transform: translateY(-3px) scale(1.04); }
         .vh-card-arrow { transition: transform 0.2s ease; }
         .vh-card:hover .vh-card-arrow { transform: translateX(3px); }
-        /* Reassurance rows: a quiet wash on hover, no movement */
-        .vh-chip { transition: background 0.18s ease; }
-        .vh-chip:hover { background: var(--surface-alt); }
+        /* Side widgets */
+        @keyframes shimmerFade { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        .vh-widgets { display: flex; flex-direction: column; gap: 10px; }
+        .vh-widget { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
+        .vh-widget:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-strong) !important; border-color: #FFCC99; }
+        .vh-widget:active { transform: scale(0.99); }
+        .vh-widget-arrow { transition: transform 0.18s ease; }
+        .vh-widget:hover .vh-widget-arrow { transform: translateX(3px); }
+        /* "Learn more" pill on the awareness cards */
+        .vh-learn { transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease; }
+        .vh-card:hover .vh-learn { background: #C45E10; border-color: #C45E10; color: #fff; }
 
         /* ── Layout: mobile = single column (unchanged); desktop = two-column ── */
         .vh-top  { display: flex; flex-direction: column; gap: 16px; }
@@ -96,12 +104,8 @@ if (!document.getElementById('vawc-home-css')) {
             .vh-side { justify-content: space-between; }
             .vh-report-btn { max-width: 420px; margin-left: auto; margin-right: auto; display: block; }
             .vh-sectionhead { margin-top: 6px; }
-            /* Roomier reassurance rows beside the hero on desktop */
-            .vh-chip { padding: 17px 20px !important; gap: 15px !important; }
-            .vh-chipicon { width: 40px !important; height: 40px !important; border-radius: 12px !important; }
-            .vh-chiplabel { font-size: 17px !important; }
-            .vh-chipsub { font-size: 12.5px !important; }
-            .vh-reassure { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+            /* Widgets fill the column beside the hero */
+            .vh-widgets { flex: 1; justify-content: space-between; gap: 12px; }
         }
     `;
     document.head.appendChild(s);
@@ -129,12 +133,25 @@ const IcoDoc    = ({ size }) => (<Svg size={size}><path d="M10.5 6.8h9.5M10.5 12
 // Seek Support — a place that holds care
 const IcoHands  = ({ size }) => (<Svg size={size}><path d="M12 21.5s7-5.4 7-10.3A7 7 0 105 11.2c0 4.9 7 10.3 7 10.3z" /><path d="M14.2 9.5a1.75 1.75 0 00-2.2.35 1.75 1.75 0 00-2.2-.35 1.75 1.75 0 00-.3 2.4L12 14.6l2.5-2.7a1.75 1.75 0 00-.3-2.4z" /></Svg>);
 const IcoBell   = ({ c = '#F47920', size = 18 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>);
-// Confidential — a filed record sealed with a keyhole, not a generic padlock
-const IcoLock   = ({ size = 18 }) => (<Svg size={size}><path d="M14 2.8H6.8A1.8 1.8 0 005 4.6v14.8a1.8 1.8 0 001.8 1.8h10.4a1.8 1.8 0 001.8-1.8V7.8z" /><path d="M14 2.8v5h5" /><circle cx="12" cy="13.4" r="1.6" /><path d="M12 15v2.2" /></Svg>);
-// Free — no peso attached
-const IcoScale  = ({ size = 18 }) => (<Svg size={size}><circle cx="12" cy="12" r="8.8" /><path d="M10 16.4V8.2h3.1a2.4 2.4 0 010 4.9H10" /><path d="M8.3 11.5h5.6" /><path d="M5.8 18.2L18.2 5.8" /></Svg>);
-// 15 days — a dated period that carries protection
-const IcoClock  = ({ size = 18 }) => (<Svg size={size}><rect x="3.2" y="5" width="17.6" height="15.8" rx="2" /><path d="M8 3v4M16 3v4M3.2 10h17.6" /><path d="M12 12.6l2.9 1v2.2c0 1.9-2.9 3.2-2.9 3.2s-2.9-1.3-2.9-3.2v-2.2z" /></Svg>);
+
+// How to Report — an open guide with a pointing marker
+const IcoGuide  = ({ size }) => (<Svg size={size}><path d="M12 6.6C10.4 5.3 8.4 4.7 5.6 4.7H3.4v12.6h2.2c2.8 0 4.8.6 6.4 1.9 1.6-1.3 3.6-1.9 6.4-1.9h2.2V4.7h-2.2c-2.8 0-4.8.6-6.4 1.9z" /><path d="M12 6.6v12.6" /></Svg>);
+
+// Status dot mirrors the lawful-flow palette used on My Cases, so the same
+// status reads the same colour wherever the victim sees it.
+const STATUS_DOT = {
+    submitted: '#64748B', under_assessment: '#06B6D4', awaiting_onsite_visit: '#F59E0B',
+    bpo_applied: '#9B4DAB', bpo_issued: '#F47920', bpo_served: '#D97706',
+    endorsed: '#F47920', closed: '#64748B',
+};
+const statusDot = (s) => STATUS_DOT[s] || '#64748B';
+const fullName = (u) => [u?.first_name, u?.last_name].filter(Boolean).join(' ').trim();
+const initials = (u) => {
+    const n = fullName(u);
+    if (!n) return '?';
+    const p = n.split(/\s+/);
+    return ((p[0]?.[0] || '') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();
+};
 
 // `tint` colours only the card's preview panel, never the glyph — the icon
 // itself always renders in the theme's text colour.
@@ -144,16 +161,14 @@ const awarenessItems = [
     { Icon: IcoHands, tint: 'var(--tint-green)',  section: 'where', tag: 'Agencies',    title: 'Seek Support',    desc: 'Where to file a report and get professional help.' },
 ];
 
-const reassurance = [
-    { Icon: IcoLock,  label: 'Confidential', sub: 'Encrypted and private' },
-    { Icon: IcoScale, label: 'Free',         sub: 'Legal aid through PAO' },
-    { Icon: IcoClock, label: '15 days',      sub: 'Protection Order validity' },
-];
 
 function Home() {
     const navigate = useNavigate();
     const [showSidebar, setShowSidebar] = useState(false);
     const [notifCount,  setNotifCount]  = useState(0);
+    const [latestCase,  setLatestCase]  = useState(null);
+    const [caseCount,   setCaseCount]   = useState(0);
+    const [casesLoaded, setCasesLoaded] = useState(false);
     const [bellRinging, setBellRinging] = useState(false);
     const [runTour,     setRunTour]     = useState(false);
 
@@ -197,14 +212,23 @@ function Home() {
     useEffect(() => {
         api.get('/cases/')
             .then(res => {
-                const updates = (res.data || []).filter(c => c.has_status_update).length;
+                const list = res.data || [];
+                const updates = list.filter(c => c.has_status_update).length;
                 setNotifCount(updates);
+                // Most recently touched case drives the status widget. The list
+                // already arrives ordered by updated_at desc, but sort anyway so
+                // the widget never depends on server ordering.
+                const latest = [...list]
+                    .sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0))[0] || null;
+                setLatestCase(latest);
+                setCaseCount(list.length);
                 if (updates > 0) {
                     setTimeout(() => setBellRinging(true), 600);
                     setTimeout(() => setBellRinging(false), 1200);
                 }
             })
-            .catch(() => {});
+            .catch(() => {})
+            .finally(() => setCasesLoaded(true));
     }, []);
 
     const handleNotifClick = () => navigate('/my-reports');
@@ -288,19 +312,59 @@ function Home() {
                             <SOSButton variant="block" />
                         </div>
 
-                        {/* Reassurance. One panel with hairline rows rather than three
-                            floating boxes: fewer edges, and the eye reads it as a single
-                            set of guarantees instead of three unrelated cards. */}
-                        <div className="vh-anim vh-reassure" style={{ ...S.chipRow, animationDelay: '0.1s' }}>
-                            {reassurance.map((r, i) => (
-                                <div key={r.label} className="vh-chip" style={{ ...S.chip, borderTop: i === 0 ? 'none' : '1px solid var(--border-soft)' }}>
-                                    <span className="vh-chipicon" style={S.chipIcon}><r.Icon size={18} /></span>
-                                    <div style={{ minWidth: 0 }}>
-                                        <p className="vh-chiplabel" style={S.chipLabel}>{r.label}</p>
-                                        <p className="vh-chipsub" style={S.chipSub}>{r.sub}</p>
-                                    </div>
-                                </div>
-                            ))}
+                        {/* Three widgets, three different shapes on purpose: a status
+                            strip, an identity row, and an action row. Repeating one
+                            card pattern three times is what made the old chips read
+                            as filler. */}
+                        <div className="vh-anim vh-widgets" style={{ animationDelay: '0.1s' }}>
+
+                            {/* 1. Report status — data first, no icon tile */}
+                            <button type="button" className="vh-widget vh-status" style={S.wStatus}
+                                onClick={() => navigate('/my-reports')}
+                                aria-label={latestCase ? `Latest case ${latestCase.case_number}, status ${latestCase.status_display || latestCase.status}. Open My Reports.` : 'Open My Reports'}>
+                                <span style={S.wLabel}>Report status</span>
+                                {!casesLoaded ? (
+                                    <span style={S.wSkeleton} aria-hidden="true" />
+                                ) : latestCase ? (
+                                    <>
+                                        <span style={S.wStatusLine}>
+                                            <span style={{ ...S.wDot, background: statusDot(latestCase.status) }} aria-hidden="true" />
+                                            {latestCase.status_display || latestCase.status}
+                                        </span>
+                                        <span style={S.wMeta}>
+                                            {latestCase.case_number}
+                                            {caseCount > 1 ? ` · ${caseCount} cases on file` : ''}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span style={S.wStatusLine}>No reports yet</span>
+                                        <span style={S.wMeta}>Your case status will appear here</span>
+                                    </>
+                                )}
+                            </button>
+
+                            {/* 2. Profile — circular avatar, distinct from the tiles */}
+                            <button type="button" className="vh-widget vh-row" style={S.wRow}
+                                onClick={() => navigate('/profile')} aria-label="Open my profile">
+                                <span style={S.wAvatar} aria-hidden="true">{initials(user)}</span>
+                                <span style={{ minWidth: 0, textAlign: 'left', flex: 1 }}>
+                                    <span style={S.wRowTitle}>{fullName(user) || 'My Profile'}</span>
+                                    <span style={S.wRowSub}>View and edit your details</span>
+                                </span>
+                                <span className="vh-widget-arrow" style={S.wChevron} aria-hidden="true"><IcoArrow c="currentColor" /></span>
+                            </button>
+
+                            {/* 3. How to report — square glyph tile */}
+                            <button type="button" className="vh-widget vh-row" style={S.wRow}
+                                onClick={() => setRunTour(true)} aria-label="Replay the guide on how to report">
+                                <span style={S.wGlyph} aria-hidden="true"><IcoGuide size={19} /></span>
+                                <span style={{ minWidth: 0, textAlign: 'left', flex: 1 }}>
+                                    <span style={S.wRowTitle}>How to Report</span>
+                                    <span style={S.wRowSub}>A short walkthrough of the app</span>
+                                </span>
+                                <span className="vh-widget-arrow" style={S.wChevron} aria-hidden="true"><IcoArrow c="currentColor" /></span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -328,7 +392,7 @@ function Home() {
                             <div style={S.awareBody}>
                                 <p style={S.awareTitle}>{item.title}</p>
                                 <p style={S.awareDesc}>{item.desc}</p>
-                                <span style={S.awareBtn}>
+                                <span className="vh-learn" style={S.awareBtn}>
                                     Learn more
                                     <span className="vh-card-arrow" style={{ display: 'inline-flex' }}><IcoArrow c="currentColor" /></span>
                                 </span>
@@ -386,17 +450,26 @@ const S = {
     heroHello:   { display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.82)', marginBottom: 9, fontFamily: FF },
     heroTitle:   { fontSize: 26, fontWeight: 700, color: '#fff', margin: '0 0 9px', fontFamily: FF, letterSpacing: '-0.4px', lineHeight: 1.12 },
     heroText:    { fontSize: 13.5, color: 'rgba(255,255,255,0.9)', lineHeight: 1.6, margin: '0 0 18px', fontFamily: FF, maxWidth: 320 },
-    heroBtn:     { display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 20px', backgroundColor: '#fff', color: '#4A1259', fontSize: 14, fontWeight: 700, border: 'none', borderRadius: 14, cursor: 'pointer', fontFamily: FF, boxShadow: '0 8px 20px rgba(0,0,0,0.18)' },
+    heroBtn:     { display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '12px 20px', backgroundColor: '#fff', color: '#4A1259', fontSize: 14, fontWeight: 700, border: 'none', borderRadius: 14, cursor: 'pointer', fontFamily: FF, boxShadow: '0 8px 20px rgba(0,0,0,0.18)' },
 
     // Reassurance chips — clean vertical "trust badges" on phone (icon on top,
     // centered); desktop overrides to a bigger horizontal card (see injected CSS).
-    // One panel, three hairline-separated rows. The left accent rule is the only
-    // colour; the glyphs stay in the theme's text colour.
-    chipRow:     { backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid #F47920', borderRadius: 14, overflow: 'hidden', boxShadow: 'var(--card-shadow)' },
-    chip:        { display: 'flex', alignItems: 'center', gap: 13, padding: '13px 16px' },
-    chipIcon:    { width: 34, height: 34, borderRadius: 10, backgroundColor: 'var(--surface-tint)', color: 'var(--text)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-    chipLabel:   { margin: 0, fontSize: 15, fontWeight: 800, letterSpacing: '-0.2px', color: 'var(--text)', fontFamily: FF, lineHeight: 1.2, overflowWrap: 'break-word' },
-    chipSub:     { margin: '2px 0 0', fontSize: 11.5, color: 'var(--text-muted)', fontFamily: FF, lineHeight: 1.35, overflowWrap: 'break-word' },
+    // ── Side widgets. Three deliberately different shapes ──────────────────
+    wBase:       { display: 'block', width: '100%', textAlign: 'left', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, cursor: 'pointer', fontFamily: FF, boxShadow: 'var(--card-shadow)' },
+    // 1. Status strip: data leads, no icon, accent rule on the left edge
+    wStatus:     { display: 'block', width: '100%', textAlign: 'left', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid #F47920', borderRadius: 14, cursor: 'pointer', fontFamily: FF, boxShadow: 'var(--card-shadow)', padding: '13px 16px' },
+    wLabel:      { display: 'block', fontSize: 9.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: FF },
+    wStatusLine: { display: 'flex', alignItems: 'center', gap: 8, margin: '6px 0 0', fontSize: 15.5, fontWeight: 800, letterSpacing: '-0.2px', color: 'var(--text)', fontFamily: FF, lineHeight: 1.25 },
+    wDot:        { width: 9, height: 9, borderRadius: '50%', flexShrink: 0 },
+    wMeta:       { display: 'block', margin: '3px 0 0', fontSize: 11.5, color: 'var(--text-muted)', fontFamily: FF, fontVariantNumeric: 'tabular-nums' },
+    wSkeleton:   { display: 'block', width: '62%', height: 15, margin: '8px 0 4px', borderRadius: 5, background: 'var(--border-soft)', animation: 'shimmerFade 1.2s ease-in-out infinite' },
+    // 2 + 3. Action rows: leading mark, two lines, chevron
+    wRow:        { display: 'flex', alignItems: 'center', gap: 13, width: '100%', textAlign: 'left', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, cursor: 'pointer', fontFamily: FF, boxShadow: 'var(--card-shadow)', padding: '12px 14px' },
+    wAvatar:     { width: 40, height: 40, borderRadius: '50%', flexShrink: 0, background: 'var(--surface-tint)', color: 'var(--accent-text)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, letterSpacing: '0.02em', fontFamily: FF },
+    wGlyph:      { width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: 'var(--surface-tint)', color: 'var(--text)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    wRowTitle:   { display: 'block', fontSize: 14, fontWeight: 700, color: 'var(--text)', fontFamily: FF, lineHeight: 1.25, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+    wRowSub:     { display: 'block', margin: '2px 0 0', fontSize: 11.5, color: 'var(--text-muted)', fontFamily: FF, lineHeight: 1.3 },
+    wChevron:    { display: 'inline-flex', color: 'var(--text-muted)', flexShrink: 0 },
 
     sectionHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingTop: 4 },
     sectionLabel:{ fontSize: 16, fontWeight: 700, color: 'var(--text)', margin: '0 0 2px', fontFamily: FF, letterSpacing: '-0.3px' },
@@ -404,13 +477,15 @@ const S = {
 
     // Preview panel on top, content below — the reference layout.
     awareCard:   { backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-card)', overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' },
-    awarePreview:{ position: 'relative', height: 116, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    awarePreview:{ position: 'relative', height: 158, display: 'flex', alignItems: 'center', justifyContent: 'center' },
     awareGlyph:  { color: 'var(--text)', display: 'inline-flex', opacity: 0.85 },
     awareTag:    { position: 'absolute', top: 10, left: 12, fontSize: 9.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-body)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 9999, padding: '3px 9px', fontFamily: FF },
-    awareBody:   { padding: '14px 15px 16px', display: 'flex', flexDirection: 'column', flex: 1 },
+    awareBody:   { padding: '16px 17px 18px', display: 'flex', flexDirection: 'column', flex: 1, minHeight: 132 },
     awareTitle:  { fontSize: 15, fontWeight: 800, letterSpacing: '-0.2px', lineHeight: 1.3, margin: 0, color: 'var(--text)', fontFamily: FF },
     awareDesc:   { fontSize: 12, color: 'var(--text-body)', lineHeight: 1.55, flex: 1, margin: '4px 0 0', fontFamily: FF },
-    awareBtn:    { display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, width: 'fit-content', fontSize: 12, fontWeight: 700, color: 'var(--accent-text)', fontFamily: FF },
+    // A real pill rather than bare text, so it reads as the card's action and
+    // gives the hover something to fill.
+    awareBtn:    { display: 'inline-flex', alignItems: 'center', gap: 7, marginTop: 14, width: 'fit-content', fontSize: 12, fontWeight: 700, color: 'var(--accent-text)', background: 'transparent', border: '1.5px solid var(--border)', borderRadius: 9999, padding: '7px 14px', minHeight: 34, fontFamily: FF },
 
     // Matches the Hotlines button's shape and height so the two read as one
     // family; only the colour separates report from emergency.

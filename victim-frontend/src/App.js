@@ -14,8 +14,18 @@ import ContactUs from './pages/ContactUs';
 import VerifyEmail from './pages/VerifyEmail';
 import ChangePassword from './pages/ChangePassword';
 import Awareness from './pages/Awareness';
+import QuickExit from './components/QuickExit';
 
 import './styles/global.css';
+
+// The escape control belongs on every screen, including the public ones — she
+// may be reading the awareness pages before she ever signs in. It sits higher
+// on pages that carry the floating bottom nav so the two never overlap.
+const NAV_ROUTES = ['/home', '/report', '/my-reports', '/profile', '/settings'];
+function GlobalQuickExit() {
+  const { pathname } = useLocation();
+  return <QuickExit bottom={NAV_ROUTES.includes(pathname) ? 86 : 16} />;
+}
 
 // Redirect to sign-in when no token is present.
 // Token expiry / 401s are handled by axios interceptors in api.js.
@@ -47,6 +57,7 @@ function App() {
         <Route path="/settings"        element={<RequireAuth><Settings /></RequireAuth>} />
         <Route path="/change-password" element={<RequireAuth><ChangePassword /></RequireAuth>} />
       </Routes>
+      <GlobalQuickExit />
     </Router>
   );
 }

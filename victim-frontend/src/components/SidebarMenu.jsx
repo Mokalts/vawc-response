@@ -53,7 +53,7 @@ function SidebarMenu({ isOpen, onClose }) {
 
     const navItems = [
         { label:'My Profile',      path:'/profile',  icon:<IcoUser /> },
-        { label:'Paano Gamitin',   action: replayTour, icon:<IcoGuide /> },
+        { label:'How to Report',   action: replayTour, icon:<IcoGuide /> },
         { label:'Settings',        path:'/settings', icon:<IcoSettings /> },
         { label:'Contact Us',      path:'/contact',  icon:<IcoPhone /> },
     ];
