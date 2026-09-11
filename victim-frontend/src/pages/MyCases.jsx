@@ -173,8 +173,8 @@ function CaseCard({ cas, onClick }) {
                     <p style={{margin:'0 0 2px',fontSize:11,fontWeight:700,color:'var(--accent-text)',fontFamily:"'Lexend',sans-serif",letterSpacing:'0.5px'}}>{cas.case_number}</p>
                     <p style={{margin:0,fontSize:13.5,fontWeight:700,color:'var(--text)',fontFamily:"'Lexend',sans-serif"}}>vs. {cas.offender_name}</p>
                 </div>
-                <span style={{...S.badge,backgroundColor:st.bg,color:st.color}}>
-                    <span style={{width:8,height:8,borderRadius: '50%',backgroundColor:st.dot,flexShrink:0}}/>
+                <span style={S.badge}>
+                    <span style={{width:7,height:7,borderRadius:'50%',backgroundColor:st.dot,flexShrink:0}}/>
                     {cas.status_display || st.label}
                 </span>
             </div>
@@ -346,8 +346,8 @@ function CaseDetailModal({ cas, onClose, onStatusRead }) {
                     {/* Status */}
                     <div style={S.detailItem}>
                         <p style={S.detailLabel}>Case Status</p>
-                        <span style={{...S.badge,backgroundColor:st.bg,color:st.color,marginBottom:14,display:'inline-flex'}}>
-                            <span style={{width:8,height:8,borderRadius: '50%',backgroundColor:st.dot,flexShrink:0}}/>
+                        <span style={{...S.badge,marginBottom:14}}>
+                            <span style={{width:7,height:7,borderRadius:'50%',backgroundColor:st.dot,flexShrink:0}}/>
                             {cas.status_display||st.label}
                         </span>
                         <StatusTimeline currentStatus={cas.status}/>
@@ -546,7 +546,11 @@ const S = {
     content:     { padding:'20px',display:'flex',flexDirection:'column',gap:12, maxWidth:820, width:'100%', marginLeft:'auto', marginRight:'auto' },
     errorBox:    { display:'flex',alignItems:'center',gap:8,backgroundColor:'#FFF1F2',border:'1px solid #FECDD3',borderRadius: 8,padding:'12px 15px' },
     card:        { backgroundColor:'var(--surface)',borderRadius: 12,padding:'18px 16px',boxShadow:'0 2px 10px rgba(244,121,32,0.06)',border:'1px solid var(--border)',animation:'fadeUp 0.2s ease' },
-    badge:       { display:'inline-flex',alignItems:'center',gap:5,fontSize:11.5,fontWeight:700,padding:'4px 10px',borderRadius: 12,fontFamily:"'Lexend',sans-serif",whiteSpace:'nowrap' },
+    // Matches the admin StatusBadge: one neutral chip for every status, with the
+    // colour carried only by the dot. The old version filled the chip with a
+    // light pastel per status, which stayed bright in dark mode and made eight
+    // statuses look like eight different components.
+    badge:       { display:'inline-flex',alignItems:'center',gap:6,fontSize:11.5,fontWeight:600,padding:'4px 10px',borderRadius:4,background:'var(--surface-alt)',color:'var(--text-body)',border:'1px solid var(--border)',fontFamily:"'Lexend',sans-serif",whiteSpace:'nowrap' },
     meta:        { display:'inline-flex',alignItems:'center',gap:4,fontSize:11.5,color:'var(--text-muted)',fontFamily:"'Lexend',sans-serif" },
     viewLink:    { display:'inline-flex',alignItems:'center',gap:3,fontSize:12.5,fontWeight:700,color:'var(--accent-text)',fontFamily:"'Lexend',sans-serif" },
     empty:       { display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',padding:'60px 24px',gap:10 },

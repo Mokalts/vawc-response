@@ -1331,7 +1331,9 @@ export default function ReportDetail() {
                   </button>
                 )}
                 <textarea value={messageText} onChange={e => setMessageText(e.target.value)} rows={4}
-                  style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid var(--adm-border)", borderRadius: 8, padding: "10px 12px", fontSize: 13, fontFamily: "'Lexend',sans-serif", color: "var(--adm-text)", outline: "none", resize: "vertical" }} />
+                  /* No background was set, so it fell back to the browser default
+                     white while the text used var(--adm-text) — light on white. */
+                  style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid var(--adm-border)", borderRadius: 8, padding: "10px 12px", fontSize: 13, fontFamily: "'Lexend',sans-serif", color: "var(--adm-text)", background: "var(--adm-input)", outline: "none", resize: "vertical" }} />
 
                 {/* Channel selection */}
                 <div style={{ display: "flex", gap: 18, alignItems: "center", margin: "10px 0 3px" }}>

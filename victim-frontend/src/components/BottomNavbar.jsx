@@ -80,7 +80,12 @@ function BottomNavbar({ active }) {
 
 const S = {
     nav: {
-        position: 'fixed', bottom: 10, left: 12, right: 12, height: 62,
+        // Centred and capped to the content width so on a wide screen the bar
+        // lines up with the cards above it instead of stretching edge to edge.
+        // Page content is max-width 1060 with 18px padding, so its cards span
+        // 1024; the bar matches that. Below 1060 it keeps the old 12px insets.
+        position: 'fixed', bottom: 10, left: '50%', transform: 'translateX(-50%)',
+        width: 'calc(100% - 24px)', maxWidth: 1024, height: 62,
         backgroundColor: 'var(--nav)', border: '1px solid var(--border)', borderRadius: 20,
         backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
         display: 'flex', justifyContent: 'space-around', alignItems: 'stretch',

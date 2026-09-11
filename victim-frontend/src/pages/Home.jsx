@@ -66,9 +66,26 @@ if (!document.getElementById('vawc-home-css')) {
         .vh-icon-btn:hover { filter: brightness(0.97); transform: translateY(-1px); }
         .vh-icon-btn:active { transform: scale(0.95); }
         .bell-ring { animation: bellRing 0.6s ease; }
-        .awareness-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .awareness-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
         @media (max-width: 600px) { .awareness-grid { grid-template-columns: 1fr; } }
         @media (min-width: 601px) and (max-width: 900px) { .awareness-grid { grid-template-columns: 1fr 1fr; } }
+
+        /* Scroll reveal. Elements start shifted and fade in when they enter the
+           viewport; the observer adds .is-in once and never removes it, so the
+           page does not flicker when scrolling back up. */
+        .vh-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.55s cubic-bezier(0.22,1,0.36,1), transform 0.55s cubic-bezier(0.22,1,0.36,1); }
+        .vh-reveal.is-in { opacity: 1; transform: none; }
+        @media (prefers-reduced-motion: reduce) {
+            .vh-reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+        }
+        /* Card hover: the glyph lifts slightly and the arrow slides */
+        .vh-card-glyph { transition: transform 0.25s cubic-bezier(0.22,1,0.36,1); }
+        .vh-card:hover .vh-card-glyph { transform: translateY(-3px) scale(1.04); }
+        .vh-card-arrow { transition: transform 0.2s ease; }
+        .vh-card:hover .vh-card-arrow { transform: translateX(3px); }
+        /* Reassurance rows: a quiet wash on hover, no movement */
+        .vh-chip { transition: background 0.18s ease; }
+        .vh-chip:hover { background: var(--surface-alt); }
 
         /* ── Layout: mobile = single column (unchanged); desktop = two-column ── */
         .vh-top  { display: flex; flex-direction: column; gap: 16px; }
@@ -79,12 +96,12 @@ if (!document.getElementById('vawc-home-css')) {
             .vh-side { justify-content: space-between; }
             .vh-report-btn { max-width: 420px; margin-left: auto; margin-right: auto; display: block; }
             .vh-sectionhead { margin-top: 6px; }
-            /* Bigger, stacked, horizontal reassurance chips aligned beside the hero */
-            .vh-chiprow { grid-template-columns: 1fr !important; gap: 12px !important; }
-            .vh-chip { flex-direction: row !important; align-items: center !important; justify-content: flex-start !important; text-align: left !important; padding: 17px 20px !important; gap: 15px !important; border-radius: 18px !important; }
-            .vh-chipicon { width: 46px !important; height: 46px !important; border-radius: 14px !important; }
-            .vh-chiplabel { font-size: 16px !important; }
-            .vh-chipsub { font-size: 13px !important; }
+            /* Roomier reassurance rows beside the hero on desktop */
+            .vh-chip { padding: 17px 20px !important; gap: 15px !important; }
+            .vh-chipicon { width: 40px !important; height: 40px !important; border-radius: 12px !important; }
+            .vh-chiplabel { font-size: 17px !important; }
+            .vh-chipsub { font-size: 12.5px !important; }
+            .vh-reassure { flex: 1; display: flex; flex-direction: column; justify-content: center; }
         }
     `;
     document.head.appendChild(s);
@@ -94,25 +111,43 @@ if (!document.getElementById('vawc-home-css')) {
 const IcoMenu   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#C45E10" strokeWidth="2" strokeLinecap="round" /></svg>);
 const IcoArrow  = ({ c = '#fff' }) => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M13 6L19 12L13 18" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoFile   = ({ c = '#fff' }) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke={c} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6" stroke={c} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 14.5l2 2 4-4.5" stroke={c} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>);
-const IcoAlert  = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#EC4899" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 12l2 2 4-4" stroke="#EC4899" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
-const IcoDoc    = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#7B2D8B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="#7B2D8B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
-const IcoHands  = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#059669" strokeWidth="1.8" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#059669" strokeWidth="1.8" strokeLinecap="round" /></svg>);
+// ── Monochrome glyphs ────────────────────────────────────────────────────────
+// Every icon draws with `currentColor`, so it inherits the theme's text colour
+// and reads as black-on-light / white-on-dark with no per-icon palette. The
+// shapes are drawn for this app rather than picked from a stock set: a lens
+// over a warning for spotting abuse, a staircase for step-by-step remedies, a
+// pin holding a heart for where to find help.
+const SW = 1.7;
+const Svg = ({ size = 22, children }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth={SW} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
+);
+// Recognize Abuse — a lens examining a warning mark
+const IcoAlert  = ({ size }) => (<Svg size={size}><circle cx="10.5" cy="10.5" r="7" /><path d="M20.5 20.5l-5-5" /><path d="M10.5 7.4v3.6M10.5 13.7h.01" /></Svg>);
+// Your Remedies — a checklist of actions she can take
+const IcoDoc    = ({ size }) => (<Svg size={size}><path d="M10.5 6.8h9.5M10.5 12h9.5M10.5 17.2h9.5" /><path d="M3.6 6.6l1.5 1.5 2.6-2.8M3.6 11.8l1.5 1.5 2.6-2.8M3.6 17l1.5 1.5 2.6-2.8" /></Svg>);
+// Seek Support — a place that holds care
+const IcoHands  = ({ size }) => (<Svg size={size}><path d="M12 21.5s7-5.4 7-10.3A7 7 0 105 11.2c0 4.9 7 10.3 7 10.3z" /><path d="M14.2 9.5a1.75 1.75 0 00-2.2.35 1.75 1.75 0 00-2.2-.35 1.75 1.75 0 00-.3 2.4L12 14.6l2.5-2.7a1.75 1.75 0 00-.3-2.4z" /></Svg>);
 const IcoBell   = ({ c = '#F47920', size = 18 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>);
-const IcoLock   = ({ c = '#C45E10' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="4" y="11" width="16" height="10" rx="2" stroke={c} strokeWidth="1.9" /><path d="M8 11V7a4 4 0 018 0v4" stroke={c} strokeWidth="1.9" strokeLinecap="round" /></svg>);
-const IcoScale  = ({ c = '#C45E10' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3v18M7 21h10M5 7h14M5 7l-3 6a3 3 0 006 0L5 7zm14 0l-3 6a3 3 0 006 0l-3-6z" stroke={c} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>);
-const IcoClock  = ({ c = '#C45E10' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke={c} strokeWidth="1.9" /><path d="M12 7v5l3 2" stroke={c} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>);
+// Confidential — a filed record sealed with a keyhole, not a generic padlock
+const IcoLock   = ({ size = 18 }) => (<Svg size={size}><path d="M14 2.8H6.8A1.8 1.8 0 005 4.6v14.8a1.8 1.8 0 001.8 1.8h10.4a1.8 1.8 0 001.8-1.8V7.8z" /><path d="M14 2.8v5h5" /><circle cx="12" cy="13.4" r="1.6" /><path d="M12 15v2.2" /></Svg>);
+// Free — no peso attached
+const IcoScale  = ({ size = 18 }) => (<Svg size={size}><circle cx="12" cy="12" r="8.8" /><path d="M10 16.4V8.2h3.1a2.4 2.4 0 010 4.9H10" /><path d="M8.3 11.5h5.6" /><path d="M5.8 18.2L18.2 5.8" /></Svg>);
+// 15 days — a dated period that carries protection
+const IcoClock  = ({ size = 18 }) => (<Svg size={size}><rect x="3.2" y="5" width="17.6" height="15.8" rx="2" /><path d="M8 3v4M16 3v4M3.2 10h17.6" /><path d="M12 12.6l2.9 1v2.2c0 1.9-2.9 3.2-2.9 3.2s-2.9-1.3-2.9-3.2v-2.2z" /></Svg>);
 
+// `tint` colours only the card's preview panel, never the glyph — the icon
+// itself always renders in the theme's text colour.
 const awarenessItems = [
-    // accent doubles as the title/tag text colour; tokens are AA-safe and theme-aware
-    { icon: <IcoAlert />, iconBg: 'var(--tint-pink)',   section: 'signs', tag: 'RA 9262',    title: 'Recognize Abuse', desc: 'Identify the signs of VAWC and understand what counts as abuse.', accent: 'var(--acc-pink)' },
-    { icon: <IcoDoc />,   iconBg: 'var(--tint-purple)', section: 'todo',  tag: 'Legal Steps', title: 'Your Remedies',   desc: 'Step-by-step actions you can take to protect yourself.',            accent: 'var(--acc-purple)' },
-    { icon: <IcoHands />, iconBg: 'var(--tint-green)',  section: 'where', tag: 'Agencies',    title: 'Seek Support',    desc: 'Where to file a report and get professional help.',                 accent: 'var(--acc-green)' },
+    { Icon: IcoAlert, tint: 'var(--tint-pink)',   section: 'signs', tag: 'RA 9262',     title: 'Recognize Abuse', desc: 'Identify the signs of VAWC and understand what counts as abuse.' },
+    { Icon: IcoDoc,   tint: 'var(--tint-purple)', section: 'todo',  tag: 'Legal Steps', title: 'Your Remedies',   desc: 'Step-by-step actions you can take to protect yourself.' },
+    { Icon: IcoHands, tint: 'var(--tint-green)',  section: 'where', tag: 'Agencies',    title: 'Seek Support',    desc: 'Where to file a report and get professional help.' },
 ];
 
 const reassurance = [
-    { icon: <IcoLock />,  label: 'Confidential', sub: 'Encrypted & private' },
-    { icon: <IcoScale />, label: 'Free',         sub: 'Legal aid (PAO)' },
-    { icon: <IcoClock />, label: '15 days',      sub: 'Protection Order' },
+    { Icon: IcoLock,  label: 'Confidential', sub: 'Encrypted and private' },
+    { Icon: IcoScale, label: 'Free',         sub: 'Legal aid through PAO' },
+    { Icon: IcoClock, label: '15 days',      sub: 'Protection Order validity' },
 ];
 
 function Home() {
@@ -121,6 +156,27 @@ function Home() {
     const [notifCount,  setNotifCount]  = useState(0);
     const [bellRinging, setBellRinging] = useState(false);
     const [runTour,     setRunTour]     = useState(false);
+
+    // Reveal-on-scroll. One observer for every .vh-reveal element; each is
+    // unobserved once shown so scrolling back up does not replay it. If the
+    // browser has no IntersectionObserver, everything is shown immediately
+    // rather than left invisible.
+    useEffect(() => {
+        const nodes = Array.from(document.querySelectorAll('.vh-reveal'));
+        if (!nodes.length) return;
+        const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+        if (reduced || typeof IntersectionObserver === 'undefined') {
+            nodes.forEach(n => n.classList.add('is-in'));
+            return;
+        }
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+        nodes.forEach(n => io.observe(n));
+        return () => io.disconnect();
+    }, []);
 
     // First-time walkthrough: auto-run once, and allow replay via a custom event.
     useEffect(() => {
@@ -232,11 +288,13 @@ function Home() {
                             <SOSButton variant="block" />
                         </div>
 
-                        {/* Reassurance chips */}
-                        <div className="vh-anim vh-chiprow" style={{ ...S.chipRow, animationDelay: '0.1s' }}>
+                        {/* Reassurance. One panel with hairline rows rather than three
+                            floating boxes: fewer edges, and the eye reads it as a single
+                            set of guarantees instead of three unrelated cards. */}
+                        <div className="vh-anim vh-reassure" style={{ ...S.chipRow, animationDelay: '0.1s' }}>
                             {reassurance.map((r, i) => (
-                                <div key={i} className="vh-chip" style={S.chip}>
-                                    <div className="vh-chipicon" style={S.chipIcon}>{r.icon}</div>
+                                <div key={r.label} className="vh-chip" style={{ ...S.chip, borderTop: i === 0 ? 'none' : '1px solid var(--border-soft)' }}>
+                                    <span className="vh-chipicon" style={S.chipIcon}><r.Icon size={18} /></span>
                                     <div style={{ minWidth: 0 }}>
                                         <p className="vh-chiplabel" style={S.chipLabel}>{r.label}</p>
                                         <p className="vh-chipsub" style={S.chipSub}>{r.sub}</p>
@@ -248,7 +306,7 @@ function Home() {
                 </div>
 
                 {/* Awareness section */}
-                <div className="vh-sectionhead" style={S.sectionHead}>
+                <div className="vh-sectionhead vh-reveal" style={S.sectionHead}>
                     <div>
                         <p style={S.sectionLabel}>Legal Awareness</p>
                         <p style={S.sectionSub}>Know your rights under Republic Act 9262</p>
@@ -256,22 +314,24 @@ function Home() {
                 </div>
 
                 <div className="awareness-grid">
-                    {awarenessItems.map(item => (
-                        <div key={item.section} className="vh-card" style={S.awareCard}
+                    {awarenessItems.map((item, i) => (
+                        <div key={item.section} className="vh-card vh-reveal" style={{ ...S.awareCard, transitionDelay: `${i * 70}ms` }}
                             role="button" tabIndex={0}
                             aria-label={`${item.title}: ${item.desc}`}
                             onClick={() => navigate(`/awareness?section=${item.section}`)}
                             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/awareness?section=${item.section}`); } }}>
-                            <div style={{ ...S.awareIconBox, backgroundColor: item.iconBg }}>{item.icon}</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 4 }}>
-                                <div style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: item.accent }} />
-                                <span style={{ ...S.awareTag, color: item.accent }}>{item.tag}</span>
+                            {/* Preview panel: the tint carries the category, the glyph stays monochrome */}
+                            <div style={{ ...S.awarePreview, background: item.tint }}>
+                                <span className="vh-card-glyph" style={S.awareGlyph}><item.Icon size={34} /></span>
+                                <span style={S.awareTag}>{item.tag}</span>
                             </div>
-                            <p style={{ ...S.awareTitle, color: item.accent }}>{item.title}</p>
-                            <p style={S.awareDesc}>{item.desc}</p>
-                            <div style={{ ...S.awareBtn, color: item.accent }}>
-                                <span style={{ fontSize: 12, fontWeight: 700, fontFamily: FF }}>Learn more</span>
-                                <IcoArrow c={item.accent} />
+                            <div style={S.awareBody}>
+                                <p style={S.awareTitle}>{item.title}</p>
+                                <p style={S.awareDesc}>{item.desc}</p>
+                                <span style={S.awareBtn}>
+                                    Learn more
+                                    <span className="vh-card-arrow" style={{ display: 'inline-flex' }}><IcoArrow c="currentColor" /></span>
+                                </span>
                             </div>
                         </div>
                     ))}
@@ -279,7 +339,7 @@ function Home() {
 
                 {/* Bottom report CTA */}
                 <div>
-                    <button className="vh-report-btn" style={S.reportBtn} onClick={() => navigate('/report')}>
+                    <button className="vh-report-btn vh-reveal" style={S.reportBtn} onClick={() => navigate('/report')}>
                         <span className="vh-report-glow" aria-hidden="true" />
                         <span style={S.reportLabel}>
                             <IcoFile />
@@ -330,22 +390,27 @@ const S = {
 
     // Reassurance chips — clean vertical "trust badges" on phone (icon on top,
     // centered); desktop overrides to a bigger horizontal card (see injected CSS).
-    chipRow:     { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10 },
-    chip:        { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', textAlign: 'center', gap: 8, backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: '14px 10px', boxShadow: 'var(--card-shadow)' },
-    chipIcon:    { width: 38, height: 38, borderRadius: 12, backgroundColor: 'var(--surface-tint)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-    chipLabel:   { margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--accent-text)', fontFamily: FF, lineHeight: 1.2, overflowWrap: 'break-word' },
-    chipSub:     { margin: '2px 0 0', fontSize: 11, color: 'var(--text-muted)', fontFamily: FF, lineHeight: 1.3, overflowWrap: 'break-word' },
+    // One panel, three hairline-separated rows. The left accent rule is the only
+    // colour; the glyphs stay in the theme's text colour.
+    chipRow:     { backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid #F47920', borderRadius: 14, overflow: 'hidden', boxShadow: 'var(--card-shadow)' },
+    chip:        { display: 'flex', alignItems: 'center', gap: 13, padding: '13px 16px' },
+    chipIcon:    { width: 34, height: 34, borderRadius: 10, backgroundColor: 'var(--surface-tint)', color: 'var(--text)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+    chipLabel:   { margin: 0, fontSize: 15, fontWeight: 800, letterSpacing: '-0.2px', color: 'var(--text)', fontFamily: FF, lineHeight: 1.2, overflowWrap: 'break-word' },
+    chipSub:     { margin: '2px 0 0', fontSize: 11.5, color: 'var(--text-muted)', fontFamily: FF, lineHeight: 1.35, overflowWrap: 'break-word' },
 
     sectionHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingTop: 4 },
     sectionLabel:{ fontSize: 16, fontWeight: 700, color: 'var(--text)', margin: '0 0 2px', fontFamily: FF, letterSpacing: '-0.3px' },
     sectionSub:  { fontSize: 12.5, color: 'var(--text-muted)', margin: 0, fontFamily: FF },
 
-    awareCard:   { backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-card)', padding: '16px 15px', cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 5, border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' },
-    awareIconBox:{ width: 44, height: 44, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
-    awareTag:    { fontSize: 10.5, fontWeight: 700, letterSpacing: '0.4px', fontFamily: FF },
-    awareTitle:  { fontSize: 14, fontWeight: 700, lineHeight: 1.3, margin: 0, fontFamily: FF },
-    awareDesc:   { fontSize: 11.5, color: 'var(--text-body)', lineHeight: 1.5, flex: 1, margin: '2px 0 0', fontFamily: FF },
-    awareBtn:    { display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 8, width: 'fit-content' },
+    // Preview panel on top, content below — the reference layout.
+    awareCard:   { backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-card)', overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' },
+    awarePreview:{ position: 'relative', height: 116, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    awareGlyph:  { color: 'var(--text)', display: 'inline-flex', opacity: 0.85 },
+    awareTag:    { position: 'absolute', top: 10, left: 12, fontSize: 9.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-body)', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 9999, padding: '3px 9px', fontFamily: FF },
+    awareBody:   { padding: '14px 15px 16px', display: 'flex', flexDirection: 'column', flex: 1 },
+    awareTitle:  { fontSize: 15, fontWeight: 800, letterSpacing: '-0.2px', lineHeight: 1.3, margin: 0, color: 'var(--text)', fontFamily: FF },
+    awareDesc:   { fontSize: 12, color: 'var(--text-body)', lineHeight: 1.55, flex: 1, margin: '4px 0 0', fontFamily: FF },
+    awareBtn:    { display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 12, width: 'fit-content', fontSize: 12, fontWeight: 700, color: 'var(--accent-text)', fontFamily: FF },
 
     // Matches the Hotlines button's shape and height so the two read as one
     // family; only the colour separates report from emergency.
