@@ -1,3 +1,4 @@
+import TermsContent from './TermsContent';
 import React, { useState, useEffect, useRef } from 'react';
 
 // ─── localStorage helpers (exported for use elsewhere) ──────────────────────
@@ -42,20 +43,6 @@ const IcoArrowDown = ({ c = '#F47920' }) => (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M19 12l-7 7-7-7" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
 );
 
-// ─── Section helper ─────────────────────────────────────────────────────────
-const Section = ({ num, title, children }) => (
-    <section style={S.section}>
-        <div style={S.sectionHead}>
-            <span style={S.sectionNum}>{num}</span>
-            <h3 style={S.sectionTitle}>{title}</h3>
-        </div>
-        <div style={S.sectionBody}>{children}</div>
-    </section>
-);
-
-const Bullet = ({ children }) => (
-    <li style={S.bullet}><span style={S.bulletDot} />{children}</li>
-);
 
 // ─── Main component ─────────────────────────────────────────────────────────
 function TermsModal({ open, onAccept, onDecline }) {
@@ -133,96 +120,7 @@ function TermsModal({ open, onAccept, onDecline }) {
                 {/* Scrollable content */}
                 <div ref={scrollRef} className="terms-scroll" style={S.scroll} onScroll={handleScroll}>
 
-                    <p style={S.intro}>
-                        Welcome to <strong style={S.strong}>VAWC-Response</strong>, the official reporting system of
-                        Barangay Palanginan, Iba, Zambales for cases of Violence Against Women and Children
-                        under <strong style={S.strong}>Republic Act 9262</strong>. Please read this notice carefully before
-                        creating an account.
-                    </p>
-
-                    <Section num="1" title="What information we collect">
-                        <p style={S.para}>To process your reports and protect you, we collect:</p>
-                        <ul style={S.list}>
-                            <Bullet><strong>Identity & contact</strong> - name, email, phone number, birthdate, sex, address.</Bullet>
-                            <Bullet><strong>Account credentials</strong> - encrypted password (never stored in plain text).</Bullet>
-                            <Bullet><strong>Minor / guardian details</strong> - only if you indicate you are a minor.</Bullet>
-                            <Bullet><strong>Case data</strong> - incident statement, photos, GPS or pinned location, offender name, incident type and date.</Bullet>
-                        </ul>
-                    </Section>
-
-                    <Section num="2" title="Why we collect it (purpose)">
-                        <p style={S.para}>Your data is used solely for:</p>
-                        <ul style={S.list}>
-                            <Bullet>Receiving, recording, and acting on your VAWC report.</Bullet>
-                            <Bullet>Coordinating barangay response, mediation, and case follow-up.</Bullet>
-                            <Bullet>Endorsing cases to the PNP Women & Children Protection Desk (WCPD), DSWD, or other proper authorities when escalation is necessary.</Bullet>
-                            <Bullet>Sending you status notifications about your case via email.</Bullet>
-                        </ul>
-                        <p style={S.para}>We will <strong style={S.strong}>never</strong> sell, rent, or use your data for marketing.</p>
-                    </Section>
-
-                    <Section num="3" title="Who can access your data">
-                        <ul style={S.list}>
-                            <Bullet>Authorized barangay personnel (admins) handling your case.</Bullet>
-                            <Bullet>The Punong Barangay and designated VAWC Desk officers.</Bullet>
-                            <Bullet>Endorsed authorities (PNP-WCPD, DSWD, PAO) only when your case is officially referred.</Bullet>
-                            <Bullet>You - at any time, through your account.</Bullet>
-                        </ul>
-                        <p style={S.para}>
-                            Sensitive fields - your statement, location, and the offender's name - are
-                            <strong style={S.strong}> encrypted at rest</strong> using Fernet symmetric encryption. Regular admins see
-                            only masked previews; full content is visible only to authorized super admins.
-                        </p>
-                    </Section>
-
-                    <Section num="4" title="How long we keep your data">
-                        <ul style={S.list}>
-                            <Bullet><strong>Active cases</strong> - retained while your case is open.</Bullet>
-                            <Bullet><strong>Resolved or dismissed cases</strong> - kept as official records consistent with the National Privacy Commission and barangay records-management guidelines.</Bullet>
-                            <Bullet><strong>Deleted accounts</strong> - soft-deleted records can be recovered within 30 days, after which they are permanently removed.</Bullet>
-                        </ul>
-                    </Section>
-
-                    <Section num="5" title="Your rights under RA 10173">
-                        <p style={S.para}>As the data subject, you have the right to:</p>
-                        <ul style={S.list}>
-                            <Bullet><strong>Be informed</strong> of how your data is processed.</Bullet>
-                            <Bullet><strong>Access</strong> your personal data and the case records linked to it.</Bullet>
-                            <Bullet><strong>Object</strong> to processing or withdraw consent (subject to existing legal obligations).</Bullet>
-                            <Bullet><strong>Rectify</strong> inaccurate information through your profile or by contacting the barangay.</Bullet>
-                            <Bullet><strong>Erasure or blocking</strong> of your data when there is no longer a legitimate purpose.</Bullet>
-                            <Bullet><strong>Data portability</strong> - request a copy of your records.</Bullet>
-                            <Bullet><strong>File a complaint</strong> with the National Privacy Commission (privacy.gov.ph).</Bullet>
-                            <Bullet><strong>Be indemnified</strong> for damages caused by inaccurate, false, or unlawfully processed data.</Bullet>
-                        </ul>
-                    </Section>
-
-                    <Section num="6" title="Security & confidentiality">
-                        <p style={S.para}>
-                            VAWC-Response uses field-level encryption, password hashing, encrypted login sessions, and
-                            access controls to keep your information safe. Reports are treated with the strictest
-                            confidentiality. Knowingly accessing, sharing, or tampering with these records is a
-                            criminal offense under RA 10173 and RA 9262.
-                        </p>
-                    </Section>
-
-                    <Section num="7" title="Contact for privacy concerns">
-                        <p style={S.para}>
-                            For questions, requests, or complaints regarding your personal data, contact the
-                            Barangay Palanginan Data Privacy Officer through the barangay hall, or call the WCPD
-                            hotline available on the home screen's <strong style={S.strong}>Emergency SOS</strong> button.
-                        </p>
-                    </Section>
-
-                    <div style={S.acknowledge}>
-                        <p style={S.ackTitle}>Acknowledgment</p>
-                        <p style={S.ackText}>
-                            By tapping <strong style={S.strong}>I Agree</strong>, you confirm that you have read and understood this Data
-                            Privacy Notice, and you give your free and informed consent for VAWC-Response and
-                            Barangay Palanginan to collect and process your personal information for the purposes
-                            described above, in accordance with Republic Act 10173.
-                        </p>
-                    </div>
+                    <TermsContent showAcknowledgment />
 
                 </div>
 

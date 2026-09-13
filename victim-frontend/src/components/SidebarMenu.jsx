@@ -21,6 +21,7 @@ const IcoPhone    = ({ c='#F47920' }) => (<svg width="18" height="18" viewBox="0
 const IcoLogout   = ({ c='#F47920' }) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 17l5-5-5-5M21 12H9" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoChevron  = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#CBD5E1" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoGuide    = ({ c='#F47920' }) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 6.5A5.5 5.5 0 008 5H3v13h5a4 4 0 014 2 4 4 0 014-2h5V5h-5a5.5 5.5 0 00-4 1.5z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 6.5V20" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>);
+const IcoShieldMenu = ({ c='#F47920' }) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoX        = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/></svg>);
 
 function SidebarMenu({ isOpen, onClose }) {
@@ -56,6 +57,7 @@ function SidebarMenu({ isOpen, onClose }) {
         { label:'How to Report',   action: replayTour, icon:<IcoGuide /> },
         { label:'Settings',        path:'/settings', icon:<IcoSettings /> },
         { label:'Contact Us',      path:'/contact',  icon:<IcoPhone /> },
+        { label:'Terms & Privacy', path:'/terms',    icon:<IcoShieldMenu /> },
     ];
 
     return (

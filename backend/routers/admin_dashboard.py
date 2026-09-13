@@ -186,7 +186,11 @@ def monthly_report(
             "complainant": _full_name(c.user),
             "respondent":  decrypt(c.offender_name),
             "title":       title,
-            "remark":      STATUS_DISPLAY.get(status_val, status_val or ""),
+            # Left blank on purpose. The Lupon monthly accomplishment report is a
+            # paper form the VAWC officer signs, and the Remarks column is their
+            # judgement to write, not the system's to assert. Every cell in the
+            # printed report is editable, so they fill this in per row.
+            "remark":      "",
         })
 
     return {"year": year, "month": month, "rows": rows}

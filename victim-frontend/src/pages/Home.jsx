@@ -372,8 +372,11 @@ function Home() {
                 {/* Awareness section */}
                 <div className="vh-sectionhead vh-reveal" style={S.sectionHead}>
                     <div>
-                        <p style={S.sectionLabel}>Legal Awareness</p>
-                        <p style={S.sectionSub}>Know your rights under Republic Act 9262</p>
+                        <h2 style={S.sectionLabel}>Legal Awareness</h2>
+                        <p style={S.sectionSub}>
+                            <span style={S.sectionRule} aria-hidden="true" />
+                            Know your rights under Republic Act 9262
+                        </p>
                     </div>
                 </div>
 
@@ -471,9 +474,13 @@ const S = {
     wRowSub:     { display: 'block', margin: '2px 0 0', fontSize: 11.5, color: 'var(--text-muted)', fontFamily: FF, lineHeight: 1.3 },
     wChevron:    { display: 'inline-flex', color: 'var(--text-muted)', flexShrink: 0 },
 
-    sectionHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingTop: 4 },
-    sectionLabel:{ fontSize: 16, fontWeight: 700, color: 'var(--text)', margin: '0 0 2px', fontFamily: FF, letterSpacing: '-0.3px' },
-    sectionSub:  { fontSize: 12.5, color: 'var(--text-muted)', margin: 0, fontFamily: FF },
+    // Highlighted with weight, size and a rule rather than colour: the heading
+    // steps up to 22/800, the caption gets a marker bar and its own line, and a
+    // hairline runs under the pair to separate the section from the hero above.
+    sectionHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingTop: 10, paddingBottom: 12, marginBottom: 2, borderBottom: '1px solid var(--border)' },
+    sectionLabel:{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: '0 0 5px', fontFamily: FF, letterSpacing: '-0.6px', lineHeight: 1.15 },
+    sectionSub:  { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 500, color: 'var(--text-body)', margin: 0, fontFamily: FF },
+    sectionRule: { width: 18, height: 2, borderRadius: 2, background: 'var(--text)', opacity: 0.55, flexShrink: 0 },
 
     // Preview panel on top, content below — the reference layout.
     awareCard:   { backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-card)', overflow: 'hidden', cursor: 'pointer', display: 'flex', flexDirection: 'column', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' },

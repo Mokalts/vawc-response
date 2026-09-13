@@ -14,6 +14,7 @@ import ContactUs from './pages/ContactUs';
 import VerifyEmail from './pages/VerifyEmail';
 import ChangePassword from './pages/ChangePassword';
 import Awareness from './pages/Awareness';
+import Terms from './pages/Terms';
 import QuickExit from './components/QuickExit';
 
 import './styles/global.css';
@@ -21,7 +22,7 @@ import './styles/global.css';
 // The escape control belongs on every screen, including the public ones — she
 // may be reading the awareness pages before she ever signs in. It sits higher
 // on pages that carry the floating bottom nav so the two never overlap.
-const NAV_ROUTES = ['/home', '/report', '/my-reports', '/profile', '/settings'];
+const NAV_ROUTES = ['/home', '/report', '/my-reports', '/profile', '/settings', '/terms'];
 function GlobalQuickExit() {
   const { pathname } = useLocation();
   return <QuickExit bottom={NAV_ROUTES.includes(pathname) ? 86 : 16} />;
@@ -48,6 +49,7 @@ function App() {
         <Route path="/verify" element={<VerifyEmail />} />
         <Route path="/awareness" element={<Awareness />} />
         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/terms" element={<Terms />} />
 
         {/* Protected routes */}
         <Route path="/home"            element={<RequireAuth><Home /></RequireAuth>} />

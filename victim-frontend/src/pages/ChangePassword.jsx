@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
+import BottomNavbar from '../components/BottomNavbar';
 import api from '../api';
 
 if (!document.getElementById('vawc-font')) {
@@ -217,16 +218,20 @@ function ChangePassword() {
                     {loading ? <><Spinner /><span>Updating…</span></> : 'Update Password'}
                 </button>
             </main>
+
+            <BottomNavbar />
         </div>
     );
 }
 
 const S = {
-    page:       { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', fontFamily:"'Lexend', sans-serif" },
+    page:       { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', paddingBottom:92, fontFamily:"'Lexend', sans-serif" },
     topBar:     { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', backgroundColor:'var(--surface)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100 },
     backBtn:    { width:44, height:44, borderRadius: 10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
     title:      { fontSize:17, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },
-    content:    { padding:'20px', display:'flex', flexDirection:'column', gap:14 },
+    // A focused form: narrower cap than the browsing pages so the fields do not
+    // run the full width of a monitor.
+    content:    { padding:'20px 18px', display:'flex', flexDirection:'column', gap:14, width:'100%', maxWidth:620, marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' },
     headerCard: { backgroundColor:'var(--surface)', borderRadius: 4, padding:'16px', border:'1px solid var(--border)', display:'flex', alignItems:'center', gap:14 },
     headerIcon: { width:42, height:42, borderRadius: 10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 },
     card:       { backgroundColor:'var(--surface)', borderRadius: 12, padding:'20px', border:'1px solid var(--border)', boxShadow:'0 2px 12px rgba(244,121,32,0.06)', display:'flex', flexDirection:'column', gap:16 },

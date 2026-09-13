@@ -9,6 +9,7 @@ import Reports from './pages/Reports';
 import ReportDetail from './pages/ReportDetail';
 import AdminManagement from './pages/AdminManagement';
 import PrintDocument from './pages/PrintDocument';
+import Terms from './pages/Terms';
 import MonthlyReport from './pages/MonthlyReport';
 
 import './styles/global.css';
@@ -46,6 +47,7 @@ function App() {
         <Route path="/reports/:id"      element={<ProtectedRoute><ReportDetail /></ProtectedRoute>} />
         <Route path="/admin-management" element={<ProtectedRoute><AdminManagement /></ProtectedRoute>} />
         <Route path="/monthly-report"   element={<ProtectedRoute><MonthlyReport /></ProtectedRoute>} />
+        <Route path="/terms"            element={<ProtectedRoute><Terms /></ProtectedRoute>} />
         <Route path="/print/:type/:caseId" element={<ProtectedRoute><PrintDocument /></ProtectedRoute>} />
       </Routes>
     </Router>

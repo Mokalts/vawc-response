@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
+import BottomNavbar from '../components/BottomNavbar';
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id = 'vawc-font'; l.rel = 'stylesheet';
@@ -98,16 +99,19 @@ function ContactUs() {
                 </div>
 
             </main>
+
+            <BottomNavbar />
         </div>
     );
 }
 
 const S = {
-    page:           { minHeight: '100vh', background: 'var(--page-grad)', color: 'var(--text)', display: 'flex', flexDirection: 'column', fontFamily: "'Lexend', sans-serif" },
+    page:           { minHeight: '100vh', background: 'var(--page-grad)', color: 'var(--text)', display: 'flex', flexDirection: 'column', paddingBottom: 92, fontFamily: "'Lexend', sans-serif" },
     topBar:         { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 1px 8px rgba(244,121,32,0.06)' },
     backBtn:        { width: 44, height: 44, borderRadius: 10, backgroundColor: 'var(--surface-tint)', border: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
     title:          { fontSize: 17, fontWeight: 700, color: 'var(--accent-text)', fontFamily: "'Lexend', sans-serif" },
-    content:        { padding: '20px', display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 40 },
+    // Capped and centred to match Home (1060px), instead of stretching the window.
+    content:        { padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 16, width: '100%', maxWidth: 1060, marginLeft: 'auto', marginRight: 'auto', boxSizing: 'border-box' },
 
     emergencyCard:  { backgroundColor: '#991B1B', borderRadius: 4, padding: '20px', boxShadow: '0 4px 16px rgba(153,27,27,0.3)' },
     emergencyLeft:  { display: 'flex', gap: 16, alignItems: 'flex-start' },

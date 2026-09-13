@@ -77,6 +77,7 @@ const IcoAdmins = ({ size = 16, color = 'currentColor' }) => (
         <path d="M19 8v6M22 11h-6" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
     </IcoMulti>
 );
+const IcoShieldNav = ({ size = 16, color = "currentColor" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 12l2 2 4-4" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoLogout = ({ size = 16, color = 'currentColor' }) => (
     <IcoMulti size={size}>
         <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
@@ -258,8 +259,13 @@ function Sidebar() {
                 ))}
             </nav>
 
-            {/* Logout */}
+            {/* Footer. Terms sits here rather than in NAV above: it is a reference
+                document, not one of the four things an officer comes here to do. */}
             <div style={{ padding: '12px', borderTop: '1px solid #5C1F6E', marginTop: 'auto' }}>
+                <button className="vawc-logout" onClick={() => navigate('/terms')} style={S.logoutBtn}>
+                    <IcoShieldNav size={16} color="#D9BCE2" />
+                    <span style={{ ...S.logoutLabel, color: '#D9BCE2', fontWeight: 500 }}>Terms &amp; Data Handling</span>
+                </button>
                 <button className="vawc-logout" onClick={handleLogout} style={S.logoutBtn}>
                     <IcoLogout size={16} color="#FFCC99" />
                     <span style={S.logoutLabel}>Sign Out</span>

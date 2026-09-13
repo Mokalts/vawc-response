@@ -147,3 +147,36 @@ select:-webkit-autofill {
   caret-color: var(--text);
   transition: background-color 600000s 0s ease-in-out;
 }
+
+/* ───── Global hover / press feedback ─────
+   Applied app-wide from one place so every page responds consistently instead
+   of each one hand-rolling its own hover. Kept deliberately small: 1-2px of
+   travel reads as feedback, more reads as movement, and a distressed user does
+   not need a lively interface. Anything that opts out can set its own
+   transition, and the reduced-motion block above neutralises all of it.
+
+   Pointer-only: `@media (hover: hover)` keeps these off touch screens, where a
+   hover state would otherwise stick after a tap. */
+@media (hover: hover) and (pointer: fine) {
+  button:not(:disabled),
+  a,
+  [role="button"]:not([aria-disabled="true"]),
+  label[for],
+  summary {
+    transition: transform 0.16s ease, filter 0.16s ease, background-color 0.16s ease,
+                border-color 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+  }
+  /* Nudge only controls that do not already animate themselves. */
+  button:not(:disabled):not([class*="vh-"]):not([class*="vqe-"]):not([class*="vn-"]):not([class*="sos-"]):not([class*="vi-"]):not([class*="vt-"]):hover,
+  [role="button"]:not([aria-disabled="true"]):not([class*="vh-"]):not([class*="vmc-"]):hover {
+    transform: translateY(-1px);
+  }
+  a:hover { opacity: 0.88; }
+}
+
+/* Press feedback works on touch as well as pointer, so it stays outside the
+   hover query. */
+button:not(:disabled):active,
+[role="button"]:not([aria-disabled="true"]):active {
+  transform: scale(0.985);
+}
