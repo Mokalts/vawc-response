@@ -23,7 +23,7 @@ if (!document.getElementById('vawc-terms-css')) {
         .terms-scroll::-webkit-scrollbar { width: 8px; }
         .terms-scroll::-webkit-scrollbar-track { background: var(--surface-tint); border-radius: 4px; }
         .terms-scroll::-webkit-scrollbar-thumb { background: #FFCC99; border-radius: 4px; }
-        .terms-scroll::-webkit-scrollbar-thumb:hover { background: #A78BFA; }
+        .terms-scroll::-webkit-scrollbar-thumb:hover { background: #F47920; }
         .terms-accept:not([disabled]):hover { background: #C45E10 !important; box-shadow: 0 4px 14px rgba(196,94,16,0.35) !important; transform: translateY(-1px); }
         .terms-accept:not([disabled]):active { transform: scale(0.98); }
         .terms-decline:hover { background: var(--surface-tint) !important; border-color: #FFCC99 !important; }
@@ -108,7 +108,7 @@ function TermsModal({ open, onAccept, onDecline }) {
                     <div style={S.headerIcon}><IcoLockShield /></div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                         <p id="terms-title" style={S.headerTitle}>Data Privacy Notice & Terms</p>
-                        <p style={S.headerSub}>Republic Act 10173 - Data Privacy Act of 2012</p>
+                        <p style={S.headerSub}>Republic Act 10173, Data Privacy Act of 2012</p>
                     </div>
                 </header>
 
@@ -120,7 +120,7 @@ function TermsModal({ open, onAccept, onDecline }) {
                 {/* Scrollable content */}
                 <div ref={scrollRef} className="terms-scroll" style={S.scroll} onScroll={handleScroll}>
 
-                    <TermsContent showAcknowledgment />
+                    <TermsContent showAcknowledgment variant="modal" />
 
                 </div>
 
@@ -187,41 +187,8 @@ const S = {
     scroll: {
         flex: 1, overflowY: 'auto',
         padding: '20px 22px',
-        background: '#FDFCFF',
+        background: 'var(--surface)',
     },
-    intro: {
-        margin: '0 0 18px', fontSize: 13.5, color: 'var(--text-body)', lineHeight: 1.65,
-        fontFamily: "'Lexend', sans-serif",
-    },
-    strong: { color: 'var(--accent-text)', fontWeight: 700 },
-
-    section: { marginBottom: 18, paddingLeft: 14, borderLeft: '3px solid #FFCC99' },
-    sectionHead: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 7 },
-    sectionNum: {
-        flexShrink: 0, width: 24, height: 24, borderRadius: 7,
-        background: '#F47920', color: '#fff',
-        fontSize: 12, fontWeight: 800,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: "'Lexend', sans-serif",
-    },
-    sectionTitle: { margin: 0, fontSize: 14.5, fontWeight: 800, color: 'var(--text)', fontFamily: "'Lexend', sans-serif" },
-    sectionBody:  { fontSize: 13, color: 'var(--text-body)', lineHeight: 1.65, fontFamily: "'Lexend', sans-serif" },
-
-    para: { margin: '0 0 8px', fontSize: 13, color: 'var(--text-body)', lineHeight: 1.65, fontFamily: "'Lexend', sans-serif" },
-    list: { listStyle: 'none', margin: '0 0 8px', padding: 0, display: 'flex', flexDirection: 'column', gap: 6 },
-    bullet: { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--text-body)', lineHeight: 1.55, fontFamily: "'Lexend', sans-serif" },
-    bulletDot: {
-        flexShrink: 0, marginTop: 7, width: 6, height: 6, borderRadius: '50%',
-        background: '#F47920',
-    },
-
-    acknowledge: {
-        marginTop: 12, padding: '14px 16px',
-        background: 'var(--surface-tint)', border: '1.5px solid #FFCC99', borderRadius: 12,
-    },
-    ackTitle: { margin: 0, fontSize: 12, fontWeight: 800, color: '#9A3412', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4, fontFamily: "'Lexend', sans-serif" },
-    ackText:  { margin: 0, fontSize: 12.5, color: '#7C2D12', lineHeight: 1.6, fontFamily: "'Lexend', sans-serif" },
-
     scrollHint: {
         margin: '0 22px 10px', padding: '8px 12px',
         background: 'var(--surface-tint)', border: '1px dashed #FFCC99', borderRadius: 8,

@@ -3,152 +3,195 @@ import React from 'react';
 /**
  * The Data Privacy Notice body, in one place.
  *
- * Rendered both by TermsModal (the blocking consent step before account
- * creation) and by the /terms page (so it can be re-read at any time, which
- * RA 10173 entitles the data subject to). Keeping one copy matters: two
- * versions of a consent notice that drift apart is a real problem, not a
- * tidiness one.
+ * Rendered by TermsModal (the consent step before account creation) and by the
+ * /terms page (so it can be re-read at any time, which RA 10173 entitles the
+ * data subject to). One copy on purpose: two versions of a consent notice that
+ * drift apart is how an unlawful "mediation" line once survived a rewrite.
  *
- * `showAcknowledgment` is on for the modal, where the reader is about to
- * consent, and off for the page, where they are only reading.
+ * Every size is in `em`, set from one base font size on the root, so the same
+ * styles read comfortably on the page (15px) and in the narrower modal (13.5px).
  */
 
-const Section = ({ num, title, children }) => (
-    <section style={S.section}>
-        <div style={S.sectionHead}>
-            <span style={S.sectionNum}>{num}</span>
-            <h3 style={S.sectionTitle}>{title}</h3>
-        </div>
-        <div style={S.sectionBody}>{children}</div>
-    </section>
-);
+export const TERMS_SECTIONS = [
+    { id: 'terms-collect',   title: 'What information we collect' },
+    { id: 'terms-purpose',   title: 'Why we collect it' },
+    { id: 'terms-access',    title: 'Who can access your data' },
+    { id: 'terms-retention', title: 'How long we keep your data' },
+    { id: 'terms-rights',    title: 'Your rights under RA 10173' },
+    { id: 'terms-security',  title: 'Security and confidentiality' },
+    { id: 'terms-contact',   title: 'Contact for privacy concerns' },
+];
 
-const Bullet = ({ children }) => (
-    <li style={S.bullet}><span style={S.bulletDot} />{children}</li>
-);
-
-export default function TermsContent({ showAcknowledgment = false }) {
+const Section = ({ index, children }) => {
+    const s = TERMS_SECTIONS[index];
     return (
-        <>
+        <section id={s.id} style={{ ...S.section, ...(index === 0 ? S.sectionFirst : null) }}>
+            <div style={S.sectionHead}>
+                <span style={S.num} aria-hidden="true">{index + 1}</span>
+                <h3 style={S.sectionTitle}>{s.title}</h3>
+            </div>
+            <div style={S.sectionBody}>{children}</div>
+        </section>
+    );
+};
+
+// The text is wrapped in ONE span. The list item is a flex row, and without
+// this wrapper a leading <strong> and the text after it became two separate
+// flex items, so the label sat in its own column and the description wrapped
+// beside it in a second, misaligned column.
+const Item = ({ label, children }) => (
+    <li style={S.item}>
+        <span style={S.dot} aria-hidden="true" />
+        <span style={S.itemText}>
+            {label && <strong style={S.strong}>{label}: </strong>}
+            {children}
+        </span>
+    </li>
+);
+const B = ({ children }) => <strong style={S.strong}>{children}</strong>;
+
+export default function TermsContent({ showAcknowledgment = false, variant = 'page' }) {
+    const isPage = variant === 'page';
+    return (
+        <div style={{ ...S.root, fontSize: isPage ? 15 : 13.5, maxWidth: isPage ? '72ch' : 'none' }}>
             <p style={S.intro}>
-                Welcome to <strong style={S.strong}>VAWC-Response</strong>, the official reporting system of
-                Barangay Palanginan, Iba, Zambales for cases of Violence Against Women and Children
-                under <strong style={S.strong}>Republic Act 9262</strong>. Please read this notice carefully.
+                Welcome to <B>VAWC-Response</B>, the official reporting system of Barangay Palanginan,
+                Iba, Zambales for cases of Violence Against Women and Children under <B>Republic Act 9262</B>.
+                Please read this notice carefully.
             </p>
 
-            <Section num="1" title="What information we collect">
+            <Section index={0}>
                 <p style={S.para}>To process your reports and protect you, we collect:</p>
                 <ul style={S.list}>
-                    <Bullet><strong>Identity and contact</strong> - name, email, phone number, birthdate, sex, address.</Bullet>
-                    <Bullet><strong>Account credentials</strong> - encrypted password (never stored in plain text).</Bullet>
-                    <Bullet><strong>Minor or guardian details</strong> - only if you indicate you are a minor.</Bullet>
-                    <Bullet><strong>Case data</strong> - incident statement, photos, GPS or pinned location, respondent name, type of abuse, relationship to the respondent, and incident date.</Bullet>
+                    <Item label="Identity and contact">name, email, phone number, birthdate, sex, and address.</Item>
+                    <Item label="Account credentials">your password, stored only in encrypted form and never as plain text.</Item>
+                    <Item label="Minor or guardian details">collected only if you indicate you are a minor.</Item>
+                    <Item label="Case data">your statement, photos, GPS or pinned location, the respondent's name, the type of abuse, your relationship to the respondent, and the incident date.</Item>
                 </ul>
             </Section>
 
-            <Section num="2" title="Why we collect it (purpose)">
-                <p style={S.para}>Your data is used solely for:</p>
+            <Section index={1}>
+                <p style={S.para}>Your data is used only to:</p>
                 <ul style={S.list}>
-                    <Bullet>Receiving, recording, and acting on your VAWC report.</Bullet>
-                    <Bullet>Applying for and recording a Barangay Protection Order, and monitoring it.</Bullet>
-                    <Bullet>Endorsing cases to the PNP Women and Children Protection Desk, the C/MSWDO, the PAO, or the court when escalation is necessary.</Bullet>
-                    <Bullet>Sending you status notifications about your case by email.</Bullet>
+                    <Item>Receive, record, and act on your VAWC report.</Item>
+                    <Item>Apply for and record a Barangay Protection Order, and monitor it.</Item>
+                    <Item>Endorse your case to the PNP Women and Children Protection Desk, the C/MSWDO, the PAO, or the court when escalation is necessary.</Item>
+                    <Item>Send you status notifications about your case by email.</Item>
+                </ul>
+                <p style={S.note}>
+                    The barangay does <B>not</B> mediate, conciliate, or settle VAWC cases. Republic Act 9262
+                    and Joint Memorandum Circular 2010-2 prohibit it. The system records and monitors your
+                    case; it does not decide it.
+                </p>
+                <p style={S.para}>We <B>never</B> sell, rent, or use your data for marketing.</p>
+            </Section>
+
+            <Section index={2}>
+                <ul style={S.list}>
+                    <Item>Authorized barangay personnel handling your case.</Item>
+                    <Item>The Punong Barangay and designated VAWC Desk officers.</Item>
+                    <Item>Authorities your case is endorsed to (PNP-WCPD, C/MSWDO, PAO, or the court), only when it is formally referred.</Item>
+                    <Item>You, at any time, through your account.</Item>
                 </ul>
                 <p style={S.para}>
-                    The barangay does <strong style={S.strong}>not</strong> mediate, conciliate, or settle VAWC cases.
-                    Republic Act 9262 and Joint Memorandum Circular 2010-2 prohibit this. The system records
-                    and monitors your case; it does not decide it.
-                </p>
-                <p style={S.para}>We will <strong style={S.strong}>never</strong> sell, rent, or use your data for marketing.</p>
-            </Section>
-
-            <Section num="3" title="Who can access your data">
-                <ul style={S.list}>
-                    <Bullet>Authorized barangay personnel handling your case.</Bullet>
-                    <Bullet>The Punong Barangay and designated VAWC Desk officers.</Bullet>
-                    <Bullet>Endorsed authorities (PNP-WCPD, C/MSWDO, PAO, the court) only when your case is officially referred.</Bullet>
-                    <Bullet>You, at any time, through your account.</Bullet>
-                </ul>
-                <p style={S.para}>
-                    Sensitive fields - your statement, location, and the respondent's name - are
-                    <strong style={S.strong}> encrypted at rest</strong> using Fernet symmetric encryption. Regular admins see
-                    only masked previews; full content is visible only to authorized super admins.
+                    Your statement, your location, and the respondent's name are <B>encrypted at rest</B> using
+                    Fernet symmetric encryption. Regular admins see only masked previews; the full content is
+                    visible only to authorized super admins.
                 </p>
             </Section>
 
-            <Section num="4" title="How long we keep your data">
+            <Section index={3}>
                 <ul style={S.list}>
-                    <Bullet><strong>Active cases</strong> - retained while the barangay is still assisting you.</Bullet>
-                    <Bullet><strong>Cases where assistance has ended</strong> - kept as official records consistent with National Privacy Commission and barangay records-management guidelines. Ending barangay assistance does not close or dismiss your case; only a court can do that.</Bullet>
-                    <Bullet><strong>Deleted accounts</strong> - soft-deleted records can be recovered within 30 days, after which they are permanently removed.</Bullet>
+                    <Item label="Active cases">kept while the barangay is still assisting you.</Item>
+                    <Item label="Cases where assistance has ended">kept as official records under National Privacy Commission and barangay records-management guidelines. Ending barangay assistance does not close or dismiss your case; only a court can.</Item>
+                    <Item label="Deleted accounts">can be recovered within 30 days, then permanently removed.</Item>
                 </ul>
             </Section>
 
-            <Section num="5" title="Your rights under RA 10173">
+            <Section index={4}>
                 <p style={S.para}>As the data subject, you have the right to:</p>
                 <ul style={S.list}>
-                    <Bullet><strong>Be informed</strong> of how your data is processed.</Bullet>
-                    <Bullet><strong>Access</strong> your personal data and the case records linked to it.</Bullet>
-                    <Bullet><strong>Object</strong> to processing or withdraw consent, subject to existing legal obligations.</Bullet>
-                    <Bullet><strong>Rectify</strong> inaccurate information through your profile or by contacting the barangay.</Bullet>
-                    <Bullet><strong>Erasure or blocking</strong> of your data when there is no longer a legitimate purpose.</Bullet>
-                    <Bullet><strong>Data portability</strong> - request a copy of your records.</Bullet>
-                    <Bullet><strong>File a complaint</strong> with the National Privacy Commission (privacy.gov.ph).</Bullet>
-                    <Bullet><strong>Be indemnified</strong> for damages caused by inaccurate, false, or unlawfully processed data.</Bullet>
+                    <Item><B>Be informed</B> of how your data is processed.</Item>
+                    <Item><B>Access</B> your personal data and the case records linked to it.</Item>
+                    <Item><B>Object</B> to processing, or withdraw consent, subject to existing legal obligations.</Item>
+                    <Item><B>Rectify</B> inaccurate information through your profile or by contacting the barangay.</Item>
+                    <Item><B>Have your data erased or blocked</B> when there is no longer a legitimate purpose.</Item>
+                    <Item><B>Get a copy</B> of your records (data portability).</Item>
+                    <Item><B>File a complaint</B> with the National Privacy Commission at privacy.gov.ph.</Item>
+                    <Item><B>Be indemnified</B> for damages caused by inaccurate, false, or unlawfully processed data.</Item>
                 </ul>
             </Section>
 
-            <Section num="6" title="Security and confidentiality">
+            <Section index={5}>
                 <p style={S.para}>
                     VAWC-Response uses field-level encryption, password hashing, encrypted login sessions, and
                     access controls to keep your information safe. Reports are treated with the strictest
-                    confidentiality. Knowingly accessing, sharing, or tampering with these records is a
-                    criminal offense under RA 10173, and disclosing your identity or the circumstances of your
-                    case is punishable under Section 44 of RA 9262.
+                    confidentiality.
+                </p>
+                <p style={S.para}>
+                    Knowingly accessing, sharing, or tampering with these records is a criminal offense under
+                    RA 10173, and disclosing your identity or the circumstances of your case is punishable under
+                    Section 44 of RA 9262.
                 </p>
             </Section>
 
-            <Section num="7" title="Contact for privacy concerns">
+            <Section index={6}>
                 <p style={S.para}>
-                    For questions, requests, or complaints regarding your personal data, contact the
-                    Barangay Palanginan Data Privacy Officer through the barangay hall, or call the numbers
-                    listed under <strong style={S.strong}>Hotlines</strong> on the home screen.
+                    For questions, requests, or complaints about your personal data, contact the Barangay
+                    Palanginan Data Privacy Officer at the barangay hall, or call the numbers listed
+                    under <B>Hotlines</B> on the home screen.
                 </p>
             </Section>
 
             {showAcknowledgment && (
-                <div style={S.acknowledge}>
+                <div style={S.ack}>
                     <p style={S.ackTitle}>Acknowledgment</p>
                     <p style={S.ackText}>
-                        By tapping <strong style={S.strong}>I Agree</strong>, you confirm that you have read and understood this Data
-                        Privacy Notice, and you give your free and informed consent for VAWC-Response and
-                        Barangay Palanginan to collect and process your personal information for the purposes
-                        described above, in accordance with Republic Act 10173.
+                        By tapping <B>I Agree</B>, you confirm that you have read and understood this Data Privacy
+                        Notice, and you give your free and informed consent for VAWC-Response and Barangay
+                        Palanginan to collect and process your personal information for the purposes described
+                        above, in accordance with Republic Act 10173.
                     </p>
                 </div>
             )}
-        </>
+        </div>
     );
 }
 
 const FF = "'Lexend', sans-serif";
+// Alignment arithmetic, all in em of the root size:
+//   title line box = 1.1em x 1.35 = 1.485em, and the number badge matches it,
+//   so a title that wraps to two lines keeps its badge on the first line;
+//   body indent = badge 1.488em + gap 0.7em = 2.19em, so body text starts on
+//   the same vertical as the title text;
+//   bullet dot sits at (line-height 1.7em - dot 0.36em) / 2 = 0.67em, centring
+//   it on the first line of its item at any base size.
 const S = {
-    intro:       { margin: '0 0 18px', fontSize: 13.5, color: 'var(--text-body)', lineHeight: 1.7, fontFamily: FF },
-    strong:      { color: 'var(--accent-text)', fontWeight: 700 },
-    section:     { marginBottom: 18 },
-    sectionHead: { display: 'flex', alignItems: 'center', gap: 9, marginBottom: 7 },
-    sectionNum:  {
-        width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: 'var(--surface-tint)',
-        color: 'var(--accent-text)', fontSize: 11.5, fontWeight: 800,
+    root:         { fontFamily: FF, lineHeight: 1.7, color: 'var(--text-body)', textAlign: 'left' },
+    intro:        { margin: '0 0 1.7em', fontSize: '1.03em', lineHeight: 1.72 },
+    section:      { marginTop: '1.6em', paddingTop: '1.6em', borderTop: '1px solid var(--border-soft)', scrollMarginTop: 84 },
+    sectionFirst: { marginTop: 0, paddingTop: 0, borderTop: 'none' },
+    sectionHead:  { display: 'flex', alignItems: 'flex-start', gap: '0.7em', marginBottom: '0.8em' },
+    num: {
+        width: '1.86em', height: '1.86em', fontSize: '0.8em', flexShrink: 0, borderRadius: '0.5em',
+        background: 'var(--surface-tint)', color: 'var(--accent-text)', fontWeight: 800,
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontFamily: FF,
     },
-    sectionTitle:{ margin: 0, fontSize: 14.5, fontWeight: 800, color: 'var(--text)', fontFamily: FF },
-    sectionBody: { paddingLeft: 31 },
-    para:        { margin: '0 0 8px', fontSize: 13, color: 'var(--text-body)', lineHeight: 1.65, fontFamily: FF },
-    list:        { listStyle: 'none', margin: '0 0 8px', padding: 0, display: 'flex', flexDirection: 'column', gap: 6 },
-    bullet:      { display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, color: 'var(--text-body)', lineHeight: 1.55, fontFamily: FF },
-    bulletDot:   { width: 5, height: 5, borderRadius: '50%', background: '#F47920', flexShrink: 0, marginTop: 7 },
-    acknowledge: { background: 'var(--bg-warn)', border: '1px solid var(--bd-warn)', borderRadius: 10, padding: '13px 15px', marginTop: 4 },
-    ackTitle:    { margin: '0 0 4px', fontSize: 12, fontWeight: 800, color: 'var(--tx-warn)', textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: FF },
-    ackText:     { margin: 0, fontSize: 12.5, color: 'var(--tx-warn)', lineHeight: 1.6, fontFamily: FF },
+    sectionTitle: { margin: 0, fontSize: '1.1em', lineHeight: 1.35, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--text)', fontFamily: FF, textWrap: 'balance' },
+    sectionBody:  { paddingLeft: '2.19em' },
+    para:         { margin: '0 0 0.8em' },
+    list:         { listStyle: 'none', margin: '0 0 0.9em', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.6em' },
+    item:         { display: 'flex', alignItems: 'flex-start', gap: '0.7em' },
+    dot:          { width: '0.36em', height: '0.36em', borderRadius: '50%', background: 'var(--accent-text)', flexShrink: 0, marginTop: '0.67em' },
+    itemText:     { flex: 1, minWidth: 0 },
+    // Emphasis in the text colour, not orange: bold orange on every line made
+    // the notice look like a list of warnings and slowed reading.
+    strong:       { color: 'var(--text)', fontWeight: 600 },
+    note: {
+        margin: '0.2em 0 0.9em', padding: '0.75em 1em', borderRadius: '0.6em',
+        background: 'var(--surface-alt)', borderLeft: '3px solid var(--accent-text)',
+    },
+    ack:          { marginTop: '1.8em', padding: '1em 1.1em', borderRadius: '0.75em', background: 'var(--bg-warn)', border: '1px solid var(--bd-warn)' },
+    ackTitle:     { margin: '0 0 0.35em', fontSize: '0.8em', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--tx-warn)', fontFamily: FF },
+    ackText:      { margin: 0, fontSize: '0.95em', lineHeight: 1.65, color: 'var(--tx-warn)' },
 };
