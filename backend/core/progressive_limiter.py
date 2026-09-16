@@ -1,13 +1,16 @@
 """
 Progressive Rate Limiter for VAWC-Response
 ==========================================
-Lockout schedule per IP:
+Lockout schedule per account:
   5 failed attempts  →  locked 1 minute
-  1 more attempt     →  locked 5 minutes
-  1 more attempt     →  locked 15 minutes
-  1 more attempt     →  locked 60 minutes  (cap — stays here forever until success)
+  3 more attempts    →  locked 5 minutes
+  3 more attempts    →  locked 15 minutes
+  3 more attempts    →  locked 60 minutes
+  3 more attempts    →  locked 24 hours   (cap)
 
 On successful login → full reset.
+Quiet for DECAY_SECONDS → full reset, so an old lockout cannot ambush someone
+who comes back days later and mistypes once.
 """
 
 import time
@@ -21,13 +24,25 @@ _lock = Lock()
 # (attempts_needed_to_trigger, lockout_seconds)
 # Per-ACCOUNT schedule: escalates hard, because repeated failures against one
 # account is what credential guessing looks like.
+#
+# Later stages need 3 failures, not 1. With a threshold of 1 the ladder made a
+# SINGLE typo enough to trigger a 5, 15 or 60 minute lockout for anyone who had
+# ever tripped the first stage — which is what a victim hits when she comes back
+# to the app days later and misremembers her password once.
 LOCKOUT_SCHEDULE = [
     (5,  60),       # Stage 0 → 5 fails   = 1 min
-    (1,  300),      # Stage 1 → 1 more    = 5 min
-    (1,  900),      # Stage 2 → 1 more    = 15 min
-    (1,  3600),     # Stage 3 → 1 more    = 60 min
-    (1,  86400),    # Stage 4 → 1 more    = 24 hours (max)
+    (3,  300),      # Stage 1 → 3 more    = 5 min
+    (3,  900),      # Stage 2 → 3 more    = 15 min
+    (3,  3600),     # Stage 3 → 3 more    = 60 min
+    (3,  86400),    # Stage 4 → 3 more    = 24 hours (max)
 ]
+
+# How long a quiet period wipes the slate clean. Without this the stage only
+# ever went up: it was cleared by a successful login and by nothing else, so a
+# lockout from last week still applied today. Guessing a password needs many
+# attempts in quick succession, and those are still caught; someone who mistypes
+# twice, walks away, and returns after half an hour starts fresh.
+DECAY_SECONDS = 1800  # 30 minutes
 
 # Per-NETWORK schedule: flat and forgiving, and it deliberately does NOT
 # escalate. Many people share one public IP (a barangay hall, a venue's wifi,
@@ -47,7 +62,19 @@ def _fresh_record() -> dict:
         "stage":          0,   # which lockout stage we're on
         "stage_attempts": 0,   # attempts since last lockout expired
         "locked_until":   0.0, # unix timestamp
+        "last_failure":   0.0, # unix timestamp of the most recent failure
     }
+
+
+def _decayed(rec: dict, now: float) -> bool:
+    """True when this record is stale enough to discard.
+
+    A record is kept while a lockout is still running, so waiting out a lockout
+    never clears the escalation that produced it.
+    """
+    if rec["locked_until"] > now:
+        return False
+    return bool(rec["last_failure"]) and (now - rec["last_failure"]) > DECAY_SECONDS
 
 
 def check_rate_limit(key: str) -> dict:
@@ -60,6 +87,10 @@ def check_rate_limit(key: str) -> dict:
     now = time.time()
     with _lock:
         rec = _store.get(key, _fresh_record())
+
+        if _decayed(rec, now):
+            _store.pop(key, None)
+            return {"allowed": True}
 
         if rec["locked_until"] > now:
             remaining = int(rec["locked_until"] - now) + 1  # round up
@@ -88,10 +119,20 @@ def record_failure(key: str, schedule=None):
     with _lock:
         rec = _store.get(key, _fresh_record())
 
-        # If a previous lockout just expired, reset stage attempts
+        # Long enough since the last failure: treat this as a first mistake
+        # again, rather than the next rung of an old ladder.
+        if _decayed(rec, now):
+            rec = _fresh_record()
+
+        # If a previous lockout has expired, start this stage's count fresh and
+        # CLEAR the timestamp. Leaving it set re-ran this branch on every later
+        # failure, so the count could never climb past 1 and the next lockout
+        # never arrived.
         if 0 < rec["locked_until"] <= now:
             rec["stage_attempts"] = 0
+            rec["locked_until"] = 0.0
 
+        rec["last_failure"] = now
         rec["stage_attempts"] += 1
         stage = rec["stage"]
 

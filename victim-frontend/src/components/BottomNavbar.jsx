@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { quickExit, IcoExit } from './QuickExit';
 
 if (!document.getElementById('vawc-nav-css')) {
     const s = document.createElement('style'); s.id = 'vawc-nav-css';
@@ -10,6 +11,14 @@ if (!document.getElementById('vawc-nav-css')) {
         .vn-label { font-size:11px; font-weight:600; transition:color 0.15s; font-family:'Lexend',sans-serif; line-height:1; }
         .vn-center { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:4px; background:none; border:none; cursor:pointer; flex:1.4; height:100%; padding:0 0 9px; border-radius: 12px; -webkit-tap-highlight-color:transparent; transition:background-color 0.15s; }
         .vn-center:active, .vn-center.pressed { animation:navPop 0.15s ease; background-color:rgba(244,121,32,0.08); }
+        /* The escape control reads as neutral until touched, then as an exit.
+           A permanently red item in the bar would advertise, to anyone glancing
+           at the screen, that this is an abuse-reporting app. */
+        .vn-exit:hover { background-color:rgba(185,28,28,0.10); }
+        .vn-exit:hover .vn-label { color:#B91C1C; }
+        .vn-exit:hover svg { stroke:#B91C1C; }
+        /* Four labels on a 320px phone leaves the last two nearly touching. */
+        @media (max-width: 360px) { .vn-label { font-size:10px; } }
     `;
     document.head.appendChild(s);
 }
@@ -74,6 +83,16 @@ function BottomNavbar({ active }) {
                 aria-label="My Reports, subaybayan ang iyong kaso" aria-current={active === 'reports' ? 'page' : undefined}>
                 <IcoDoc color={color('reports')} />
                 <span className="vn-label" style={{ color: color('reports') }}>My Reports</span>
+            </button>
+
+            {/* Quick Exit — last, so it is reachable by thumb without sitting
+                next to Report Now. It used to float above the page content,
+                where it covered the Submit Report button. */}
+            <button className="vn-btn vn-exit" onClick={quickExit}
+                title="Leave this site immediately (or press Escape three times)"
+                aria-label="Leave this site immediately. Opens a neutral page and removes this site from your browser history.">
+                <IcoExit size={22} color="var(--text-muted)" />
+                <span className="vn-label" style={{ color: 'var(--text-muted)' }}>Quick Exit</span>
             </button>
         </nav>
     );

@@ -141,7 +141,9 @@ def admin_login(
     if not admin.is_active:
         raise HTTPException(status_code=403, detail="Account is deactivated.")
 
+    # Both buckets: the network one is never cleared otherwise.
     record_success(limit_key)
+    record_success(ip_key)
 
     token = create_access_token(data={
         "sub": str(admin.id),

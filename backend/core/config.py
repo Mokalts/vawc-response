@@ -28,6 +28,12 @@ class Settings(BaseSettings):
 
     ABSTRACT_API_KEY: str = ""  # AbstractAPI email validation key
 
+    # Where the victim app is hosted. Used to build links inside emails, such as
+    # the "Verify my account" button. This must be the deployed site: a localhost
+    # default ships emails whose buttons only work on the developer's own machine.
+    # Override per environment (set it to http://localhost:3000 for local work).
+    FRONTEND_URL: str = "https://vawc-victim-2026.web.app"
+
     # Extra CORS origins for production (comma-separated). localhost is always allowed.
     ALLOWED_ORIGINS: str = ""
 

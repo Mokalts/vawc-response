@@ -15,17 +15,27 @@ import VerifyEmail from './pages/VerifyEmail';
 import ChangePassword from './pages/ChangePassword';
 import Awareness from './pages/Awareness';
 import Terms from './pages/Terms';
-import QuickExit from './components/QuickExit';
+import QuickExit, { useTripleEscape } from './components/QuickExit';
 
 import './styles/global.css';
 
 // The escape control belongs on every screen, including the public ones — she
-// may be reading the awareness pages before she ever signs in. It sits higher
-// on pages that carry the floating bottom nav so the two never overlap.
-const NAV_ROUTES = ['/home', '/report', '/my-reports', '/profile', '/settings', '/terms'];
+// may be reading the awareness pages before she ever signs in.
+//
+// On screens with the bottom bar it IS an item in that bar, so no floating pill
+// is rendered: floating above the content is what covered the Submit Report
+// button. These are the routes whose pages render <BottomNavbar/>; the rest are
+// the sign-in and verification screens, where a bar of in-app links would be
+// useless, so they keep the pill.
+const NAV_ROUTES = [
+  '/home', '/report', '/my-reports', '/profile', '/settings',
+  '/terms', '/contact', '/awareness', '/change-password',
+];
 function GlobalQuickExit() {
   const { pathname } = useLocation();
-  return <QuickExit bottom={NAV_ROUTES.includes(pathname) ? 86 : 16} />;
+  useTripleEscape();   // works on every screen, bar or no bar
+  if (NAV_ROUTES.includes(pathname)) return null;
+  return <QuickExit bottom={16} />;
 }
 
 // Redirect to sign-in when no token is present.

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
+import BottomNavbar from '../components/BottomNavbar';
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id = 'vawc-font'; l.rel = 'stylesheet';
@@ -546,6 +547,8 @@ function Awareness() {
                 </div>
 
             </main>
+
+            <BottomNavbar />
         </div>
     );
 }
@@ -559,7 +562,8 @@ const S = {
     tabsFadeRight: { position: 'absolute', top: 0, right: 0, width: 40, height: '100%', background: 'linear-gradient(to right, transparent, var(--page))', pointerEvents: 'none' },
     tabs:          { display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch', paddingBottom: 8, paddingRight: 32 },
     tab:           { whiteSpace: 'nowrap', padding: '7px 15px', borderRadius: 999, fontSize: 13, cursor: 'pointer', fontFamily: "'Lexend', sans-serif", flexShrink: 0 },
-    content:       { padding: '20px', display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 40, maxWidth: 840, width: '100%', marginLeft: 'auto', marginRight: 'auto' },
+    // 92 keeps the last card clear of the floating bottom bar.
+    content:       { padding: '20px', display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 92, maxWidth: 840, width: '100%', marginLeft: 'auto', marginRight: 'auto' },
     navBtn:        { padding: '10px 16px', borderRadius: 12, border: '1px solid var(--border)', backgroundColor: 'var(--surface)', color: 'var(--accent-text)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend', sans-serif" },
 };
 

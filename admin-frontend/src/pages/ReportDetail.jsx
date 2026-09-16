@@ -258,7 +258,7 @@ const RespondentModal = ({ current, onClose, onSave, saving }) => {
             </p>}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 20 }}>
           <button className="rd-btn" style={M.cancelBtn} onClick={onClose} disabled={saving}>Cancel</button>
-          <button className="rd-btn" style={{ ...M.saveBtn, background: "#9B4DAB", opacity: saving || !trimmed ? 0.6 : 1, cursor: saving || !trimmed ? "not-allowed" : "pointer" }}
+          <button className="rd-btn" style={{ ...M.saveBtn, background: "#C45E10", opacity: saving || !trimmed ? 0.6 : 1, cursor: saving || !trimmed ? "not-allowed" : "pointer" }}
             onClick={submit} disabled={saving || !trimmed}>
             {saving && <Spinner />}{saving ? "Saving…" : "Save Name"}
           </button>
@@ -1255,10 +1255,13 @@ export default function ReportDetail() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "16px 24px" }}>
                 <InfoRow label="Case Number" value={cas.case_number} mono />
                 <InfoRow label="Current Status" value={cas.status_display || cfg.label} />
+                {/* Editing is Super Admin only: a regular admin is shown a
+                    masked name, and the edit box prefilled with that mask, so
+                    saving wrote "M**** S******" over the real name. */}
                 <InfoRow
                   label="Respondent"
                   value={cas.offender_name}
-                  action={!cas.is_deleted && (
+                  action={isSuperAdmin && !cas.restricted && !cas.is_deleted && (
                     <button
                       type="button"
                       className="rd-btn"

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as faceapi from 'face-api.js';
 import api from '../api/api';
+import { drawFaceGuide, guideStateForCount } from '../components/FaceGuide';
 
 const CAPTURE_COUNT = 15;
 
@@ -90,43 +91,11 @@ function FaceEnroll() {
     const [done,          setDone]          = useState(false);
     const [saving,        setSaving]        = useState(false);
 
-    // ── Oval overlay ─────────────────────────────────────────────────────────
+    // ── Guide overlay ────────────────────────────────────────────────────────
+    // Shared with FaceVerify so enrolment teaches the same framing that
+    // verification will later expect.
     const drawOverlay = useCallback((count) => {
-        const canvas = overlayRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const w = canvas.width, h = canvas.height;
-        const cx = w / 2, cy = h / 2;
-        const rx = w * 0.33, ry = h * 0.44;
-
-        ctx.clearRect(0, 0, w, h);
-        ctx.beginPath();
-        ctx.rect(0, 0, w, h);
-        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0,0,0,0.52)';
-        ctx.fill('evenodd');
-
-        const borderColor = count === 1 ? '#10B981' : '#9B4DAB';
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = borderColor;
-        ctx.lineWidth = 2.5;
-        ctx.setLineDash(count === 1 ? [] : [8, 5]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.font = 'bold 12px Lexend, system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        if (count === 0) {
-            ctx.fillStyle = 'rgba(255,255,255,0.85)';
-            ctx.fillText('Position your face in the oval', cx, cy + ry + 22);
-        } else if (count > 1) {
-            ctx.fillStyle = '#FCA5A5';
-            ctx.fillText('Only 1 face allowed in frame', cx, cy + ry + 22);
-        } else {
-            ctx.fillStyle = '#10B981';
-            ctx.fillText('Face detected ✓', cx, cy + ry + 22);
-        }
+        drawFaceGuide(overlayRef.current, guideStateForCount(count));
     }, []);
 
     useEffect(() => {
@@ -192,7 +161,7 @@ function FaceEnroll() {
 
             const detections = await faceapi.detectAllFaces(videoRef.current, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }));
             if (detections.length === 0) {
-                setError(`No face detected on photo ${i + 1}. Keep your face inside the oval.`);
+                setError(`No face detected on photo ${i + 1}. Keep your face inside the outline.`);
                 setCapturing(false); return;
             }
             if (detections.length > 1) {
@@ -242,7 +211,7 @@ function FaceEnroll() {
                 {/* Header */}
                 <div style={S.header}>
                     <div style={S.logoWrap}>
-                        <IconCamera size={22} color="#9B4DAB" />
+                        <IconCamera size={22} color="#C45E10" />
                     </div>
                     <div>
                         <h1 style={S.title}>Face Enrollment</h1>
@@ -254,9 +223,9 @@ function FaceEnroll() {
                 <div style={S.tipsGrid}>
                     {[
                         { icon: <IconSun size={14} color="#D97706" />,    text: 'Good lighting, face well lit' },
-                        { icon: <IconEye size={14} color="#9B4DAB" />,    text: 'Look directly at the camera' },
+                        { icon: <IconEye size={14} color="#C45E10" />,    text: 'Look directly at the camera' },
                         { icon: <IconUser size={14} color="#059669" />,   text: 'Only one face in frame' },
-                        { icon: <IconGlasses size={14} color="#7B2D8B" />,text: 'Remove glasses if possible' },
+                        { icon: <IconGlasses size={14} color="#C45E10" />,text: 'Remove glasses if possible' },
                     ].map((t, i) => (
                         <div key={i} style={S.tip}>
                             <span style={S.tipIcon}>{t.icon}</span>
@@ -374,7 +343,7 @@ const S = {
     card:          { backgroundColor: 'var(--adm-card)', borderRadius: 12, padding: '32px', width: '100%', maxWidth: '480px', boxShadow: 'var(--adm-card-shadow)', border: '1px solid var(--adm-border)' },
 
     header:        { display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' },
-    logoWrap:      { width: '48px', height: '48px', borderRadius: 4, backgroundColor: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+    logoWrap:      { width: '48px', height: '48px', borderRadius: 4, backgroundColor: '#FDF3EA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
     title:         { fontSize: '18px', fontWeight: '700', color: 'var(--adm-text)', marginBottom: '3px', fontFamily: "'Lexend', sans-serif" },
     subtitle:      { fontSize: '12.5px', color: 'var(--adm-text-muted)', fontFamily: "'Lexend', sans-serif" },
 
@@ -388,7 +357,7 @@ const S = {
     overlayCanvas: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' },
 
     scanLineWrap:  { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' },
-    scanLine:      { position: 'absolute', left: '10%', right: '10%', height: '2px', backgroundColor: '#9B4DAB', boxShadow: '0 0 10px #9B4DAB, 0 0 20px rgba(123,45,139,0.5)', animation: 'scanLine 2s ease-in-out infinite' },
+    scanLine:      { position: 'absolute', left: '10%', right: '10%', height: '2px', backgroundColor: '#C45E10', boxShadow: '0 0 10px #C45E10, 0 0 20px rgba(123,45,139,0.5)', animation: 'scanLine 2s ease-in-out infinite' },
 
     doneOverlay:   { position: 'absolute', inset: 0, backgroundColor: 'rgba(5,150,105,0.75)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' },
     doneCircle:    { width: '64px', height: '64px', borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.2)', border: '2px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
@@ -396,17 +365,17 @@ const S = {
 
     progressWrap:  { marginBottom: '12px' },
     progressTrack: { height: '6px', backgroundColor: 'var(--adm-border)', borderRadius: 4, overflow: 'hidden', marginBottom: '6px' },
-    progressFill:  { height: '100%', backgroundColor: '#9B4DAB', borderRadius: 4, transition: 'width 0.3s ease' },
+    progressFill:  { height: '100%', backgroundColor: '#C45E10', borderRadius: 4, transition: 'width 0.3s ease' },
     progressRow:   { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
     progressLabel: { fontSize: '12px', color: 'var(--adm-text-2)', fontFamily: "'Lexend', sans-serif" },
-    progressPct:   { fontSize: '12px', fontWeight: '700', color: '#9B4DAB', fontFamily: "'Lexend', sans-serif" },
+    progressPct:   { fontSize: '12px', fontWeight: '700', color: '#C45E10', fontFamily: "'Lexend', sans-serif" },
 
     status:        { fontSize: '13px', color: 'var(--adm-text-2)', textAlign: 'center', marginBottom: '16px', lineHeight: '1.5', fontFamily: "'Lexend', sans-serif" },
 
     errorBox:      { display: 'flex', alignItems: 'flex-start', gap: '8px', backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 8, padding: '10px 13px', marginBottom: '14px' },
     errorText:     { fontSize: '12.5px', color: '#BE123C', lineHeight: '1.5', fontFamily: "'Lexend', sans-serif" },
 
-    primaryBtn:    { width: '100%', padding: '13px', backgroundColor: '#9B4DAB', color: '#fff', fontSize: '14.5px', fontWeight: '600', border: 'none', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(123,45,139,0.25)', marginBottom: '16px', fontFamily: "'Lexend', sans-serif" },
+    primaryBtn:    { width: '100%', padding: '13px', backgroundColor: '#C45E10', color: '#fff', fontSize: '14.5px', fontWeight: '600', border: 'none', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(123,45,139,0.25)', marginBottom: '16px', fontFamily: "'Lexend', sans-serif" },
     spinner:       { width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 },
 
     footerNote:    { textAlign: 'center', fontSize: '11.5px', color: 'var(--adm-text-muted)', lineHeight: '1.6', fontFamily: "'Lexend', sans-serif" },

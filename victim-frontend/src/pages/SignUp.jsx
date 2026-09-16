@@ -61,8 +61,14 @@ const IcoCheck     = ({ pass }) => pass
     : (<svg width="10" height="10" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#CBD5E1" strokeWidth="2"/></svg>);
 const Spinner      = () => (<span style={{ width:14, height:14, border:'2px solid rgba(255,255,255,0.3)', borderTopColor:'#fff', borderRadius: '50%', animation:'spin 0.7s linear infinite', display:'inline-block', flexShrink:0 }} />);
 
-const Field = ({ label, optional, htmlFor, children }) => (
-    <div style={{ marginBottom:16 }}>
+// Two fields side by side. They wrap to their own lines on a narrow phone
+// rather than squeezing each other; `minWidth:0` lets them actually shrink,
+// which a flex item will not do by default.
+const ROW  = { display:'flex', gap:12, flexWrap:'wrap' };
+const CELL = { flex:'1 1 150px', minWidth:0 };
+
+const Field = ({ label, optional, htmlFor, children, style }) => (
+    <div style={{ marginBottom:16, ...style }}>
         <label htmlFor={htmlFor} style={{ display:'block', fontSize:11, fontWeight:700, color:'var(--accent-text)', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.07em', fontFamily:"'Lexend', sans-serif" }}>
             {label}{optional && <span style={{ fontWeight:400, color:'var(--text-muted)', fontSize:10.5, textTransform:'none', letterSpacing:0 }}> (optional)</span>}
         </label>
@@ -77,7 +83,7 @@ const Input = ({ type='text', name, placeholder, value, onChange, style={} }) =>
 
 const Select = ({ name, value, onChange, children }) => (
     <select id={name} name={name} value={value} onChange={onChange}
-        style={{ width:'100%', padding:'12px 14px', borderRadius: 8, border:'1.5px solid var(--border)', fontSize:14.5, color:'var(--text)', backgroundColor:'var(--surface-alt)', outline:'none', fontFamily:"'Lexend', sans-serif", cursor:'pointer' }}>
+        style={{ width:'100%', boxSizing:'border-box', padding:'12px 14px', borderRadius: 8, border:'1.5px solid var(--border)', fontSize:14.5, color:'var(--text)', backgroundColor:'var(--surface-alt)', outline:'none', fontFamily:"'Lexend', sans-serif", cursor:'pointer' }}>
         {children}
     </select>
 );
@@ -214,15 +220,15 @@ function SignUp() {
                 {/* Personal Info */}
                 <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#C45E10" strokeWidth="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Personal Information" />
 
-                <div style={{ display:'flex', gap:12 }}>
-                    <Field label="First Name" htmlFor="first_name"><Input name="first_name" placeholder="First name" value={form.first_name} onChange={handleChange} /></Field>
-                    <Field label="Last Name" htmlFor="last_name"><Input name="last_name" placeholder="Last name" value={form.last_name} onChange={handleChange} /></Field>
+                <div style={ROW}>
+                    <Field label="First Name" htmlFor="first_name" style={CELL}><Input name="first_name" placeholder="First name" value={form.first_name} onChange={handleChange} /></Field>
+                    <Field label="Last Name" htmlFor="last_name" style={CELL}><Input name="last_name" placeholder="Last name" value={form.last_name} onChange={handleChange} /></Field>
                 </div>
                 <Field label="Middle Name" optional htmlFor="middle_name"><Input name="middle_name" placeholder="Middle name" value={form.middle_name} onChange={handleChange} /></Field>
 
-                <div style={{ display:'flex', gap:12 }}>
-                    <Field label="Birthdate" htmlFor="birthdate"><Input type="date" name="birthdate" value={form.birthdate} onChange={handleChange} /></Field>
-                    <Field label="Sex" htmlFor="sex">
+                <div style={ROW}>
+                    <Field label="Birthdate" htmlFor="birthdate" style={CELL}><Input type="date" name="birthdate" value={form.birthdate} onChange={handleChange} /></Field>
+                    <Field label="Sex" htmlFor="sex" style={CELL}>
                         <Select name="sex" value={form.sex} onChange={handleChange}>
                             <option value="">Select</option>
                             <option value="Female">Female</option>

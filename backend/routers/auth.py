@@ -20,9 +20,12 @@ from core.dependencies import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-FRONTEND_URL = "http://localhost:3000"
-
 from core.config import settings
+
+# Where email links point. Hardcoding localhost here shipped verification
+# emails whose button only worked on a developer's machine.
+FRONTEND_URL = settings.FRONTEND_URL.rstrip("/")
+
 ABSTRACT_API_KEY = settings.ABSTRACT_API_KEY
 
 # ─── Pydantic Models ──────────────────────────────────────────────────────────
@@ -187,7 +190,10 @@ def login(payload: UserLogin, request: Request, db: Session = Depends(get_db)):
         else:
             raise HTTPException(status_code=403, detail="unverified_pending")
 
+    # Clear both buckets. Leaving the network bucket alone meant failures piled
+    # up on a shared address indefinitely, since nothing ever reset it.
     record_success(limit_key)
+    record_success(ip_key)
 
     token = create_access_token({"sub": str(user.id)})
     return {"access_token": token, "token_type": "bearer", "user": user}

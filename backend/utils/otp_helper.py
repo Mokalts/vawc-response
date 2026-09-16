@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from models.otp import OTP
 from core.config import settings
+from utils.email_templates import otp_email
 from fastapi import HTTPException
 
 SEMAPHORE_URL = "https://api.semaphore.co/api/v4/messages"
@@ -106,112 +107,10 @@ def send_otp_sms(phone_number: str, code: str):
 
 
 def send_otp_email(email: str, code: str, verify_link: str = None):
+    """Send the verification code. Layout lives in utils/email_templates.py."""
     try:
-        subject = "Your VAWC System Verification Code"
-
-        link_section = ""
-        if verify_link:
-            link_section = f"""
-                <p style="font-size:14px;color:#475569;margin:0 0 14px;line-height:1.6;">
-                    You can also verify your account by clicking the button below — in case you closed the verification page:
-                </p>
-                <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
-                    <tr>
-                        <td align="center">
-                            <a href="{verify_link}"
-                               style="display:inline-block;padding:14px 32px;background-color:#1FA87A;color:#fff;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;letter-spacing:-0.2px;">
-                                Verify My Account
-                            </a>
-                        </td>
-                    </tr>
-                </table>
-                <p style="text-align:center;font-size:12px;color:#CBD5E1;margin:8px 0 24px;">This link expires in 24 hours.</p>
-                <div style="height:1px;background:#F1F5F9;margin:0 0 24px;"></div>
-            """
-
-        digits = code
-
-        body = f"""
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>VAWC Verification Code</title>
-        </head>
-        <body style="margin:0;padding:0;background-color:#FBF0F3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FBF0F3;padding:32px 16px;">
-                <tr>
-                    <td align="center">
-                        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
-
-                            <!-- Header -->
-                            <tr>
-                                <td align="center" style="padding-bottom:24px;">
-                                    <table cellpadding="0" cellspacing="0">
-                                        <tr>
-                                            <td style="background:#fff;border:1px solid #EDADC2;border-radius:12px;padding:10px 14px;vertical-align:middle;">
-                                                <span style="font-size:18px;font-weight:800;color:#8B3050;letter-spacing:-0.3px;">VAWC-Response</span>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </td>
-                            </tr>
-
-                            <!-- Card -->
-                            <tr>
-                                <td style="background:#fff;border-radius:20px;border:1px solid #EDADC2;padding:36px 32px;box-shadow:0 4px 24px rgba(139,48,80,0.08);">
-
-                                    <!-- Title -->
-                                    <p style="margin:0 0 6px;font-size:22px;font-weight:800;color:#8B3050;">Verify your account</p>
-                                    <p style="margin:0 0 28px;font-size:14px;color:#94A3B8;">Barangay Palanginan, Iba, Zambales</p>
-
-                                    <!-- Message -->
-                                    <p style="margin:0 0 24px;font-size:15px;color:#475569;line-height:1.7;">
-                                        Use the verification code below to confirm your account. This code expires in <strong style="color:#8B3050;">5 minutes</strong>.
-                                    </p>
-
-                                    <!-- OTP digits -->
-                                    <table cellpadding="0" cellspacing="0" style="margin:0 auto 8px;">
-                                        <tr>
-                                            {''.join([f'<td style="padding:0 5px;"><div style="width:42px;height:54px;line-height:54px;text-align:center;background:#FBF0F3;border:2px solid #EDADC2;border-radius:10px;font-size:28px;font-weight:800;color:#C96882;font-family:\'Courier New\',monospace;">{d}</div></td>' for d in code])}
-                                        </tr>
-                                    </table>
-                                    <p style="text-align:center;font-size:12px;color:#CBD5E1;margin:10px 0 28px;">Enter this code in the verification screen</p>
-
-                                    <!-- Divider -->
-                                    <div style="height:1px;background:#F1F5F9;margin:0 0 24px;"></div>
-
-                                    {link_section}
-
-                                    <!-- Warning -->
-                                    <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:12px;padding:14px 16px;margin-top:8px;">
-                                        <p style="margin:0;font-size:13px;color:#92400E;line-height:1.6;">
-                                            <strong>Did not request this?</strong> You can safely ignore this email. Your account will not be affected.
-                                        </p>
-                                    </div>
-
-                                </td>
-                            </tr>
-
-                            <!-- Footer -->
-                            <tr>
-                                <td align="center" style="padding-top:24px;">
-                                    <p style="margin:0;font-size:12px;color:#CBD5E1;">
-                                        VAWC-Response System &nbsp;·&nbsp; Barangay Palanginan, Iba, Zambales<br>
-                                        <span style="font-size:11px;">Protected under Republic Act 9262</span>
-                                    </p>
-                                </td>
-                            </tr>
-
-                        </table>
-                    </td>
-                </tr>
-            </table>
-        </body>
-        </html>
-        """
-
+        subject, body = otp_email(code, verify_link=verify_link,
+                                  expire_minutes=OTP_EXPIRE_MINUTES)
         send_html_email(email, subject, body)
         print(f"[EMAIL] OTP sent to {email}")
 

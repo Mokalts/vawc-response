@@ -237,36 +237,19 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
 
 def _send_status_email(victim_email: str, victim_name: str, case_number: str, status: str, status_display: str):
     try:
+        import html as _html
         from utils.otp_helper import send_html_email
+        from utils.email_templates import case_status_email
 
         extra_msg = STATUS_EMAIL_MSG.get(status, "Your case status has been updated.")
 
-        html = f"""
-        <div style="font-family:'DM Sans',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #EDADC2;">
-          <div style="background:#8B3050;padding:28px 32px;">
-            <h1 style="color:#fff;margin:0;font-size:20px;">VAWC-Response</h1>
-            <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:13px;">Barangay Palanginan, Iba, Zambales</p>
-          </div>
-          <div style="padding:28px 32px;">
-            <p style="font-size:15px;color:#0F172A;margin:0 0 6px;">Hello, <strong>{victim_name}</strong></p>
-            <p style="font-size:14px;color:#475569;margin:0 0 20px;">Your case status has been updated.</p>
-            <div style="background:#FBF0F3;border-radius:10px;padding:16px 20px;border-left:4px solid #C96882;margin-bottom:20px;">
-              <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.7px;">Case Number</p>
-              <p style="margin:0 0 12px;font-size:16px;font-weight:800;color:#8B3050;font-family:monospace;">{case_number}</p>
-              <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.7px;">New Status</p>
-              <p style="margin:0;font-size:15px;font-weight:700;color:#0F172A;">{status_display}</p>
-            </div>
-            <p style="font-size:14px;color:#475569;line-height:1.6;margin:0 0 20px;">{extra_msg}</p>
-            <p style="font-size:13px;color:#94A3B8;margin:0;">You can view your case details by logging into the VAWC-Response victim portal.</p>
-          </div>
-          <div style="background:#F8FAFC;padding:16px 32px;border-top:1px solid #EDADC2;">
-            <p style="font-size:12px;color:#94A3B8;margin:0;">This message is confidential and intended only for {victim_name}. Do not share this email with anyone.</p>
-          </div>
-        </div>
-        """
-
-        subject = f"[VAWC-Response] Case {case_number} — Status Updated: {status_display}"
-        send_html_email(victim_email, subject, html)
+        subject, body = case_status_email(
+            _html.escape(victim_name or ""),
+            _html.escape(case_number or ""),
+            _html.escape(status_display or ""),
+            extra_msg,
+        )
+        send_html_email(victim_email, subject, body)
 
     except Exception as e:
         print(f"[Email] Failed to send status update email: {e}")
@@ -679,13 +662,30 @@ def update_respondent(
     The victim types this name at submission, so misspellings are common and they
     end up on the printed BPO and endorsement forms. The stored value is
     encrypted, so it has to be re-encrypted rather than assigned directly.
+
+    Super Admin only. A regular admin is served a MASKED name ("M**** S******"),
+    so letting them save would write the mask over the real name of a person
+    named on a protection order. The client hides the button, but the client is
+    never the place to enforce this.
     """
+    if not current_admin.is_super_admin:
+        raise HTTPException(
+            status_code=403,
+            detail="Only a Super Admin can correct the respondent's name.",
+        )
+
     case = _get_active_case(db, case_id)
     name = (payload.offender_name or "").strip()
     if not name:
         raise HTTPException(status_code=422, detail="Respondent name cannot be empty.")
     if len(name) > 120:
         raise HTTPException(status_code=422, detail="Respondent name is too long.")
+    # Belt and braces: a masked value must never be saved as the real name.
+    if "*" in name:
+        raise HTTPException(
+            status_code=422,
+            detail="That looks like a masked name. Enter the respondent's real name.",
+        )
     case.offender_name = encrypt(name)
     case.updated_at    = datetime.utcnow()
     db.commit()
@@ -780,33 +780,19 @@ def update_incident_type(
 # ── Message / hearing-notice email ────────────────────────────────────────────
 def _send_message_email(victim_email: str, victim_name: str, case_number: str, message: str):
     try:
+        import html as _html
         from utils.otp_helper import send_html_email
+        from utils.email_templates import case_message_email
 
-        safe_msg = (message or "").replace("\n", "<br/>")
-        html = f"""
-        <div style="font-family:'DM Sans',Arial,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #EDADC2;">
-          <div style="background:#8B3050;padding:28px 32px;">
-            <h1 style="color:#fff;margin:0;font-size:20px;">VAWC-Response</h1>
-            <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:13px;">Barangay Palanginan, Iba, Zambales</p>
-          </div>
-          <div style="padding:28px 32px;">
-            <p style="font-size:15px;color:#0F172A;margin:0 0 6px;">Hello, <strong>{victim_name}</strong></p>
-            <p style="font-size:14px;color:#475569;margin:0 0 20px;">You have a new message from the barangay VAWC office regarding your case.</p>
-            <div style="background:#FBF0F3;border-radius:10px;padding:16px 20px;border-left:4px solid #C96882;margin-bottom:20px;">
-              <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.7px;">Case Number</p>
-              <p style="margin:0 0 12px;font-size:16px;font-weight:800;color:#8B3050;font-family:monospace;">{case_number}</p>
-              <p style="margin:0 0 4px;font-size:11px;font-weight:700;color:#94A3B8;text-transform:uppercase;letter-spacing:0.7px;">Message</p>
-              <p style="margin:0;font-size:14px;color:#0F172A;line-height:1.6;">{safe_msg}</p>
-            </div>
-            <p style="font-size:13px;color:#94A3B8;margin:0;">Log in to the VAWC-Response victim portal to view your case.</p>
-          </div>
-          <div style="background:#F8FAFC;padding:16px 32px;border-top:1px solid #EDADC2;">
-            <p style="font-size:12px;color:#94A3B8;margin:0;">This message is confidential and intended only for {victim_name}. Do not share it with anyone.</p>
-          </div>
-        </div>
-        """
-        subject = f"[VAWC-Response] New message on Case {case_number}"
-        send_html_email(victim_email, subject, html)
+        # Escape first, then turn real newlines into breaks: the message is typed
+        # by staff and went into the HTML unescaped before.
+        safe_msg = _html.escape(message or "").replace("\n", "<br/>")
+        subject, body = case_message_email(
+            _html.escape(victim_name or ""),
+            _html.escape(case_number or ""),
+            safe_msg,
+        )
+        send_html_email(victim_email, subject, body)
     except Exception as e:
         print(f"[Email] Failed to send case message email: {e}")
 

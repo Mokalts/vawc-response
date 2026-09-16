@@ -21,6 +21,11 @@ import React, { useEffect, useRef } from 'react';
  *
  * Shortcut: press Escape three times quickly. Three rather than one so it
  * cannot fire while she is simply closing a dialog.
+ *
+ * WHERE IT LIVES: on every screen that carries the bottom navigation, it is the
+ * last item in that bar (see BottomNavbar). It used to float above the content
+ * on those screens, where it covered the Submit Report button. The floating pill
+ * below is now only for screens with no bottom bar, such as sign-in.
  */
 
 const EXIT_URL = 'https://www.google.com/search?q=weather+today';
@@ -47,47 +52,53 @@ if (!document.getElementById('vawc-quickexit-css')) {
     document.head.appendChild(s);
 }
 
-const IcoExit = () => (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-        <path d="M16 17l5-5-5-5M21 12H9" />
-    </svg>
-);
+/** Leave the site now. Exported so the nav bar triggers the same behaviour. */
+export function quickExit() {
+    try { DRAFT_KEYS.forEach(k => localStorage.removeItem(k)); } catch {}
+    // New tab first so something innocuous is on screen even if the replace
+    // below is slowed by the network.
+    try { window.open(EXIT_URL, '_blank', 'noopener')?.focus(); } catch {}
+    try { window.location.replace(EXIT_URL); } catch { window.location.href = EXIT_URL; }
+}
 
-export default function QuickExit({ bottom = 86 }) {
+/**
+ * Triple-Escape shortcut. Mounted once, app-wide, so it works on every screen
+ * whether or not the bottom bar is present.
+ */
+export function useTripleEscape() {
     // A ref, not state: the tap count is never rendered, and using state would
     // re-render the whole tree on every Escape press.
     const taps = useRef(0);
-
-    const leave = () => {
-        try { DRAFT_KEYS.forEach(k => localStorage.removeItem(k)); } catch {}
-        // New tab first so something innocuous is on screen even if the
-        // replace below is slowed by the network.
-        try { window.open(EXIT_URL, '_blank', 'noopener')?.focus(); } catch {}
-        try { window.location.replace(EXIT_URL); } catch { window.location.href = EXIT_URL; }
-    };
-
-    // Triple-Escape shortcut, reset if the presses are more than 1.2s apart.
     useEffect(() => {
         let timer;
         const onKey = (e) => {
             if (e.key !== 'Escape') return;
             taps.current += 1;
-            if (taps.current >= 3) { taps.current = 0; leave(); return; }
+            if (taps.current >= 3) { taps.current = 0; quickExit(); return; }
             clearTimeout(timer);
             timer = setTimeout(() => { taps.current = 0; }, 1200);
         };
         window.addEventListener('keydown', onKey);
         return () => { window.removeEventListener('keydown', onKey); clearTimeout(timer); };
     }, []);
+}
 
+export const IcoExit = ({ size = 15, color = 'currentColor' }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+        <path d="M16 17l5-5-5-5M21 12H9" />
+    </svg>
+);
+
+/** The floating pill, for screens without the bottom navigation. */
+export default function QuickExit({ bottom = 16 }) {
     return (
         <button
             type="button"
             className="vqe-btn"
             style={{ bottom }}
-            onClick={leave}
+            onClick={quickExit}
             title="Leave this site immediately (or press Escape three times)"
             aria-label="Leave this site immediately. Opens a neutral page and removes this site from your browser history.">
             <IcoExit />

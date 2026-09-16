@@ -862,7 +862,10 @@ function ReportNow() {
 }
 
 const S = {
-    page:         { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', paddingBottom:80, fontFamily:"'Lexend', sans-serif" },
+    // 92 clears the floating bottom bar (62 tall, 10 from the bottom) with room
+    // to spare, matching the other pages. At 80 the Submit button sat right
+    // against it.
+    page:         { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', paddingBottom:92, fontFamily:"'Lexend', sans-serif" },
     topBar:       { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', backgroundColor:'var(--surface)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100 },
     backBtn:      { width:44, height:44, borderRadius: 10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
     title:        { fontSize:16, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },

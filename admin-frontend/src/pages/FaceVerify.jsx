@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as faceapi from 'face-api.js';
 import api from '../api/api';
+import { drawFaceGuide, guideStateForCount } from '../components/FaceGuide';
 
 // ─── Font injection ───────────────────────────────────────────────────────────
 if (!document.getElementById('vawc-font')) {
@@ -18,17 +19,25 @@ if (!document.getElementById('vawc-verify-css')) {
     s.textContent = `
         @keyframes spin     { to { transform: rotate(360deg); } }
         @keyframes scanLine {
-            0%   { top: 20%; opacity: 0.8; }
-            50%  { top: 75%; opacity: 1;   }
-            100% { top: 20%; opacity: 0.8; }
+            0%   { top: 18%; opacity: 0.75; }
+            50%  { top: 78%; opacity: 1;    }
+            100% { top: 18%; opacity: 0.75; }
         }
         @keyframes slideUp  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes pulse    { 0%,100%{box-shadow:0 0 0 0 rgba(123,45,139,0.4)} 70%{box-shadow:0 0 0 10px rgba(123,45,139,0)} }
         @keyframes fadeIn   { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
-        .verify-btn { transition: all 0.18s ease !important; }
-        .verify-btn:hover:not([disabled]) { background: #A34D0D !important; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(196,94,16,0.35) !important; }
-        .verify-modal-btn { transition: all 0.15s ease !important; }
-        .verify-modal-btn:hover { transform: translateY(-1px); }
+        @keyframes nudgeL   { 0%,100%{transform:translateX(0);opacity:0.45} 50%{transform:translateX(-5px);opacity:1} }
+        @keyframes nudgeR   { 0%,100%{transform:translateX(0);opacity:0.45} 50%{transform:translateX(5px);opacity:1} }
+        .fv-btn { transition: background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease; }
+        .fv-btn:hover:not([disabled]) { transform: translateY(-1px); }
+        .fv-primary:hover:not([disabled]) { background: #A34D0D !important; box-shadow: 0 6px 16px rgba(196,94,16,0.30) !important; }
+        .fv-ghost:hover { background: var(--adm-muted) !important; }
+        .fv-nudge-l { animation: nudgeL 1.1s ease-in-out infinite; }
+        .fv-nudge-r { animation: nudgeR 1.1s ease-in-out infinite; }
+        /* Motion here is decoration on top of a security step; anyone who has
+           asked their system to calm animations should not get a pulsing frame. */
+        @media (prefers-reduced-motion: reduce) {
+            .fv-scan, .fv-nudge-l, .fv-nudge-r { animation: none !important; }
+        }
     `;
     document.head.appendChild(s);
 }
@@ -36,10 +45,8 @@ if (!document.getElementById('vawc-verify-css')) {
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
 const IconFace = ({ size = 22, color = "currentColor" }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-        <circle cx="12" cy="12" r="10" stroke={color} strokeWidth="1.8" />
-        <path d="M8 14s1.5 2 4 2 4-2 4-2" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
-        <line x1="9" y1="10" x2="9.01" y2="10" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
-        <line x1="15" y1="10" x2="15.01" y2="10" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M12 3a5 5 0 015 5v1a5 5 0 01-10 0V8a5 5 0 015-5z" stroke={color} strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
     </svg>
 );
 const IconShield = ({ size = 22, color = "currentColor" }) => (
@@ -64,6 +71,16 @@ const IconBack = ({ size = 16, color = "currentColor" }) => (
         <path d="M19 12H5M12 5l-7 7 7 7" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
 );
+const IconChevron = ({ dir = 'left', size = 16, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" style={{ transform: dir === 'right' ? 'scaleX(-1)' : 'none' }}>
+        <path d="M15 5l-7 7 7 7" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+const IconTick = ({ size = 13, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+        <path d="M20 6L9 17l-5-5" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
 
 // ─── Liveness constants ───────────────────────────────────────────────────────
 // NOTE: blink detection was removed - see git history. Browser webcams have
@@ -72,6 +89,22 @@ const IconBack = ({ size = 16, color = "currentColor" }) => (
 const LIVENESS_DURATION = 10;       // seconds per attempt
 const MAX_LIVENESS_ATTEMPTS = 3;    // before forcing return to login
 const TURN_THRESHOLD = 0.16;        // nose-from-face-center offset (~16% of face width)
+
+// What the live guide says. One line, plain language, tied to what the camera
+// can actually see right now.
+const GUIDE_TEXT = {
+    idle:      { text: 'Fit your head and shoulders inside the outline', tone: 'neutral' },
+    searching: { text: 'No face detected yet. Fit your head and shoulders in the outline', tone: 'neutral' },
+    ok:        { text: 'Face detected. You are framed correctly', tone: 'good' },
+    multi:     { text: 'More than one person is in frame. Only you should be visible', tone: 'warn' },
+    busy:      { text: 'Hold still', tone: 'neutral' },
+};
+
+const TIPS = [
+    'Face a window or lamp, not away from it',
+    'Hold the camera at eye level',
+    'Remove hats, sunglasses or a face covering',
+];
 
 function FaceVerify() {
     const navigate = useNavigate();
@@ -97,49 +130,25 @@ function FaceVerify() {
     const livenessTimerRef = useRef(null);
     const livenessRef = useRef({ turnLeft: false, turnRight: false, done: false });
 
-    // ── Oval overlay ──────────────────────────────────────────────────────────
-    const drawOverlay = useCallback((count) => {
-        const canvas = overlayRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        const w = canvas.width, h = canvas.height;
-        const cx = w / 2, cy = h / 2;
-        const rx = w * 0.33, ry = h * 0.44;
+    // ── Guide overlay ─────────────────────────────────────────────────────────
+    // The guide is redrawn every animation frame, but React only hears about it
+    // when the state actually changes: re-rendering the page 60 times a second
+    // to retype the same sentence would make the camera stutter.
+    const guideRef = useRef('idle');
+    const [guide, setGuide] = useState('idle');
 
-        ctx.clearRect(0, 0, w, h);
-        ctx.beginPath();
-        ctx.rect(0, 0, w, h);
-        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0,0,0,0.52)';
-        ctx.fill('evenodd');
-
-        const borderColor = count === 1 ? '#10B981' : '#9B4DAB';
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = borderColor;
-        ctx.lineWidth = 2.5;
-        ctx.setLineDash(count === 1 ? [] : [8, 5]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        ctx.font = 'bold 12px Lexend, system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        if (count === 0) {
-            ctx.fillStyle = 'rgba(255,255,255,0.85)';
-            ctx.fillText('Position your face in the oval', cx, cy + ry + 22);
-        } else if (count > 1) {
-            ctx.fillStyle = '#FCA5A5';
-            ctx.fillText('Only 1 face allowed in frame', cx, cy + ry + 22);
-        } else {
-            ctx.fillStyle = '#10B981';
-            ctx.fillText('Face detected \u2713', cx, cy + ry + 22);
+    const drawOverlay = useCallback((count, busy = false) => {
+        const next = guideStateForCount(count, busy);
+        drawFaceGuide(overlayRef.current, next);
+        if (guideRef.current !== next) {
+            guideRef.current = next;
+            setGuide(next);
         }
     }, []);
 
     useEffect(() => {
-        const canvas = overlayRef.current;
-        if (canvas) drawOverlay(0);
-    }, [drawOverlay]);
+        if (overlayRef.current) drawFaceGuide(overlayRef.current, 'idle');
+    }, []);
 
     // ── Live detection ────────────────────────────────────────────────────────
     const startLiveDetection = useCallback(() => {
@@ -165,7 +174,7 @@ function FaceVerify() {
                 await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
                 await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
                 setModelsLoaded(true);
-                setStatus('Camera ready. Click Verify Face when ready.');
+                setStatus('Ready when you are.');
                 startLiveDetection();
             } catch {
                 setPopup({ type: 'error', message: 'Failed to load face models. Please refresh the page.' });
@@ -241,13 +250,14 @@ function FaceVerify() {
         stopLivenessLoop();
         setPhase('capturing');
         setVerifying(true);
-        setStatus('Liveness confirmed. Verifying your face…');
+        setStatus('Liveness confirmed. Checking your face…');
+        drawFaceGuide(overlayRef.current, 'busy');
         try {
             const detection = await faceapi.detectSingleFace(videoRef.current).withFaceLandmarks().withFaceDescriptor();
             if (!detection) {
                 setVerifying(false);
                 setPhase('idle');
-                setStatus('Click Verify Face to try again.');
+                setStatus('Ready when you are.');
                 startLiveDetection();
                 setPopup({ type: 'error', message: 'Could not read face data clearly. Ensure your face is well-lit and centered.' });
                 return;
@@ -255,7 +265,7 @@ function FaceVerify() {
             const descriptor = Array.from(detection.descriptor);
             await api.post('/admin/auth/verify-face', { descriptor });
             localStorage.setItem('face_verified', 'true');
-            setPopup({ type: 'success', message: 'Identity verified successfully. Redirecting to your dashboard…' });
+            setPopup({ type: 'success', message: 'Identity verified. Taking you to your dashboard…' });
             setTimeout(() => {
                 if (videoRef.current?.srcObject) videoRef.current.srcObject.getTracks().forEach(t => t.stop());
                 navigate('/dashboard');
@@ -263,7 +273,7 @@ function FaceVerify() {
         } catch (err) {
             setVerifying(false);
             setPhase('idle');
-            setStatus('Click Verify Face to try again.');
+            setStatus('Ready when you are.');
             startLiveDetection();
             const msg = err.response?.data?.detail || 'Verification failed. Please try again.';
             setPopup({ type: 'error', message: typeof msg === 'string' ? msg : 'Verification failed. Please try again.' });
@@ -281,7 +291,7 @@ function FaceVerify() {
             setStatus('Liveness check failed too many times.');
             setPopup({ type: 'error', message: 'Liveness check failed multiple times. For your security, please return to login and try again.' });
         } else {
-            setStatus(`Liveness check timed out. ${MAX_LIVENESS_ATTEMPTS - next} attempt${MAX_LIVENESS_ATTEMPTS - next === 1 ? '' : 's'} left.`);
+            setStatus(`Timed out. ${MAX_LIVENESS_ATTEMPTS - next} attempt${MAX_LIVENESS_ATTEMPTS - next === 1 ? '' : 's'} left.`);
             startLiveDetection();
         }
     }, [livenessAttempts, startLiveDetection, stopLivenessLoop]);
@@ -292,7 +302,7 @@ function FaceVerify() {
 
         const detections = await faceapi.detectAllFaces(videoRef.current, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }));
         if (detections.length === 0) {
-            setPopup({ type: 'error', message: 'No face detected. Make sure your face is clearly visible inside the oval and lighting is adequate.' });
+            setPopup({ type: 'error', message: 'No face detected. Make sure your face is clearly visible inside the outline and lighting is adequate.' });
             return;
         }
         if (detections.length > 1) {
@@ -305,7 +315,7 @@ function FaceVerify() {
         setTurnRightDone(false);
         setPhase('liveness');
         setLivenessTimeLeft(LIVENESS_DURATION);
-        setStatus('Please turn your head left, then right.');
+        setStatus('Turn your head left, then right.');
         if (animRef.current) cancelAnimationFrame(animRef.current);
         runLivenessLoop();
         livenessTimerRef.current = setInterval(() => {
@@ -336,9 +346,24 @@ function FaceVerify() {
     const cancelLiveness = () => {
         stopLivenessLoop();
         setPhase('idle');
-        setStatus('Click Verify Face when ready.');
+        setStatus('Ready when you are.');
         startLiveDetection();
     };
+
+    // What the status band shows right now.
+    const band = !ready
+        ? { text: 'Starting the camera…', tone: 'neutral' }
+        : verifying
+            ? { text: 'Checking your face…', tone: 'neutral' }
+            : phase === 'liveness'
+                ? { text: 'Turn your head slowly, left then right', tone: 'neutral' }
+                : (GUIDE_TEXT[guide] || GUIDE_TEXT.idle);
+
+    const toneColor = { good: '#047857', warn: '#B45309', neutral: 'var(--adm-text-2)' }[band.tone];
+    const toneBg = { good: '#ECFDF5', warn: '#FFFBEB', neutral: 'var(--adm-muted)' }[band.tone];
+    const toneBorder = { good: '#A7F3D0', warn: '#FDE68A', neutral: 'var(--adm-border)' }[band.tone];
+
+    const livenessPct = Math.max(0, Math.min(100, (livenessTimeLeft / LIVENESS_DURATION) * 100));
 
     return (
         <div style={S.page}>
@@ -347,126 +372,130 @@ function FaceVerify() {
                 {/* Header */}
                 <div style={S.header}>
                     <div style={S.logoWrap}>
-                        <IconFace size={22} color="#9B4DAB" />
+                        <IconFace size={22} color="#C45E10" />
                     </div>
-                    <div>
-                        <h1 style={S.title}>Face Verification</h1>
-                        <p style={S.subtitle}>Step 2 of 2 - Confirm your identity</p>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <h1 style={S.title}>Face verification</h1>
+                        <p style={S.subtitle}>Confirm it is you before opening case records</p>
                     </div>
                 </div>
 
-                {/* Lighting / positioning tip */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, background: '#FFF3E0', border: '1.5px solid #FFCC99', borderRadius: 8, padding: '10px 12px', marginBottom: 14, fontFamily: "'Lexend', sans-serif" }}>
-                    <span style={{ flexShrink: 0, width: 22, height: 22, borderRadius: '50%', background: '#F47920', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
-                            <circle cx="12" cy="12" r="4" stroke="#fff" strokeWidth="2" />
-                            <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
-                    </span>
-                    <div>
-                        <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#9A3412' }}>
-                            For best results:
-                        </p>
-                        <p style={{ margin: '1px 0 0', fontSize: 12.5, color: '#7C2D12', lineHeight: 1.5 }}>
-                            Ensure your face is <strong>well-lit</strong> and <strong>facing the camera directly</strong>. Remove glasses or hats if scan keeps failing.
-                        </p>
-                    </div>
+                {/* Step indicator: password is done, this is the second factor. */}
+                <div style={S.steps}>
+                    <span style={S.stepDone}><IconTick size={11} color="#fff" /></span>
+                    <span style={S.stepLabelDone}>Password</span>
+                    <span style={S.stepBar} />
+                    <span style={S.stepCurrent}>2</span>
+                    <span style={S.stepLabel}>Face check</span>
                 </div>
 
                 {/* Camera */}
                 <div style={S.cameraWrap}>
-                    <video ref={videoRef} autoPlay muted style={S.video} />
+                    <video ref={videoRef} autoPlay muted playsInline style={S.video} />
                     <canvas ref={overlayRef} width={640} height={480} style={S.overlayCanvas} />
 
                     {verifying && (
                         <div style={S.scanWrap}>
-                            <div style={S.scanLine} />
+                            <div className="fv-scan" style={S.scanLine} />
                         </div>
                     )}
 
                     {!ready && (
                         <div style={S.warmingOverlay}>
                             <div style={S.warmingSpinner} />
-                            <p style={S.warmingText}>Warming up camera…</p>
+                            <p style={S.warmingText}>Starting the camera…</p>
                         </div>
                     )}
                 </div>
 
-                {/* Status */}
-                <p style={S.status}>{status}</p>
+                {/* Live status band. aria-live so a screen reader hears the same
+                    framing feedback that the outline colour gives visually. */}
+                <div role="status" aria-live="polite"
+                    style={{ ...S.band, background: toneBg, borderColor: toneBorder, color: toneColor }}>
+                    {band.tone === 'good'
+                        ? <IconTick size={14} color="#047857" />
+                        : <span style={{ ...S.bandDot, background: toneColor }} />}
+                    <span style={S.bandText}>{band.text}</span>
+                </div>
 
-                {/* ── Liveness challenge panel ── */}
+                {/* ── Liveness challenge ── */}
                 {phase === 'liveness' && (
-                    <div style={{ background: '#F3E5F5', border: '2px solid #9B4DAB', borderRadius: 10, padding: '14px 16px', marginBottom: 12, fontFamily: "'Lexend', sans-serif", animation: 'fadeIn 0.2s ease' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
-                            <span style={{ fontSize: 10.5, fontWeight: 700, color: '#4A1259', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                                Liveness Check
-                            </span>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: livenessTimeLeft <= 3 ? '#C62828' : '#7B2D8B', background: '#fff', padding: '2px 10px', borderRadius: 9999, border: `1.5px solid ${livenessTimeLeft <= 3 ? '#FECACA' : '#E1BEE7'}` }}>
+                    <div style={S.liveness}>
+                        <div style={S.livenessHead}>
+                            <span style={S.livenessLabel}>Liveness check</span>
+                            <span style={{ ...S.livenessTime, color: livenessTimeLeft <= 3 ? '#B91C1C' : '#C45E10' }}>
                                 {livenessTimeLeft}s
                             </span>
                         </div>
-                        <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#4A1259', lineHeight: 1.35 }}>
-                            Turn your head left, then right
-                        </p>
-                        <p style={{ margin: '3px 0 10px', fontSize: 12, color: '#6B2078' }}>
-                            Slowly rotate your head to each side, keeping your face in frame.
-                        </p>
-                        {/* Progress chips */}
-                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 9999, background: turnLeftDone ? '#2E7D32' : '#fff', color: turnLeftDone ? '#fff' : '#7B2D8B', border: `1.5px solid ${turnLeftDone ? '#2E7D32' : '#E1BEE7'}`, fontSize: 12, fontWeight: 700 }}>
-                                {turnLeftDone ? '✓' : '○'} Turn Left
-                            </span>
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 9999, background: turnRightDone ? '#2E7D32' : '#fff', color: turnRightDone ? '#fff' : '#7B2D8B', border: `1.5px solid ${turnRightDone ? '#2E7D32' : '#E1BEE7'}`, fontSize: 12, fontWeight: 700 }}>
-                                {turnRightDone ? '✓' : '○'} Turn Right
-                            </span>
+                        <div style={S.livenessTrack}>
+                            <div style={{ ...S.livenessFill, width: `${livenessPct}%`, background: livenessTimeLeft <= 3 ? '#B91C1C' : '#F47920' }} />
                         </div>
+
+                        <div style={S.turnRow}>
+                            <div style={{ ...S.turnCard, ...(turnLeftDone ? S.turnCardDone : null) }}>
+                                {turnLeftDone
+                                    ? <IconTick size={16} color="#047857" />
+                                    : <span className="fv-nudge-l" style={{ display: 'inline-flex' }}><IconChevron dir="left" color="#C45E10" /></span>}
+                                <span style={{ ...S.turnText, color: turnLeftDone ? '#047857' : 'var(--adm-text)' }}>Turn left</span>
+                            </div>
+                            <div style={{ ...S.turnCard, ...(turnRightDone ? S.turnCardDone : null) }}>
+                                {turnRightDone
+                                    ? <IconTick size={16} color="#047857" />
+                                    : <span className="fv-nudge-r" style={{ display: 'inline-flex' }}><IconChevron dir="right" color="#C45E10" /></span>}
+                                <span style={{ ...S.turnText, color: turnRightDone ? '#047857' : 'var(--adm-text)' }}>Turn right</span>
+                            </div>
+                        </div>
+                        <p style={S.livenessHint}>Keep your face in the outline while you turn. This proves you are here in person, not a photo.</p>
                     </div>
+                )}
+
+                {/* Tips — only while idle, so they do not compete with the
+                    live instructions during the check. */}
+                {phase === 'idle' && !verifying && (
+                    <ul style={S.tips}>
+                        {TIPS.map(t => (
+                            <li key={t} style={S.tip}>
+                                <span style={S.tipDot} />
+                                <span>{t}</span>
+                            </li>
+                        ))}
+                    </ul>
                 )}
 
                 {/* Verify / Cancel button */}
                 {phase === 'liveness' ? (
-                    <button
-                        type="button"
-                        onClick={cancelLiveness}
-                        style={{ ...S.verifyBtn, backgroundColor: 'var(--adm-card)', color: '#7B2D8B', border: '1.5px solid #E1BEE7', boxShadow: 'none' }}
-                    >
-                        Cancel liveness check
+                    <button type="button" className="fv-btn fv-ghost" onClick={cancelLiveness} style={S.secondaryBtn}>
+                        Cancel check
                     </button>
                 ) : (
                     <button
-                        className="verify-btn"
-                        style={{ ...S.verifyBtn, opacity: (!modelsLoaded || verifying || !ready) ? 0.6 : 1 }}
+                        className="fv-btn fv-primary"
+                        style={{ ...S.primaryBtn, opacity: (!modelsLoaded || verifying || !ready) ? 0.6 : 1 }}
                         onClick={handleVerify}
                         disabled={!modelsLoaded || verifying || !ready}
                     >
                         {verifying ? (
-                            <>
-                                <span style={S.spinner} />
-                                Verifying…
-                            </>
+                            <><span style={S.spinner} />Checking…</>
                         ) : !ready ? (
-                            <>
-                                <span style={S.spinner} />
-                                Camera warming up…
-                            </>
+                            <><span style={S.spinner} />Starting camera…</>
                         ) : (
-                            <>
-                                <IconFace size={16} color="#fff" />
-                                Verify Face
-                            </>
+                            <><IconFace size={16} color="#fff" />Start face check</>
                         )}
                     </button>
                 )}
 
+                <p style={S.processNote}>{status}</p>
+
                 {/* Back link */}
-                <button style={S.backBtn} onClick={handleBack}>
-                    <IconBack size={13} color="#94A3B8" />
-                    Back to Login
+                <button className="fv-btn fv-ghost" style={S.backBtn} onClick={handleBack}>
+                    <IconBack size={13} color="var(--adm-text-muted)" />
+                    Back to sign in
                 </button>
 
-                {/* ── TEMPORARY BYPASS - remove when camera is working ── */}
-                {/* ── TEMPORARY BYPASS - remove when camera is working ── */}
+                {/* ── TEMPORARY BYPASS - remove when camera is working ──
+                    This skips the second factor entirely. It must not survive
+                    into real use: anyone with a stolen password walks straight
+                    into the case records. */}
                 <button
                     onClick={async () => {
                         try {
@@ -479,9 +508,9 @@ function FaceVerify() {
                             navigate('/dashboard');
                         }
                     }}
-                    style={{ marginTop: 8, width: '100%', padding: '10px 0', borderRadius: 4, border: '1.5px dashed #E1BEE7', background: 'transparent', color: '#9B4DAB', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend', sans-serif" }}
+                    style={S.bypassBtn}
                 >
-                    Skip Face Verification (Temporary)
+                    Skip face verification (temporary)
                 </button>
             </div>
 
@@ -490,45 +519,38 @@ function FaceVerify() {
                 <div style={S.backdrop}>
                     <div style={S.modal}>
 
-                        {/* Icon */}
                         <div style={{ ...S.modalIconWrap, backgroundColor: popup.type === 'success' ? '#ECFDF5' : '#FFF1F2' }}>
                             {popup.type === 'success'
-                                ? <IconShield size={28} color="#059669" />
-                                : <IconX size={28} color="#E11D48" />
+                                ? <IconShield size={28} color="#047857" />
+                                : <IconX size={28} color="#B91C1C" />
                             }
                         </div>
 
-                        <h2 style={{ ...S.modalTitle, color: popup.type === 'success' ? '#059669' : '#BE123C' }}>
-                            {popup.type === 'success' ? 'Verified' : 'Verification Failed'}
+                        <h2 style={{ ...S.modalTitle, color: popup.type === 'success' ? '#047857' : '#B91C1C' }}>
+                            {popup.type === 'success' ? 'Verified' : 'Verification failed'}
                         </h2>
                         <p style={S.modalMsg}>{popup.message}</p>
 
                         {popup.type === 'error' && (
-                            <div style={{ background: '#FFF3E0', border: '1.5px solid #FFCC99', borderRadius: 8, padding: '10px 12px', margin: '4px 0 14px', fontFamily: "'Lexend', sans-serif" }}>
-                                <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: '#9A3412' }}>Tips before retrying</p>
-                                <p style={{ margin: '2px 0 0', fontSize: 12, color: '#7C2D12', lineHeight: 1.5 }}>
-                                    Move to a brighter spot, face the camera directly, and keep your full face inside the oval. Remove glasses or face coverings.
-                                </p>
-                            </div>
+                            <ul style={{ ...S.tips, textAlign: 'left', marginBottom: 16 }}>
+                                {TIPS.map(t => (
+                                    <li key={t} style={S.tip}>
+                                        <span style={S.tipDot} />
+                                        <span>{t}</span>
+                                    </li>
+                                ))}
+                            </ul>
                         )}
 
                         {popup.type === 'error' && (
                             <div style={S.modalBtns}>
-                                <button
-                                    className="verify-modal-btn"
-                                    style={S.retryBtn}
-                                    onClick={closePopup}
-                                >
+                                <button className="fv-btn fv-primary" style={S.primaryBtn} onClick={closePopup}>
                                     <IconRefresh size={14} color="#fff" />
-                                    Try Again
+                                    Try again
                                 </button>
-                                <button
-                                    className="verify-modal-btn"
-                                    style={S.returnBtn}
-                                    onClick={handleBack}
-                                >
-                                    <IconBack size={14} color="#7B2D8B" />
-                                    Return to Sign In
+                                <button className="fv-btn fv-ghost" style={S.secondaryBtn} onClick={handleBack}>
+                                    <IconBack size={14} color="var(--adm-text-2)" />
+                                    Return to sign in
                                 </button>
                             </div>
                         )}
@@ -545,50 +567,77 @@ function FaceVerify() {
     );
 }
 
+const FF = "'Lexend', sans-serif";
 const S = {
     // Surfaces use the shared --adm-* tokens so this page follows the theme.
     // It sits between Login and Dashboard, and hardcoded light values made the
-    // admin flash white mid-flow in dark mode. The video letterbox, the scan
-    // line and the violet brand accents stay fixed on purpose.
-    page: { minHeight: '100vh', backgroundColor: 'var(--adm-page)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'Lexend', sans-serif" },
-    card: { backgroundColor: 'var(--adm-card)', borderRadius: 12, padding: '32px', width: '100%', maxWidth: '480px', boxShadow: 'var(--adm-card-shadow)', border: '1px solid var(--adm-border)' },
+    // admin flash white mid-flow in dark mode. The video letterbox stays dark on
+    // purpose: it is a camera frame, not a surface.
+    page: { minHeight: '100vh', backgroundColor: 'var(--adm-page)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: FF },
+    card: { backgroundColor: 'var(--adm-card)', borderRadius: 16, padding: 28, width: '100%', maxWidth: 460, boxShadow: 'var(--adm-card-shadow)', border: '1px solid var(--adm-border)' },
 
-    header: { display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '20px' },
-    logoWrap: { width: '48px', height: '48px', borderRadius: 4, backgroundColor: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-    title: { fontSize: '18px', fontWeight: '700', color: 'var(--adm-text)', marginBottom: '3px', fontFamily: "'Lexend', sans-serif" },
-    subtitle: { fontSize: '12.5px', color: 'var(--adm-text-muted)', fontFamily: "'Lexend', sans-serif" },
+    header: { display: 'flex', alignItems: 'center', gap: 13, marginBottom: 16 },
+    logoWrap: { width: 46, height: 46, borderRadius: 12, backgroundColor: '#FDF3EA', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+    title: { fontSize: 19, fontWeight: 700, letterSpacing: '-0.02em', color: 'var(--adm-text)', margin: 0, fontFamily: FF },
+    subtitle: { fontSize: 12.5, color: 'var(--adm-text-muted)', margin: '3px 0 0', fontFamily: FF },
 
-    cameraWrap: { position: 'relative', width: '100%', aspectRatio: '4/3', backgroundColor: '#0F172A', borderRadius: 4, overflow: 'hidden', marginBottom: '16px' },
+    steps: { display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 },
+    stepDone: { width: 18, height: 18, borderRadius: '50%', background: '#047857', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+    stepLabelDone: { fontSize: 11.5, fontWeight: 600, color: 'var(--adm-text-muted)', fontFamily: FF },
+    stepBar: { flex: 1, height: 2, background: 'var(--adm-border)', borderRadius: 2 },
+    stepCurrent: { width: 18, height: 18, borderRadius: '50%', background: '#C45E10', color: '#fff', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: FF },
+    stepLabel: { fontSize: 11.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: FF },
+
+    cameraWrap: { position: 'relative', width: '100%', aspectRatio: '4/3', backgroundColor: '#12100E', borderRadius: 12, overflow: 'hidden', marginBottom: 12 },
     video: { width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' },
     overlayCanvas: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' },
 
     scanWrap: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' },
-    scanLine: { position: 'absolute', left: '10%', right: '10%', height: '2px', backgroundColor: '#9B4DAB', boxShadow: '0 0 10px #9B4DAB, 0 0 20px rgba(123,45,139,0.5)', animation: 'scanLine 2s ease-in-out infinite' },
+    scanLine: { position: 'absolute', left: '8%', right: '8%', height: 2, backgroundColor: '#F47920', boxShadow: '0 0 10px #F47920, 0 0 22px rgba(244,121,32,0.5)', animation: 'scanLine 2s ease-in-out infinite' },
 
-    warmingOverlay: { position: 'absolute', inset: 0, backgroundColor: 'rgba(15,23,42,0.7)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' },
-    warmingSpinner: { width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.15)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
-    warmingText: { fontSize: '13px', fontWeight: '500', color: 'rgba(255,255,255,0.7)', fontFamily: "'Lexend', sans-serif" },
+    warmingOverlay: { position: 'absolute', inset: 0, backgroundColor: 'rgba(12,10,9,0.72)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 },
+    warmingSpinner: { width: 30, height: 30, border: '3px solid rgba(255,255,255,0.18)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
+    warmingText: { fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.78)', margin: 0, fontFamily: FF },
 
-    status: { fontSize: '13px', color: 'var(--adm-text-2)', textAlign: 'center', marginBottom: '16px', lineHeight: '1.5', fontFamily: "'Lexend', sans-serif" },
+    band: { display: 'flex', alignItems: 'center', gap: 9, border: '1px solid', borderRadius: 10, padding: '11px 13px', marginBottom: 12, minHeight: 44, boxSizing: 'border-box' },
+    bandDot: { width: 7, height: 7, borderRadius: '50%', flexShrink: 0 },
+    bandText: { fontSize: 13, fontWeight: 600, lineHeight: 1.45, fontFamily: FF },
 
-    verifyBtn: { width: '100%', padding: '13px', backgroundColor: '#9B4DAB', color: '#fff', fontSize: '14.5px', fontWeight: '600', border: 'none', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(123,45,139,0.25)', marginBottom: '12px', fontFamily: "'Lexend', sans-serif" },
-    spinner: { width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 },
+    liveness: { background: 'var(--adm-muted)', border: '1px solid var(--adm-border)', borderRadius: 12, padding: '14px 15px', marginBottom: 12, animation: 'fadeIn 0.2s ease' },
+    livenessHead: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
+    livenessLabel: { fontSize: 10.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--adm-text-muted)', fontFamily: FF },
+    livenessTime: { fontSize: 12.5, fontWeight: 700, fontFamily: FF },
+    livenessTrack: { height: 4, background: 'var(--adm-border)', borderRadius: 4, overflow: 'hidden', marginBottom: 12 },
+    livenessFill: { height: '100%', borderRadius: 4, transition: 'width 1s linear' },
+    turnRow: { display: 'flex', gap: 10 },
+    turnCard: { flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, minHeight: 44, borderRadius: 10, border: '1.5px solid var(--adm-border)', background: 'var(--adm-card)' },
+    turnCardDone: { borderColor: '#A7F3D0', background: '#ECFDF5' },
+    turnText: { fontSize: 13, fontWeight: 700, fontFamily: FF },
+    livenessHint: { margin: '10px 0 0', fontSize: 12, lineHeight: 1.55, color: 'var(--adm-text-muted)', fontFamily: FF },
 
-    backBtn: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%', minHeight: 44, padding: '10px 0', backgroundColor: 'transparent', color: 'var(--adm-text-muted)', fontSize: '13px', fontWeight: '500', border: '1.5px solid var(--adm-border)', borderRadius: 10, cursor: 'pointer', fontFamily: "'Lexend', sans-serif" },
+    tips: { listStyle: 'none', margin: '0 0 14px', padding: 0, display: 'flex', flexDirection: 'column', gap: 6 },
+    tip: { display: 'flex', alignItems: 'flex-start', gap: 9, fontSize: 12.5, lineHeight: 1.5, color: 'var(--adm-text-2)', fontFamily: FF },
+    tipDot: { width: 5, height: 5, borderRadius: '50%', background: '#F47920', flexShrink: 0, marginTop: 6 },
+
+    primaryBtn: { width: '100%', minHeight: 46, padding: '12px', backgroundColor: '#C45E10', color: '#fff', fontSize: 14.5, fontWeight: 700, border: 'none', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 2px 8px rgba(196,94,16,0.22)', fontFamily: FF },
+    secondaryBtn: { width: '100%', minHeight: 46, padding: '12px', backgroundColor: 'transparent', color: 'var(--adm-text-2)', fontSize: 14, fontWeight: 600, border: '1.5px solid var(--adm-border)', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: FF },
+    spinner: { width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 },
+
+    processNote: { fontSize: 12, color: 'var(--adm-text-muted)', textAlign: 'center', margin: '10px 0 12px', minHeight: 16, fontFamily: FF },
+
+    backBtn: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%', minHeight: 44, padding: '10px 0', backgroundColor: 'transparent', color: 'var(--adm-text-muted)', fontSize: 13, fontWeight: 500, border: '1.5px solid var(--adm-border)', borderRadius: 10, cursor: 'pointer', fontFamily: FF },
+    bypassBtn: { marginTop: 8, width: '100%', minHeight: 40, borderRadius: 10, border: '1.5px dashed var(--adm-border)', background: 'transparent', color: 'var(--adm-text-muted)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: FF },
 
     // Modal
-    backdrop: { position: 'fixed', inset: 0, backgroundColor: 'rgba(15,23,42,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' },
-    modal: { backgroundColor: 'var(--adm-card)', borderRadius: 16, padding: '32px 28px', width: '100%', maxWidth: '360px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.15)', animation: 'slideUp 0.2s ease' },
-    modalIconWrap: { width: '64px', height: '64px', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' },
-    modalTitle: { fontSize: '20px', fontWeight: '700', marginBottom: '10px', fontFamily: "'Lexend', sans-serif" },
-    modalMsg: { fontSize: '13.5px', color: 'var(--adm-text-2)', lineHeight: '1.65', marginBottom: '22px', fontFamily: "'Lexend', sans-serif" },
+    backdrop: { position: 'fixed', inset: 0, backgroundColor: 'rgba(18,16,14,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 },
+    modal: { backgroundColor: 'var(--adm-card)', borderRadius: 16, padding: '30px 26px', width: '100%', maxWidth: 360, textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.18)', animation: 'slideUp 0.2s ease' },
+    modalIconWrap: { width: 62, height: 62, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' },
+    modalTitle: { fontSize: 19, fontWeight: 700, marginBottom: 10, fontFamily: FF },
+    modalMsg: { fontSize: 13.5, color: 'var(--adm-text-2)', lineHeight: 1.65, marginBottom: 18, fontFamily: FF },
+    modalBtns: { display: 'flex', flexDirection: 'column', gap: 10 },
 
-    modalBtns: { display: 'flex', flexDirection: 'column', gap: '10px' },
-    retryBtn: { width: '100%', padding: '12px', backgroundColor: '#9B4DAB', color: '#fff', fontSize: '14px', fontWeight: '600', border: 'none', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', fontFamily: "'Lexend', sans-serif" },
-    returnBtn: { width: '100%', padding: '12px', backgroundColor: 'transparent', color: '#7B2D8B', fontSize: '14px', fontWeight: '600', border: '1.5px solid #E1BEE7', borderRadius: 4, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', fontFamily: "'Lexend', sans-serif" },
-
-    successLoader: { height: '4px', backgroundColor: 'var(--adm-border)', borderRadius: 4, overflow: 'hidden' },
-    successLoaderBar: { height: '100%', backgroundColor: '#059669', borderRadius: 4, animation: 'slideUp 1.8s linear forwards', width: '100%' },
+    successLoader: { height: 4, backgroundColor: 'var(--adm-border)', borderRadius: 4, overflow: 'hidden' },
+    successLoaderBar: { height: '100%', backgroundColor: '#047857', borderRadius: 4, animation: 'slideUp 1.8s linear forwards', width: '100%' },
 };
 
 export default FaceVerify;
