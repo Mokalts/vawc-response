@@ -89,6 +89,14 @@ const IconTick = ({ size = 13, color = "currentColor" }) => (
 const LIVENESS_DURATION = 10;       // seconds per attempt
 const MAX_LIVENESS_ATTEMPTS = 3;    // before forcing return to login
 const MAX_MATCH_FAILS = 3;          // non-matching faces before forcing a re-login
+
+// After the turns, give the head time to come back to centre before the frame
+// that actually gets compared is taken. Capturing on the instant the second turn
+// registers means comparing a three-quarter view against a forward-facing
+// enrolment, which is a poor match even when it is the right person.
+const SETTLE_SECONDS = 3;
+const SETTLE_GRACE = 5;             // extra seconds to wait for a straight view
+const STRAIGHT_OFFSET = 0.08;       // nose within 8% of face centre = facing forward
 const TURN_THRESHOLD = 0.16;        // nose-from-face-center offset (~16% of face width)
 
 // What the live guide says. One line, plain language, tied to what the camera
@@ -129,7 +137,7 @@ function FaceVerify() {
     const [popup, setPopup] = useState(null);
 
     // ── Liveness state ────────────────────────────────────────────────────────
-    const [phase, setPhase] = useState('idle');                  // 'idle' | 'liveness' | 'capturing'
+    const [phase, setPhase] = useState('idle');                  // 'idle' | 'liveness' | 'settle' | 'capturing'
     const [livenessTimeLeft, setLivenessTimeLeft] = useState(0);
     const [livenessAttempts, setLivenessAttempts] = useState(0);
     // Repeated non-matches are either bad conditions or someone trying faces.
@@ -139,10 +147,17 @@ function FaceVerify() {
     const [turnLeftDone, setTurnLeftDone] = useState(false);
     const [turnRightDone, setTurnRightDone] = useState(false);
 
+    // ── Settle state (between the turns and the capture) ──────────────────────
+    const [settleLeft, setSettleLeft] = useState(0);
+    const [settleStraight, setSettleStraight] = useState(false);
+
     // Refs for real-time tracking (avoid stale state inside RAF loop)
     const livenessLoopRef = useRef(null);
     const livenessTimerRef = useRef(null);
     const livenessRef = useRef({ turnLeft: false, turnRight: false, done: false });
+    const settleLoopRef = useRef(null);
+    const settleTimerRef = useRef(null);
+    const settleRef = useRef({ captureAt: 0, deadline: 0, straight: false, done: false });
 
     // ── Guide overlay ─────────────────────────────────────────────────────────
     // The guide is redrawn every animation frame, but React only hears about it
@@ -263,7 +278,7 @@ function FaceVerify() {
                     }
                     if (livenessRef.current.turnLeft && livenessRef.current.turnRight) {
                         livenessRef.current.done = true;
-                        onLivenessPassed();
+                        startSettle();   // let the head come back to centre first
                         return;
                     }
                 } else {
@@ -276,9 +291,98 @@ function FaceVerify() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [drawOverlay]);
 
-    // After liveness passes → silently capture descriptor + verify (existing flow)
+    const stopSettleLoop = useCallback(() => {
+        if (settleLoopRef.current) { cancelAnimationFrame(settleLoopRef.current); settleLoopRef.current = null; }
+        if (settleTimerRef.current) { clearInterval(settleTimerRef.current); settleTimerRef.current = null; }
+    }, []);
+
+    /**
+     * The pause between the turns and the capture.
+     *
+     * Counts down from SETTLE_SECONDS while the person straightens up, then
+     * takes the frame as soon as they are facing forward and inside the guide.
+     * The countdown alone is not enough — someone slow to turn back would still
+     * be captured mid-turn — so the straightness test is what actually gates it,
+     * with the countdown as the visible cue and SETTLE_GRACE as the backstop.
+     */
+    const startSettle = useCallback(() => {
+        stopLivenessLoop();
+        const now = Date.now();
+        settleRef.current = {
+            captureAt: now + SETTLE_SECONDS * 1000,
+            deadline:  now + (SETTLE_SECONDS + SETTLE_GRACE) * 1000,
+            straight:  false,
+            done:      false,
+        };
+        setPhase('settle');
+        setSettleLeft(SETTLE_SECONDS);
+        setSettleStraight(false);
+        setStatus('Face the camera again.');
+
+        settleTimerRef.current = setInterval(() => {
+            setSettleLeft(t => (t > 0 ? t - 1 : 0));
+        }, 1000);
+
+        const loop = async () => {
+            if (settleRef.current.done) return;
+            const video = videoRef.current;
+            if (!video || video.readyState < 2) {
+                settleLoopRef.current = requestAnimationFrame(loop);
+                return;
+            }
+            try {
+                const d = await faceapi
+                    .detectSingleFace(video, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+                    .withFaceLandmarks();
+
+                let straight = false;
+                if (d) {
+                    const box = d.detection.box;
+                    const noseTip = d.landmarks.getNose()[3];
+                    const offset = (noseTip.x - (box.x + box.width / 2)) / box.width;
+                    const framing = evaluateFraming(box, video.videoWidth, video.videoHeight);
+                    straight = Math.abs(offset) < STRAIGHT_OFFSET && framing.state === 'ok';
+                    setGuideKey(straight ? 'ok' : 'adjust', straight ? 'ok' : 'adjust');
+                } else {
+                    setGuideKey('searching', 'searching');
+                }
+
+                if (straight !== settleRef.current.straight) {
+                    settleRef.current.straight = straight;
+                    setSettleStraight(straight);
+                }
+
+                const t = Date.now();
+                if (straight && t >= settleRef.current.captureAt) {
+                    settleRef.current.done = true;
+                    stopSettleLoop();
+                    onLivenessPassed();
+                    return;
+                }
+                if (t > settleRef.current.deadline) {
+                    settleRef.current.done = true;
+                    stopSettleLoop();
+                    setPhase('idle');
+                    setStatus('Ready when you are.');
+                    startLiveDetection();
+                    setPopup({
+                        type: 'error',
+                        message: 'Could not get a clear straight-on view after the head turns. '
+                               + 'Face the camera directly, then start the check again.',
+                    });
+                    return;
+                }
+            } catch (_) { }
+            settleLoopRef.current = requestAnimationFrame(loop);
+        };
+        settleLoopRef.current = requestAnimationFrame(loop);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [setGuideKey, startLiveDetection, stopLivenessLoop, stopSettleLoop]);
+
+    // Straight-on again → capture the descriptor and verify.
     const onLivenessPassed = useCallback(async () => {
         stopLivenessLoop();
+        stopSettleLoop();
         setPhase('capturing');
         setVerifying(true);
         setStatus('Liveness confirmed. Checking your face…');
@@ -324,7 +428,7 @@ function FaceVerify() {
             setPopup({ type: 'error', message: typeof msg === 'string' ? msg : 'Verification failed. Please try again.' });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [navigate, startLiveDetection, stopLivenessLoop]);
+    }, [navigate, startLiveDetection, stopLivenessLoop, stopSettleLoop]);
 
     // Liveness timeout / failure
     const onLivenessFailed = useCallback(() => {
@@ -377,6 +481,8 @@ function FaceVerify() {
     const handleBack = () => {
         if (videoRef.current?.srcObject) videoRef.current.srcObject.getTracks().forEach(t => t.stop());
         if (animRef.current) cancelAnimationFrame(animRef.current);
+        settleRef.current.done = true;
+        stopSettleLoop();
         stopLivenessLoop();
         localStorage.removeItem('face_verified');
         localStorage.removeItem('admin_user');
@@ -389,7 +495,10 @@ function FaceVerify() {
     };
 
     const cancelLiveness = () => {
+        livenessRef.current.done = true;
+        settleRef.current.done = true;
         stopLivenessLoop();
+        stopSettleLoop();
         setPhase('idle');
         setStatus('Ready when you are.');
         startLiveDetection();
@@ -402,7 +511,11 @@ function FaceVerify() {
             ? { text: 'Checking your face…', tone: 'neutral' }
             : phase === 'liveness'
                 ? { text: 'Turn your head slowly, left then right', tone: 'neutral' }
-                : (GUIDE_TEXT[guide] || GUIDE_TEXT.idle);
+                : phase === 'settle'
+                    ? (settleStraight
+                        ? { text: 'Hold it there', tone: 'good' }
+                        : { text: 'Face the camera again, straight on', tone: 'neutral' })
+                    : (GUIDE_TEXT[guide] || GUIDE_TEXT.idle);
 
     const toneColor = { good: '#047857', warn: '#B45309', neutral: 'var(--adm-text-2)' }[band.tone];
     const toneBg = { good: '#ECFDF5', warn: '#FFFBEB', neutral: 'var(--adm-muted)' }[band.tone];
@@ -494,6 +607,38 @@ function FaceVerify() {
                     </div>
                 )}
 
+                {/* ── Settle: head back to centre before the frame is taken ── */}
+                {phase === 'settle' && (
+                    <div style={S.liveness}>
+                        <div style={S.livenessHead}>
+                            <span style={S.livenessLabel}>Almost done</span>
+                            <span style={{ ...S.livenessTime, color: '#C45E10' }}>
+                                {settleLeft > 0 ? `${settleLeft}s` : 'now'}
+                            </span>
+                        </div>
+                        <div style={S.livenessTrack}>
+                            <div style={{
+                                ...S.livenessFill,
+                                width: `${Math.max(0, Math.min(100, ((SETTLE_SECONDS - settleLeft) / SETTLE_SECONDS) * 100))}%`,
+                                background: settleStraight ? '#047857' : '#F47920',
+                            }} />
+                        </div>
+
+                        <div style={{ ...S.turnCard, ...(settleStraight ? S.turnCardDone : null) }}>
+                            {settleStraight
+                                ? <IconTick size={16} color="#047857" />
+                                : <span style={{ ...S.bandDot, background: '#C45E10' }} />}
+                            <span style={{ ...S.turnText, color: settleStraight ? '#047857' : 'var(--adm-text)' }}>
+                                {settleStraight ? 'Looking straight ahead' : 'Turn back to the camera'}
+                            </span>
+                        </div>
+                        <p style={S.livenessHint}>
+                            Your photo is taken once you are facing the camera again. Comparing a
+                            half-turned face against your enrolled one is what makes a scan fail.
+                        </p>
+                    </div>
+                )}
+
                 {/* Tips — only while idle, so they do not compete with the
                     live instructions during the check. */}
                 {phase === 'idle' && !verifying && (
@@ -508,7 +653,7 @@ function FaceVerify() {
                 )}
 
                 {/* Verify / Cancel button */}
-                {phase === 'liveness' ? (
+                {(phase === 'liveness' || phase === 'settle') ? (
                     <button type="button" className="fv-btn fv-ghost" onClick={cancelLiveness} style={S.secondaryBtn}>
                         Cancel check
                     </button>
