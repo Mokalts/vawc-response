@@ -34,6 +34,12 @@ class Settings(BaseSettings):
     # Override per environment (set it to http://localhost:3000 for local work).
     FRONTEND_URL: str = "https://vawc-victim-2026.web.app"
 
+    # Euclidean distance below which two face descriptors count as the same
+    # person. face-api's own "probably the same" line is 0.6, which sits inside
+    # the band where different people also land — that is how someone else's
+    # face passed. Tuneable per environment without a code change.
+    FACE_MATCH_THRESHOLD: float = 0.45
+
     # Extra CORS origins for production (comma-separated). localhost is always allowed.
     ALLOWED_ORIGINS: str = ""
 

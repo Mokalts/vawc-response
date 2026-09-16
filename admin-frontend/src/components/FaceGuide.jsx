@@ -20,9 +20,30 @@
 const STATE_COLOR = {
     idle:      'rgba(255,255,255,0.78)',
     searching: 'rgba(255,255,255,0.78)',
-    ok:        '#10B981',   // one face, well placed
-    multi:     '#F59E0B',   // more than one face in frame
+    adjust:    '#F59E0B',   // seen, but not in the outline yet
+    ok:        '#10B981',   // one face, actually inside the guide
+    multi:     '#EF4444',   // more than one face in frame
     busy:      '#F47920',   // capturing / verifying
+};
+
+// The guide's head target, as fractions of the frame. drawFaceGuide draws with
+// these and evaluateFraming measures against them, so the outline and the words
+// can never disagree about where the face is supposed to be.
+export const GUIDE = {
+    cx: 0.5,
+    cy: 0.36,
+    rx: 0.175,
+    ry: 0.235,
+    frameAspect: 4 / 3,     // the camera box is 4:3 (see FaceVerify styles)
+};
+
+// How far off before we say something. Detection boxes cover the face, roughly
+// four fifths of the head the outline describes, hence the height band.
+export const FRAMING = {
+    minHeight: 0.26,
+    maxHeight: 0.54,
+    tolX: 0.11,
+    tolY: 0.12,
 };
 
 export function drawFaceGuide(canvas, state = 'idle') {
@@ -32,9 +53,9 @@ export function drawFaceGuide(canvas, state = 'idle') {
     const cx = w / 2;
 
     // Head sits above centre so the neck and shoulders have the lower third.
-    const headCy = h * 0.36;
-    const headRx = w * 0.175;
-    const headRy = h * 0.235;
+    const headCy = h * GUIDE.cy;
+    const headRx = w * GUIDE.rx;
+    const headRy = h * GUIDE.ry;
     const shoulderY = headCy + headRy * 1.30;   // top of the shoulder line
     const neckHalf = headRx * 0.46;
     const neckTop = headCy + headRy * 0.70;     // where the neck meets the jaw
@@ -111,10 +132,53 @@ export function drawFaceGuide(canvas, state = 'idle') {
     ctx.restore();
 }
 
-/** Maps what the detector saw to a guide state. */
-export function guideStateForCount(count, busy = false) {
+/**
+ * Where the detected face actually sits, relative to the guide.
+ *
+ * Two conversions have to happen before the numbers mean anything:
+ *
+ *  1. CROP. The video is `object-fit: cover` inside a 4:3 box, so a 16:9 camera
+ *     has its sides cut off on screen. Detection coordinates are in the full
+ *     camera frame, including the part nobody can see.
+ *  2. MIRROR. The preview is flipped (`scaleX(-1)`) so it behaves like a mirror.
+ *     Move right and your image moves right, so a hint is only correct if it is
+ *     phrased against the flipped image.
+ *
+ * Returns one of: ok | far | near | left | right | up | down.
+ * Distance is judged first: there is no point nudging someone sideways when
+ * they are too far away for any of it to matter.
+ */
+export function evaluateFraming(box, videoWidth, videoHeight) {
+    if (!box || !videoWidth || !videoHeight) return { state: 'searching' };
+
+    const videoAspect = videoWidth / videoHeight;
+    let visX = 1, visY = 1;
+    if (videoAspect > GUIDE.frameAspect) visX = GUIDE.frameAspect / videoAspect;  // sides cropped
+    else                                 visY = videoAspect / GUIDE.frameAspect;  // top/bottom cropped
+
+    const rawX = (box.x + box.width / 2) / videoWidth;
+    const rawY = (box.y + box.height / 2) / videoHeight;
+
+    // Into visible-frame fractions, then mirrored for the flipped preview.
+    const dx = 1 - (rawX - (1 - visX) / 2) / visX;
+    const dy = (rawY - (1 - visY) / 2) / visY;
+    const dh = (box.height / videoHeight) / visY;
+
+    let state = 'ok';
+    if (dh < FRAMING.minHeight)      state = 'far';
+    else if (dh > FRAMING.maxHeight) state = 'near';
+    else if (dx < GUIDE.cx - FRAMING.tolX) state = 'right';  // face sits left → move right
+    else if (dx > GUIDE.cx + FRAMING.tolX) state = 'left';
+    else if (dy < GUIDE.cy - FRAMING.tolY) state = 'down';   // face sits high → move down
+    else if (dy > GUIDE.cy + FRAMING.tolY) state = 'up';
+
+    return { state, dx, dy, dh };
+}
+
+/** Outline colour state from the detector's face count plus framing. */
+export function guideState(count, framing, busy = false) {
     if (busy) return 'busy';
-    if (count === 1) return 'ok';
+    if (count === 0) return 'searching';
     if (count > 1) return 'multi';
-    return 'searching';
+    return framing && framing.state === 'ok' ? 'ok' : 'adjust';
 }

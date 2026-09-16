@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as faceapi from 'face-api.js';
 import api from '../api/api';
-import { drawFaceGuide, guideStateForCount } from '../components/FaceGuide';
+import { drawFaceGuide, evaluateFraming, guideState } from '../components/FaceGuide';
 
 const CAPTURE_COUNT = 15;
 
@@ -94,13 +94,20 @@ function FaceEnroll() {
     // ── Guide overlay ────────────────────────────────────────────────────────
     // Shared with FaceVerify so enrolment teaches the same framing that
     // verification will later expect.
-    const drawOverlay = useCallback((count) => {
-        drawFaceGuide(overlayRef.current, guideStateForCount(count));
+    // Green only when the face is actually inside the guide, not merely found:
+    // enrolling from a badly framed face teaches the system the wrong thing.
+    const drawOverlay = useCallback((detections) => {
+        const video = videoRef.current;
+        const count = detections.length;
+        const framing = (count === 1 && video)
+            ? evaluateFraming(detections[0].box, video.videoWidth, video.videoHeight)
+            : null;
+        drawFaceGuide(overlayRef.current, guideState(count, framing));
     }, []);
 
     useEffect(() => {
         const canvas = overlayRef.current;
-        if (canvas) drawOverlay(0);
+        if (canvas) drawOverlay([]);
     }, [drawOverlay]);
 
     // ── Live detection ────────────────────────────────────────────────────────
@@ -112,7 +119,7 @@ function FaceEnroll() {
             }
             try {
                 const d = await faceapi.detectAllFaces(videoRef.current, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }));
-                drawOverlay(d.length);
+                drawOverlay(d);
             } catch (_) {}
             animRef.current = requestAnimationFrame(detect);
         };
@@ -166,6 +173,25 @@ function FaceEnroll() {
             }
             if (detections.length > 1) {
                 setError(`Multiple faces detected. Only 1 face allowed during enrollment.`);
+                setCapturing(false); return;
+            }
+
+            // Only learn a properly framed face. Samples taken from a face that
+            // is off to one side or half out of frame widen what the account
+            // will later accept, which is the opposite of what enrolment is for.
+            const framing = evaluateFraming(
+                detections[0].box, videoRef.current.videoWidth, videoRef.current.videoHeight
+            );
+            if (framing.state !== 'ok') {
+                const FIX = {
+                    far:   'Move closer to the camera',
+                    near:  'Move back a little',
+                    left:  'Move a little to your left',
+                    right: 'Move a little to your right',
+                    up:    'Raise your face into the outline',
+                    down:  'Lower your face into the outline',
+                };
+                setError(`${FIX[framing.state] || 'Fit your head and shoulders inside the outline'}, then start again.`);
                 setCapturing(false); return;
             }
 

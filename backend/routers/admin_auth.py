@@ -5,9 +5,13 @@ from database import get_db
 from models.admin import Admin
 from schemas.admin import AdminCreate, AdminLogin, AdminFaceEnroll, AdminFaceVerify, AdminResponse, AdminTokenResponse
 from core.security import hash_password, verify_password, create_access_token
-from core.admin_dependencies import get_current_admin, require_super_admin
+from core.admin_dependencies import (
+    get_current_admin, get_current_admin_full_access, require_super_admin,
+)
+from core.config import settings
 from core.progressive_limiter import (
-    check_rate_limit, record_failure, record_success, login_keys, IP_LOCKOUT_SCHEDULE,
+    check_rate_limit, record_failure, record_success, login_keys, client_ip,
+    IP_LOCKOUT_SCHEDULE,
 )
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -19,10 +23,19 @@ router = APIRouter(prefix="/admin/auth", tags=["Admin Auth"])
 limiter = Limiter(key_func=get_remote_address)
 
 # Euclidean distance between 128-d face descriptors (face-api.js).
-# Lower = stricter. Typical range 0.4 – 0.6. For a small organization (few admins,
-# no twin look-alikes) 0.55 – 0.60 reduces false rejections caused by poor
-# lighting / camera angle without meaningfully increasing false acceptances.
-FACE_MATCH_THRESHOLD = 0.58
+# Lower = stricter.
+#
+# This was 0.58. Same-person pairs typically land around 0.3–0.5 and
+# different-person pairs around 0.5–0.9, so 0.58 sat inside the overlap and let
+# another person's face through. 0.45 keeps the honest attempts and cuts most of
+# the overlap; a rejected admin can retry or have their face reset, whereas a
+# false acceptance hands over victim records.
+FACE_MATCH_THRESHOLD = settings.FACE_MATCH_THRESHOLD
+
+# A second, relative test: the presented face must be closer to the account it
+# claims than to any other enrolled admin. Absolute distance alone cannot tell
+# "this is Ana" from "this is nobody in particular, but within range".
+NEAREST_MARGIN = 0.04
 
 
 def compute_face_distance(descriptor1: list, descriptor2: list) -> float:
@@ -269,9 +282,56 @@ def verify_face(
     if len(payload.descriptor) != 128:
         raise HTTPException(status_code=400, detail="Invalid face descriptor.")
 
+    # Repeated mismatches are someone trying faces until one lands. The slowapi
+    # limit above is per IP per minute; this one is per account and escalates.
+    face_key = f"admin_face:{client_ip(request)}:{current_admin.id}"
+    gate = check_rate_limit(face_key)
+    if not gate["allowed"]:
+        raise HTTPException(status_code=429, detail=gate["message"])
+
     distance = compute_face_distance(payload.descriptor, current_admin.face_descriptor)
-    if distance > FACE_MATCH_THRESHOLD:
-        raise HTTPException(status_code=401, detail=f"Face did not match. Distance: {distance:.4f}")
+
+    # Is this face a better match for somebody else? In a small office the
+    # absolute distance can be inside the threshold for a colleague who simply
+    # looks similar; the account it claims must be the closest one.
+    nearest_other = None
+    others = db.query(Admin).filter(
+        Admin.id != current_admin.id,
+        Admin.is_face_enrolled == True,      # noqa: E712  (SQLAlchemy needs ==)
+        Admin.face_descriptor.isnot(None),
+    ).all()
+    for other in others:
+        try:
+            d = compute_face_distance(payload.descriptor, other.face_descriptor)
+        except Exception:
+            continue
+        if nearest_other is None or d < nearest_other:
+            nearest_other = d
+
+    matched = distance <= FACE_MATCH_THRESHOLD
+    if matched and nearest_other is not None and nearest_other + NEAREST_MARGIN < distance:
+        matched = False
+        print(f"[FACE] admin {current_admin.id}: closer to another enrolled admin "
+              f"({nearest_other:.4f} vs {distance:.4f}) — rejected.")
+
+    if not matched:
+        record_failure(face_key)
+        # The distance is deliberately NOT returned: it told an attacker how
+        # close each attempt was, which is a dial for tuning the next one.
+        print(f"[FACE] admin {current_admin.id}: no match (distance {distance:.4f}, "
+              f"threshold {FACE_MATCH_THRESHOLD}).")
+        raise HTTPException(
+            status_code=401,
+            detail="Face did not match the enrolled account. Try again in better lighting, "
+                   "or ask a Super Admin to reset your face enrollment.",
+        )
+
+    record_success(face_key)
+    # Logged so the threshold can be calibrated from real attempts: compare the
+    # distances your own face produces against the ones a different face does.
+    print(f"[FACE] admin {current_admin.id}: match (distance {distance:.4f}, "
+          f"threshold {FACE_MATCH_THRESHOLD}"
+          + (f", nearest other {nearest_other:.4f}" if nearest_other is not None else "") + ").")
 
     token = create_access_token(data={
         "sub": str(current_admin.id),
@@ -401,15 +461,46 @@ def reactivate_admin(
 def reset_face(
     admin_id: int,
     db: Session = Depends(get_db),
-    current_admin: Admin = Depends(require_super_admin),
+    current_admin: Admin = Depends(get_current_admin_full_access),
 ):
+    """Clear an admin's face enrollment so they enrol again at next sign-in.
+
+    Requires a face-verified Super Admin session, not just a password. Reset
+    plus enrol is a way in: with only a password, someone could wipe the real
+    admin's face, enrol their own at the next step, and own the account. The
+    face check on THIS call is what closes that path.
+    """
+    if not current_admin.is_super_admin:
+        raise HTTPException(status_code=403, detail="Super Admin access required.")
+
     admin = db.query(Admin).filter(Admin.id == admin_id).first()
     if not admin:
         raise HTTPException(status_code=404, detail="Admin not found.")
     admin.face_descriptor = None
     admin.is_face_enrolled = False
     db.commit()
+    print(f"[FACE] admin {admin.id} face reset by super admin {current_admin.id}.")
     return {"message": f"Face data reset for {admin.first_name}."}
+
+
+# ---------------------------------------------------------------------------
+# Any admin: reset their OWN face enrollment
+# ---------------------------------------------------------------------------
+@router.patch("/me/reset-face")
+def reset_my_face(
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Re-enrol your own face, for a new haircut, glasses, or a bad first scan.
+
+    Face-verified only: the session must already have proved it is this person,
+    so a stolen password on its own cannot swap the enrolled face.
+    """
+    current_admin.face_descriptor = None
+    current_admin.is_face_enrolled = False
+    db.commit()
+    print(f"[FACE] admin {current_admin.id} reset their own face enrollment.")
+    return {"message": "Your face enrollment has been cleared. You will enrol again at your next sign-in."}
 
 
 # ---------------------------------------------------------------------------

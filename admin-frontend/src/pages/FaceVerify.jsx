@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as faceapi from 'face-api.js';
 import api from '../api/api';
-import { drawFaceGuide, guideStateForCount } from '../components/FaceGuide';
+import { drawFaceGuide, evaluateFraming, guideState } from '../components/FaceGuide';
 
 // ─── Font injection ───────────────────────────────────────────────────────────
 if (!document.getElementById('vawc-font')) {
@@ -88,16 +88,26 @@ const IconTick = ({ size = 13, color = "currentColor" }) => (
 // turn alone still defeats photo spoofing (a printed face can't rotate).
 const LIVENESS_DURATION = 10;       // seconds per attempt
 const MAX_LIVENESS_ATTEMPTS = 3;    // before forcing return to login
+const MAX_MATCH_FAILS = 3;          // non-matching faces before forcing a re-login
 const TURN_THRESHOLD = 0.16;        // nose-from-face-center offset (~16% of face width)
 
 // What the live guide says. One line, plain language, tied to what the camera
 // can actually see right now.
+// "Face detected" is not the same as "framed correctly": the detector finds a
+// face anywhere in the frame, including in a corner. These messages are driven
+// by where the face actually sits against the outline.
 const GUIDE_TEXT = {
     idle:      { text: 'Fit your head and shoulders inside the outline', tone: 'neutral' },
     searching: { text: 'No face detected yet. Fit your head and shoulders in the outline', tone: 'neutral' },
-    ok:        { text: 'Face detected. You are framed correctly', tone: 'good' },
+    ok:        { text: 'Good. Your face is in the outline', tone: 'good' },
     multi:     { text: 'More than one person is in frame. Only you should be visible', tone: 'warn' },
     busy:      { text: 'Hold still', tone: 'neutral' },
+    far:       { text: 'Move closer to the camera', tone: 'warn' },
+    near:      { text: 'Move back a little', tone: 'warn' },
+    left:      { text: 'Move a little to your left', tone: 'warn' },
+    right:     { text: 'Move a little to your right', tone: 'warn' },
+    up:        { text: 'Raise your face into the outline', tone: 'warn' },
+    down:      { text: 'Lower your face into the outline', tone: 'warn' },
 };
 
 const TIPS = [
@@ -122,6 +132,10 @@ function FaceVerify() {
     const [phase, setPhase] = useState('idle');                  // 'idle' | 'liveness' | 'capturing'
     const [livenessTimeLeft, setLivenessTimeLeft] = useState(0);
     const [livenessAttempts, setLivenessAttempts] = useState(0);
+    // Repeated non-matches are either bad conditions or someone trying faces.
+    // Either way, stop after a few and send them back to sign in. A ref, not
+    // state: it is read inside a memoised callback, where state would be stale.
+    const matchFailsRef = useRef(0);
     const [turnLeftDone, setTurnLeftDone] = useState(false);
     const [turnRightDone, setTurnRightDone] = useState(false);
 
@@ -137,14 +151,31 @@ function FaceVerify() {
     const guideRef = useRef('idle');
     const [guide, setGuide] = useState('idle');
 
-    const drawOverlay = useCallback((count, busy = false) => {
-        const next = guideStateForCount(count, busy);
-        drawFaceGuide(overlayRef.current, next);
-        if (guideRef.current !== next) {
-            guideRef.current = next;
-            setGuide(next);
+    const setGuideKey = useCallback((key, outline) => {
+        drawFaceGuide(overlayRef.current, outline);
+        if (guideRef.current !== key) {
+            guideRef.current = key;
+            setGuide(key);
         }
     }, []);
+
+    // Outline only, by face count. Used during the liveness challenge, where the
+    // band is showing turn instructions and framing hints would fight with them.
+    const drawOverlay = useCallback((count, busy = false) => {
+        setGuideKey(count === 0 ? 'searching' : count > 1 ? 'multi' : 'ok',
+                    guideState(count, { state: 'ok' }, busy));
+    }, [setGuideKey]);
+
+    // Outline AND message, measured against the guide.
+    const drawFramed = useCallback((detections) => {
+        const video = videoRef.current;
+        const count = detections.length;
+        const framing = (count === 1 && video)
+            ? evaluateFraming(detections[0].box, video.videoWidth, video.videoHeight)
+            : null;
+        const key = count === 0 ? 'searching' : count > 1 ? 'multi' : framing.state;
+        setGuideKey(key, guideState(count, framing));
+    }, [setGuideKey]);
 
     useEffect(() => {
         if (overlayRef.current) drawFaceGuide(overlayRef.current, 'idle');
@@ -159,12 +190,12 @@ function FaceVerify() {
             }
             try {
                 const d = await faceapi.detectAllFaces(videoRef.current, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }));
-                drawOverlay(d.length);
+                drawFramed(d);
             } catch (_) { }
             animRef.current = requestAnimationFrame(detect);
         };
         animRef.current = requestAnimationFrame(detect);
-    }, [drawOverlay]);
+    }, [drawFramed]);
 
     // ── Load models + camera ──────────────────────────────────────────────────
     useEffect(() => {
@@ -273,9 +304,23 @@ function FaceVerify() {
         } catch (err) {
             setVerifying(false);
             setPhase('idle');
+            const msg = err.response?.data?.detail || 'Verification failed. Please try again.';
+            const noMatch = err.response?.status === 401;
+            if (noMatch) matchFailsRef.current += 1;
+            const fails = matchFailsRef.current;
+
+            if (noMatch && fails >= MAX_MATCH_FAILS) {
+                setStatus('Face check failed too many times.');
+                setPopup({
+                    type: 'error',
+                    message: 'The face check failed several times. For security, please sign in again. '
+                           + 'If this keeps happening, ask a Super Admin to reset your face enrollment.',
+                });
+                return;   // no restart: this attempt is over
+            }
+
             setStatus('Ready when you are.');
             startLiveDetection();
-            const msg = err.response?.data?.detail || 'Verification failed. Please try again.';
             setPopup({ type: 'error', message: typeof msg === 'string' ? msg : 'Verification failed. Please try again.' });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps

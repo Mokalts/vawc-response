@@ -441,6 +441,7 @@ export default function AdminManagement() {
     deactivate: { title: "Deactivate Account", msg: (a) => `${a.first_name} ${a.last_name} will no longer be able to log in.`,                                              label: "Deactivate", danger: false },
     reactivate: { title: "Reactivate Account", msg: (a) => `${a.first_name} ${a.last_name} will be able to log in again.`,                                                  label: "Reactivate", danger: false },
     reset:      { title: "Reset Face Data",    msg: (a) => `This clears ${a.first_name}'s face enrollment. They must re-enroll on next login.`,                              label: "Reset Face", danger: false },
+    resetSelf:  { title: "Reset My Face Data", msg: ()  => `This clears your own face enrollment. You stay signed in now, and you will scan a new face at your next sign-in. Use this after a bad first scan, or if the scan keeps failing.`, label: "Reset My Face", danger: false },
     delete:     { title: "Delete Account",     msg: (a) => `${a.first_name} ${a.last_name}'s account will be soft-deleted. Recoverable within 30 days.`,                    label: "Delete",     danger: true  },
     recover:    { title: "Recover Account",    msg: (a) => `Restore ${a.first_name} ${a.last_name}'s account? They can log in again after this.`,                            label: "Recover",    danger: false },
   };
@@ -462,6 +463,14 @@ export default function AdminManagement() {
         await api.patch(`/admin/auth/admins/${admin.id}/reset-face`);
         setAdmins(p => p.map(a => a.id === admin.id ? { ...a, is_face_enrolled: false } : a));
         showToast(`Face data reset for ${admin.first_name}.`);
+      } else if (type === "resetSelf") {
+        await api.patch(`/admin/auth/me/reset-face`);
+        setCurrentAdmin(c => ({ ...c, is_face_enrolled: false }));
+        try {
+          const cached = JSON.parse(localStorage.getItem("admin_user") || "{}");
+          localStorage.setItem("admin_user", JSON.stringify({ ...cached, is_face_enrolled: false }));
+        } catch {}
+        showToast("Your face enrollment was cleared. You will scan a new face at your next sign-in.");
       } else if (type === "delete") {
         await api.delete(`/admin/auth/admins/${admin.id}`);
         const deleted = admins.find(a => a.id === admin.id);
@@ -684,6 +693,11 @@ export default function AdminManagement() {
                     <td style={{ ...S.td, textAlign: "right" }} className="adm-actions-cell">
                       <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
                         <ActionBtn label="Edit Name" onClick={() => setEditingAdmin(currentAdmin)} />
+                        {/* Re-enrol your own face: a bad first scan otherwise
+                            needed another Super Admin to clear it for you. */}
+                        {currentAdmin.is_face_enrolled && (
+                          <ActionBtn label="Reset My Face" onClick={() => setConfirm({ type: "resetSelf", admin: currentAdmin, loading: false })} />
+                        )}
                       </div>
                     </td>
                   </tr>
