@@ -220,9 +220,9 @@ def get_dashboard_stats(
             Case.status == status, *in_range
         ).count()
 
-    pending  = status_counts.get("awaiting_onsite_visit", 0)
-    resolved = status_counts.get("resolved", 0)
-    new_cases = status_counts.get("submitted", 0)
+    # Nothing reads these three, and "resolved" has not been a status since the
+    # lawful-flow rebuild — it counted zero for ever. The dashboard's own numbers
+    # come from total_cases, by_status and incident_types below.
 
     # ── Abuse-type breakdown (cases within range, non-deleted) ───────────────
     # Counts DISTINCT CASES, not reports. A case accumulates reports over time,
@@ -294,9 +294,6 @@ def get_dashboard_stats(
     return {
         "total_reports":        total_cases,
         "total_victims":        db.query(User).filter(User.is_deleted == False).count(),
-        "pending_confirmation": pending,
-        "resolved":             resolved,
-        "new_cases":            new_cases,
         "by_status":            status_counts,
         "incident_types":       incident_types,
         "recent_reports":       recent_cases,

@@ -187,8 +187,11 @@ function SignUp() {
         } catch (err) {
             const data = err.response?.data;
             if (err.response?.status === 409 && data?.code === "PENDING_VERIFICATION") {
-                localStorage.setItem("pending_phone", data.phone_number);
-                localStorage.setItem("pending_email",  data.email);
+                // From this form, not from the response: the server no longer
+                // echoes back the pending registration's phone and email, since
+                // anyone guessing an address could read them.
+                localStorage.setItem("pending_phone", form.phone_number);
+                localStorage.setItem("pending_email",  form.email);
                 try { localStorage.removeItem(SIGNUP_DRAFT_KEY); } catch {}
                 navigate('/otp', { state:{ pendingVerification:true } }); return;
             }

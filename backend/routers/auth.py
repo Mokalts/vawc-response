@@ -6,7 +6,13 @@ from models.user import User
 from models.otp import OTP
 from schemas.user import UserRegister, UserLogin, TokenResponse, UserResponse
 from schemas.otp import OTPRequest, OTPVerify
-from core.security import hash_password, verify_password, create_access_token, create_verify_token, decode_verify_token
+from core.security import (
+    hash_password, verify_password, create_access_token,
+    create_verify_token, decode_verify_token,
+    create_reset_token, decode_reset_token, password_fingerprint,
+)
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 from core.progressive_limiter import (
     check_rate_limit, record_failure, record_success, login_keys, IP_LOCKOUT_SCHEDULE,
 )
@@ -19,6 +25,15 @@ from core.security import create_access_token
 from core.dependencies import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
+
+# Per-IP caps on the endpoints that send messages or accept guesses. Without
+# these, one script could text a victim's phone all night on the barangay's
+# Semaphore credits, or work through a six-digit code at will.
+limiter = Limiter(key_func=get_remote_address)
+
+# Said to everyone, whether or not the account exists. Telling a stranger that a
+# number is registered tells an abuser that his partner has reported.
+GENERIC_SEND_OK = {"message": "If that account exists, a code has been sent."}
 
 from core.config import settings
 
@@ -38,7 +53,10 @@ class VerifyOTPForReset(BaseModel):
     code: str
 
 class ResetPasswordPayload(BaseModel):
-    identifier: str
+    # The token handed back by /forgot-password/verify-otp, which is only issued
+    # once a correct code has been presented. This endpoint used to take an
+    # identifier and a new password with nothing linking the two steps.
+    reset_token: str
     new_password: str
 
 class ResendEmailOTP(BaseModel):
@@ -92,7 +110,8 @@ def get_user_by_identifier(identifier: str, db: Session) -> User:
 # ─── Register ─────────────────────────────────────────────────────────────────
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(payload: UserRegister, db: Session = Depends(get_db)):
+@limiter.limit("12/hour")
+def register(request: Request, payload: UserRegister, db: Session = Depends(get_db)):
     validate_password_strength(payload.password)
     validate_email_exists(payload.email)
 
@@ -105,11 +124,12 @@ def register(payload: UserRegister, db: Session = Depends(get_db)):
                 db.delete(existing_user)
                 db.commit()
             else:
+                # No phone_number or email echoed back: those belong to whoever
+                # registered, and anyone can reach this by guessing an address.
+                # The client already knows what was typed into its own form.
                 return JSONResponse(status_code=409, content={
                     "code": "PENDING_VERIFICATION",
                     "message": "This email is already registered but not yet verified. Please check your messages for the OTP or request a new one.",
-                    "phone_number": existing_user.phone_number,
-                    "email": existing_user.email,
                 })
         else:
             raise HTTPException(status_code=400, detail="Email already registered.")
@@ -202,41 +222,40 @@ def login(payload: UserLogin, request: Request, db: Session = Depends(get_db)):
 # ─── OTP: Send to Phone ───────────────────────────────────────────────────────
 
 @router.post("/otp/send")
-def send_otp(payload: OTPRequest, db: Session = Depends(get_db)):
+@limiter.limit("3/minute")
+@limiter.limit("15/hour")
+def send_otp(request: Request, payload: OTPRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.phone_number == payload.phone_number).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found.")
-    code = create_otp(db, user.id)
-    send_otp_sms(user.phone_number, code)
-    return {"message": "OTP sent to mobile number."}
+    if user:
+        code = create_otp(db, user.id)
+        send_otp_sms(user.phone_number, code)
+    return GENERIC_SEND_OK
 
 
 # ─── OTP: Send to Email ───────────────────────────────────────────────────────
 
 @router.post("/otp/send-email")
-def send_otp_email_route(payload: ResendEmailOTP, db: Session = Depends(get_db)):
+@limiter.limit("3/minute")
+@limiter.limit("15/hour")
+def send_otp_email_route(request: Request, payload: ResendEmailOTP, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.phone_number == payload.phone_number).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found.")
-    if not user.email:
-        raise HTTPException(status_code=400, detail="No email address on file.")
-
-    code = create_otp(db, user.id)
-    verify_token = create_verify_token(user.id)
-    verify_link = f"{FRONTEND_URL}/verify?token={verify_token}"
-    send_otp_email(user.email, code, verify_link=verify_link)
-    return {"message": "OTP sent to email."}
+    if user and user.email:
+        code = create_otp(db, user.id)
+        verify_token = create_verify_token(user.id)
+        verify_link = f"{FRONTEND_URL}/verify?token={verify_token}"
+        send_otp_email(user.email, code, verify_link=verify_link)
+    return GENERIC_SEND_OK
 
 
 # ─── OTP: Verify (registration) ───────────────────────────────────────────────
 
 @router.post("/otp/verify")
-def verify_otp_route(payload: OTPVerify, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def verify_otp_route(request: Request, payload: OTPVerify, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.phone_number == payload.phone_number).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found.")
-
-    success = verify_otp(db, user.id, payload.code)
+    # Same answer for "no such number" and "wrong code", so this cannot be used
+    # to find out which numbers are registered.
+    success = verify_otp(db, user.id, payload.code) if user else False
     if not success:
         raise HTTPException(status_code=400, detail="Invalid or expired OTP.")
 
@@ -271,45 +290,72 @@ def verify_via_link(token: str, db: Session = Depends(get_db)):
 # ─── Forgot Password: Step 1 ─────────────────────────────────────────────────
 
 @router.post("/forgot-password/request")
-def forgot_password_request(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
+@limiter.limit("3/minute")
+@limiter.limit("10/hour")
+def forgot_password_request(request: Request, payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user = get_user_by_identifier(payload.identifier, db)
-    if not user:
-        raise HTTPException(status_code=404, detail="No account found with that email or phone number.")
 
-    code = create_otp(db, user.id)
+    # Nothing in the response distinguishes a registered account from an unknown
+    # one. "No account found with that email or phone number" let anyone confirm
+    # that a particular woman has an account on a VAWC reporting system.
+    if user:
+        code = create_otp(db, user.id)
+        if "@" in payload.identifier:
+            if user.email:
+                send_otp_email(user.email, code)
+            if user.phone_number:
+                send_otp_sms(user.phone_number, code)
+        else:
+            send_otp_sms(user.phone_number or payload.identifier, code)
 
-    if "@" in payload.identifier:
-        send_otp_email(user.email, code)
-        if user.phone_number:
-            send_otp_sms(user.phone_number, code)
-    else:
-        send_otp_sms(payload.identifier, code)
-
-    return {"message": "OTP sent successfully."}
+    return GENERIC_SEND_OK
 
 
 # ─── Forgot Password: Step 2 ─────────────────────────────────────────────────
 
 @router.post("/forgot-password/verify-otp")
-def forgot_password_verify_otp(payload: VerifyOTPForReset, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def forgot_password_verify_otp(request: Request, payload: VerifyOTPForReset, db: Session = Depends(get_db)):
     user = get_user_by_identifier(payload.identifier, db)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found.")
-
-    success = verify_otp(db, user.id, payload.code)
+    success = verify_otp(db, user.id, payload.code) if user else False
     if not success:
         raise HTTPException(status_code=400, detail="Invalid or expired OTP.")
 
-    return {"message": "OTP verified. You may now reset your password."}
+    # The code is now spent. This token is the only thing that will let the next
+    # step change the password, and it lasts ten minutes.
+    return {
+        "message": "OTP verified. You may now reset your password.",
+        "reset_token": create_reset_token(user.id, password_fingerprint(user.password_hash)),
+    }
 
 
 # ─── Forgot Password: Step 3 ─────────────────────────────────────────────────
 
 @router.post("/forgot-password/reset")
-def reset_password(payload: ResetPasswordPayload, db: Session = Depends(get_db)):
-    user = get_user_by_identifier(payload.identifier, db)
+@limiter.limit("10/minute")
+def reset_password(request: Request, payload: ResetPasswordPayload, db: Session = Depends(get_db)):
+    """Set a new password, for the account named by the reset token.
+
+    The account comes from the token, never from the request body: taking an
+    identifier here is what allowed anyone to set any account's password without
+    ever holding the code.
+    """
+    expired = HTTPException(
+        status_code=400,
+        detail="This password reset has expired. Please request a new code.",
+    )
+
+    user_id, pw_fingerprint = decode_reset_token(payload.reset_token)
+    if not user_id:
+        raise expired
+
+    user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found.")
+        raise expired
+
+    # Single use: the fingerprint stops matching the moment the password changes.
+    if pw_fingerprint != password_fingerprint(user.password_hash):
+        raise expired
 
     validate_password_strength(payload.new_password)
 

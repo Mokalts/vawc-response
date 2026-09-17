@@ -15,8 +15,10 @@ from core.progressive_limiter import (
 )
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from pydantic import BaseModel
 import numpy as np
 import re
+import secrets
 
 
 router = APIRouter(prefix="/admin/auth", tags=["Admin Auth"])
@@ -345,17 +347,45 @@ def verify_face(
 
 
 # ---------------------------------------------------------------------------
-# TEMPORARY DEV BYPASS — Skip face verification
-# Issues a fully-authenticated cookie without face check.
-# TODO: Remove this endpoint before production deployment.
+# Emergency access — for a camera that fails during a live demonstration
+#
+# This replaces the old /skip-verify, which needed nothing but a password and so
+# cancelled the second factor entirely. Two things differ:
+#   1. It is OFF unless FACE_BYPASS_CODE is set in the environment. Unset, every
+#      request here is refused, so the deployed default is no bypass at all.
+#   2. Even when on, the caller must present that code. A stolen password alone
+#      is not enough.
+# Every attempt is logged, successful or not.
 # ---------------------------------------------------------------------------
-@router.post("/skip-verify")
-def skip_face_verify(
+class EmergencyAccess(BaseModel):
+    code: str
+
+
+@router.post("/emergency-verify")
+@limiter.limit("5/hour")
+def emergency_face_bypass(
     request: Request,
     response: Response,
+    payload: EmergencyAccess,
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin),
 ):
+    configured = (settings.FACE_BYPASS_CODE or "").strip()
+    if not configured:
+        print(f"[FACE] emergency access refused for admin {current_admin.id}: not enabled.")
+        raise HTTPException(
+            status_code=403,
+            detail="Emergency access is not enabled. Ask a Super Admin to reset your face enrollment instead.",
+        )
+
+    # compare_digest so a wrong code cannot be narrowed down by timing.
+    if not secrets.compare_digest(payload.code.strip(), configured):
+        print(f"[FACE] emergency access DENIED for admin {current_admin.id}: wrong code.")
+        raise HTTPException(status_code=401, detail="Incorrect emergency code.")
+
+    print(f"[FACE] EMERGENCY ACCESS USED by admin {current_admin.id} "
+          f"({current_admin.username}) — face check skipped.")
+
     token = create_access_token(data={
         "sub": str(current_admin.id),
         "role": current_admin.position,
@@ -363,7 +393,7 @@ def skip_face_verify(
         "face_verified": True,
     })
     set_auth_cookie(response, token)
-    return {"message": "Face verification skipped (dev mode)."}
+    return {"message": "Emergency access granted. This was recorded in the server log."}
 
 
 # ---------------------------------------------------------------------------

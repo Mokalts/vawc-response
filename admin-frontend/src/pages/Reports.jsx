@@ -35,7 +35,6 @@ const daysLeft = (d) => !d ? 0 : Math.max(0, 30 - Math.floor((Date.now() - new D
 
 const IcoSearch = () => (<svg width="15" height="15" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="#94A3B8" strokeWidth="1.8" /><path d="M13.5 13.5L17 17" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round" /></svg>);
 const IcoUser = ({ size = 32, color = "#9B4DAB" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke={color} strokeWidth="1.8" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={color} strokeWidth="1.8" strokeLinecap="round" /></svg>);
-const IcoFolder = ({ size = 14, color = "#7B2D8B" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoDoc = ({ size = 32, color = "#CBD5E1" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoChevron = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#9B4DAB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoBack = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>);
@@ -140,6 +139,9 @@ export default function Reports() {
   }, []);
 
   useEffect(() => { if (view === "victims") fetchVictims(); if (view === "deleted") fetchDeleted(); }, [view, fetchVictims, fetchDeleted]);
+  // Search changes only: the effect above already refetches when `view` does,
+  // and listing it here as well would fire two requests for one switch.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (view === "victims") fetchVictims(); }, [debouncedSearch]);
 
   const openCases = (v) => { setSelectedVictim(v); setView("cases"); fetchCases(v.user_id); };

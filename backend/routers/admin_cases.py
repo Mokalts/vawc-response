@@ -9,6 +9,7 @@ from models.report import Report, ReportStatus
 from models.user import User
 from models.admin import Admin
 from core.admin_dependencies import get_current_admin_full_access, require_super_admin
+from core.config import settings
 from core.encryption import encrypt, decrypt, decrypt_float
 from core.masking import mask_case_dict, mark_unrestricted, mask_phone, mask_email, mask_address, mask_last_initial
 from utils.otp_helper import send_sms
@@ -918,7 +919,16 @@ def force_delete_case(
     Permanently remove a soft-deleted case and all its reports (cascade).
     Guarded so only cases already in 'Recently Deleted' can be purged, and only
     by a Super Admin. This is irreversible.
+
+    Off unless ALLOW_HARD_DELETE is set: during the pilot a mis-click here
+    destroys a victim's case and every report in it, with no recovery.
     """
+    if not settings.ALLOW_HARD_DELETE:
+        raise HTTPException(
+            status_code=403,
+            detail="Permanent deletion is disabled. Cases stay in Recently Deleted.",
+        )
+
     case = db.query(Case).filter(
         Case.id == case_id, Case.is_deleted == True
     ).first()

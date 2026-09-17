@@ -107,7 +107,6 @@ const IcoFilter = ({ size = 14, color = 'currentColor' }) => <Ico size={size} co
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const getGreeting = () => { const h = new Date().getHours(); return h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'; };
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
-const fmtTime = (d) => d ? new Date(d).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '';
 const truncate = (s, n) => !s ? '-' : s.length > n ? s.slice(0, n) + '…' : s;
 
 // Human date-range subtitle from the backend-returned ISO start/end.

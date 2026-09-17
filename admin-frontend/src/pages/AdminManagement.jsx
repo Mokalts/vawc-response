@@ -176,6 +176,14 @@ const CreateAdminModal = ({ onClose, onCreated }) => {
               </button>
             </div>
 
+            {/* pwError was computed on every keystroke and never shown, so the
+                rule that was broken stayed invisible until submit. */}
+            {pwError && form.password.length > 0 && (
+              <p style={{ margin: "6px 0 0", fontSize: 12, color: "#B91C1C", fontFamily: "'Lexend',sans-serif" }}>
+                {pwError}
+              </p>
+            )}
+
             {form.password.length > 0 && (
               <div style={{ marginTop: 8 }}>
                 <div style={{ display: "flex", gap: 4, marginBottom: 5 }}>

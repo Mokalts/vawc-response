@@ -34,7 +34,6 @@ const IcoDoc    = ({ c='#CBD5E1', size=36 }) => (<svg width={size} height={size}
 const IcoX      = ({ c='#64748B', size=16 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke={c} strokeWidth="2" strokeLinecap="round"/></svg>);
 const IcoArrow  = () => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#F47920" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoBell   = ({ c='#F47920' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoUser   = ({ c='#64748B', size=13 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke={c} strokeWidth="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoCal    = ({ c='#64748B', size=13 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke={c} strokeWidth="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoPin    = ({ c='#64748B', size=13 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="10" r="3" stroke={c} strokeWidth="1.8"/></svg>);
 const IcoImg    = ({ c='#64748B', size=13 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke={c} strokeWidth="1.8"/><circle cx="8.5" cy="8.5" r="1.5" stroke={c} strokeWidth="1.8"/><path d="M21 15l-5-5L5 21" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>);
@@ -294,6 +293,10 @@ function CaseDetailModal({ cas, onClose, onStatusRead }) {
 
     useEffect(() => {
         if (cas.has_status_update) onStatusRead(cas.id);
+        // Mount only, deliberately: this marks the update read because the modal
+        // was opened. Re-running it when `cas` or the callback changes would
+        // fire again on every parent re-render.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Esc closes the report sub-modal first, then the case modal.

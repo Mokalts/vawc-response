@@ -40,6 +40,19 @@ class Settings(BaseSettings):
     # face passed. Tuneable per environment without a code change.
     FACE_MATCH_THRESHOLD: float = 0.45
 
+    # Permanent, unrecoverable deletion of an archived case or victim account.
+    # Off by default: during a pilot the cost of an accidental wipe is far higher
+    # than the inconvenience of leaving archived rows in place.
+    ALLOW_HARD_DELETE: bool = False
+
+    # Emergency way past the face check, for a camera that fails in front of an
+    # audience. EMPTY MEANS DISABLED, and it ships empty: with no code set, the
+    # endpoint refuses everyone. Set it in the hosting environment shortly before
+    # a demo and clear it afterwards. While it is set, anyone holding both an
+    # admin password and this code can skip the second factor, so treat it like
+    # a password and never commit it.
+    FACE_BYPASS_CODE: str = ""
+
     # Extra CORS origins for production (comma-separated). localhost is always allowed.
     ALLOWED_ORIGINS: str = ""
 

@@ -51,6 +51,7 @@ function ForgotPassword() {
     const [step,            setStep]           = useState(1);
     const [usePhone,        setUsePhone]        = useState(false);
     const [identifier,      setIdentifier]      = useState('');
+    const [resetToken,      setResetToken]      = useState('');
     const [otp,             setOtp]             = useState(['','','','','','']);
     const [newPassword,     setNewPassword]     = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -88,7 +89,13 @@ function ForgotPassword() {
         const code=otp.join("");
         if (code.length<6) { setError("Please enter the complete 6-digit code."); return; }
         setLoading(true); setError('');
-        try { await api.post("/auth/forgot-password/verify-otp",{identifier,code}); setStep(3); }
+        try {
+            // The token is the proof that this code was correct. Step 3 sends it
+            // instead of an email or phone number, so nobody can skip this step.
+            const res = await api.post("/auth/forgot-password/verify-otp",{identifier,code});
+            setResetToken(res.data?.reset_token || '');
+            setStep(3);
+        }
         catch (err) { setError(err.response?.data?.detail||"Invalid or expired OTP. Please try again."); }
         finally { setLoading(false); }
     };
@@ -110,7 +117,7 @@ function ForgotPassword() {
         if (!/[!@#$%^&*(),.?":{}|<>_-]/.test(newPassword)) { setError("Password must include at least one special character."); return; }
         setLoading(true); setError('');
         try {
-            await api.post("/auth/forgot-password/reset",{identifier,new_password:newPassword});
+            await api.post("/auth/forgot-password/reset",{reset_token:resetToken,new_password:newPassword});
             navigate('/',{state:{accountCreated:false}});
         } catch (err) { setError(err.response?.data?.detail||"Failed to reset password. Please try again."); }
         finally { setLoading(false); }
@@ -165,7 +172,7 @@ function ForgotPassword() {
                 {step===2 && (
                     <>
                         <p style={S.desc}>
-                            A 6-digit code was sent to your{' '}
+                            If that account exists, a 6-digit code was sent to its{' '}
                             {identifier.includes("@")?"email and mobile number":"mobile number"}.
                         </p>
                         <p style={{textAlign:'center',fontSize:14.5,fontWeight:700,color:'#065F46',marginBottom:20,fontFamily:"'Lexend', sans-serif"}}>

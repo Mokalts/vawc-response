@@ -145,7 +145,11 @@ function ReportNow() {
             } catch {}
         }, 600);
         return () => clearTimeout(t);
-    }, [statement, offenderName, incidentDate, address, location]);
+        // relationship, abuseTypes and children are saved into the draft above,
+        // so they have to trigger a save too. Without them, choosing a
+        // relationship or ticking an abuse type never reached the draft, and
+        // that work was lost if the page was left and reopened.
+    }, [statement, offenderName, incidentDate, relationship, abuseTypes, children, address, location]);
 
     const discardDraft = () => {
         clearDraft();

@@ -119,6 +119,9 @@ function Sidebar() {
     const role = admin.position || '';
     const isSuper = !!admin.is_super_admin;
     const [unread, setUnread] = useState(0);
+    const [burstDismissedAt, setBurstDismissedAt] = useState(() => {
+        try { return localStorage.getItem('multi_alert_dismissed_at'); } catch { return null; }
+    });
     const [burstAlert, setBurstAlert] = useState(null); // { active, newest_at, ... } | null
 
     // Sliding active-pill for the nav.
@@ -159,8 +162,9 @@ function Sidebar() {
         return () => clearInterval(t);
     }, []);
 
-    // Burst alert visible only if active AND not dismissed for this newest_at timestamp
-    const burstDismissedAt = (typeof window !== 'undefined') ? localStorage.getItem('multi_alert_dismissed_at') : null;
+    // Burst alert visible only if active AND not dismissed for this newest_at
+    // timestamp. Held in state as well as localStorage so dismissing it hides
+    // the banner immediately instead of waiting for the next poll.
     const showBurstAlert = !!(burstAlert && burstAlert.active && burstAlert.newest_at && burstAlert.newest_at !== burstDismissedAt);
 
     const handleLogout = () => {
@@ -209,6 +213,36 @@ function Sidebar() {
                     </div>
                 </div>
             </div>
+
+            {/* Several reports in a short window, from different people. This
+                was computed and then never rendered, so the backend's burst
+                detection has been invisible the whole time. */}
+            {showBurstAlert && (
+                <div style={S.burst} role="status">
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                        <span style={S.burstDot} aria-hidden="true" />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <p style={S.burstTitle}>
+                                {burstAlert.report_count} reports in {burstAlert.window_minutes} minutes
+                            </p>
+                            <p style={S.burstText}>
+                                From {burstAlert.distinct_users} different {burstAlert.distinct_users === 1 ? 'person' : 'people'}. Check the dashboard.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                try { localStorage.setItem('multi_alert_dismissed_at', burstAlert.newest_at); } catch {}
+                                setBurstDismissedAt(burstAlert.newest_at);
+                            }}
+                            aria-label="Dismiss this alert"
+                            style={S.burstClose}
+                        >
+                            ×
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <div style={S.divider} />
 
@@ -383,6 +417,13 @@ const S = {
     logoSub: { fontSize: 9.5, color: '#E1BEE7', textTransform: 'uppercase', letterSpacing: '0.8px', marginTop: 2, fontFamily: TEXT.font },
 
     divider: { height: 1, backgroundColor: '#5C1F6E', margin: '0 16px' },
+    // Sits on the dark sidebar, so the surface and text are set explicitly
+    // rather than inherited from the admin theme tokens.
+    burst:      { margin: '0 16px 12px', padding: '10px 12px', borderRadius: 10, background: 'rgba(244,121,32,0.16)', border: '1px solid rgba(244,121,32,0.45)' },
+    burstDot:   { width: 7, height: 7, borderRadius: '50%', background: '#F47920', flexShrink: 0, marginTop: 6 },
+    burstTitle: { margin: 0, fontSize: 12.5, fontWeight: 700, color: '#fff', fontFamily: NAVFONT, lineHeight: 1.35 },
+    burstText:  { margin: '2px 0 0', fontSize: 11.5, color: 'rgba(255,255,255,0.75)', fontFamily: NAVFONT, lineHeight: 1.45 },
+    burstClose: { flexShrink: 0, width: 22, height: 22, lineHeight: '20px', borderRadius: 6, border: 'none', background: 'transparent', color: 'rgba(255,255,255,0.7)', fontSize: 16, cursor: 'pointer', fontFamily: NAVFONT },
 
     adminCard: { display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px' },
     avatar: { width: 34, height: 34, borderRadius: '50%', background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font },

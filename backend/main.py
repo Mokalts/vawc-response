@@ -20,7 +20,16 @@ from database import Base
 from routers import auth, reports, cases, users, upload, admin_auth, admin_cases, admin_dashboard, admin_users
 from routers import admin_bpo, admin_endorsement, admin_officials
 
-Base.metadata.create_all(bind=engine)
+# Creating tables must not be able to stop the app from starting. Neon suspends
+# a free database after idle time, so a Render restart can land while the
+# database is still waking; raising here turned that into a failed boot and a
+# dead service. Tables already exist in every deployed environment, so logging
+# and carrying on is right: the first real query wakes the database and, if
+# something is genuinely wrong, it surfaces as a normal request error.
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as e:  # noqa: BLE001 — deliberately broad, boot must survive
+    print(f"[STARTUP] create_all skipped: {type(e).__name__}: {e}")
 
 # Bootstrap the first super admin from env vars (no-op once one exists).
 from seed import seed_super_admin
@@ -47,7 +56,9 @@ _DEFAULT_ORIGINS = [
     "http://localhost:5173",
 ]
 _EXTRA_ORIGINS = [o.strip() for o in (settings.ALLOWED_ORIGINS or "").split(",") if o.strip()]
-ALLOWED_ORIGINS = _DEFAULT_ORIGINS + _EXTRA_ORIGINS
+# Once real origins are configured, this is a deployed environment and the
+# localhost entries have no business being accepted with credentials.
+ALLOWED_ORIGINS = _EXTRA_ORIGINS if _EXTRA_ORIGINS else _DEFAULT_ORIGINS
 
 app.add_middleware(
     CORSMiddleware,

@@ -150,8 +150,11 @@ function FaceEnroll() {
         };
         startCamera();
         load();
+        // Captured now: by the time cleanup runs, videoRef.current may already
+        // be null, which would leave the camera light on after leaving the page.
+        const videoEl = videoRef.current;
         return () => {
-            if (videoRef.current?.srcObject) videoRef.current.srcObject.getTracks().forEach(t => t.stop());
+            if (videoEl?.srcObject) videoEl.srcObject.getTracks().forEach(t => t.stop());
             if (animRef.current) cancelAnimationFrame(animRef.current);
         };
     }, [startLiveDetection]);

@@ -1,4 +1,4 @@
-"""
+r"""
 One-off cleanup of test/junk victim accounts created during debugging.
 
 Deletes users whose email ends with @example.com (the probe accounts used while

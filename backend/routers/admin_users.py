@@ -23,6 +23,7 @@ from models.admin import Admin
 from models.case import Case
 from models.otp import OTP
 from core.admin_dependencies import require_super_admin
+from core.config import settings
 from core.security import hash_password
 from routers.admin_auth import validate_password_strength
 
@@ -234,10 +235,19 @@ def force_delete_victim(
     _: Admin = Depends(require_super_admin),
 ):
     """
-    TEMPORARY: permanently remove an archived (soft-deleted) victim account and
-    ALL related data (cases -> reports, and OTPs). Guarded so only accounts
-    already in the Deleted Victims list can be purged. This is irreversible.
+    Permanently remove an archived (soft-deleted) victim account and ALL related
+    data (cases -> reports, and OTPs). Guarded so only accounts already in the
+    Deleted Victims list can be purged. This is irreversible.
+
+    Off unless ALLOW_HARD_DELETE is set: during the pilot a mis-click here wipes
+    a woman's account and every report she ever filed, with no recovery.
     """
+    if not settings.ALLOW_HARD_DELETE:
+        raise HTTPException(
+            status_code=403,
+            detail="Permanent deletion is disabled. Accounts stay in Deleted Victims.",
+        )
+
     u = db.query(User).filter(User.id == user_id, User.is_deleted == True).first()
     if not u:
         raise HTTPException(

@@ -136,6 +136,12 @@ function FaceVerify() {
     const [ready, setReady] = useState(false);
     const [popup, setPopup] = useState(null);
 
+    // Emergency access (needs the code configured on the server).
+    const [emergencyOpen, setEmergencyOpen] = useState(false);
+    const [emergencyCode, setEmergencyCode] = useState('');
+    const [emergencyBusy, setEmergencyBusy] = useState(false);
+    const [emergencyError, setEmergencyError] = useState('');
+
     // ── Liveness state ────────────────────────────────────────────────────────
     const [phase, setPhase] = useState('idle');                  // 'idle' | 'liveness' | 'settle' | 'capturing'
     const [livenessTimeLeft, setLivenessTimeLeft] = useState(0);
@@ -237,8 +243,11 @@ function FaceVerify() {
         };
         startCamera();
         load();
+        // Captured now: by the time cleanup runs, videoRef.current may already
+        // be null, which would leave the camera light on after leaving the page.
+        const videoEl = videoRef.current;
         return () => {
-            if (videoRef.current?.srcObject) videoRef.current.srcObject.getTracks().forEach(t => t.stop());
+            if (videoEl?.srcObject) videoEl.srcObject.getTracks().forEach(t => t.stop());
             if (animRef.current) cancelAnimationFrame(animRef.current);
         };
     }, [startLiveDetection]);
@@ -494,6 +503,23 @@ function FaceVerify() {
         if (!verifying && phase === 'idle') startLiveDetection();
     };
 
+    const submitEmergency = async () => {
+        const code = emergencyCode.trim();
+        if (!code || emergencyBusy) return;
+        setEmergencyBusy(true);
+        setEmergencyError('');
+        try {
+            await api.post('/admin/auth/emergency-verify', { code });
+            localStorage.setItem('face_verified', 'true');
+            if (videoRef.current?.srcObject) videoRef.current.srcObject.getTracks().forEach(t => t.stop());
+            navigate('/dashboard');
+        } catch (err) {
+            const msg = err.response?.data?.detail;
+            setEmergencyError(typeof msg === 'string' ? msg : 'Emergency access failed.');
+            setEmergencyBusy(false);
+        }
+    };
+
     const cancelLiveness = () => {
         livenessRef.current.done = true;
         settleRef.current.done = true;
@@ -682,27 +708,52 @@ function FaceVerify() {
                     Back to sign in
                 </button>
 
-                {/* ── TEMPORARY BYPASS - remove when camera is working ──
-                    This skips the second factor entirely. It must not survive
-                    into real use: anyone with a stolen password walks straight
-                    into the case records. */}
-                <button
-                    onClick={async () => {
-                        try {
-                            await api.post('/admin/auth/skip-verify');
-                            localStorage.setItem('face_verified', 'true');
-                            if (videoRef.current?.srcObject) videoRef.current.srcObject.getTracks().forEach(t => t.stop());
-                            navigate('/dashboard');
-                        } catch {
-                            localStorage.setItem('face_verified', 'true');
-                            navigate('/dashboard');
-                        }
-                    }}
-                    style={S.bypassBtn}
-                >
-                    Skip face verification (temporary)
+                {/* The "skip face verification" bypass was removed along with
+                    its endpoint: it handed a fully verified session to anyone
+                    with a password. If a camera genuinely fails, a Super Admin
+                    resets the enrolment instead.
+
+                    What remains is emergency access, which needs a code that is
+                    only set in the environment around a demonstration. With no
+                    code set, the server refuses this outright. */}
+                <button type="button" style={S.emergencyLink} onClick={() => { setEmergencyError(''); setEmergencyCode(''); setEmergencyOpen(true); }}>
+                    Camera not working? Emergency access
                 </button>
             </div>
+
+            {/* Emergency access */}
+            {emergencyOpen && (
+                <div style={S.backdrop}>
+                    <div style={{ ...S.modal, textAlign: 'left' }}>
+                        <h2 style={{ ...S.modalTitle, textAlign: 'left', color: 'var(--adm-text)' }}>Emergency access</h2>
+                        <p style={{ ...S.modalMsg, textAlign: 'left' }}>
+                            For a camera that will not work during a demonstration. Enter the emergency
+                            code. Every attempt is recorded in the server log.
+                        </p>
+                        <input
+                            type="password"
+                            autoFocus
+                            value={emergencyCode}
+                            onChange={e => { setEmergencyCode(e.target.value); setEmergencyError(''); }}
+                            onKeyDown={e => { if (e.key === 'Enter') submitEmergency(); }}
+                            placeholder="Emergency code"
+                            style={S.emergencyInput}
+                        />
+                        {emergencyError && (
+                            <p style={{ margin: '8px 0 0', fontSize: 12.5, color: '#B91C1C', fontFamily: FF }}>{emergencyError}</p>
+                        )}
+                        <div style={{ ...S.modalBtns, marginTop: 16 }}>
+                            <button className="fv-btn fv-primary" style={S.primaryBtn} onClick={submitEmergency} disabled={emergencyBusy || !emergencyCode.trim()}>
+                                {emergencyBusy && <span style={S.spinner} />}
+                                {emergencyBusy ? 'Checking…' : 'Continue'}
+                            </button>
+                            <button className="fv-btn fv-ghost" style={S.secondaryBtn} onClick={() => setEmergencyOpen(false)} disabled={emergencyBusy}>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Result popup */}
             {popup && (
@@ -816,7 +867,10 @@ const S = {
     processNote: { fontSize: 12, color: 'var(--adm-text-muted)', textAlign: 'center', margin: '10px 0 12px', minHeight: 16, fontFamily: FF },
 
     backBtn: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, width: '100%', minHeight: 44, padding: '10px 0', backgroundColor: 'transparent', color: 'var(--adm-text-muted)', fontSize: 13, fontWeight: 500, border: '1.5px solid var(--adm-border)', borderRadius: 10, cursor: 'pointer', fontFamily: FF },
-    bypassBtn: { marginTop: 8, width: '100%', minHeight: 40, borderRadius: 10, border: '1.5px dashed var(--adm-border)', background: 'transparent', color: 'var(--adm-text-muted)', fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: FF },
+    // Deliberately quiet: a normal sign-in should never reach for this, and it
+    // fails closed anyway unless a code is configured on the server.
+    emergencyLink:  { marginTop: 10, width: '100%', minHeight: 36, border: 'none', background: 'transparent', color: 'var(--adm-text-muted)', fontSize: 12, fontWeight: 500, cursor: 'pointer', textDecoration: 'underline', fontFamily: FF },
+    emergencyInput: { width: '100%', boxSizing: 'border-box', minHeight: 44, padding: '11px 12px', borderRadius: 10, border: '1.5px solid var(--adm-border)', background: 'var(--adm-input, var(--adm-card))', color: 'var(--adm-text)', fontSize: 14, fontFamily: FF, outline: 'none' },
 
     // Modal
     backdrop: { position: 'fixed', inset: 0, backgroundColor: 'rgba(18,16,14,0.55)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 16 },
