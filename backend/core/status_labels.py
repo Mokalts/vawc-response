@@ -77,10 +77,6 @@ RELATIONSHIP_DISPLAY = {
     "others":                 "Others",
 }
 
-SEVERITY_DISPLAY = {
-    "low": "Low", "moderate": "Moderate", "high": "High", "critical": "Critical",
-}
-
 ENDORSEMENT_OFFICE_DISPLAY = {
     "pnp_iba_mps": "PNP - Iba MPS (Women & Children Protection Desk)",
     "cmswdo":      "C/MSWDO",

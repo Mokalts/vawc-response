@@ -21,9 +21,9 @@ router = APIRouter(prefix="/admin/cases", tags=["Admin Cases"])
 
 from core.status_labels import (
     STATUS_DISPLAY, STATUS_EMAIL_MSG, CLOSURE_REASON_DISPLAY,
-    RELATIONSHIP_DISPLAY, SEVERITY_DISPLAY,
+    RELATIONSHIP_DISPLAY,
 )
-from models.case import ClosureReason, RelationshipToOffender, CaseSeverity
+from models.case import ClosureReason, RelationshipToOffender
 from core.case_status import recompute_case_status
 
 # Abuse types (RA 9262 forms) for the report incident-type patch.
@@ -41,9 +41,6 @@ class StatusPayload(BaseModel):
 class ClosePayload(BaseModel):
     closure_reason: str
     closure_note: Optional[str] = None
-
-class SeverityPayload(BaseModel):
-    severity: str
 
 class DeletePayload(BaseModel):
     reason: Optional[str] = None
@@ -163,8 +160,6 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
         "offender_name":       decrypt(c.offender_name),
         "status":              raw_status,
         "status_display":      STATUS_DISPLAY.get(raw_status, raw_status),
-        "severity":            (c.severity.value if c.severity else None),
-        "severity_display":    SEVERITY_DISPLAY.get(c.severity.value if c.severity else None),
         "relationship_to_offender":         (c.relationship_to_offender.value if c.relationship_to_offender else None),
         "relationship_to_offender_display": RELATIONSHIP_DISPLAY.get(c.relationship_to_offender.value if c.relationship_to_offender else None),
         "closure_reason":         (c.closure_reason.value if c.closure_reason else None),
@@ -620,27 +615,6 @@ def reopen_case(
     db.commit()
     return {"message": "Case reopened.", "status": case.status.value,
             "status_display": STATUS_DISPLAY.get(case.status.value)}
-
-
-# ── PATCH /admin/cases/{case_id}/severity ─────────────────────────────────────
-@router.patch("/{case_id}/severity")
-def set_severity(
-    case_id: int,
-    payload: SeverityPayload,
-    db: Session = Depends(get_db),
-    current_admin: Admin = Depends(get_current_admin_full_access),
-):
-    case = _get_active_case(db, case_id)
-    try:
-        sev = CaseSeverity(payload.severity)
-    except ValueError:
-        raise HTTPException(status_code=422, detail=f"Invalid severity. Valid: {[s.value for s in CaseSeverity]}")
-    case.severity   = sev
-    case.updated_at = datetime.utcnow()
-    db.commit()
-    return {"message": "Severity updated.", "severity": sev.value,
-            "severity_display": SEVERITY_DISPLAY.get(sev.value),
-            "suggest_immediate_endorsement": sev == CaseSeverity.critical}
 
 
 # ── PATCH /admin/cases/{case_id}/respondent ───────────────────────────────────

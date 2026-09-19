@@ -55,12 +55,6 @@ const CLOSURE_REASONS = [
   { id: "bpo_expired_no_incident", label: "BPO expired with no further incident" },
   { id: "others", label: "Others (please specify)" },
 ];
-const SEVERITIES = [
-  { id: "low", label: "Low" },
-  { id: "moderate", label: "Moderate" },
-  { id: "high", label: "High" },
-  { id: "critical", label: "Critical" },
-];
 const ENDORSE_OFFICES = [
   { id: "pnp_iba_mps", label: "PNP - Iba MPS (WCPD)" },
   { id: "cmswdo", label: "C/MSWDO" },
@@ -399,7 +393,7 @@ const stepDetail = (key, cas) => {
     case "submitted":
       return `Filed by the complainant${on(cas.created_at) ? ` on ${on(cas.created_at)}` : ""}.`;
     case "under_assessment":
-      return cas.handled_by ? `${cas.handled_by} is reviewing the statement.` : "VAWC officer reviews the statement and severity.";
+      return cas.handled_by ? `${cas.handled_by} is reviewing the statement.` : "VAWC officer reviews the statement.";
     case "awaiting_onsite_visit":
       return "Complainant asked to appear at the desk to confirm and sign.";
     case "bpo_applied":
@@ -535,7 +529,7 @@ const CaseTimeline = ({ cas, onUpdateStatus }) => {
   );
 };
 
-// ── Case actions (lawful VAWC): severity, BPO, endorsement, close ──
+// ── Case actions (lawful VAWC): BPO, endorsement, close ──
 const inp = { width: "100%", boxSizing: "border-box", padding: "8px 10px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 13, fontFamily: "'Lexend',sans-serif", outline: "none" };
 const btnP = { padding: "9px 14px", borderRadius: 8, border: "none", background: "#9B4DAB", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif", display: "inline-flex", alignItems: "center", gap: 7 };
 // Small secondary button for undo / revert actions (accidental clicks).
@@ -554,8 +548,6 @@ const CaseActions = ({ cas, refetch, showToast }) => {
   };
 
   // Severity
-  const [sev, setSev] = useState(cas.severity || "moderate");
-  useEffect(() => { setSev(cas.severity || "moderate"); }, [cas.severity]);
 
   // BPO application reliefs
   const [reliefs, setReliefs] = useState({ physical: false, threats: false, stayaway: false });
@@ -572,21 +564,6 @@ const CaseActions = ({ cas, refetch, showToast }) => {
   return (
     <Card title="Case Actions" icon={<IcoShield size={16} color="#9B4DAB" />}>
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-
-        {/* Severity */}
-        <div>
-          <span style={lbl}>Severity / Triage</span>
-          <div style={{ display: "flex", gap: 8 }}>
-            <select style={{ ...inp, flex: 1 }} value={sev} onChange={e => setSev(e.target.value)}>
-              {SEVERITIES.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-            </select>
-            <button className="rd-btn" style={{ ...btnP, opacity: busy === "sev" ? 0.7 : 1 }} disabled={busy === "sev" || sev === cas.severity}
-              onClick={() => call("sev", () => api.patch(`/admin/cases/${cas.id}/severity`, { severity: sev }), "Severity updated.")}>
-              {busy === "sev" ? <Spinner size={12} /> : "Set"}
-            </button>
-          </div>
-          {sev === "critical" && <p style={{ margin: "6px 0 0", fontSize: 11.5, color: "#DC2626", fontFamily: "'Lexend',sans-serif" }}>Critical: immediate endorsement to PNP is recommended.</p>}
-        </div>
 
         {/* BPO */}
         <div>

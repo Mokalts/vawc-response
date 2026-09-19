@@ -45,13 +45,6 @@ class RelationshipToOffender(str, enum.Enum):
     others                   = "others"
 
 
-class CaseSeverity(str, enum.Enum):
-    low      = "low"
-    moderate = "moderate"
-    high     = "high"
-    critical = "critical"   # system SUGGESTS immediate endorsement to PNP; never acts on its own
-
-
 class Case(Base):
     __tablename__ = "cases"
 
@@ -74,7 +67,9 @@ class Case(Base):
 
     # Classification
     relationship_to_offender = Column(SAEnum(RelationshipToOffender, name="relationshiptooffender"), nullable=True)
-    severity                 = Column(SAEnum(CaseSeverity, name="caseseverity"), default=CaseSeverity.moderate, nullable=False)
+    # Severity/triage was removed: it had no counterpart in the Handbook or in
+    # any paper form the desk uses, and nothing downstream consumed it. The
+    # column is left in the database (now nullable) so recorded values survive.
 
     # Closure (a case that ends is `closed` WITH a reason — never "resolved/settled")
     closure_reason           = Column(SAEnum(ClosureReason, name="closurereason"), nullable=True)
