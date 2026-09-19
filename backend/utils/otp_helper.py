@@ -67,12 +67,25 @@ def _normalize_ph_number(phone: str) -> str:
     return d or (phone or "")
 
 
+def sms_enabled() -> bool:
+    """Whether SMS is worth attempting at all.
+
+    Needs both a key and the explicit switch: the account can hold credits and a
+    valid key while every send still fails because no sender name is approved.
+    """
+    return bool(getattr(settings, "SMS_ENABLED", False)) and bool((getattr(settings, "SMS_API_KEY", "") or "").strip())
+
+
 def send_sms(phone_number: str, message: str) -> bool:
     """
     Send an SMS via Semaphore (https://semaphore.co). Returns True if sent.
     Never raises — a failed SMS must not break the caller. Falls back to
     console output when SMS_API_KEY is not configured (dev).
     """
+    if not sms_enabled():
+        print(f"[SMS] skipped for {phone_number}: SMS is disabled (no approved sender name).")
+        return False
+
     api_key = getattr(settings, "SMS_API_KEY", "") or ""
     if not api_key:
         print(f"[DEV] SMS to {phone_number}: {message}  (SMS_API_KEY not set — SMS skipped)")
@@ -97,13 +110,14 @@ def send_sms(phone_number: str, message: str) -> bool:
         return False
 
 
-def send_otp_sms(phone_number: str, code: str):
-    """Send the OTP via SMS. Email OTP remains the primary channel."""
+def send_otp_sms(phone_number: str, code: str) -> bool:
+    """Send the OTP via SMS. Returns False if it did not go, so the caller can
+    fall back to email rather than leaving the person waiting for a text."""
     message = (
         f"Your VAWC-Response verification code is {code}. "
         f"It expires in {OTP_EXPIRE_MINUTES} minutes. Do not share this code with anyone."
     )
-    send_sms(phone_number, message)
+    return send_sms(phone_number, message)
 
 
 def send_otp_email(email: str, code: str, verify_link: str = None):

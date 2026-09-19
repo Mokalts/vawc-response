@@ -156,3 +156,24 @@ def abuse_label(raw):
     if not key:
         return None
     return ABUSE_DISPLAY.get(key, key.title())
+
+
+# ── Mandatory report: reasons an office was not notified ─────────────────────
+# Handbook p.29 makes the four-hour report to the PNP and C/MSWDO a standard
+# step; p.30 requires the victim-survivor's informed consent before any referral
+# is made, which includes that report. These are the lawful reasons it did not
+# happen, recorded instead of leaving the case flagged as overdue for ever.
+REPORT_WAIVER_REASONS = {
+    "victim_declined":  "Victim declined referral",
+    "not_applicable":   "Not applicable to this case",
+    "already_reported": "Already reported by another office",
+}
+
+
+def waiver_reason_display(code: str) -> str:
+    if not code:
+        return ""
+    base, _, note = code.partition(":")
+    label = REPORT_WAIVER_REASONS.get(base.strip(), base.strip())
+    note = note.strip()
+    return f"{label} — {note}" if note else label

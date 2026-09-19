@@ -92,6 +92,12 @@ class Case(Base):
     # Mandatory reporting clock (JMC 2010-2: within 4 hours to PNP and C/MSWDO)
     reported_to_pnp_at       = Column(DateTime, nullable=True)
     reported_to_mswdo_at     = Column(DateTime, nullable=True)
+    # Why an office was NOT told. The Handbook requires informed consent before
+    # a referral (p.30, covering the four-hour report), so "she declined" is a
+    # lawful outcome, not a lapse — and without somewhere to record it, the desk
+    # is left showing a permanent overdue flag for doing the right thing.
+    pnp_report_waived_reason   = Column(String(160), nullable=True)
+    mswdo_report_waived_reason = Column(String(160), nullable=True)
 
     # Free-text message from the Super Admin to the victim
     admin_message     = Column(Text, nullable=True)

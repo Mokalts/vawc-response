@@ -84,27 +84,29 @@ const Skel = () => (
 // ─── Status Timeline ──────────────────────────────────────────────────────────
 // One row of the timeline. The connector is absolutely positioned so it stretches
 // to whatever height the sub-message needs instead of a fixed 18px stub.
-function TimelineRow({ label, detail, done, current, dotColor, textColor, last }) {
+function TimelineRow({ label, detail, done, current, skipped, dotColor, textColor, last }) {
     return (
         <div style={{ display:'flex', gap:12, position:'relative', paddingBottom: last ? 0 : 16 }}>
             {!last && (
                 <span aria-hidden="true" style={{
                     position:'absolute', left:9, top:22, bottom:2, width:2,
-                    background: done && !current ? '#059669' : 'var(--border)',
+                    background: done && !current && !skipped ? '#059669' : 'var(--border)',
                 }}/>
             )}
             <span aria-hidden="true" style={{
                 width:20, height:20, borderRadius:'50%', flexShrink:0, zIndex:1,
-                background: current ? dotColor : done ? '#059669' : 'var(--surface)',
-                border: current ? `2px solid ${dotColor}` : done ? 'none' : '2px solid var(--border)',
+                background: skipped ? 'var(--border-soft)' : current ? dotColor : done ? '#059669' : 'var(--surface)',
+                border: skipped ? '2px solid var(--border)' : current ? `2px solid ${dotColor}` : done ? 'none' : '2px solid var(--border)',
                 display:'flex', alignItems:'center', justifyContent:'center',
             }}>
-                {done && !current && <svg width="10" height="10" fill="none" viewBox="0 0 20 20"><path d="M4 10l5 5 7-9" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                {skipped && <span style={{ width:8, height:2, borderRadius:2, background:'var(--text-muted)' }}/>}
+                {done && !current && !skipped && <svg width="10" height="10" fill="none" viewBox="0 0 20 20"><path d="M4 10l5 5 7-9" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 {current && <span style={{ width:7, height:7, borderRadius:'50%', background:'var(--surface)' }}/>}
             </span>
             <div style={{ minWidth:0, paddingTop:1 }}>
                 <p style={{ margin:0, fontSize:13, fontWeight: current ? 700 : done ? 600 : 500, color: textColor, fontFamily:"'Lexend',sans-serif", display:'flex', alignItems:'center', gap:7, flexWrap:'wrap' }}>
                     {label}
+                    {skipped && <span style={{ fontSize:9.5, background:'var(--border-soft)', color:'var(--text-muted)', padding:'2px 8px', borderRadius:9999, fontWeight:700, letterSpacing:'0.05em', textTransform:'uppercase' }}>Not needed</span>}
                     {current && <span style={{ fontSize:9.5, background:'var(--surface-tint)', color:'var(--accent-text)', padding:'2px 8px', borderRadius:9999, fontWeight:800, letterSpacing:'0.05em', textTransform:'uppercase' }}>Now</span>}
                 </p>
                 {detail && (
@@ -117,24 +119,52 @@ function TimelineRow({ label, detail, done, current, dotColor, textColor, last }
     );
 }
 
-function StatusTimeline({ currentStatus }) {
+// What a BPO step means when it never happened. Saying nothing would leave the
+// row looking merely unfinished; these cases usually ended some other way.
+const BPO_SKIPPED_DETAIL = {
+    bpo_applied: 'No protection order was applied for in this case.',
+    bpo_issued:  'No protection order was issued.',
+    bpo_served:  'There was no order to deliver.',
+};
+
+function StatusTimeline({ currentStatus, bpo }) {
     const isEndpoint = ENDPOINT_STEPS.some(e => e.key === currentStatus);
     const linearIdx = STATUS_STEPS.findIndex(s => s.key === currentStatus);
+    // Evidence, not position. Marking every earlier step done once a case ends
+    // told people a protection order had been issued and served when none ever
+    // existed — the one thing on this screen they must be able to trust.
+    const bpoDone = {
+        bpo_applied: !!bpo?.applied_at,
+        bpo_issued:  !!bpo?.issued_at,
+        bpo_served:  !!bpo?.served_at,
+    };
     const rows = [
-        ...STATUS_STEPS.map((step, idx) => ({
-            step,
-            done:    isEndpoint ? true : idx <= linearIdx,
-            current: !isEndpoint && idx === linearIdx,
-        })),
+        ...STATUS_STEPS.map((step, idx) => {
+            const current = !isEndpoint && idx === linearIdx;
+            if (step.key in bpoDone) {
+                const done = bpoDone[step.key];
+                const passed = isEndpoint || idx <= linearIdx;
+                return {
+                    step: (!done && passed && !current)
+                        ? { ...step, detail: BPO_SKIPPED_DETAIL[step.key] || step.detail }
+                        : step,
+                    done,
+                    skipped: !done && passed && !current,
+                    current,
+                };
+            }
+            return { step, done: isEndpoint ? true : idx <= linearIdx, skipped: false, current };
+        }),
         ...ENDPOINT_STEPS.map(step => ({
             step,
             done:    false,
+            skipped: false,
             current: step.key === currentStatus,
         })),
     ];
     return (
         <div style={{ display:'flex', flexDirection:'column' }}>
-            {rows.map(({ step, done, current }, i) => {
+            {rows.map(({ step, done, current, skipped }, i) => {
                 const st = getSt(step.key);
                 return (
                     <TimelineRow
@@ -143,6 +173,7 @@ function StatusTimeline({ currentStatus }) {
                         detail={step.detail}
                         done={done}
                         current={current}
+                        skipped={skipped}
                         dotColor={st.dot}
                         textColor={current ? st.color : done ? '#047857' : 'var(--text-muted)'}
                         last={i === rows.length - 1}
@@ -353,7 +384,7 @@ function CaseDetailModal({ cas, onClose, onStatusRead }) {
                             <span style={{width:7,height:7,borderRadius:'50%',backgroundColor:st.dot,flexShrink:0}}/>
                             {cas.status_display||st.label}
                         </span>
-                        <StatusTimeline currentStatus={cas.status}/>
+                        <StatusTimeline currentStatus={cas.status} bpo={cas.bpo}/>
                     </div>
 
                     {/* Onsite verification notice - victim must appear in person */}

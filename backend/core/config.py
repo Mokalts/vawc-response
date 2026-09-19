@@ -13,6 +13,11 @@ class Settings(BaseSettings):
 
     SMS_API_KEY: str = ""
     SMS_SENDER: str = ""
+    # OFF until a sender name is approved. Semaphore rejects every send without
+    # one, so attempting SMS just delays the caller and drops the message on the
+    # floor; with this off, anything that would have been texted goes by email.
+    # Flip to true once a sender name shows as Active in the Semaphore account.
+    SMS_ENABLED: bool = False
 
     GMAIL_USER: str = ""
     GMAIL_APP_PASSWORD: str = ""

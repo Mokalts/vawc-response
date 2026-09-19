@@ -31,6 +31,7 @@ def monitoring(
     bpo_issued_same_day = 0
     endo_sent = endo_ack = 0
     pnp_reported = pnp_4h = mswdo_reported = mswdo_4h = 0
+    pnp_waived = mswdo_waived = 0
     by_abuse, by_rel, by_closure = {}, {}, {}
 
     for c in cases:
@@ -39,10 +40,16 @@ def monitoring(
             pnp_reported += 1
             if c.created_at and (c.reported_to_pnp_at - c.created_at) <= FOURH:
                 pnp_4h += 1
+        elif getattr(c, "pnp_report_waived_reason", None):
+            # Not reported for a recorded reason, most often that she declined.
+            # Counted apart from both "reported" and "outstanding": it is neither.
+            pnp_waived += 1
         if c.reported_to_mswdo_at:
             mswdo_reported += 1
             if c.created_at and (c.reported_to_mswdo_at - c.created_at) <= FOURH:
                 mswdo_4h += 1
+        elif getattr(c, "mswdo_report_waived_reason", None):
+            mswdo_waived += 1
         # Relationship
         if c.relationship_to_offender:
             k = c.relationship_to_offender.value
@@ -84,8 +91,19 @@ def monitoring(
                 "issued_same_day": bpo_issued_same_day,
                 "same_day_pct": pct(bpo_issued_same_day, bpo_ever_issued)},
         "mandatory_report": {
-            "pnp_reported": pnp_reported, "pnp_within_4h": pnp_4h, "pnp_within_4h_pct": pct(pnp_4h, len(cases)),
-            "mswdo_reported": mswdo_reported, "mswdo_within_4h": mswdo_4h, "mswdo_within_4h_pct": pct(mswdo_4h, len(cases)),
+            # Percentages are of the cases where reporting was actually required:
+            # counting a case she asked not to be referred as a compliance miss
+            # would punish the desk for following the Handbook.
+            "pnp_reported": pnp_reported, "pnp_within_4h": pnp_4h,
+            "pnp_late": max(pnp_reported - pnp_4h, 0),
+            "pnp_waived": pnp_waived,
+            "pnp_applicable": max(len(cases) - pnp_waived, 0),
+            "pnp_within_4h_pct": pct(pnp_4h, max(len(cases) - pnp_waived, 0)),
+            "mswdo_reported": mswdo_reported, "mswdo_within_4h": mswdo_4h,
+            "mswdo_late": max(mswdo_reported - mswdo_4h, 0),
+            "mswdo_waived": mswdo_waived,
+            "mswdo_applicable": max(len(cases) - mswdo_waived, 0),
+            "mswdo_within_4h_pct": pct(mswdo_4h, max(len(cases) - mswdo_waived, 0)),
         },
         "endorsements": {"sent": endo_sent, "acknowledged": endo_ack, "outstanding": endo_sent - endo_ack},
         "by_abuse_type": by_abuse,

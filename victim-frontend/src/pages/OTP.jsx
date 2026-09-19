@@ -34,12 +34,20 @@ function OTP() {
     const [switchLoading, setSwitchLoading] = useState(false);
     const [error,         setError]         = useState('');
     const [resendSuccess, setResendSuccess] = useState(false);
+    // Hide the "send to mobile" route unless the server can deliver SMS.
+    const [smsAvailable,  setSmsAvailable]  = useState(false);
     const inputs = useRef([]);
 
     const phone = localStorage.getItem("pending_phone") || "";
     const email = localStorage.getItem("pending_email") || "";
     const maskedEmail = email.replace(/(.{2})(.*)(@.*)/, '$1***$3');
     const maskedPhone = phone.length >= 7 ? phone.slice(0,3)+"****"+phone.slice(-4) : phone;
+
+    useEffect(() => {
+        api.get("/auth/channels")
+            .then(r => setSmsAvailable(!!r.data?.sms))
+            .catch(() => setSmsAvailable(false));
+    }, []);
 
     useEffect(() => {
         if (countdown > 0) { const t = setTimeout(()=>setCountdown(c=>c-1),1000); return ()=>clearTimeout(t); }
@@ -163,7 +171,7 @@ function OTP() {
                     }
                 </p>
 
-                {channel==='email' && (
+                {channel==='email' && smsAvailable && (
                     <button style={{...S.switchBtn,opacity:switchLoading?0.7:1}} onClick={handleSwitch} disabled={switchLoading}>
                         <IcoPhone />
                         {switchLoading?"Sending to mobile…":"Send code to mobile number instead"}

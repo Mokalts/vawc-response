@@ -69,6 +69,23 @@ def _decrypt_report(r: Report) -> dict:
     }
 
 
+
+def _bpo_milestones(c: Case) -> dict | None:
+    """The dates that matter to the person protected by the order, or None when
+    no BPO was ever applied for."""
+    bpos = list(getattr(c, "bpos", []) or [])
+    if not bpos:
+        return None
+    latest = sorted(bpos, key=lambda b: b.applied_at or b.created_at)[-1]
+    return {
+        "applied_at": latest.applied_at,
+        "issued_at":  latest.issued_at,
+        "served_at":  latest.served_at,
+        "expires_at": latest.expires_at,
+        "status":     latest.status.value if latest.status else None,
+    }
+
+
 def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
     raw_status = c.status.value if c.status else None
     data = {
@@ -95,6 +112,10 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
         "deleted_at":          c.deleted_at,
         "admin_recovered":     c.admin_recovered,
         "report_count":        len(c.reports),
+        # Milestones of her own protection order. Without these the app could
+        # only guess, and the timeline was showing "BPO Issued" and "BPO Served"
+        # as completed on cases where no order was ever applied for.
+        "bpo":                 _bpo_milestones(c),
         "created_at":          c.created_at,
         "updated_at":          c.updated_at,
     }

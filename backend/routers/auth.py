@@ -16,7 +16,7 @@ from slowapi.util import get_remote_address
 from core.progressive_limiter import (
     check_rate_limit, record_failure, record_success, login_keys, IP_LOCKOUT_SCHEDULE,
 )
-from utils.otp_helper import create_otp, verify_otp, send_otp_sms, send_otp_email
+from utils.otp_helper import create_otp, verify_otp, send_otp_sms, send_otp_email, sms_enabled
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 import re
@@ -107,6 +107,41 @@ def get_user_by_identifier(identifier: str, db: Session) -> User:
     return user
 
 
+
+def _deliver_code(user, code: str, prefer_sms: bool = False) -> None:
+    """Get the code to the person, by whatever channel actually works.
+
+    SMS is attempted only when it is switched on, and email takes over whenever
+    it is off or the send fails. Nothing in here may raise: these endpoints
+    answer identically for known and unknown accounts, and an exception escaping
+    would turn a delivery failure into a 500 that reveals the account exists.
+    """
+    delivered = False
+    if prefer_sms and user.phone_number:
+        try:
+            delivered = send_otp_sms(user.phone_number, code)
+        except Exception as e:
+            print(f"[OTP] SMS failed for user {user.id}: {e}")
+
+    if not delivered and user.email:
+        try:
+            verify_link = f"{FRONTEND_URL}/verify?token={create_verify_token(user.id)}"
+            send_otp_email(user.email, code, verify_link=verify_link)
+            delivered = True
+        except Exception as e:
+            print(f"[OTP] email failed for user {user.id}: {e}")
+
+    if not delivered:
+        print(f"[OTP] no channel delivered a code to user {user.id}.")
+
+
+@router.get("/channels")
+def available_channels():
+    """Which delivery channels the app should offer. Public and non-identifying:
+    it describes the server's configuration, not any account."""
+    return {"sms": sms_enabled(), "email": True}
+
+
 # ─── Register ─────────────────────────────────────────────────────────────────
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -163,9 +198,11 @@ def register(request: Request, payload: UserRegister, db: Session = Depends(get_
     # OTP email is on the critical path (user waits for it), so send synchronously.
     send_otp_email(user.email, code, verify_link=verify_link)
     # SMS is a secondary channel — run it in the background so a slow SMS
-    # provider never delays the registration response.
-    import threading
-    threading.Thread(target=send_otp_sms, args=(user.phone_number, code), daemon=True).start()
+    # provider never delays the registration response. Skipped entirely when SMS
+    # is off, which it is until a sender name is approved.
+    if sms_enabled():
+        import threading
+        threading.Thread(target=send_otp_sms, args=(user.phone_number, code), daemon=True).start()
 
     return user
 
@@ -228,7 +265,7 @@ def send_otp(request: Request, payload: OTPRequest, db: Session = Depends(get_db
     user = db.query(User).filter(User.phone_number == payload.phone_number).first()
     if user:
         code = create_otp(db, user.id)
-        send_otp_sms(user.phone_number, code)
+        _deliver_code(user, code, prefer_sms=True)
     return GENERIC_SEND_OK
 
 
@@ -239,11 +276,9 @@ def send_otp(request: Request, payload: OTPRequest, db: Session = Depends(get_db
 @limiter.limit("15/hour")
 def send_otp_email_route(request: Request, payload: ResendEmailOTP, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.phone_number == payload.phone_number).first()
-    if user and user.email:
+    if user:
         code = create_otp(db, user.id)
-        verify_token = create_verify_token(user.id)
-        verify_link = f"{FRONTEND_URL}/verify?token={verify_token}"
-        send_otp_email(user.email, code, verify_link=verify_link)
+        _deliver_code(user, code)
     return GENERIC_SEND_OK
 
 
@@ -300,13 +335,9 @@ def forgot_password_request(request: Request, payload: ForgotPasswordRequest, db
     # that a particular woman has an account on a VAWC reporting system.
     if user:
         code = create_otp(db, user.id)
-        if "@" in payload.identifier:
-            if user.email:
-                send_otp_email(user.email, code)
-            if user.phone_number:
-                send_otp_sms(user.phone_number, code)
-        else:
-            send_otp_sms(user.phone_number or payload.identifier, code)
+        # A phone number was previously SMS-only, so with SMS off the code never
+        # arrived and the screen sat waiting for a text that was never sent.
+        _deliver_code(user, code, prefer_sms="@" not in payload.identifier)
 
     return GENERIC_SEND_OK
 

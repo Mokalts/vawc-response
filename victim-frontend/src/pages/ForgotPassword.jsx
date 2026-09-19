@@ -50,6 +50,8 @@ function ForgotPassword() {
     const navigate = useNavigate();
     const [step,            setStep]           = useState(1);
     const [usePhone,        setUsePhone]        = useState(false);
+    // Only offer the mobile channel when the server can actually send one.
+    const [smsAvailable,    setSmsAvailable]    = useState(false);
     const [identifier,      setIdentifier]      = useState('');
     const [resetToken,      setResetToken]      = useState('');
     const [otp,             setOtp]             = useState(['','','','','','']);
@@ -62,6 +64,12 @@ function ForgotPassword() {
     const [countdown,       setCountdown]       = useState(45);
     const [canResend,       setCanResend]       = useState(false);
     const inputs = useRef([]);
+
+    useEffect(() => {
+        api.get("/auth/channels")
+            .then(r => setSmsAvailable(!!r.data?.sms))
+            .catch(() => setSmsAvailable(false));
+    }, []);
 
     useEffect(() => {
         if (step===2 && countdown>0) { const t=setTimeout(()=>setCountdown(c=>c-1),1000); return()=>clearTimeout(t); }
@@ -163,7 +171,11 @@ function ForgotPassword() {
                         </button>
 
                         <p style={{textAlign:'center',fontSize:13.5,color:'var(--text-muted)',marginTop:14,fontFamily:"'Lexend', sans-serif"}}>
-                            {usePhone ? <>Use email instead?{' '}<button type="button" style={S.link} onClick={()=>{setUsePhone(false);setIdentifier('');setError('');}}>Switch to email</button></> : <>Not working?{' '}<button type="button" style={S.link} onClick={()=>{setUsePhone(true);setIdentifier('');setError('');}}>Try mobile number</button></>}
+                            {usePhone
+                                ? <>Use email instead?{' '}<button type="button" style={S.link} onClick={()=>{setUsePhone(false);setIdentifier('');setError('');}}>Switch to email</button></>
+                                : smsAvailable
+                                    ? <>Not working?{' '}<button type="button" style={S.link} onClick={()=>{setUsePhone(true);setIdentifier('');setError('');}}>Try mobile number</button></>
+                                    : null}
                         </p>
                     </>
                 )}

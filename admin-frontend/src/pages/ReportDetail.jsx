@@ -381,6 +381,14 @@ const ENDPOINT_NOTE = {
   closed:   { title: "Assistance Ended",   body: "The barangay ended its assistance with a recorded reason. The case is not dismissed, resolved or settled — only a court can dismiss a VAWC case.", color: "#475569", bg: "#F1F5F9", border: "#CBD5E1", sub: "#334155" },
 };
 
+// Shown when a BPO step never happened, so the row reads as "did not apply"
+// rather than as unfinished work.
+const SKIPPED_DETAIL = {
+  bpo_applied: "No BPO was applied for in this case.",
+  bpo_issued: "No BPO was issued.",
+  bpo_served: "No order to serve.",
+};
+
 // Sub-message under each timeline step. Prefers the real recorded fact (who, when,
 // which office) and falls back to what the step means while it has not happened yet.
 const stepDetail = (key, cas) => {
@@ -418,21 +426,23 @@ const stepDetail = (key, cas) => {
 };
 
 // Shared row so the linear steps and the two endpoints cannot drift apart.
-const TimelineRow = ({ label, detail, dot, color, bg, icon, isDone, isCurrent, last }) => (
+const TimelineRow = ({ label, detail, dot, color, bg, icon, isDone, isCurrent, isSkipped, last }) => (
   <div style={{ display: "flex", gap: 12, position: "relative", paddingBottom: last ? 2 : 16 }}>
     {!last && (
       <span aria-hidden="true" style={{
         position: "absolute", left: 9, top: 22, bottom: 2, width: 2,
-        background: isDone ? dot : "var(--adm-border)",
+        background: isDone && !isSkipped ? dot : "var(--adm-border)",
       }} />
     )}
     <span aria-hidden="true" style={{
       width: 20, height: 20, borderRadius: "50%", flexShrink: 0, zIndex: 1,
-      border: `2px solid ${isCurrent || isDone ? dot : "var(--adm-border)"}`,
-      background: isCurrent ? (icon ? bg : dot) : isDone ? bg : "var(--adm-card)",
+      border: `2px solid ${(isCurrent || isDone) && !isSkipped ? dot : "var(--adm-border)"}`,
+      background: isSkipped ? "var(--adm-muted)" : isCurrent ? (icon ? bg : dot) : isDone ? bg : "var(--adm-card)",
       display: "flex", alignItems: "center", justifyContent: "center",
     }}>
-      {icon
+      {isSkipped
+        ? <span style={{ width: 8, height: 2, borderRadius: 2, background: "#94A3B8" }} />
+        : icon
         ? icon
         : isCurrent
           ? <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--adm-card)" }} />
@@ -441,6 +451,7 @@ const TimelineRow = ({ label, detail, dot, color, bg, icon, isDone, isCurrent, l
     <div style={{ minWidth: 0, paddingTop: 1 }}>
       <p style={{ margin: 0, fontSize: 12.5, fontWeight: isCurrent ? 700 : isDone ? 600 : 400, color: isCurrent ? color : isDone ? "var(--adm-text)" : "#94A3B8", fontFamily: "'Lexend',sans-serif", display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
         {label}
+        {isSkipped && <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#64748B", background: "var(--adm-muted)", border: "1px solid var(--adm-border)", padding: "2px 7px", borderRadius: 9999 }}>Not needed</span>}
         {isCurrent && <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color, background: bg, border: `1px solid ${dot}33`, padding: "2px 7px", borderRadius: 9999 }}>Now</span>}
       </p>
       {detail && (
@@ -457,17 +468,30 @@ const CaseTimeline = ({ cas, onUpdateStatus }) => {
   const isDeleted = cas.is_deleted;
   const currentIdx = TIMELINE_STEPS.indexOf(cas.status);
   const canPatch = ["submitted", "under_assessment", "awaiting_onsite_visit", "bpo_applied"].includes(cas.status);
+  // BPO steps are driven by the BPO records, not by position in the ladder.
+  // Marking everything before an endpoint as done claimed an order had been
+  // issued and served on cases where none was ever applied for.
+  const bpos = cas.bpos || [];
+  const bpoDone = {
+    bpo_applied: bpos.some((b) => b.applied_at),
+    bpo_issued: bpos.some((b) => b.issued_at),
+    bpo_served: bpos.some((b) => b.served_at),
+  };
   const rows = [
-    ...TIMELINE_STEPS.map((s, i) => ({
-      key: s,
-      isDone: isEndpoint ? true : i < currentIdx,
-      isCurrent: !isEndpoint && i === currentIdx,
-      icon: null,
-    })),
+    ...TIMELINE_STEPS.map((s, i) => {
+      const isCurrent = !isEndpoint && i === currentIdx;
+      if (s in bpoDone) {
+        const done = bpoDone[s];
+        const passed = isEndpoint || i < currentIdx;
+        return { key: s, isDone: done, isCurrent, isSkipped: !done && passed && !isCurrent, icon: null };
+      }
+      return { key: s, isDone: isEndpoint ? true : i < currentIdx, isCurrent, isSkipped: false, icon: null };
+    }),
     ...ENDPOINT_STATES.map((key) => ({
       key,
       isDone: false,
       isCurrent: cas.status === key,
+      isSkipped: false,
       icon: cas.status === key ? ENDPOINT_ICON[key] : null,
     })),
   ];
@@ -480,13 +504,14 @@ const CaseTimeline = ({ cas, onUpdateStatus }) => {
             <TimelineRow
               key={row.key}
               label={cfg.label}
-              detail={stepDetail(row.key, cas)}
+              detail={row.isSkipped ? SKIPPED_DETAIL[row.key] : stepDetail(row.key, cas)}
               dot={cfg.dot}
               color={cfg.color}
               bg={cfg.bg}
               icon={row.icon}
               isDone={row.isDone}
               isCurrent={row.isCurrent}
+              isSkipped={row.isSkipped}
               last={i === rows.length - 1}
             />
           );
@@ -569,9 +594,10 @@ const CaseActions = ({ cas, refetch, showToast }) => {
         {/* Mandatory reporting (4-hour clock) */}
         <div>
           <span style={lbl}>Mandatory Report (within 4 hours)</span>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {[["pnp", "PNP", cas.reported_to_pnp_at, overduePnp], ["mswdo", "C/MSWDO", cas.reported_to_mswdo_at, overdueMswdo]].map(([office, name, at, overdue]) => (
-              <div key={office} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {[["pnp", "PNP", cas.reported_to_pnp_at, overduePnp, cas.pnp_report_waived_display],
+              ["mswdo", "C/MSWDO", cas.reported_to_mswdo_at, overdueMswdo, cas.mswdo_report_waived_display]].map(([office, name, at, overdue, waived]) => (
+              <div key={office} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--adm-text)", minWidth: 74, fontFamily: "'Lexend',sans-serif" }}>{name}</span>
                 {at
                   ? <>
@@ -584,16 +610,48 @@ const CaseActions = ({ cas, refetch, showToast }) => {
                         Undo
                       </button>
                     </>
-                  : <>
-                      {overdue && <span style={{ fontSize: 10.5, fontWeight: 700, color: "#991B1B", background: "#FEF2F2", border: "1px solid #FECACA", padding: "1px 7px", borderRadius: 9999 }}>OVERDUE</span>}
-                      <button className="rd-btn" style={{ ...btnP, background: "#0E7490", padding: "5px 10px", fontSize: 12 }} disabled={busy === "rpt" + office}
-                        onClick={() => call("rpt" + office, () => api.patch(`/admin/cases/${cas.id}/mandatory-report`, { office }), `Marked reported to ${name}.`)}>
-                        Mark reported
-                      </button>
-                    </>}
+                  : waived
+                    ? <>
+                        {/* A recorded decision not to report. She is entitled to
+                            refuse the referral, and the desk should not be left
+                            looking overdue for respecting that. */}
+                        <span style={{ fontSize: 12, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>Not reported · {waived}</span>
+                        <button style={btnU} disabled={busy === "undo" + office} title="Remove this reason"
+                          onClick={async () => {
+                            if (await confirmDialog({ title: `Undo for ${name}?`, message: `The recorded reason will be removed and ${name} will show as not yet reported again.`, confirmLabel: "Undo" }))
+                              call("undo" + office, () => api.patch(`/admin/cases/${cas.id}/mandatory-report`, { office, clear: true }), `Cleared ${name} entry.`);
+                          }}>
+                          Undo
+                        </button>
+                      </>
+                    : <>
+                        {overdue && <span style={{ fontSize: 10.5, fontWeight: 700, color: "#9A3412", background: "#FFF7ED", border: "1px solid #FED7AA", padding: "1px 7px", borderRadius: 9999 }}>PAST 4 HOURS</span>}
+                        <button className="rd-btn" style={{ ...btnP, background: "#0E7490", padding: "5px 10px", fontSize: 12 }} disabled={busy === "rpt" + office}
+                          onClick={() => call("rpt" + office, () => api.patch(`/admin/cases/${cas.id}/mandatory-report`, { office }), `Marked reported to ${name}.`)}>
+                          Mark reported
+                        </button>
+                        <select
+                          value=""
+                          disabled={busy === "waive" + office}
+                          onChange={(e) => {
+                            const reason = e.target.value;
+                            if (!reason) return;
+                            call("waive" + office, () => api.patch(`/admin/cases/${cas.id}/mandatory-report`, { office, waived_reason: reason }), `Recorded for ${name}.`);
+                          }}
+                          style={{ fontSize: 11.5, padding: "4px 6px", borderRadius: 6, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif", cursor: "pointer" }}>
+                          <option value="">Not reported…</option>
+                          <option value="victim_declined">Victim declined referral</option>
+                          <option value="not_applicable">Not applicable to this case</option>
+                          <option value="already_reported">Already reported by another office</option>
+                        </select>
+                      </>}
               </div>
             ))}
           </div>
+          <p style={{ margin: "7px 0 0", fontSize: 11, lineHeight: 1.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+            The Handbook requires the victim-survivor's informed consent before a referral is made, and this
+            report counts as one. If she declines, record that here rather than leaving it open.
+          </p>
         </div>
 
         {/* BPO */}

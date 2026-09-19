@@ -22,6 +22,7 @@ router = APIRouter(prefix="/admin/cases", tags=["Admin Cases"])
 from core.status_labels import (
     STATUS_DISPLAY, STATUS_EMAIL_MSG, CLOSURE_REASON_DISPLAY,
     RELATIONSHIP_DISPLAY, SEVERITY_DISPLAY,
+    REPORT_WAIVER_REASONS, waiver_reason_display,
 )
 from models.case import ClosureReason, RelationshipToOffender, CaseSeverity
 from core.case_status import recompute_case_status
@@ -47,6 +48,7 @@ class SeverityPayload(BaseModel):
 
 class MandatoryReportPayload(BaseModel):
     office: str            # "pnp" | "mswdo"
+    waived_reason: str | None = None   # code from REPORT_WAIVER_REASONS, optional ": note"
     reported_at: Optional[str] = None   # ISO; defaults to now
     clear: bool = False    # true = undo an accidental mark
 
@@ -183,6 +185,10 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
         "applicant_consent_note": c.applicant_consent_note,
         "reported_to_pnp_at":     c.reported_to_pnp_at,
         "reported_to_mswdo_at":   c.reported_to_mswdo_at,
+        "pnp_report_waived_reason":     c.pnp_report_waived_reason,
+        "mswdo_report_waived_reason":   c.mswdo_report_waived_reason,
+        "pnp_report_waived_display":    waiver_reason_display(c.pnp_report_waived_reason),
+        "mswdo_report_waived_display":  waiver_reason_display(c.mswdo_report_waived_reason),
         "bpos":                [_bpo_dict(b) for b in (c.bpos or [])],
         "endorsements":        [_endorsement_dict(e) for e in (c.endorsements or [])],
         "children":            [_child_dict(ch) for ch in (c.children or [])],
@@ -742,18 +748,41 @@ def set_mandatory_report(
             when = datetime.fromisoformat(payload.reported_at.replace("Z", "+00:00")).replace(tzinfo=None)
         except ValueError:
             pass
-    value = None if payload.clear else when
-    if payload.office == "pnp":
-        case.reported_to_pnp_at = value
-    elif payload.office == "mswdo":
-        case.reported_to_mswdo_at = value
-    else:
+    if payload.office not in ("pnp", "mswdo"):
         raise HTTPException(status_code=422, detail="office must be 'pnp' or 'mswdo'.")
+
+    waiver = (payload.waived_reason or "").strip()
+    if waiver:
+        code = waiver.partition(":")[0].strip()
+        if code not in REPORT_WAIVER_REASONS:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Unknown reason. Valid: {list(REPORT_WAIVER_REASONS)}",
+            )
+        waiver = waiver[:160]
+
+    # Three states, and they are mutually exclusive: reported, consciously not
+    # reported with a reason, or neither yet.
+    if payload.clear:
+        reported_value, waiver_value = None, None
+    elif waiver:
+        reported_value, waiver_value = None, waiver
+    else:
+        reported_value, waiver_value = when, None
+
+    if payload.office == "pnp":
+        case.reported_to_pnp_at = reported_value
+        case.pnp_report_waived_reason = waiver_value
+    else:
+        case.reported_to_mswdo_at = reported_value
+        case.mswdo_report_waived_reason = waiver_value
     case.updated_at = datetime.utcnow()
     db.commit()
     return {"message": "Mandatory report recorded.",
             "reported_to_pnp_at": case.reported_to_pnp_at,
-            "reported_to_mswdo_at": case.reported_to_mswdo_at}
+            "reported_to_mswdo_at": case.reported_to_mswdo_at,
+            "pnp_report_waived_reason": case.pnp_report_waived_reason,
+            "mswdo_report_waived_reason": case.mswdo_report_waived_reason}
 
 
 # ── PATCH /admin/cases/{case_id}/reports/{report_id}/incident-type ────────────
