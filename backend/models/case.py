@@ -89,15 +89,10 @@ class Case(Base):
     applicant_relation       = Column(String, nullable=True)
     applicant_consent_note   = Column(Text, nullable=True)
 
-    # Mandatory reporting clock (JMC 2010-2: within 4 hours to PNP and C/MSWDO)
-    reported_to_pnp_at       = Column(DateTime, nullable=True)
-    reported_to_mswdo_at     = Column(DateTime, nullable=True)
-    # Why an office was NOT told. The Handbook requires informed consent before
-    # a referral (p.30, covering the four-hour report), so "she declined" is a
-    # lawful outcome, not a lapse — and without somewhere to record it, the desk
-    # is left showing a permanent overdue flag for doing the right thing.
-    pnp_report_waived_reason   = Column(String(160), nullable=True)
-    mswdo_report_waived_reason = Column(String(160), nullable=True)
+    # Mandatory reporting to the PNP and C/MSWDO was removed from the system.
+    # The duty itself still exists (Handbook p.29), it is simply not tracked here.
+    # The four database columns are left in place rather than dropped, so any
+    # dates already recorded are not destroyed; they are no longer read.
 
     # Free-text message from the Super Admin to the victim
     admin_message     = Column(Text, nullable=True)

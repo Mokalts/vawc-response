@@ -433,7 +433,6 @@ const StackBar = ({ segments }) => {
 };
 
 function MonitoringSection({ m, expiring }) {
-    const md = m.mandatory_report || {};
     const Panel = ({ title, tag, children }) => (
         <div style={S.tableCard}>
             <div style={S.tableHeader}>
@@ -457,17 +456,6 @@ function MonitoringSection({ m, expiring }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 14, marginBottom: 18 }}>
                 <Ring pct={m.bpo?.same_day_pct} color="#7B2D8B" label="BPOs issued same day"
                       sub={`${m.bpo?.issued_same_day ?? 0} of ${m.bpo?.ever_issued ?? 0} issued`} />
-                {/* Denominator excludes cases the victim-survivor asked not to be
-                    referred: counting those as misses would mark the desk down
-                    for following the Handbook's consent rule. */}
-                <Ring pct={md.pnp_within_4h_pct} color="#0E7490" label="Reported to PNP within 4 hours"
-                      sub={`${md.pnp_within_4h ?? 0} of ${md.pnp_applicable ?? m.total_cases ?? 0} cases`
-                           + (md.pnp_late ? ` · ${md.pnp_late} late` : '')
-                           + (md.pnp_waived ? ` · ${md.pnp_waived} not required` : '')} />
-                <Ring pct={md.mswdo_within_4h_pct} color="#C45E10" label="Reported to C/MSWDO within 4 hours"
-                      sub={`${md.mswdo_within_4h ?? 0} of ${md.mswdo_applicable ?? m.total_cases ?? 0} cases`
-                           + (md.mswdo_late ? ` · ${md.mswdo_late} late` : '')
-                           + (md.mswdo_waived ? ` · ${md.mswdo_waived} not required` : '')} />
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14 }}>

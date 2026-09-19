@@ -535,14 +535,13 @@ const CaseTimeline = ({ cas, onUpdateStatus }) => {
   );
 };
 
-// ── Case actions (lawful VAWC): severity, mandatory report, BPO, endorsement, close ──
+// ── Case actions (lawful VAWC): severity, BPO, endorsement, close ──
 const inp = { width: "100%", boxSizing: "border-box", padding: "8px 10px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 13, fontFamily: "'Lexend',sans-serif", outline: "none" };
 const btnP = { padding: "9px 14px", borderRadius: 8, border: "none", background: "#9B4DAB", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif", display: "inline-flex", alignItems: "center", gap: 7 };
 // Small secondary button for undo / revert actions (accidental clicks).
 const btnU = { padding: "4px 9px", borderRadius: 6, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" };
 const btnUDanger = { ...btnU, borderColor: "#FECACA", color: "#B91C1C" };
 const lbl = { fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", marginBottom: 4, display: "block" };
-const HRS4 = 4 * 60 * 60 * 1000;
 
 const CaseActions = ({ cas, refetch, showToast }) => {
   const [busy, setBusy] = useState("");
@@ -568,8 +567,6 @@ const CaseActions = ({ cas, refetch, showToast }) => {
   const [ackFor, setAckFor] = useState(null);
   const [ackName, setAckName] = useState("");
 
-  const overduePnp = !cas.reported_to_pnp_at && cas.created_at && (Date.now() - new Date(cas.created_at).getTime() > HRS4);
-  const overdueMswdo = !cas.reported_to_mswdo_at && cas.created_at && (Date.now() - new Date(cas.created_at).getTime() > HRS4);
   const daysLeft = (b) => b.expires_at ? Math.ceil((new Date(b.expires_at).getTime() - Date.now()) / 86400000) : null;
 
   return (
@@ -589,69 +586,6 @@ const CaseActions = ({ cas, refetch, showToast }) => {
             </button>
           </div>
           {sev === "critical" && <p style={{ margin: "6px 0 0", fontSize: 11.5, color: "#DC2626", fontFamily: "'Lexend',sans-serif" }}>Critical: immediate endorsement to PNP is recommended.</p>}
-        </div>
-
-        {/* Mandatory reporting (4-hour clock) */}
-        <div>
-          <span style={lbl}>Mandatory Report (within 4 hours)</span>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {[["pnp", "PNP", cas.reported_to_pnp_at, overduePnp, cas.pnp_report_waived_display],
-              ["mswdo", "C/MSWDO", cas.reported_to_mswdo_at, overdueMswdo, cas.mswdo_report_waived_display]].map(([office, name, at, overdue, waived]) => (
-              <div key={office} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--adm-text)", minWidth: 74, fontFamily: "'Lexend',sans-serif" }}>{name}</span>
-                {at
-                  ? <>
-                      <span style={{ fontSize: 12, color: "#059669", fontFamily: "'Lexend',sans-serif" }}>Reported {fmt(at)}</span>
-                      <button style={btnU} disabled={busy === "undo" + office} title="Undo an accidental mark"
-                        onClick={async () => {
-                          if (await confirmDialog({ title: `Undo ${name} report?`, message: `The recorded date and time of reporting to ${name} will be cleared. The 4-hour compliance clock will show this case as not yet reported.`, confirmLabel: "Undo" }))
-                            call("undo" + office, () => api.patch(`/admin/cases/${cas.id}/mandatory-report`, { office, clear: true }), `Cleared ${name} report.`);
-                        }}>
-                        Undo
-                      </button>
-                    </>
-                  : waived
-                    ? <>
-                        {/* A recorded decision not to report. She is entitled to
-                            refuse the referral, and the desk should not be left
-                            looking overdue for respecting that. */}
-                        <span style={{ fontSize: 12, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>Not reported · {waived}</span>
-                        <button style={btnU} disabled={busy === "undo" + office} title="Remove this reason"
-                          onClick={async () => {
-                            if (await confirmDialog({ title: `Undo for ${name}?`, message: `The recorded reason will be removed and ${name} will show as not yet reported again.`, confirmLabel: "Undo" }))
-                              call("undo" + office, () => api.patch(`/admin/cases/${cas.id}/mandatory-report`, { office, clear: true }), `Cleared ${name} entry.`);
-                          }}>
-                          Undo
-                        </button>
-                      </>
-                    : <>
-                        {overdue && <span style={{ fontSize: 10.5, fontWeight: 700, color: "#9A3412", background: "#FFF7ED", border: "1px solid #FED7AA", padding: "1px 7px", borderRadius: 9999 }}>PAST 4 HOURS</span>}
-                        <button className="rd-btn" style={{ ...btnP, background: "#0E7490", padding: "5px 10px", fontSize: 12 }} disabled={busy === "rpt" + office}
-                          onClick={() => call("rpt" + office, () => api.patch(`/admin/cases/${cas.id}/mandatory-report`, { office }), `Marked reported to ${name}.`)}>
-                          Mark reported
-                        </button>
-                        <select
-                          value=""
-                          disabled={busy === "waive" + office}
-                          onChange={(e) => {
-                            const reason = e.target.value;
-                            if (!reason) return;
-                            call("waive" + office, () => api.patch(`/admin/cases/${cas.id}/mandatory-report`, { office, waived_reason: reason }), `Recorded for ${name}.`);
-                          }}
-                          style={{ fontSize: 11.5, padding: "4px 6px", borderRadius: 6, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif", cursor: "pointer" }}>
-                          <option value="">Not reported…</option>
-                          <option value="victim_declined">Victim declined referral</option>
-                          <option value="not_applicable">Not applicable to this case</option>
-                          <option value="already_reported">Already reported by another office</option>
-                        </select>
-                      </>}
-              </div>
-            ))}
-          </div>
-          <p style={{ margin: "7px 0 0", fontSize: 11, lineHeight: 1.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
-            The Handbook requires the victim-survivor's informed consent before a referral is made, and this
-            report counts as one. If she declines, record that here rather than leaving it open.
-          </p>
         </div>
 
         {/* BPO */}

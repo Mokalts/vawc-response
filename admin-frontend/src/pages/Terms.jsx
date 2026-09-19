@@ -56,7 +56,7 @@ const SECTIONS = [
         items: [
             'What you enter becomes part of an official record and may be printed on a Barangay Protection Order or an endorsement letter. Correct a misspelled name rather than leaving it.',
             'Classify an incident from the complainant\'s statement. If the statement does not support a classification, ask her rather than guess.',
-            'Record the date and time of mandatory reporting to the PNP and the C/MSWDO accurately. JMC 2010-2 sets a four-hour expectation, and a falsified timestamp is worse than a late one.',
+            "Report the incident to the PNP and the C/MSWDO as the Handbook requires, with the victim-survivor's informed consent. This system does not track that reporting, so keep the desk's own record of when each office was told.",
         ],
     },
     {
