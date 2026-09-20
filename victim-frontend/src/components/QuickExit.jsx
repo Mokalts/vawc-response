@@ -26,6 +26,28 @@ import React, { useEffect, useRef } from 'react';
  * last item in that bar (see BottomNavbar). It used to float above the content
  * on those screens, where it covered the Submit Report button. The floating pill
  * below is now only for screens with no bottom bar, such as sign-in.
+ *
+ * The pill sits at the TOP LEFT, opposite the theme toggle those screens already
+ * fix at the top right, and not at the bottom right where it started. At the
+ * bottom it landed on whatever happened to be in that corner: on a 360x640
+ * phone it covered the Sign Up link on the sign-in screen and won the hit test,
+ * so a woman reaching for Sign Up was thrown out of the site instead. It also
+ * overlapped Hotlines there and the "victim is a minor" toggle on sign-up.
+ *
+ * Moving it is not enough on its own, because a control that floats over a
+ * scrolling form will sooner or later have a field underneath it, and a mis-tap
+ * here does not merely annoy: it ejects her from the site and wipes her draft.
+ * So the pill is backed by an opaque bar across the top. Content that scrolls
+ * under a bar is understood to be out of reach and is scrolled back out; content
+ * under a small floating pill looks tappable and is not. Every screen that
+ * renders the pill already starts its card below 72px, except sign-in, which was
+ * given the matching top padding.
+ *
+ * It deliberately stays BELOW the consent dialog (z-index 400 against the
+ * dialog's 1100). Raising it would put it back on top of content: that dialog
+ * starts 26px from the top of a 360x640 screen, so a control in the top corner
+ * would cover its header. While the dialog is open she has typed nothing and
+ * Decline is one tap away.
  */
 
 const EXIT_URL = 'https://www.google.com/search?q=weather+today';
@@ -34,8 +56,17 @@ const DRAFT_KEYS = ['vawc_report_draft', 'vawc_signup_draft'];
 if (!document.getElementById('vawc-quickexit-css')) {
     const s = document.createElement('style'); s.id = 'vawc-quickexit-css';
     s.textContent = `
+        /* Sits BELOW the theme toggle these screens fix at z-index 50, so the
+           toggle keeps showing on top of it, and above ordinary page content.
+           It is opaque and does take taps: content hidden under it must not be
+           tappable, or she would be aiming at something she cannot see. */
+        .vqe-bar {
+            position: fixed; top: 0; left: 0; right: 0; height: 72px; z-index: 40;
+            background: var(--nav); border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        }
         .vqe-btn {
-            position: fixed; right: 14px; z-index: 400;
+            position: fixed; top: 14px; left: 14px; z-index: 400;
             display: inline-flex; align-items: center; gap: 7px;
             min-height: 44px; padding: 0 14px;
             border: 1.5px solid var(--border); border-radius: 9999px;
@@ -92,12 +123,13 @@ export const IcoExit = ({ size = 15, color = 'currentColor' }) => (
 );
 
 /** The floating pill, for screens without the bottom navigation. */
-export default function QuickExit({ bottom = 16 }) {
+export default function QuickExit() {
     return (
+        <>
+        <div className="vqe-bar" aria-hidden="true" />
         <button
             type="button"
             className="vqe-btn"
-            style={{ bottom }}
             onClick={quickExit}
             title="Leave this site immediately (or press Escape three times)"
             aria-label="Leave this site immediately. Opens a neutral page and removes this site from your browser history.">
@@ -105,5 +137,6 @@ export default function QuickExit({ bottom = 16 }) {
             Quick Exit
             <span className="vqe-hint">Esc x3</span>
         </button>
+        </>
     );
 }

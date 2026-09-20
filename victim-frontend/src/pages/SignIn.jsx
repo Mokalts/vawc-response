@@ -289,7 +289,7 @@ function SignIn() {
 }
 
 const S = {
-    page: { minHeight: '100vh', background: 'var(--page-grad)', color: 'var(--text)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'Lexend', sans-serif" },
+    page: { minHeight: '100vh', background: 'var(--page-grad)', color: 'var(--text)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '86px 24px 24px', fontFamily: "'Lexend', sans-serif" },
     brand: { display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 3, marginBottom: 24 },
     brandIcon: { width: 104, height: 104, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: '#fff', border: '3px solid #FFCC99', boxShadow: '0 6px 20px rgba(244,121,32,0.18)', marginBottom: 14 },
     // The seal PNG has white padding baked around the artwork, so a plain fit

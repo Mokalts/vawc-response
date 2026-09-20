@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import api from "../api";
+import { spreadCode } from '../components/otpBoxes';
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id='vawc-font'; l.rel='stylesheet';
@@ -55,11 +56,17 @@ function OTP() {
     }, [countdown]);
 
     const handleChange = (val, i) => {
+        // More than one character means a paste the browser routed through
+        // onChange, or an autofilled code dropped whole into the first box.
+        if (val.length > 1) { spreadCode(val, i, otp, setOtp, inputs); return; }
         if (!/^\d*$/.test(val)) return;
         const n=[...otp]; n[i]=val; setOtp(n);
         if (val && i<5) inputs.current[i+1]?.focus();
     };
     const handleKeyDown = (e, i) => { if (e.key==='Backspace' && !otp[i] && i>0) inputs.current[i-1]?.focus(); };
+    const handlePaste = (e, i) => {
+        if (spreadCode(e.clipboardData?.getData('text'), i, otp, setOtp, inputs)) e.preventDefault();
+    };
 
     const handleSwitch = async () => {
         if (channel==='phone') return;
@@ -140,6 +147,7 @@ function OTP() {
                             aria-label={`Digit ${i+1} of 6`} maxLength={1} value={digit}
                             onChange={e=>handleChange(e.target.value,i)}
                             onKeyDown={e=>handleKeyDown(e,i)}
+                            onPaste={e=>handlePaste(e,i)}
                             style={{...S.otpBox, borderColor:digit?'#F47920':'var(--border)', backgroundColor:digit?'#FFF0F3':'var(--surface-alt)'}} />
                     ))}
                 </div>

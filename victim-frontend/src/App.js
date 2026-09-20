@@ -35,7 +35,7 @@ function GlobalQuickExit() {
   const { pathname } = useLocation();
   useTripleEscape();   // works on every screen, bar or no bar
   if (NAV_ROUTES.includes(pathname)) return null;
-  return <QuickExit bottom={16} />;
+  return <QuickExit />;
 }
 
 // Redirect to sign-in when no token is present.
