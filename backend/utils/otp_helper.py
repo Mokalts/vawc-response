@@ -177,5 +177,13 @@ def _send_email_brevo(to_email: str, subject: str, html_body: str):
     )
     if resp.status_code not in (200, 201, 202):
         print(f"[EMAIL] Brevo error {resp.status_code}: {resp.text[:300]}")
+        if resp.status_code == 401:
+            # Brevo's "Authorised IPs" setting rejects calls from an address it
+            # has not seen before, and Render gives the service a new outbound
+            # address whenever the instance moves. Nothing in the code changes;
+            # every email simply stops until the address is authorised, or the
+            # setting is turned off.
+            print("[EMAIL] Brevo rejected the API key for this server. Check the "
+                  "Authorised IPs setting in Brevo (Account > Security) and the key in Render.")
         raise HTTPException(status_code=500, detail="Failed to send OTP email. Please try again.")
     print(f"[EMAIL] OTP sent to {to_email} via Brevo.")

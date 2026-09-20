@@ -196,7 +196,17 @@ def register(request: Request, payload: UserRegister, db: Session = Depends(get_
     verify_link = f"{FRONTEND_URL}/verify?token={verify_token}"
 
     # OTP email is on the critical path (user waits for it), so send synchronously.
-    send_otp_email(user.email, code, verify_link=verify_link)
+    # If it cannot be delivered, undo the registration. Leaving the row behind
+    # would give her an account she can never verify: the next attempt inside
+    # the hour answers PENDING_VERIFICATION and tells her to check messages that
+    # were never sent, and a resend answers "a code has been sent" either way.
+    try:
+        send_otp_email(user.email, code, verify_link=verify_link)
+    except Exception:
+        db.query(OTP).filter(OTP.user_id == user.id).delete()
+        db.delete(user)
+        db.commit()
+        raise
     # SMS is a secondary channel — run it in the background so a slow SMS
     # provider never delays the registration response. Skipped entirely when SMS
     # is off, which it is until a sender name is approved.
