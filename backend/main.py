@@ -2,11 +2,11 @@ from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from database import engine, get_db
+from core.progressive_limiter import client_ip
 from models import User, Report, OTP
 from models.case import Case
 from models.case_message import CaseMessage
@@ -35,7 +35,13 @@ except Exception as e:  # noqa: BLE001 — deliberately broad, boot must survive
 from seed import seed_super_admin
 seed_super_admin()
 
-limiter = Limiter(key_func=get_remote_address)
+# Keyed on the caller's own address, not slowapi's get_remote_address. That
+# returns request.client.host, which behind Render's proxy is the proxy itself
+# and therefore identical for every user on the internet: "12 registrations an
+# hour" then meant twelve for the whole barangay, and one tester's signups
+# locked out the next person in the queue. client_ip reads the forwarded address
+# the way the login lockout already did.
+limiter = Limiter(key_func=client_ip)
 
 app = FastAPI(
     title="VAWC-Response API",

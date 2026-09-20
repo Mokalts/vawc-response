@@ -14,7 +14,6 @@ from core.progressive_limiter import (
     IP_LOCKOUT_SCHEDULE,
 )
 from slowapi import Limiter
-from slowapi.util import get_remote_address
 from pydantic import BaseModel
 import numpy as np
 import re
@@ -22,7 +21,13 @@ import secrets
 
 
 router = APIRouter(prefix="/admin/auth", tags=["Admin Auth"])
-limiter = Limiter(key_func=get_remote_address)
+# Keyed on the caller's own address, not slowapi's get_remote_address. That
+# returns request.client.host, which behind Render's proxy is the proxy itself
+# and therefore identical for every user on the internet: "12 registrations an
+# hour" then meant twelve for the whole barangay, and one tester's signups
+# locked out the next person in the queue. client_ip reads the forwarded address
+# the way the login lockout already did.
+limiter = Limiter(key_func=client_ip)
 
 # Euclidean distance between 128-d face descriptors (face-api.js).
 # Lower = stricter.

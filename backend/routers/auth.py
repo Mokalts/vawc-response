@@ -12,9 +12,8 @@ from core.security import (
     create_reset_token, decode_reset_token, password_fingerprint,
 )
 from slowapi import Limiter
-from slowapi.util import get_remote_address
 from core.progressive_limiter import (
-    check_rate_limit, record_failure, record_success, login_keys, IP_LOCKOUT_SCHEDULE,
+    check_rate_limit, record_failure, record_success, login_keys, IP_LOCKOUT_SCHEDULE, client_ip,
 )
 from utils.otp_helper import create_otp, verify_otp, send_otp_sms, send_otp_email, sms_enabled
 from pydantic import BaseModel
@@ -29,7 +28,13 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 # Per-IP caps on the endpoints that send messages or accept guesses. Without
 # these, one script could text a victim's phone all night on the barangay's
 # Semaphore credits, or work through a six-digit code at will.
-limiter = Limiter(key_func=get_remote_address)
+# Keyed on the caller's own address, not slowapi's get_remote_address. That
+# returns request.client.host, which behind Render's proxy is the proxy itself
+# and therefore identical for every user on the internet: "12 registrations an
+# hour" then meant twelve for the whole barangay, and one tester's signups
+# locked out the next person in the queue. client_ip reads the forwarded address
+# the way the login lockout already did.
+limiter = Limiter(key_func=client_ip)
 
 # Said to everyone, whether or not the account exists. Telling a stranger that a
 # number is registered tells an abuser that his partner has reported.
