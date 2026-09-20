@@ -63,7 +63,7 @@ const SECTIONS = [
         id: 'adm-terms-data', title: 'Data protection under RA 10173',
         items: [
             'Statements, locations, respondent names, and minors\' details are encrypted at rest. Do not copy them into spreadsheets, personal email, or messaging apps.',
-            'Regular admins see masked previews. If you can see a full record, you are accountable for it.',
+            'Every account here sees the full record, because the officer handling a case needs it. That access is the reason the rules above exist: what you can see, you are accountable for.',
             'Export or print only what a specific task requires, and dispose of printed copies securely.',
             'Report a suspected breach to the Punong Barangay and the barangay\'s data protection officer immediately.',
         ],

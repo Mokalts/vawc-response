@@ -95,8 +95,10 @@ export default function TermsContent({ showAcknowledgment = false, variant = 'pa
                 </ul>
                 <p style={S.para}>
                     Your statement, your location, and the respondent's name are <B>encrypted at rest</B> using
-                    Fernet symmetric encryption. Regular admins see only masked previews; the full content is
-                    visible only to authorized super admins.
+                    Fernet symmetric encryption. The authorized barangay VAWC personnel handling your case can
+                    read the full record, because they need it to act on your report. Every action they take is
+                    recorded against their own account, and disclosing your identity or your case is punishable
+                    under Section 44 of Republic Act 9262.
                 </p>
             </Section>
 

@@ -808,7 +808,6 @@ export default function ReportDetail() {
   const [savingRelationship, setSavingRelationship] = useState(false);
 
   const currentAdmin = (() => { try { return JSON.parse(localStorage.getItem("admin_user") || localStorage.getItem("admin") || "{}"); } catch { return {}; } })();
-  const isSuperAdmin = !!currentAdmin.is_super_admin;
 
   const showToast = (msg, success = true) => { setToast({ msg, success }); setTimeout(() => setToast(null), 3500); };
 
@@ -971,22 +970,6 @@ export default function ReportDetail() {
       <div style={{ maxWidth: 1200, fontFamily: "'Lexend',sans-serif" }}>
 
         {/* Restricted-view banner - non–super admins see masked sensitive fields */}
-        {cas.restricted && (
-          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", background: "#FFF3E0", border: "1.5px solid #FFCC99", borderRadius: 12, marginBottom: 16, fontFamily: "'Lexend',sans-serif" }}>
-            <div style={{ width: 32, height: 32, borderRadius: '50%', background: "#F47920", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="11" width="18" height="11" rx="2" stroke="#fff" strokeWidth="2" />
-                <path d="M7 11V7a5 5 0 0110 0v4" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </div>
-            <div style={{ flex: 1 }}>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#9A3412", fontFamily: "'Lexend',sans-serif" }}>Restricted view</p>
-              <p style={{ margin: "1px 0 0", fontSize: 12, color: "#7C2D12", lineHeight: 1.45, fontFamily: "'Lexend',sans-serif" }}>
-                Sensitive fields (offender name, victim contact details, full statement, location, photos) are masked. Super Admin access is required to view full case data.
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* Header */}
         <div style={{ marginBottom: 20 }}>
@@ -1185,35 +1168,11 @@ export default function ReportDetail() {
                         </div>
                       </div>
                     )}
-                    {/* Restricted: photos masked - show placeholders */}
-                    {r.restricted && (r.photo_count || 0) > 0 && (!r.photo_urls || r.photo_urls.length === 0) && (
-                      <div>
-                        <p style={{ margin: "0 0 8px", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Evidence Photos ({r.photo_count}) - Restricted</p>
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(100px,1fr))", gap: 8 }}>
-                          {Array.from({ length: r.photo_count }).map((_, i) => (
-                            <div key={i} title="Super Admin access required to view"
-                              style={{ aspectRatio: "1", borderRadius: 4, overflow: "hidden", border: "1.5px solid #FFCC99", background: "repeating-linear-gradient(45deg, #FFF3E0, #FFF3E0 8px, #FFEDD5 8px, #FFEDD5 16px)", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 4 }}>
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                <rect x="3" y="11" width="18" height="11" rx="2" stroke="#9A3412" strokeWidth="2" />
-                                <path d="M7 11V7a5 5 0 0110 0v4" stroke="#9A3412" strokeWidth="2" strokeLinecap="round" />
-                              </svg>
-                              <span style={{ fontSize: 9, fontWeight: 700, color: "#9A3412", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'Lexend',sans-serif" }}>Locked</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                     {(r.latitude && r.longitude) && (
                       <a href={`https://www.google.com/maps/search/?api=1&query=${r.latitude},${r.longitude}`} target="_blank" rel="noopener noreferrer" className="rd-map"
                         style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 4, border: "1.5px solid var(--adm-border)", color: "var(--adm-text-2)", fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: "'Lexend',sans-serif" }}>
                         <IcoPin size={14} color="#94A3B8" /> View on Google Maps
                       </a>
-                    )}
-                    {/* Restricted: location masked */}
-                    {r.restricted && !r.latitude && !r.longitude && (
-                      <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 4, border: "1.5px dashed #FFCC99", color: "#9A3412", fontSize: 13, fontWeight: 600, fontFamily: "'Lexend',sans-serif", background: "#FFF3E0", width: "fit-content" }}>
-                        <IcoPin size={14} color="#9A3412" /> Location restricted - Super Admin access required
-                      </div>
                     )}
                   </div>
                 </Card>
@@ -1230,7 +1189,7 @@ export default function ReportDetail() {
                 <InfoRow
                   label="Respondent"
                   value={cas.offender_name}
-                  action={isSuperAdmin && !cas.restricted && !cas.is_deleted && (
+                  action={!cas.is_deleted && (
                     <button
                       type="button"
                       className="rd-btn"
@@ -1291,7 +1250,7 @@ export default function ReportDetail() {
             <CaseTimeline cas={cas} onUpdateStatus={() => setShowStatusModal(true)} />
             {!cas.is_deleted && <CaseActions cas={cas} refetch={fetchCase} showToast={showToast} />}
 
-            {isSuperAdmin && !cas.is_deleted && (
+            {!cas.is_deleted && (
               <Card title="Message to Victim" icon={<IcoClip size={16} color="#F47920" />}>
                 <p style={{ margin: "0 0 10px", fontSize: 12.5, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
                   Send a note to the victim at any stage - e.g. an update, or the schedule and venue of the hearing. They are notified by email and in their portal.

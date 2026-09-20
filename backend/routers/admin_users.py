@@ -1,7 +1,9 @@
 """
-Super-admin user management endpoints.
+Victim account management endpoints.
 
-All routes here are gated by `require_super_admin` and let a Super Admin:
+Open to any signed-in, face-verified admin. Every account here belongs to a VAW
+Desk officer who handles these records as part of the job; creating and removing
+ADMIN accounts stays with the Super Admin. These routes let an officer:
   - List verified victims, unverified accounts, and recently-deleted victims
   - Edit a victim's profile fields on their behalf
   - Reset a victim's password (the victim will see the new password when
@@ -22,7 +24,7 @@ from models.user import User
 from models.admin import Admin
 from models.case import Case
 from models.otp import OTP
-from core.admin_dependencies import require_super_admin
+from core.admin_dependencies import get_current_admin_full_access
 from core.config import settings
 from core.security import hash_password
 from routers.admin_auth import validate_password_strength
@@ -77,7 +79,7 @@ def _serialize(u: User) -> dict:
 def list_victims(
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
-    _: Admin = Depends(require_super_admin),
+    _: Admin = Depends(get_current_admin_full_access),
 ):
     q = db.query(User).filter(
         User.is_deleted   == False,
@@ -99,7 +101,7 @@ def list_victims(
 @router.get("/unverified")
 def list_unverified(
     db: Session = Depends(get_db),
-    _: Admin = Depends(require_super_admin),
+    _: Admin = Depends(get_current_admin_full_access),
 ):
     users = (
         db.query(User)
@@ -114,7 +116,7 @@ def list_unverified(
 @router.get("/deleted")
 def list_deleted_victims(
     db: Session = Depends(get_db),
-    _: Admin = Depends(require_super_admin),
+    _: Admin = Depends(get_current_admin_full_access),
 ):
     cutoff = datetime.utcnow() - timedelta(days=30)
     users = (
@@ -131,7 +133,7 @@ def list_deleted_victims(
 def get_victim(
     user_id: int,
     db: Session = Depends(get_db),
-    _: Admin = Depends(require_super_admin),
+    _: Admin = Depends(get_current_admin_full_access),
 ):
     u = db.query(User).filter(User.id == user_id).first()
     if not u:
@@ -145,7 +147,7 @@ def update_victim(
     user_id: int,
     payload: VictimUpdate,
     db: Session = Depends(get_db),
-    _: Admin = Depends(require_super_admin),
+    _: Admin = Depends(get_current_admin_full_access),
 ):
     u = db.query(User).filter(User.id == user_id, User.is_deleted == False).first()
     if not u:
@@ -179,7 +181,7 @@ def reset_victim_password(
     user_id: int,
     payload: PasswordReset,
     db: Session = Depends(get_db),
-    _: Admin = Depends(require_super_admin),
+    _: Admin = Depends(get_current_admin_full_access),
 ):
     u = db.query(User).filter(User.id == user_id, User.is_deleted == False).first()
     if not u:
@@ -195,7 +197,7 @@ def reset_victim_password(
 def archive_victim(
     user_id: int,
     db: Session = Depends(get_db),
-    _: Admin = Depends(require_super_admin),
+    _: Admin = Depends(get_current_admin_full_access),
 ):
     u = db.query(User).filter(User.id == user_id, User.is_deleted == False).first()
     if not u:
@@ -211,7 +213,7 @@ def archive_victim(
 def recover_victim(
     user_id: int,
     db: Session = Depends(get_db),
-    _: Admin = Depends(require_super_admin),
+    _: Admin = Depends(get_current_admin_full_access),
 ):
     cutoff = datetime.utcnow() - timedelta(days=30)
     u = db.query(User).filter(
@@ -232,7 +234,7 @@ def recover_victim(
 def force_delete_victim(
     user_id: int,
     db: Session = Depends(get_db),
-    _: Admin = Depends(require_super_admin),
+    _: Admin = Depends(get_current_admin_full_access),
 ):
     """
     Permanently remove an archived (soft-deleted) victim account and ALL related
@@ -269,7 +271,7 @@ def force_delete_victim(
 @router.delete("/cleanup-unverified")
 def cleanup_unverified(
     db: Session = Depends(get_db),
-    _: Admin = Depends(require_super_admin),
+    _: Admin = Depends(get_current_admin_full_access),
 ):
     cutoff = datetime.utcnow() - timedelta(days=90)
     expired = (

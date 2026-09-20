@@ -291,6 +291,7 @@ export default function AdminManagement() {
   const [search,        setSearch]        = useState("");
 
   // ── Victim management (super admin only) ───────────────────────────
+  // Non-super admins have no Admins tab, so they start on Victims.
   const [tab,             setTab]             = useState("admins"); // 'admins' | 'victims' | 'unverified' | 'deleted-victims'
   const tabRefs = useRef({});
   const [tabInd, setTabInd] = useState({ left: 0, width: 0 });
@@ -425,6 +426,14 @@ export default function AdminManagement() {
     api.get("/admin/auth/me").then(r => setCurrentAdmin(r.data)).catch(() => {});
   }, []);
 
+  useEffect(() => {
+    if (currentAdmin && !currentAdmin.is_super_admin && tab === "admins") setTab("victims");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentAdmin]);
+
+  useEffect(() => {
+  }, []);
+
   const onNameSaved = (updated) => {
     setAdmins(p => p.map(a => a.id === updated.id ? { ...a, ...updated } : a));
     if (currentAdmin && updated.id === currentAdmin.id) {
@@ -533,7 +542,8 @@ export default function AdminManagement() {
         {/* Tab bar */}
         <div style={{ position: "relative", display: "flex", gap: 4, marginBottom: 14, borderBottom: "1.5px solid var(--adm-border)", flexWrap: "wrap" }}>
           {[
-            { key: "admins",          label: "Admins",            count: admins.length },
+            // Creating and removing admin accounts stays with the Super Admin.
+            ...(currentAdmin?.is_super_admin ? [{ key: "admins", label: "Admins", count: admins.length }] : []),
             { key: "victims",         label: "Victims",            count: victims.length },
             { key: "unverified",      label: "Unverified",         count: unverifiedUsers.length },
             { key: "deleted-victims", label: "Deleted Victims",    count: deletedVictims.length },

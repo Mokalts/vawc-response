@@ -91,8 +91,10 @@ const IcoChevron = ({ size = 12, color = 'currentColor' }) => (
 const NAV = [
     { label: 'Dashboard', path: '/dashboard', icon: IcoDashboard, superOnly: false, section: 'Menu' },
     { label: 'Profiles', path: '/reports', icon: IcoReports, superOnly: false, section: 'Menu' },
-    { label: 'Monthly Report', path: '/monthly-report', icon: IcoMonthly, superOnly: true, section: 'Management' },
-    { label: 'Admin Management', path: '/admin-management', icon: IcoAdmins, superOnly: true, section: 'Management' },
+    { label: 'Monthly Report', path: '/monthly-report', icon: IcoMonthly, superOnly: false, section: 'Management' },
+    // Victim accounts live here too, so every officer needs the page. The
+    // Admins tab inside it is still Super Admin only.
+    { label: 'Admin Management', path: '/admin-management', icon: IcoAdmins, superOnly: false, section: 'Management' },
 ];
 
 // Remembers the last active nav path ACROSS sidebar remounts (module scope, not

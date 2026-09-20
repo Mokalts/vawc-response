@@ -579,7 +579,6 @@ export default function PrintDocument() {
     if (error)  return <div style={{ padding: 40, textAlign: "center", color: "#C62828", fontFamily: "'Lexend',sans-serif" }}>{error}</div>;
     if (!cas)   return null;
 
-    const isRestricted = !!cas.restricted;
     const Doc = cfg.component;
     const bpo = (cas.bpos || []).slice().reverse().find(b => ["issued", "served"].includes(b.status)) || (cas.bpos || [])[0] || null;
     const endorsement = (cas.endorsements || [])[(cas.endorsements || []).length - 1] || null;
@@ -607,11 +606,10 @@ export default function PrintDocument() {
                             </label>
                         )}
                         <button className="pd-btn-ghost" onClick={() => navigate(`/reports/${caseId}`)}>← Back to case</button>
-                        <button className="pd-btn" onClick={() => window.print()} disabled={isRestricted}>Print Document</button>
+                        <button className="pd-btn" onClick={() => window.print()}>Print Document</button>
                     </div>
                 </div>
 
-                {isRestricted && <div className="pd-banner"><strong>Restricted view -</strong> Sensitive fields are masked. Super Admin access is required to produce a printable official document.</div>}
                 {(type === "bpo" || type === "bpo-app") && !bpo && <div className="pd-banner">No BPO recorded for this case yet — the reliefs and issue date will print blank. Apply for a BPO from the case actions to auto-fill them.</div>}
 
                 <Doc f={f} set={set} bpo={bpo} endorsement={endorsement} kids={cas.children || []} showValidity={showValidity} showAck={showAck} />

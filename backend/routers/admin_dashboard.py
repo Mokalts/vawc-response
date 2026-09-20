@@ -6,7 +6,7 @@ from models.case import Case
 from models.report import ReportStatus, Report
 from models.user import User
 from models.admin import Admin
-from core.admin_dependencies import get_current_admin_full_access, require_super_admin
+from core.admin_dependencies import get_current_admin_full_access
 from core.encryption import decrypt
 from core.masking import mask_last_initial, mask_name
 from core.status_labels import CLOSURE_REASON_DISPLAY, RELATIONSHIP_DISPLAY, abuse_label
@@ -144,10 +144,12 @@ def monthly_report(
     year:  int = Query(...),
     month: int = Query(..., ge=1, le=12),
     db: Session = Depends(get_db),
-    current_admin: Admin = Depends(require_super_admin),
+    current_admin: Admin = Depends(get_current_admin_full_access),
 ):
     """Rows for the Lupon Tagapamayapa Monthly Accomplishment Report.
-    Super-admin only (returns full, unmasked complainant/respondent names)."""
+
+    Any face-verified admin: the officer who handles the cases is the one who
+    files this report, and it carries full complainant and respondent names."""
     start = datetime(year, month, 1)
     end   = datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1)
 
@@ -258,7 +260,7 @@ def get_dashboard_stats(
         .all()
     )
 
-    is_super = current_admin.is_super_admin
+    is_super = True   # records are not masked by role
     recent_cases = []
     for c in recent:
         raw_status    = c.status.value if c.status else None

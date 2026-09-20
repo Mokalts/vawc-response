@@ -6,7 +6,7 @@ from typing import Optional
 from database import get_db
 from models.barangay_official import BarangayOfficial, OfficialRole
 from models.admin import Admin
-from core.admin_dependencies import get_current_admin_full_access, require_super_admin
+from core.admin_dependencies import get_current_admin_full_access
 
 router = APIRouter(prefix="/admin/officials", tags=["Admin Officials"])
 
@@ -51,7 +51,7 @@ def list_officials(
 def create_official(
     payload: OfficialCreate,
     db: Session = Depends(get_db),
-    current_admin: Admin = Depends(require_super_admin),
+    current_admin: Admin = Depends(get_current_admin_full_access),
 ):
     try:
         role = OfficialRole(payload.role)
@@ -69,7 +69,7 @@ def update_official(
     official_id: int,
     payload: OfficialUpdate,
     db: Session = Depends(get_db),
-    current_admin: Admin = Depends(require_super_admin),
+    current_admin: Admin = Depends(get_current_admin_full_access),
 ):
     o = db.query(BarangayOfficial).filter(BarangayOfficial.id == official_id).first()
     if not o:

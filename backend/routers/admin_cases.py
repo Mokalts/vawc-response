@@ -8,7 +8,7 @@ from models.case_message import CaseMessage
 from models.report import Report, ReportStatus
 from models.user import User
 from models.admin import Admin
-from core.admin_dependencies import get_current_admin_full_access, require_super_admin
+from core.admin_dependencies import get_current_admin_full_access
 from core.config import settings
 from core.encryption import encrypt, decrypt, decrypt_float
 from core.masking import mask_case_dict, mark_unrestricted, mask_phone, mask_email, mask_address, mask_last_initial
@@ -97,12 +97,17 @@ def _decrypt_report(r: Report) -> dict:
     }
 
 
-def _serialize_case(c: Case, *, include_reports: bool = False, is_super_admin: bool = False) -> dict:
-    """Decrypt + apply masking based on requester role."""
-    data = _decrypt_case(c, include_reports=include_reports)
-    if is_super_admin:
-        return mark_unrestricted(data)
-    return mask_case_dict(data)
+def _serialize_case(c: Case, *, include_reports: bool = False, is_super_admin: bool = True) -> dict:
+    """Decrypt a case for an authorized officer.
+
+    Records are no longer masked by role. Every account here belongs to a VAW
+    Desk officer who is bound by Section 44 of RA 9262 and needs the real names,
+    statements and locations to act on a case; hiding them behind a second
+    account meant the officer taking the statement could not read it back. What
+    replaces masking is attribution: actions are recorded against the account
+    that performed them. The privacy notice states this plainly.
+    """
+    return mark_unrestricted(_decrypt_case(c, include_reports=include_reports))
 
 
 def _bpo_dict(b) -> dict:
@@ -307,7 +312,7 @@ def get_recent_cases(
     ).count()
     return {
         "new_count": new_count,
-        "cases":     [_serialize_case(c, is_super_admin=current_admin.is_super_admin) for c in cases],
+        "cases":     [_serialize_case(c) for c in cases],
     }
 
 
@@ -325,7 +330,7 @@ def get_deleted_cases(
         .order_by(desc(Case.deleted_at))
         .all()
     )
-    return [_serialize_case(c, is_super_admin=current_admin.is_super_admin) for c in cases]
+    return [_serialize_case(c) for c in cases]
 
 
 # ── GET /admin/cases/victims ──────────────────────────────────────────────────
@@ -353,7 +358,7 @@ def get_victim_list(
         )
     victims = query.order_by(User.last_name, User.first_name).all()
 
-    is_super = current_admin.is_super_admin
+    is_super = True   # records are not masked by role
     result = []
     for victim in victims:
         active_cases = (
@@ -410,7 +415,7 @@ def get_victim_cases(
         .order_by(desc(Case.updated_at))
         .all()
     )
-    is_super = current_admin.is_super_admin
+    is_super = True   # records are not masked by role
     full_name = _full_name(victim)
     victim_payload = {
         "id":           victim.id,
@@ -426,7 +431,7 @@ def get_victim_cases(
     }
     return {
         "victim":     victim_payload,
-        "cases":      [_serialize_case(c, is_super_admin=is_super) for c in cases],
+        "cases":      [_serialize_case(c) for c in cases],
         "restricted": not is_super,
     }
 
@@ -468,7 +473,7 @@ def get_all_cases(
         "total":  total,
         "page":   page,
         "limit":  limit,
-        "cases":  [_serialize_case(c, is_super_admin=current_admin.is_super_admin) for c in cases],
+        "cases":  [_serialize_case(c) for c in cases],
     }
 
 
@@ -488,7 +493,7 @@ def get_case_detail(
             r.is_read = True
     db.commit()
 
-    return _serialize_case(case, include_reports=True, is_super_admin=current_admin.is_super_admin)
+    return _serialize_case(case, include_reports=True)
 
 
 # ── PATCH /admin/cases/{case_id}/status ───────────────────────────────────────
@@ -741,7 +746,7 @@ def send_case_message(
     case_id: int,
     payload: MessagePayload,
     db: Session = Depends(get_db),
-    current_admin: Admin = Depends(require_super_admin),
+    current_admin: Admin = Depends(get_current_admin_full_access),
 ):
     """Super Admin writes a free-text message (e.g. hearing schedule/venue) to the victim."""
     case = db.query(Case).filter(Case.id == case_id, Case.is_deleted == False).first()
@@ -799,7 +804,7 @@ def delete_case_message(
     case_id: int,
     message_id: int,
     db: Session = Depends(get_db),
-    current_admin: Admin = Depends(require_super_admin),
+    current_admin: Admin = Depends(get_current_admin_full_access),
 ):
     m = db.query(CaseMessage).filter(
         CaseMessage.id == message_id, CaseMessage.case_id == case_id
@@ -850,7 +855,7 @@ def delete_case(
 def force_delete_case(
     case_id: int,
     db: Session = Depends(get_db),
-    _: Admin = Depends(require_super_admin),
+    _: Admin = Depends(get_current_admin_full_access),
 ):
     """
     Permanently remove a soft-deleted case and all its reports (cascade).

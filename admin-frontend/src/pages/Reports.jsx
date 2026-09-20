@@ -91,9 +91,8 @@ export default function Reports() {
   const [toast, setToast] = useState(null);
   const timer = useRef(null);
 
-  // Super Admin gate for the temporary force-delete action
+  // Read for display purposes; record access is no longer split by role.
   const currentAdmin = (() => { try { return JSON.parse(localStorage.getItem("admin_user") || localStorage.getItem("admin") || "{}"); } catch { return {}; } })();
-  const isSuperAdmin = !!currentAdmin.is_super_admin;
 
   const showToast = (msg, success = true) => { setToast({ msg, success }); setTimeout(() => setToast(null), 3500); };
 
@@ -438,9 +437,9 @@ export default function Reports() {
                               style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #A7F3D0", background: "#ECFDF5", color: "#065F46", fontSize: 12.5, fontWeight: 600, cursor: recoveringId === c.id ? "not-allowed" : "pointer", opacity: recoveringId === c.id ? 0.7 : 1, fontFamily: "'Lexend',sans-serif" }}>
                               {recoveringId === c.id ? "Recovering…" : "Recover"}
                             </button>
-                            {isSuperAdmin && (
+                            {(
                               <button disabled={forceDeletingId === c.id} onClick={() => handleForceDelete(c.id, c.case_number)}
-                                title="Permanently delete (Super Admin - cannot be undone)"
+                                title="Permanently delete (disabled unless ALLOW_HARD_DELETE is set - cannot be undone)"
                                 style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #FECACA", background: "#FEF2F2", color: "#991B1B", fontSize: 12.5, fontWeight: 600, cursor: forceDeletingId === c.id ? "not-allowed" : "pointer", opacity: forceDeletingId === c.id ? 0.7 : 1, fontFamily: "'Lexend',sans-serif" }}>
                                 {forceDeletingId === c.id ? "Deleting…" : "Force Delete"}
                               </button>
