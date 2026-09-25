@@ -10,6 +10,7 @@ from core.progressive_limiter import client_ip
 from models import User, Report, OTP
 from models.case import Case
 from models.case_message import CaseMessage
+from models.case_activity import CaseActivity
 from models.admin import Admin
 # New lawful-flow models — imported so create_all registers their tables.
 from models.bpo import BPO

@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from database import get_db
 from models.case import Case
 from models.case_message import CaseMessage
+from models.case_activity import CaseActivity, log_activity
 from models.report import Report, ReportStatus
 from models.user import User
 from models.admin import Admin
@@ -18,6 +19,23 @@ from datetime import datetime, timedelta
 import threading
 
 router = APIRouter(prefix="/admin/cases", tags=["Admin Cases"])
+
+# Plain wording for the officer reading the trail. "Assistance ended" rather
+# than "closed", to match the rest of the portal: the barangay does not close a
+# VAWC case, only a court can.
+ACTIVITY_LABELS = {
+    "status_changed":       "Status changed",
+    "assistance_ended":     "Assistance ended",
+    "case_reopened":        "Case reopened",
+    "case_deleted":         "Case deleted",
+    "case_recovered":       "Case recovered",
+    "report_deleted":       "Report deleted",
+    "report_recovered":     "Report recovered",
+    "message_sent":         "Message sent to complainant",
+    "message_deleted":      "Message deleted",
+    "respondent_corrected": "Respondent name corrected",
+}
+
 
 from core.status_labels import (
     STATUS_DISPLAY, STATUS_EMAIL_MSG, CLOSURE_REASON_DISPLAY,
@@ -84,7 +102,7 @@ def _decrypt_report(r: Report) -> dict:
         "case_id":       r.case_id,
         "statement":     decrypt(r.statement),
         "photo_urls":    r.photo_urls or [],
-        "address":       r.address,
+        "address":       decrypt(r.address),
         "latitude":      decrypt_float(r.latitude),
         "longitude":     decrypt_float(r.longitude),
         "incident_type": r.incident_type,
@@ -525,10 +543,13 @@ def update_case_status(
                     f"Directly settable here: {sorted(STATUS_PATCHABLE)}"),
         )
 
+    was = case.status.value if case.status else None
     case.status            = new
     case.admin_id          = current_admin.id
     case.has_status_update = True
     case.updated_at        = datetime.utcnow()
+    log_activity(db, case.id, current_admin, "status_changed",
+                 f"{STATUS_DISPLAY.get(was, was)} to {STATUS_DISPLAY.get(new.value, new.value)}")
     db.commit()
 
     victim       = case.user
@@ -591,6 +612,8 @@ def close_case(
     case.admin_id           = current_admin.id
     case.has_status_update  = True
     case.updated_at         = datetime.utcnow()
+    log_activity(db, case.id, current_admin, "assistance_ended",
+                 CLOSURE_REASON_DISPLAY.get(reason.value, reason.value))
     db.commit()
     return {"message": "Barangay assistance ended.", "status": "closed",
             "closure_reason": reason.value,
@@ -617,6 +640,8 @@ def reopen_case(
     case.admin_id           = current_admin.id
     case.has_status_update  = True
     case.updated_at         = datetime.utcnow()
+    log_activity(db, case.id, current_admin, "case_reopened",
+                 f"back to {STATUS_DISPLAY.get(case.status.value, case.status.value)}")
     db.commit()
     return {"message": "Case reopened.", "status": case.status.value,
             "status_display": STATUS_DISPLAY.get(case.status.value)}
@@ -661,6 +686,10 @@ def update_respondent(
         )
     case.offender_name = encrypt(name)
     case.updated_at    = datetime.utcnow()
+    # The new name is deliberately NOT written into the detail. This log is
+    # readable by every officer, and it must not become a plaintext copy of a
+    # value the case record itself keeps encrypted.
+    log_activity(db, case.id, current_admin, "respondent_corrected", None)
     db.commit()
     return {"message": "Respondent name updated.", "offender_name": name}
 
@@ -777,6 +806,7 @@ def send_case_message(
         sent_sms   = will_sms,
         created_at = now,
     ))
+    log_activity(db, case.id, current_admin, "message_sent", None)
     db.commit()
 
     sent = []
@@ -812,6 +842,7 @@ def delete_case_message(
     if not m:
         raise HTTPException(status_code=404, detail="Message not found.")
     db.delete(m)
+    log_activity(db, case_id, current_admin, "message_deleted", None)
     db.commit()
 
     # keep the case's "latest message" pointer consistent
@@ -846,6 +877,7 @@ def delete_case(
     case.is_deleted    = True
     case.delete_reason = payload.reason or "Deleted by admin"
     case.deleted_at    = datetime.utcnow()
+    log_activity(db, case.id, current_admin, "case_deleted", case.delete_reason)
     db.commit()
     return {"message": f"Case {case.case_number} deleted."}
 
@@ -880,6 +912,10 @@ def force_delete_case(
             detail="Deleted case not found. Only cases already in Recently Deleted can be permanently removed.",
         )
     case_number = case.case_number
+    # The audit rows point at this case, so they have to go first or the foreign
+    # key refuses the delete. Permanent means permanent: a purged case leaves no
+    # trail, which is why this is Super-Admin-only and off by default.
+    db.query(CaseActivity).filter(CaseActivity.case_id == case.id).delete()
     db.delete(case)  # cascades to reports via delete-orphan
     db.commit()
     return {"message": f"Case {case_number} permanently deleted."}
@@ -911,6 +947,7 @@ def delete_report(
 
     report.is_deleted = True
     report.deleted_at = datetime.utcnow()
+    log_activity(db, case_id, current_admin, "report_deleted", f"report #{report_id}")
     db.commit()
     return {"message": "Report soft-deleted. It can be recovered within 30 days."}
 
@@ -934,6 +971,7 @@ def recover_report(
         raise HTTPException(status_code=404, detail="Report not found or recovery period has expired.")
     report.is_deleted = False
     report.deleted_at = None
+    log_activity(db, case_id, current_admin, "report_recovered", f"report #{report_id}")
     db.commit()
     return {"message": "Report recovered successfully."}
 
@@ -969,6 +1007,8 @@ def recover_case(
         case.admin_id = current_admin.id
         promoted = True
 
+    log_activity(db, case.id, current_admin, "case_recovered",
+                 "promoted to awaiting onsite visit" if promoted else None)
     db.commit()
     msg = (
         f"Case {case.case_number} recovered and moved to 'Awaiting Onsite Visit'."
@@ -976,3 +1016,32 @@ def recover_case(
         f"Case {case.case_number} recovered."
     )
     return {"message": msg}
+
+
+# ── GET /admin/cases/{case_id}/activity — who did what, and when ─────────────
+@router.get("/{case_id}/activity")
+def case_activity(
+    case_id: int,
+    db: Session = Depends(get_db),
+    _: Admin = Depends(get_current_admin_full_access),
+):
+    """The attribution trail the admin Terms promise.
+
+    Read-only and append-only: there is no endpoint that edits or removes a row,
+    because a log an officer can edit is not accountability. Names are the
+    snapshot taken at the time, so they survive the account being removed.
+    """
+    rows = (
+        db.query(CaseActivity)
+        .filter(CaseActivity.case_id == case_id)
+        .order_by(desc(CaseActivity.created_at))
+        .all()
+    )
+    return [{
+        "id":         a.id,
+        "action":     a.action,
+        "label":      ACTIVITY_LABELS.get(a.action, a.action.replace("_", " ").capitalize()),
+        "detail":     a.detail,
+        "by":         a.admin_name or "Unknown officer",
+        "created_at": a.created_at.isoformat() if a.created_at else None,
+    } for a in rows]

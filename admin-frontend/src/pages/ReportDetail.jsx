@@ -457,6 +457,69 @@ const TimelineRow = ({ label, detail, dot, color, bg, icon, isDone, isCurrent, i
   </div>
 );
 
+// Who did what to this case, and when.
+//
+// The admin Terms tell every officer their actions are attributed to their
+// account. Until this existed the system could not answer "who moved this to
+// Closed?", so that sentence was a promise the records could not keep. Read
+// only by design: there is no edit or delete here, because a trail an officer
+// can rewrite is not accountability.
+//
+// Names are the snapshot stored at the time of the action, so an officer who
+// has since left the barangay still appears against what they did.
+const CaseActivityCard = ({ caseId }) => {
+  const [rows, setRows]   = useState(null);   // null = still loading
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    api.get(`/admin/cases/${caseId}/activity`)
+      .then(r => { if (alive) setRows(r.data || []); })
+      .catch(() => { if (alive) { setError(true); setRows([]); } });
+    return () => { alive = false; };
+  }, [caseId]);
+
+  return (
+    <Card title="Activity" icon={<IcoShield size={16} color="#9B4DAB" />}>
+      {rows === null && (
+        <p style={{ margin: 0, fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+          Loading…
+        </p>
+      )}
+
+      {rows !== null && error && (
+        <p style={{ margin: 0, fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+          The activity trail could not be loaded.
+        </p>
+      )}
+
+      {rows !== null && !error && rows.length === 0 && (
+        <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.55, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+          Nothing recorded yet. Status changes, messages and deletions are listed here against the account that made them.
+        </p>
+      )}
+
+      {rows !== null && !error && rows.length > 0 && (
+        <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+          {rows.map(a => (
+            <li key={a.id} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: "50%", background: "#9B4DAB", flexShrink: 0, marginTop: 6 }} />
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", lineHeight: 1.4 }}>
+                  {a.label}{a.detail ? <span style={{ fontWeight: 400, color: "var(--adm-text-2)" }}>{" — " + a.detail}</span> : null}
+                </p>
+                <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", lineHeight: 1.45 }}>
+                  {a.by} · {fmt(a.created_at)}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+    </Card>
+  );
+};
+
 const CaseTimeline = ({ cas, onUpdateStatus }) => {
   const isEndpoint = ENDPOINT_STATES.includes(cas.status);
   const isDeleted = cas.is_deleted;
@@ -1290,6 +1353,8 @@ export default function ReportDetail() {
             )}
 
             <PrintPanel cas={cas} />
+
+            <CaseActivityCard caseId={id} />
           </div>
         </div>
       </div>

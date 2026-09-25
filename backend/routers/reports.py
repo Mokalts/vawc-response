@@ -34,7 +34,7 @@ def submit_report(
         photo_urls    = payload.photo_urls or [],
         latitude      = encrypt_float(payload.latitude),
         longitude     = encrypt_float(payload.longitude),
-        address       = payload.address,
+        address       = encrypt(payload.address) if payload.address else None,
         incident_type = getattr(payload, "incident_type", None),
         incident_date = getattr(payload, "incident_date", None),
     )
