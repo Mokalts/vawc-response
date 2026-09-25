@@ -69,3 +69,6 @@ desktop.ini
 NOTES.md
 SECRETS.md
 TODO_PRIVATE.md
+
+# Database snapshots from backup_db.py. Case data: never commit these.
+backend/backups/
