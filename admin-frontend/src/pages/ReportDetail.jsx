@@ -687,7 +687,21 @@ const CaseActions = ({ cas, refetch, showToast }) => {
                   <input type="checkbox" checked={reliefs[k]} onChange={e => setReliefs(r => ({ ...r, [k]: e.target.checked }))} style={{ accentColor: "#9B4DAB" }} />{t}
                 </label>
               ))}
-              <button className="rd-btn" style={{ ...btnP, marginTop: 6 }} disabled={busy === "bpo"}
+              {/* A BPO orders the respondent to do specific things. With nothing
+                  ticked it would still be numbered and still print on barangay
+                  letterhead while compelling nothing, so the action is held
+                  until at least one relief is chosen. The server refuses it too;
+                  this only means she never has to meet that refusal. */}
+              {!(reliefs.physical || reliefs.threats || reliefs.stayaway) && (
+                <p style={{ margin: "2px 0 0", fontSize: 11, lineHeight: 1.45, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                  Choose at least one relief. An order with none compels nothing.
+                </p>
+              )}
+              <button className="rd-btn"
+                style={{ ...btnP, marginTop: 6,
+                         ...((reliefs.physical || reliefs.threats || reliefs.stayaway) ? null
+                             : { background: "var(--adm-border)", color: "#94A3B8", cursor: "not-allowed" }) }}
+                disabled={busy === "bpo" || !(reliefs.physical || reliefs.threats || reliefs.stayaway)}
                 onClick={() => call("bpo", () => api.post(`/admin/cases/${cas.id}/bpo`, {
                   relief_stop_physical_harm: reliefs.physical, relief_stop_threats: reliefs.threats, relief_stay_away_100m: reliefs.stayaway,
                 }), "BPO application created.")}>

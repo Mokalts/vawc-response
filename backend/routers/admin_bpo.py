@@ -32,6 +32,27 @@ class BPOServe(BaseModel):
     proof_of_service: Optional[str] = None   # Cloudinary URL
 
 
+# A BPO works by ordering the respondent to do specific things. With none of the
+# reliefs selected the record is still created, still numbered, and still prints
+# on barangay letterhead, but it legally compels nothing: a woman is handed a
+# piece of paper she believes protects her that orders the respondent to do
+# nothing at all. RA 9262 section 14 grants the barangay the reliefs under
+# section 8(a) and 8(b), so at least one of them has to be on the order.
+NO_RELIEF_DETAIL = (
+    "Select at least one relief before filing this BPO. A protection order with "
+    "no reliefs orders the respondent to do nothing, and it would still print as "
+    "a valid-looking order."
+)
+
+
+def _has_relief(source) -> bool:
+    return bool(
+        getattr(source, "relief_stop_physical_harm", False)
+        or getattr(source, "relief_stop_threats", False)
+        or getattr(source, "relief_stay_away_100m", False)
+    )
+
+
 def _active_official(db, role):
     o = db.query(BarangayOfficial).filter(
         BarangayOfficial.role == role, BarangayOfficial.is_active == True
@@ -69,6 +90,9 @@ def create_bpo(
     case = db.query(Case).filter(Case.id == case_id, Case.is_deleted == False).first()
     if not case:
         raise HTTPException(status_code=404, detail="Case not found.")
+
+    if not _has_relief(payload):
+        raise HTTPException(status_code=422, detail=NO_RELIEF_DETAIL)
 
     # A new BPO requires a NEW act of violence. If an active (not expired /
     # superseded) BPO exists, refuse — a BPO cannot be extended or renewed.
@@ -113,6 +137,10 @@ def issue_bpo(
         raise HTTPException(status_code=404, detail="BPO not found.")
     if bpo.status != BPOStatus.applied:
         raise HTTPException(status_code=409, detail="Only an applied BPO can be issued.")
+    # Checked again here, not only on application: a BPO filed before this rule
+    # existed would otherwise still reach the Punong Barangay's signature empty.
+    if not _has_relief(bpo):
+        raise HTTPException(status_code=422, detail=NO_RELIEF_DETAIL)
 
     now = datetime.utcnow()
     bpo.issued_at = now
