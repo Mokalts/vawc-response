@@ -531,6 +531,13 @@ export default function PrintDocument() {
                 complainantAge: p.complainantAge || ageFrom(v.date_of_birth),
                 sigName: p.sigName || v.full_name || "",
                 respondentName: p.respondentName || c.offender_name || "",
+                // These three used to start blank on every form, so the address was
+                // retyped for each document and two documents on one case could
+                // disagree. A BPO has to be served on the respondent, so the address
+                // on it is the thing that decides whether service reaches him.
+                respondentAddress: p.respondentAddress || c.offender_address || "",
+                respondentContact: p.respondentContact || c.offender_contact || "",
+                respondentAge:     p.respondentAge     || c.offender_age     || "",
                 applicantName: p.applicantName || c.applicant_name || v.full_name || "",
                 applicantAddress: p.applicantAddress || c.applicant_address || v.address || "",
                 applicantContact: p.applicantContact || c.applicant_contact || v.phone_number || "",

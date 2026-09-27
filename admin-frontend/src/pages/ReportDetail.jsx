@@ -262,6 +262,77 @@ const RespondentModal = ({ current, onClose, onSave, saving }) => {
   );
 };
 
+// The respondent's address, contact number and age.
+//
+// These three sit on the printed BPO, the complaint and the Client Card, and
+// nothing stored them: an officer retyped the address for every document, so
+// one case could leave the desk with two documents disagreeing about where the
+// respondent lives. A BPO also has to be SERVED on him, and the address on the
+// order is what decides whether service reaches him.
+//
+// Unlike the name, these are not Super-Admin-only. They are established during
+// the onsite visit, and the officer who does the visit should be able to write
+// them down.
+const RespondentDetailsModal = ({ cas, onClose, onSave, saving }) => {
+  const [form, setForm] = useState({
+    offender_address: cas.offender_address || "",
+    offender_contact: cas.offender_contact || "",
+    offender_age:     cas.offender_age     || "",
+  });
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const unchanged =
+    form.offender_address.trim() === (cas.offender_address || "") &&
+    form.offender_contact.trim() === (cas.offender_contact || "") &&
+    form.offender_age.trim()     === (cas.offender_age     || "");
+
+  const field = (key, label, placeholder, mode) => (
+    <div style={{ marginBottom: 12 }}>
+      <label htmlFor={key} style={{ display: "block", margin: "0 0 6px", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+        {label}
+      </label>
+      <input
+        id={key}
+        value={form[key]}
+        maxLength={200}
+        inputMode={mode}
+        placeholder={placeholder}
+        onChange={e => set(key, e.target.value)}
+        style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid var(--adm-border)", borderRadius: 4, padding: "11px 12px", fontSize: 14, fontFamily: "'Lexend',sans-serif", color: "var(--adm-text)", background: "var(--adm-card)", outline: "none" }}
+      />
+    </div>
+  );
+
+  return (
+    <div style={M.backdrop} onClick={!saving ? onClose : undefined}>
+      <div style={{ ...M.modal, maxWidth: 440 }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+          <div>
+            <p style={M.title}>Respondent Details</p>
+            <p style={M.sub}>Recorded once, then filled in on every printed form</p>
+          </div>
+          <CloseX onClick={onClose} />
+        </div>
+
+        {field("offender_address", "Address", "House no., street, purok, barangay", "text")}
+        {field("offender_contact", "Contact number", "e.g. 0917xxxxxxx", "tel")}
+        {field("offender_age", "Age", "e.g. 34", "numeric")}
+
+        <p style={{ margin: "2px 0 0", fontSize: 12, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
+          A Barangay Protection Order has to be served on the respondent. The address recorded here is the one it will carry.
+        </p>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 20 }}>
+          <button className="rd-btn" style={M.cancelBtn} onClick={onClose} disabled={saving}>Cancel</button>
+          <button className="rd-btn" style={{ ...M.saveBtn, background: "#C45E10", opacity: saving || unchanged ? 0.6 : 1, cursor: saving || unchanged ? "not-allowed" : "pointer" }}
+            onClick={() => (unchanged ? onClose() : onSave(form))} disabled={saving || unchanged}>
+            {saving && <Spinner />}{saving ? "Saving…" : "Save Details"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Mirrors the enum in backend/models/case.py (RelationshipToOffender).
 const RELATIONSHIP_OPTS = [
   { id: "current_spouse_partner", label: "Current spouse / partner" },
@@ -880,6 +951,8 @@ export default function ReportDetail() {
   const [showMessageLogs, setShowMessageLogs] = useState(false);
   const [deletingMsgId, setDeletingMsgId] = useState(null);
   const [editRespondent, setEditRespondent] = useState(false);
+  const [editRespDetails, setEditRespDetails] = useState(false);
+  const [savingRespDetails, setSavingRespDetails] = useState(false);
   const [savingRespondent, setSavingRespondent] = useState(false);
   const [editRelationship, setEditRelationship] = useState(false);
   const [savingRelationship, setSavingRelationship] = useState(false);
@@ -966,6 +1039,20 @@ export default function ReportDetail() {
       showToast("Respondent name updated.");
     } catch (err) { showToast(err.response?.data?.detail || "Failed to update respondent.", false); }
     finally { setSavingRespondent(false); }
+  };
+
+  const handleRespDetailsSave = async (form) => {
+    setSavingRespDetails(true);
+    try {
+      const res = await api.patch(`/admin/cases/${id}/respondent-details`, form);
+      setCas(c => ({ ...c,
+        offender_address: res.data?.offender_address ?? null,
+        offender_contact: res.data?.offender_contact ?? null,
+        offender_age:     res.data?.offender_age     ?? null }));
+      setEditRespDetails(false);
+      showToast("Respondent details updated.");
+    } catch (err) { showToast(err.response?.data?.detail || "Failed to update respondent details.", false); }
+    finally { setSavingRespDetails(false); }
   };
 
   const handleRelationshipSave = async (value) => {
@@ -1263,6 +1350,27 @@ export default function ReportDetail() {
                 {/* Editing is Super Admin only: a regular admin is shown a
                     masked name, and the edit box prefilled with that mask, so
                     saving wrote "M**** S******" over the real name. */}
+                {/* The respondent's own details. Blank until an officer records
+                    them, and blank is worth showing: a BPO has to be served on
+                    him, so a missing address is a missing prerequisite, not a
+                    cosmetic gap. */}
+                <InfoRow
+                  label="Respondent Address"
+                  value={cas.offender_address || "Not recorded"}
+                  muted={!cas.offender_address}
+                  action={!cas.is_deleted && (
+                    <button
+                      type="button"
+                      className="rd-btn"
+                      onClick={() => setEditRespDetails(true)}
+                      title="Record the respondent's address, contact number and age"
+                      style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "1px 7px", borderRadius: 9999, border: "1px solid var(--adm-border)", background: "transparent", color: "var(--adm-text-muted)", fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                      <IcoEdit size={10} color="currentColor" /> Edit
+                    </button>
+                  )}
+                />
+                <InfoRow label="Respondent Contact" value={cas.offender_contact || "Not recorded"} muted={!cas.offender_contact} />
+                <InfoRow label="Respondent Age" value={cas.offender_age || "Not recorded"} muted={!cas.offender_age} />
                 <InfoRow
                   label="Respondent"
                   value={cas.offender_name}
@@ -1393,6 +1501,7 @@ export default function ReportDetail() {
 
       {showStatusModal && <StatusModal current={cas.status} onClose={() => setShowStatusModal(false)} onSave={handleStatusSave} saving={statusSaving} />}
       {editRespondent && <RespondentModal current={cas.offender_name} onClose={() => setEditRespondent(false)} onSave={handleRespondentSave} saving={savingRespondent} />}
+      {editRespDetails && <RespondentDetailsModal cas={cas} onClose={() => setEditRespDetails(false)} onSave={handleRespDetailsSave} saving={savingRespDetails} />}
       {editRelationship && <RelationshipModal current={cas.relationship_to_offender} onClose={() => setEditRelationship(false)} onSave={handleRelationshipSave} saving={savingRelationship} />}
       {showDeleteConfirm && <DeleteModal caseId={cas.case_number} loading={actionLoading} onConfirm={handleDelete} onClose={() => setShowDeleteConfirm(false)} />}
       {showRecover && <ConfirmModal title="Recover Case" message={`Restore case ${cas.case_number}?`} confirmLabel="Recover" danger={false} loading={actionLoading} onConfirm={handleRecover} onClose={() => setShowRecover(false)} />}

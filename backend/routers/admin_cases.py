@@ -34,6 +34,7 @@ ACTIVITY_LABELS = {
     "message_sent":         "Message sent to complainant",
     "message_deleted":      "Message deleted",
     "respondent_corrected": "Respondent name corrected",
+    "respondent_details_updated": "Respondent details updated",
 }
 
 
@@ -65,6 +66,11 @@ class DeletePayload(BaseModel):
 
 class RespondentPayload(BaseModel):
     offender_name: str
+
+class RespondentDetailsPayload(BaseModel):
+    offender_address: Optional[str] = None
+    offender_contact: Optional[str] = None
+    offender_age:     Optional[str] = None
 
 class RelationshipPayload(BaseModel):
     relationship_to_offender: str
@@ -181,6 +187,9 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
         "admin_id":            c.admin_id,
         "handled_by":          handled_by,
         "offender_name":       decrypt(c.offender_name),
+        "offender_address":    decrypt(c.offender_address) if c.offender_address else None,
+        "offender_contact":    decrypt(c.offender_contact) if c.offender_contact else None,
+        "offender_age":        decrypt(c.offender_age) if c.offender_age else None,
         "status":              raw_status,
         "status_display":      STATUS_DISPLAY.get(raw_status, raw_status),
         "relationship_to_offender":         (c.relationship_to_offender.value if c.relationship_to_offender else None),
@@ -1045,3 +1054,57 @@ def case_activity(
         "by":         a.admin_name or "Unknown officer",
         "created_at": a.created_at.isoformat() if a.created_at else None,
     } for a in rows]
+
+
+# ── PATCH /admin/cases/{case_id}/respondent-details ───────────────────────────
+@router.patch("/{case_id}/respondent-details")
+def update_respondent_details(
+    case_id: int,
+    payload: RespondentDetailsPayload,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Record the respondent's address, contact number and age.
+
+    Not Super-Admin-only, unlike correcting his NAME. That restriction exists
+    because a regular admin used to see a masked name and could save the mask
+    over the real one; these three were never masked and never had a value to
+    overwrite. They are operational details the officer establishes during the
+    onsite visit, and the officer who does the visit is the one who should be
+    able to write them down.
+
+    Each field is optional and only what is sent is changed, so recording the
+    address later does not blank a contact number captured earlier. An empty
+    string clears a field deliberately.
+    """
+    case = _get_active_case(db, case_id)
+
+    changed = []
+    for field, value in (
+        ("offender_address", payload.offender_address),
+        ("offender_contact", payload.offender_contact),
+        ("offender_age",     payload.offender_age),
+    ):
+        if value is None:
+            continue
+        value = value.strip()
+        if len(value) > 200:
+            raise HTTPException(status_code=422, detail="That value is too long.")
+        setattr(case, field, encrypt(value) if value else None)
+        changed.append(field.replace("offender_", ""))
+
+    if not changed:
+        raise HTTPException(status_code=422, detail="Nothing to update.")
+
+    case.updated_at = datetime.utcnow()
+    # The values themselves stay out of the log: it is readable by every
+    # officer and must not become a plaintext copy of what the case keeps
+    # encrypted. Which fields changed is enough to answer "who wrote this?".
+    log_activity(db, case.id, current_admin, "respondent_details_updated", ", ".join(changed))
+    db.commit()
+    return {
+        "message": "Respondent details updated.",
+        "offender_address": decrypt(case.offender_address) if case.offender_address else None,
+        "offender_contact": decrypt(case.offender_contact) if case.offender_contact else None,
+        "offender_age":     decrypt(case.offender_age) if case.offender_age else None,
+    }

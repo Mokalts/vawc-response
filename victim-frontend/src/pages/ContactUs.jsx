@@ -27,13 +27,20 @@ const IcoShield  = ({ c='#C45E10' }) => (<svg width="18" height="18" viewBox="0 
 const IcoAlert   = ({ c='#D97706' }) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke={c} strokeWidth="1.8" strokeLinecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke={c} strokeWidth="2.4" strokeLinecap="round"/></svg>);
 const IcoChevron = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#CBD5E1" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 
+// `href` is what a tap dials or opens. A row without one stays plain text and
+// shows no chevron, because a chevron on a row that does nothing is a lie.
+//
+// Two rows deliberately have none. The PNP Women and Children desk number is
+// published with letters (PNP), and guessing their keypad digits would mean
+// inventing an emergency number: a wrong number here is worse than one she has
+// to type herself. The barangay desk row is an instruction, not a number.
 const contacts = [
-    { icon: <IcoPhone c="#991B1B" />, iconBg: '#FEF2F2', label: 'PNP Emergency Hotline', value: '911', sub: 'For immediate danger - call first' },
+    { icon: <IcoPhone c="#991B1B" />, iconBg: '#FEF2F2', label: 'PNP Emergency Hotline', value: '911', href: 'tel:911', sub: 'For immediate danger - call first' },
     { icon: <IcoShield c="#C45E10" />, iconBg: 'var(--surface-tint)', label: 'PNP Women & Children Protection Desk', value: '1800-188-PNP-107', sub: 'VAWC case handling with confidentiality' },
-    { icon: <IcoPhone c="#059669" />, iconBg: '#ECFDF5', label: 'DSWD Action Center', value: '8-951-2803', sub: 'Shelter, counseling, legal assistance' },
-    { icon: <IcoPhone c="#9B4DAB" />, iconBg: '#F3E5F5', label: 'NBI Hotline', value: '8523-8231', sub: 'National Bureau of Investigation' },
-    { icon: <IcoShield c="#C45E10" />, iconBg: 'var(--surface-tint)', label: 'Public Attorney\'s Office (PAO)', value: '(02) 8929-9436', sub: 'Free legal assistance' },
-    { icon: <IcoMail />, iconBg: '#F3E5F5', label: 'Email Support', value: 'support@vawcresponse.gov.ph', sub: 'Non-urgent inquiries' },
+    { icon: <IcoPhone c="#059669" />, iconBg: '#ECFDF5', label: 'DSWD Action Center', value: '8-951-2803', href: 'tel:89512803', sub: 'Shelter, counseling, legal assistance' },
+    { icon: <IcoPhone c="#9B4DAB" />, iconBg: '#F3E5F5', label: 'NBI Hotline', value: '8523-8231', href: 'tel:85238231', sub: 'National Bureau of Investigation' },
+    { icon: <IcoShield c="#C45E10" />, iconBg: 'var(--surface-tint)', label: 'Public Attorney\'s Office (PAO)', value: '(02) 8929-9436', href: 'tel:+63289299436', sub: 'Free legal assistance' },
+    { icon: <IcoMail />, iconBg: '#F3E5F5', label: 'Email Support', value: 'support@vawcresponse.gov.ph', href: 'mailto:support@vawcresponse.gov.ph', sub: 'Non-urgent inquiries' },
     { icon: <IcoShield c="#C45E10" />, iconBg: 'var(--surface-tint)', label: 'Barangay VAWC Desk', value: 'Contact your local barangay hall', sub: 'Available 24/7 - required by RA 9262' },
 ];
 
@@ -71,15 +78,20 @@ function ContactUs() {
                     <p style={S.cardTitle}>Support Lines</p>
                     {contacts.map((c, i) => (
                         <div key={i}>
-                            <div className="vc-contact-row" style={S.row}>
-                                <div style={{ ...S.rowIcon, backgroundColor: c.iconBg }}>{c.icon}</div>
-                                <div style={S.rowBody}>
+                            {React.createElement(
+                                c.href ? 'a' : 'div',
+                                c.href
+                                    ? { className: 'vc-contact-row', style: { ...S.row, ...S.rowLink }, href: c.href,
+                                        'aria-label': (c.href.startsWith('tel:') ? 'Tawagan ang ' : 'Email ') + c.label + ': ' + c.value }
+                                    : { className: 'vc-contact-row', style: { ...S.row, cursor: 'default' } },
+                                <div key="i" style={{ ...S.rowIcon, backgroundColor: c.iconBg }}>{c.icon}</div>,
+                                <div key="b" style={S.rowBody}>
                                     <p style={S.rowLabel}>{c.label}</p>
                                     <p style={S.rowValue}>{c.value}</p>
                                     {c.sub && <p style={S.rowSub}>{c.sub}</p>}
-                                </div>
-                                <IcoChevron />
-                            </div>
+                                </div>,
+                                c.href ? <IcoChevron key="c" /> : null,
+                            )}
                             {i < contacts.length - 1 && <div style={S.divider} />}
                         </div>
                     ))}
@@ -122,7 +134,10 @@ const S = {
 
     card:           { backgroundColor: 'var(--surface)', borderRadius: 12, padding: '20px 20px 8px', boxShadow: '0 2px 10px rgba(244,121,32,0.06)', border: '1px solid var(--border)' },
     cardTitle:      { fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 14, fontFamily: "'Lexend', sans-serif" },
-    row:            { display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', cursor: 'pointer', borderRadius: 4},
+    row:            { display: 'flex', alignItems: 'center', gap: 14, padding: '12px 0', cursor: 'pointer', borderRadius: 4, minHeight: 44 },
+    // A whole row is the tap target, not the number inside it, so a thumb
+    // lands on it under stress. touchAction keeps the tap immediate.
+    rowLink:        { textDecoration: 'none', color: 'inherit', touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' },
     rowIcon:        { width: 36, height: 36, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
     rowBody:        { flex: 1 },
     rowLabel:       { fontSize: 12, fontWeight: 600, color: 'var(--text-body)', marginBottom: 2, fontFamily: "'Lexend', sans-serif" },

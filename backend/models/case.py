@@ -55,6 +55,18 @@ class Case(Base):
 
     # Encrypted at API layer
     offender_name     = Column(String, nullable=False)
+    # The respondent's own details, for the forms that have to carry them.
+    # Every printed document already asks for these (the BPO reads "<name> of
+    # <address>", and the complaint and Client Card ask for contact and age),
+    # but nothing stored them, so an officer retyped the address on each form
+    # and the same case could leave the desk with two different addresses on
+    # two documents. A BPO also has to be SERVED on the respondent, and an
+    # order carrying the wrong address is an order that never reaches him.
+    # Stored encrypted like the name: he is a data subject under RA 10173 too,
+    # and the lawful purpose here is issuing and serving the order.
+    offender_address  = Column(String, nullable=True)   # ENCRYPTED
+    offender_contact  = Column(String, nullable=True)   # ENCRYPTED
+    offender_age      = Column(String, nullable=True)   # ENCRYPTED
 
     # Status lives on the Case
     status            = Column(
