@@ -55,18 +55,20 @@ class Case(Base):
 
     # Encrypted at API layer
     offender_name     = Column(String, nullable=False)
-    # The respondent's own details, for the forms that have to carry them.
-    # Every printed document already asks for these (the BPO reads "<name> of
-    # <address>", and the complaint and Client Card ask for contact and age),
-    # but nothing stored them, so an officer retyped the address on each form
-    # and the same case could leave the desk with two different addresses on
-    # two documents. A BPO also has to be SERVED on the respondent, and an
-    # order carrying the wrong address is an order that never reaches him.
-    # Stored encrypted like the name: he is a data subject under RA 10173 too,
-    # and the lawful purpose here is issuing and serving the order.
+    # Where the respondent lives, for the forms that have to carry it. The BPO
+    # reads "<name> of <address>", and the complaint and Client Card ask for it
+    # too, but nothing stored it: an officer retyped it on each document and the
+    # same case could leave the desk with two forms disagreeing. A BPO also has
+    # to be SERVED on him, and an order carrying the wrong address is an order
+    # that never reaches him. That is the lawful purpose that justifies holding
+    # it: he is a data subject under RA 10173 as well, so it is encrypted like
+    # his name.
+    #
+    # His age and contact number are also on those forms, and were stored here
+    # briefly, but the desk does not record them in practice. Fields nobody
+    # fills are worse than fields that are not there: every case would carry two
+    # more "Not recorded" rows and two more things to explain.
     offender_address  = Column(String, nullable=True)   # ENCRYPTED
-    offender_contact  = Column(String, nullable=True)   # ENCRYPTED
-    offender_age      = Column(String, nullable=True)   # ENCRYPTED
 
     # Status lives on the Case
     status            = Column(

@@ -275,16 +275,9 @@ const RespondentModal = ({ current, onClose, onSave, saving }) => {
 // the onsite visit, and the officer who does the visit should be able to write
 // them down.
 const RespondentDetailsModal = ({ cas, onClose, onSave, saving }) => {
-  const [form, setForm] = useState({
-    offender_address: cas.offender_address || "",
-    offender_contact: cas.offender_contact || "",
-    offender_age:     cas.offender_age     || "",
-  });
+  const [form, setForm] = useState({ offender_address: cas.offender_address || "" });
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  const unchanged =
-    form.offender_address.trim() === (cas.offender_address || "") &&
-    form.offender_contact.trim() === (cas.offender_contact || "") &&
-    form.offender_age.trim()     === (cas.offender_age     || "");
+  const unchanged = form.offender_address.trim() === (cas.offender_address || "");
 
   const field = (key, label, placeholder, mode) => (
     <div style={{ marginBottom: 12 }}>
@@ -308,15 +301,13 @@ const RespondentDetailsModal = ({ cas, onClose, onSave, saving }) => {
       <div style={{ ...M.modal, maxWidth: 440 }} onClick={e => e.stopPropagation()}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
           <div>
-            <p style={M.title}>Respondent Details</p>
+            <p style={M.title}>Respondent Address</p>
             <p style={M.sub}>Recorded once, then filled in on every printed form</p>
           </div>
           <CloseX onClick={onClose} />
         </div>
 
         {field("offender_address", "Address", "House no., street, purok, barangay", "text")}
-        {field("offender_contact", "Contact number", "e.g. 0917xxxxxxx", "tel")}
-        {field("offender_age", "Age", "e.g. 34", "numeric")}
 
         <p style={{ margin: "2px 0 0", fontSize: 12, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
           A Barangay Protection Order has to be served on the respondent. The address recorded here is the one it will carry.
@@ -326,7 +317,7 @@ const RespondentDetailsModal = ({ cas, onClose, onSave, saving }) => {
           <button className="rd-btn" style={M.cancelBtn} onClick={onClose} disabled={saving}>Cancel</button>
           <button className="rd-btn" style={{ ...M.saveBtn, background: "#C45E10", opacity: saving || unchanged ? 0.6 : 1, cursor: saving || unchanged ? "not-allowed" : "pointer" }}
             onClick={() => (unchanged ? onClose() : onSave(form))} disabled={saving || unchanged}>
-            {saving && <Spinner />}{saving ? "Saving…" : "Save Details"}
+            {saving && <Spinner />}{saving ? "Saving…" : "Save Address"}
           </button>
         </div>
       </div>
@@ -1088,13 +1079,10 @@ export default function ReportDetail() {
     setSavingRespDetails(true);
     try {
       const res = await api.patch(`/admin/cases/${id}/respondent-details`, form);
-      setCas(c => ({ ...c,
-        offender_address: res.data?.offender_address ?? null,
-        offender_contact: res.data?.offender_contact ?? null,
-        offender_age:     res.data?.offender_age     ?? null }));
+      setCas(c => ({ ...c, offender_address: res.data?.offender_address ?? null }));
       setEditRespDetails(false);
-      showToast("Respondent details updated.");
-    } catch (err) { showToast(err.response?.data?.detail || "Failed to update respondent details.", false); }
+      showToast("Respondent address updated.");
+    } catch (err) { showToast(err.response?.data?.detail || "Failed to update respondent address.", false); }
     finally { setSavingRespDetails(false); }
   };
 
@@ -1412,8 +1400,6 @@ export default function ReportDetail() {
                     </button>
                   )}
                 />
-                <InfoRow label="Respondent Contact" value={cas.offender_contact || "Not recorded"} muted={!cas.offender_contact} />
-                <InfoRow label="Respondent Age" value={cas.offender_age || "Not recorded"} muted={!cas.offender_age} />
                 <InfoRow
                   label="Respondent"
                   value={cas.offender_name}

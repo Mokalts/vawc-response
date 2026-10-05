@@ -70,8 +70,6 @@ class RespondentPayload(BaseModel):
 
 class RespondentDetailsPayload(BaseModel):
     offender_address: Optional[str] = None
-    offender_contact: Optional[str] = None
-    offender_age:     Optional[str] = None
 
 class RelationshipPayload(BaseModel):
     relationship_to_offender: str
@@ -189,8 +187,6 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
         "handled_by":          handled_by,
         "offender_name":       decrypt(c.offender_name),
         "offender_address":    decrypt(c.offender_address) if c.offender_address else None,
-        "offender_contact":    decrypt(c.offender_contact) if c.offender_contact else None,
-        "offender_age":        decrypt(c.offender_age) if c.offender_age else None,
         "status":              raw_status,
         "status_display":      STATUS_DISPLAY.get(raw_status, raw_status),
         "relationship_to_offender":         (c.relationship_to_offender.value if c.relationship_to_offender else None),
@@ -1085,34 +1081,24 @@ def update_respondent_details(
     """
     case = _get_active_case(db, case_id)
 
-    changed = []
-    for field, value in (
-        ("offender_address", payload.offender_address),
-        ("offender_contact", payload.offender_contact),
-        ("offender_age",     payload.offender_age),
-    ):
-        if value is None:
-            continue
-        value = value.strip()
-        if len(value) > 200:
-            raise HTTPException(status_code=422, detail="That value is too long.")
-        setattr(case, field, encrypt(value) if value else None)
-        changed.append(field.replace("offender_", ""))
-
-    if not changed:
+    if payload.offender_address is None:
         raise HTTPException(status_code=422, detail="Nothing to update.")
+
+    value = payload.offender_address.strip()
+    if len(value) > 200:
+        raise HTTPException(status_code=422, detail="That address is too long.")
+    # An empty string clears it deliberately.
+    case.offender_address = encrypt(value) if value else None
 
     case.updated_at = datetime.utcnow()
     # The values themselves stay out of the log: it is readable by every
     # officer and must not become a plaintext copy of what the case keeps
     # encrypted. Which fields changed is enough to answer "who wrote this?".
-    log_activity(db, case.id, current_admin, "respondent_details_updated", ", ".join(changed))
+    log_activity(db, case.id, current_admin, "respondent_details_updated", "address")
     db.commit()
     return {
-        "message": "Respondent details updated.",
+        "message": "Respondent address updated.",
         "offender_address": decrypt(case.offender_address) if case.offender_address else None,
-        "offender_contact": decrypt(case.offender_contact) if case.offender_contact else None,
-        "offender_age":     decrypt(case.offender_age) if case.offender_age else None,
     }
 
 

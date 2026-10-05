@@ -38,7 +38,10 @@ print("Connecting to: " + _target())
 
 engine = create_engine(url)
 
-COLUMNS = ["offender_address", "offender_contact", "offender_age"]
+# Only the address. Age and contact were added alongside it and then
+# dropped from the app: the desk does not record them in practice, and
+# fields nobody fills are worse than fields that are not there.
+COLUMNS = ["offender_address"]
 
 with engine.begin() as conn:
     existing = {

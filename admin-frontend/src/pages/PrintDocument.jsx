@@ -541,8 +541,6 @@ export default function PrintDocument() {
                 // disagree. A BPO has to be served on the respondent, so the address
                 // on it is the thing that decides whether service reaches him.
                 respondentAddress: p.respondentAddress || c.offender_address || "",
-                respondentContact: p.respondentContact || c.offender_contact || "",
-                respondentAge:     p.respondentAge     || c.offender_age     || "",
                 applicantName: p.applicantName || c.applicant_name || v.full_name || "",
                 applicantAddress: p.applicantAddress || c.applicant_address || v.address || "",
                 applicantContact: p.applicantContact || c.applicant_contact || v.phone_number || "",
