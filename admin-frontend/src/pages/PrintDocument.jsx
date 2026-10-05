@@ -361,7 +361,7 @@ const BpoApplication = ({ f, set, kids }) => {
 };
 
 // ─── 4. BARANGAY PROTECTION ORDER ────────────────────────────────────────────
-const BpoOrder = ({ f, set, bpo, showValidity }) => (
+const BpoOrder = ({ f, set, bpo }) => (
     <div className="pd-paper">
         <Head office="OFFICE OF THE PUNONG BARANGAY" />
         <p className="center" style={{ marginTop: 14 }}>BARANGAY CASE NO.: <F v={f.caseNo} on={v => set({ caseNo: v })} w={220} /></p>
@@ -399,12 +399,17 @@ const BpoOrder = ({ f, set, bpo, showValidity }) => (
             Issued this <F v={f.issueDay} on={v => set({ issueDay: v })} w={50} c /> day of <F v={f.issueMonth} on={v => set({ issueMonth: v })} w={170} />, <F v={f.issueYear} on={v => set({ issueYear: v })} w={80} c />.
         </p>
 
-        {showValidity && (
-            <p className="mt16" style={{ marginLeft: 24, fontWeight: 700 }}>
-                This Order is effective for fifteen (15) days from the date of issue and shall expire on{" "}
-                {bpo?.expires_at ? fmtDate(bpo.expires_at) : "____________________"}.
-            </p>
-        )}
+        {/* Always printed, never a choice. The fifteen-day limit is Section 15
+            of RA 9262, not a house convention, and the respondent's copy is the
+            only thing he reads and the only thing a PNP officer sees if he is
+            reported for breaching it. An order that does not state its own
+            expiry is harder to enforce and easier to dispute. The date comes
+            from the BPO record, fixed when it was issued, so nobody can extend
+            an order by editing a form. */}
+        <p className="mt16" style={{ marginLeft: 24, fontWeight: 700 }}>
+            This Order is effective for fifteen (15) days from the date of issue and shall expire on{" "}
+            {bpo?.expires_at ? fmtDate(bpo.expires_at) : "____________________"}.
+        </p>
 
         <div className="mt40 right keep" style={{ marginRight: 30 }}>
             <p style={{ margin: 0, fontWeight: 700 }}>{f.punongBarangay || " "}</p>
@@ -483,7 +488,6 @@ export default function PrintDocument() {
     const [cas, setCas] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [showValidity, setShowValidity] = useState(false);
     const [showAck, setShowAck] = useState(false);
     const t = today();
     const [f, setF] = useState({
@@ -600,12 +604,6 @@ export default function PrintDocument() {
                         <p>{cfg.office} · Case {cas.case_number}</p>
                     </div>
                     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                        {(type === "bpo" || type === "bpo-app") && (
-                            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "#475569", fontFamily: "'Lexend',sans-serif" }}>
-                                <input type="checkbox" checked={showValidity} onChange={e => setShowValidity(e.target.checked)} />
-                                Add 15-day validity line
-                            </label>
-                        )}
                         {type === "endorsement" && (
                             <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "#475569", fontFamily: "'Lexend',sans-serif" }}>
                                 <input type="checkbox" checked={showAck} onChange={e => setShowAck(e.target.checked)} />
@@ -619,7 +617,7 @@ export default function PrintDocument() {
 
                 {(type === "bpo" || type === "bpo-app") && !bpo && <div className="pd-banner">No BPO recorded for this case yet — the reliefs and issue date will print blank. Apply for a BPO from the case actions to auto-fill them.</div>}
 
-                <Doc f={f} set={set} bpo={bpo} endorsement={endorsement} kids={cas.children || []} showValidity={showValidity} showAck={showAck} />
+                <Doc f={f} set={set} bpo={bpo} endorsement={endorsement} kids={cas.children || []} showAck={showAck} />
             </div>
         </>
     );

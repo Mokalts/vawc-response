@@ -708,6 +708,28 @@ const CaseActions = ({ cas, refetch, showToast }) => {
         {cas.status === "submitted" && (
           <div>
             <span style={lbl}>New Report</span>
+
+            {/* Her own words, right above the button that takes the case on.
+                They are further down the page too, but an officer confirming
+                from here should not have to go looking for what they are
+                accepting responsibility for. Scrolls rather than stretching the
+                panel, so a long statement does not push the button off screen. */}
+            {(() => {
+              const first = (cas.reports || []).find(r => !r.is_deleted) || (cas.reports || [])[0];
+              const text = (first?.statement || "").trim();
+              if (!text) return null;
+              return (
+                <div style={{ marginBottom: 10 }}>
+                  <p style={{ margin: "0 0 5px", fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                    Complainant's statement
+                  </p>
+                  <div style={{ maxHeight: 150, overflowY: "auto", padding: "10px 12px", borderRadius: 6, border: "1px solid var(--adm-border)", background: "var(--adm-muted)", fontSize: 12.5, lineHeight: 1.6, color: "var(--adm-text)", whiteSpace: "pre-wrap", fontFamily: "'Lexend',sans-serif" }}>
+                    {text}
+                  </div>
+                </div>
+              );
+            })()}
+
             <button className="rd-btn" style={{ ...btnP, background: "#C45E10", width: "100%", justifyContent: "center" }}
               disabled={busy === "confirm"}
               onClick={() => call("confirm", () => api.patch(`/admin/cases/${cas.id}/confirm`), "Report confirmed.")}>
