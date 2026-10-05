@@ -9,6 +9,7 @@ from models.report import Report, ReportStatus
 from schemas.report import ReportCreate, ReportResponse, ReportListItem
 from core.dependencies import get_current_user
 from core.encryption import encrypt, encrypt_float, decrypt, decrypt_float
+from core.timeutil import ph_local_to_utc
 
 from core.status_labels import STATUS_DISPLAY
 
@@ -36,7 +37,7 @@ def submit_report(
         longitude     = encrypt_float(payload.longitude),
         address       = encrypt(payload.address) if payload.address else None,
         incident_type = getattr(payload, "incident_type", None),
-        incident_date = getattr(payload, "incident_date", None),
+        incident_date = ph_local_to_utc(getattr(payload, "incident_date", None)),
     )
     db.add(report)
     db.commit()

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { AdminLayout } from "../components/Sidebar";
 import { confirmDialog } from "../components/ConfirmDialog";
 import api from "../api/api";
+import { toDate } from '../utils/datetime';
 
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
@@ -21,7 +22,7 @@ const IconWarning = ({ size = 16, color = "currentColor" }) => (
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const initials  = (a) => [a.first_name, a.last_name].filter(Boolean).map(n => n[0]).join("").toUpperCase() || "?";
-const daysLeft  = (d)  => { if (!d) return 0; return Math.max(0, 30 - Math.floor((Date.now() - new Date(d).getTime()) / 86400000)); };
+const daysLeft  = (d)  => { if (!d) return 0; return Math.max(0, 30 - Math.floor((Date.now() - toDate(d).getTime()) / 86400000)); };
 const fmtDate   = (iso) => { if (!iso) return "-"; return new Date(iso).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }); };
 
 // ─── Password helpers ─────────────────────────────────────────────────────────

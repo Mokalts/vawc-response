@@ -13,6 +13,7 @@ from models.report import Report, ReportStatus
 from models.user import User
 from core.dependencies import get_current_user
 from core.encryption import encrypt, encrypt_float, decrypt, decrypt_float
+from core.timeutil import ph_local_to_utc
 
 from core.status_labels import STATUS_DISPLAY
 
@@ -260,7 +261,9 @@ def submit_report(
         address        = encrypt(payload.address) if payload.address else None,
         incident_types = itypes,
         incident_type  = (itypes[0] if itypes else None),
-        incident_date  = payload.incident_date,
+        # Her picker gives a naive local time; the column holds UTC like
+        # everything else, so it is converted rather than stored as-is.
+        incident_date  = ph_local_to_utc(payload.incident_date),
     )
     db.add(report)
 

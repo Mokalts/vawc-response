@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import BottomNavbar from '../components/BottomNavbar';
 import api from '../api';
+import { toDate } from '../utils/datetime';
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id='vawc-font'; l.rel='stylesheet';
@@ -52,10 +53,10 @@ const STATUS_MAP = {
     closed:                { label:'Assistance Ended',                  bg:'#F1F5F9', color:'#475569', dot:'#64748B' },
 };
 const getSt   = (s) => STATUS_MAP[s] || { label:s||'Unknown', bg:'var(--border-soft)', color:'var(--text-body)', dot:'#64748B' };
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'}) : '-';
+const fmtDate = (d) => d ? toDate(d).toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'}) : '-';
 // Her report carries a time; showing her only the date hides what she entered.
-const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-PH',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
-const fmtTime = (d) => d ? new Date(d).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'}) : '';
+const fmtDateTime = (d) => d ? toDate(d).toLocaleString('en-PH',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
+const fmtTime = (d) => d ? toDate(d).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'}) : '';
 const trunc   = (s,n) => !s?'-':s.length>n?s.slice(0,n)+'…':s;
 
 // Timeline steps (lawful VAWC flow). Each carries a plain-language sub-message so

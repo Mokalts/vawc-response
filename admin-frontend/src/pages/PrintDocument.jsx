@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/api";
+import { toDate } from '../utils/datetime';
 
 // ─── Barangay constants ──────────────────────────────────────────────────────
 const BARANGAY = {
@@ -97,8 +98,8 @@ const CSS = `
 // ─── Helpers ────────────────────────────────────────────────────────────────
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const today = () => { const d = new Date(); return { day: String(d.getDate()), month: MONTHS[d.getMonth()], year: String(d.getFullYear()) }; };
-const fmtDate = (d) => !d ? "" : new Date(d).toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric" });
-const fmtTime = (d) => !d ? "" : new Date(d).toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" });
+const fmtDate = (d) => !d ? "" : toDate(d).toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric" });
+const fmtTime = (d) => !d ? "" : toDate(d).toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" });
 const ageFrom = (dob) => !dob ? "" : String(Math.floor((Date.now() - new Date(dob).getTime()) / 31557600000));
 const INCIDENT_LABEL = { physical: "Physical Abuse", sexual: "Sexual Abuse", psychological: "Psychological Abuse", economic: "Economic Abuse", others: "Other" };
 const reportAbuseTypes = (r) => {

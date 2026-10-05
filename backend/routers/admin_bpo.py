@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
+from core.timeutil import ph_local_to_utc
 
 from database import get_db
 from models.case import Case
@@ -174,7 +175,10 @@ def serve_bpo(
     when = datetime.utcnow()
     if payload.served_at:
         try:
-            when = datetime.fromisoformat(payload.served_at.replace("Z", "+00:00")).replace(tzinfo=None)
+            # A string carrying an offset is believed; a bare one came from a
+            # local picker, so it is read as Manila and converted, same as the
+            # incident date. The column holds UTC either way.
+            when = ph_local_to_utc(datetime.fromisoformat(payload.served_at))
         except ValueError:
             pass
     bpo.served_at = when

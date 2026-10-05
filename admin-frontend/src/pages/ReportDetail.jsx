@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AdminLayout } from "../components/Sidebar";
 import { confirmDialog } from "../components/ConfirmDialog";
 import api from "../api/api";
+import { toDate } from '../utils/datetime';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 const CSS = `
@@ -72,8 +73,8 @@ const INCIDENT_TYPES = [
   { id: "others", label: "Others" },
 ];
 
-const fmt = (d) => !d ? "-" : new Date(d).toLocaleString("en-PH", { month: "long", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
-const fmtDate = (d) => !d ? "-" : new Date(d).toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric" });
+const fmt = (d) => !d ? "-" : toDate(d).toLocaleString("en-PH", { month: "long", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
+const fmtDate = (d) => !d ? "-" : toDate(d).toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric" });
 const age = (dob) => !dob ? null : Math.floor((Date.now() - new Date(dob).getTime()) / (1000 * 60 * 60 * 24 * 365.25));
 
 const IcoUser = ({ size = 16, color = "currentColor" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke={color} strokeWidth="1.8" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={color} strokeWidth="1.8" strokeLinecap="round" /></svg>);

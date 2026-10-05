@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "../components/Sidebar";
 import { confirmDialog } from "../components/ConfirmDialog";
 import api from "../api/api";
+import { toDate } from '../utils/datetime';
 
 const STATUS_CONFIG = {
   submitted: { label: "Submitted", color: "#BE185D", bg: "#FDF2F8", dot: "#EC4899" },
@@ -28,14 +29,14 @@ const CSS = `
   .search-input:focus  { border-color:#9B4DAB !important; outline:none; }
 `;
 
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }) : "-";
-const fmtTime = (d) => d ? new Date(d).toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" }) : "";
+const fmtDate = (d) => d ? toDate(d).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }) : "-";
+const fmtTime = (d) => d ? toDate(d).toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" }) : "";
 // The victim records the incident with a time, not just a date. Showing only
 // the date threw away something she took the trouble to give, and the hour of
 // an incident is on the complaint form and matters to the four-hour report.
 const fmt = (d) => d ? `${fmtDate(d)}, ${fmtTime(d)}` : "-";
 const truncate = (s, n) => !s ? "-" : s.length > n ? s.slice(0, n) + "…" : s;
-const daysLeft = (d) => !d ? 0 : Math.max(0, 30 - Math.floor((Date.now() - new Date(d).getTime()) / 86400000));
+const daysLeft = (d) => !d ? 0 : Math.max(0, 30 - Math.floor((Date.now() - toDate(d).getTime()) / 86400000));
 
 const IcoSearch = () => (<svg width="15" height="15" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="#94A3B8" strokeWidth="1.8" /><path d="M13.5 13.5L17 17" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round" /></svg>);
 const IcoUser = ({ size = 32, color = "#9B4DAB" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke={color} strokeWidth="1.8" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={color} strokeWidth="1.8" strokeLinecap="round" /></svg>);

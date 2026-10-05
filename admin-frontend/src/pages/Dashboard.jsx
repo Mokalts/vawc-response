@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from '../components/Sidebar';
 import api from '../api/api';
+import { toDate } from '../utils/datetime';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 if (!document.getElementById('dash-css')) {
@@ -106,7 +107,7 @@ const IcoFilter = ({ size = 14, color = 'currentColor' }) => <Ico size={size} co
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const getGreeting = () => { const h = new Date().getHours(); return h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening'; };
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+const fmtDate = (d) => d ? toDate(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
 const truncate = (s, n) => !s ? '-' : s.length > n ? s.slice(0, n) + '…' : s;
 
 // Human date-range subtitle from the backend-returned ISO start/end.
