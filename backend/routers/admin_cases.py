@@ -1005,22 +1005,27 @@ def recover_case(
     case.delete_reason    = None
     case.admin_recovered  = True
 
-    # If the case was deleted while still in 'submitted', promote it to
-    # 'awaiting_onsite_visit' on recovery. Reasoning: a deleted-then-recovered
-    # case has already been reviewed by an admin, so it shouldn't sit back
-    # in the New Reports bucket (which would also keep the unread badge
-    # incrementing). For any other status, preserve it.
+    # A case deleted while still at 'submitted' does not go back into the New
+    # Reports queue on recovery: an officer has plainly seen it, and leaving it
+    # there would keep the unread badge counting. It moves to 'under_assessment'
+    # instead, which says exactly that and nothing more.
+    #
+    # It used to jump to 'awaiting_onsite_visit', which skipped a step and, worse,
+    # told the victim something untrue: her timeline reads "You will be asked to
+    # come to the desk in person", and nobody had scheduled that. The officer
+    # advances the case to an onsite visit when they decide to hold one.
+    # Any other status is preserved.
     promoted = False
     if case.status == ReportStatus.submitted:
-        case.status = ReportStatus.awaiting_onsite_visit
+        case.status = ReportStatus.under_assessment
         case.admin_id = current_admin.id
         promoted = True
 
     log_activity(db, case.id, current_admin, "case_recovered",
-                 "promoted to awaiting onsite visit" if promoted else None)
+                 "moved to under assessment" if promoted else None)
     db.commit()
     msg = (
-        f"Case {case.case_number} recovered and moved to 'Awaiting Onsite Visit'."
+        f"Case {case.case_number} recovered and moved to 'Under Assessment'."
         if promoted else
         f"Case {case.case_number} recovered."
     )
