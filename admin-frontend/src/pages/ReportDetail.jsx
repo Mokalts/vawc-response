@@ -1345,7 +1345,7 @@ export default function ReportDetail() {
                         <p style={{ margin: "0 0 4px", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Date of Incident</p>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                           <IcoCal size={14} color="#9B4DAB" />
-                          <span style={{ fontSize: 13.5, color: "var(--adm-text)", fontWeight: 600, fontFamily: "'Lexend',sans-serif" }}>{fmtDate(r.incident_date)}</span>
+                          <span style={{ fontSize: 13.5, color: "var(--adm-text)", fontWeight: 600, fontFamily: "'Lexend',sans-serif" }}>{fmt(r.incident_date)}</span>
                         </div>
                       </div>
                     )}

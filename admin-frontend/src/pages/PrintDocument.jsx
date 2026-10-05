@@ -556,7 +556,7 @@ export default function PrintDocument() {
                 victimDob: p.victimDob || (v.date_of_birth ? fmtDate(v.date_of_birth) : ""),
                 victimAddress: p.victimAddress || v.address || "",
                 victimContact: p.victimContact || v.phone_number || "",
-                incidentWhen: p.incidentWhen || [fmtDate(r?.incident_date), r?.address].filter(Boolean).join(" - "),
+                incidentWhen: p.incidentWhen || [[fmtDate(r?.incident_date), fmtTime(r?.incident_date)].filter(Boolean).join(", "), r?.address].filter(Boolean).join(" - "),
                 offenseDate: p.offenseDate || fmtDate(r?.incident_date),
                 offensePlace: p.offensePlace || (r?.address || ""),
                 narrative: p.narrative || r?.statement || "",

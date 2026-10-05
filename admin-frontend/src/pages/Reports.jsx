@@ -30,6 +30,10 @@ const CSS = `
 
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }) : "-";
 const fmtTime = (d) => d ? new Date(d).toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" }) : "";
+// The victim records the incident with a time, not just a date. Showing only
+// the date threw away something she took the trouble to give, and the hour of
+// an incident is on the complaint form and matters to the four-hour report.
+const fmt = (d) => d ? `${fmtDate(d)}, ${fmtTime(d)}` : "-";
 const truncate = (s, n) => !s ? "-" : s.length > n ? s.slice(0, n) + "…" : s;
 const daysLeft = (d) => !d ? 0 : Math.max(0, 30 - Math.floor((Date.now() - new Date(d).getTime()) / 86400000));
 
@@ -386,7 +390,7 @@ export default function Reports() {
                           <tr key={r.id} className="row-hover" onClick={() => navigate(`/reports/${caseDetail.id}#report-${idx + 1}`)}>
                             <td style={S.td}><span style={{ fontSize: 12, fontWeight: 700, color: "var(--adm-text-2)", background: "var(--adm-border)", padding: "2px 8px", borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>Report {idx + 1}</span></td>
                             <td style={S.td}>{r.incident_type ? <span style={{ fontSize: 12.5, color: "#4A1259", background: "#F3E5F5", padding: "3px 9px", borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>{r.incident_type}</span> : <span style={{ color: "var(--adm-border-strong)" }}>-</span>}</td>
-                            <td style={S.td}><span style={{ fontSize: 13, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>{fmtDate(r.incident_date)}</span></td>
+                            <td style={S.td}><span style={{ fontSize: 13, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>{fmt(r.incident_date)}</span></td>
                             <td style={S.td}><span style={{ fontSize: 13, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>{truncate(r.address, 35)}</span></td>
                             <td style={S.td}><p style={{ margin: 0, fontSize: 13, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>{fmtDate(r.created_at)}</p><p style={{ margin: 0, fontSize: 11.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>{fmtTime(r.created_at)}</p></td>
                             <td style={{ ...S.td, textAlign: "center" }}>{r.photo_urls?.length > 0 ? <span style={{ fontSize: 12.5, color: "#C45E10", fontFamily: "'Lexend',sans-serif" }}>{r.photo_urls.length} photo{r.photo_urls.length > 1 ? "s" : ""}</span> : <span style={{ color: "var(--adm-border-strong)" }}>-</span>}</td>

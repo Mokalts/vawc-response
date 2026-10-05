@@ -53,6 +53,8 @@ const STATUS_MAP = {
 };
 const getSt   = (s) => STATUS_MAP[s] || { label:s||'Unknown', bg:'var(--border-soft)', color:'var(--text-body)', dot:'#64748B' };
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'}) : '-';
+// Her report carries a time; showing her only the date hides what she entered.
+const fmtDateTime = (d) => d ? new Date(d).toLocaleString('en-PH',{year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '-';
 const fmtTime = (d) => d ? new Date(d).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'}) : '';
 const trunc   = (s,n) => !s?'-':s.length>n?s.slice(0,n)+'…':s;
 
@@ -279,7 +281,7 @@ function ReportDetailModal({ report, index, onClose }) {
                     {report.incident_date&&(
                         <div style={S.detailItem}>
                             <p style={S.detailLabel}>Date of Incident</p>
-                            <p style={S.detailValue}>{fmtDate(report.incident_date)}</p>
+                            <p style={S.detailValue}>{fmtDateTime(report.incident_date)}</p>
                         </div>
                     )}
                     <div style={S.detailItem}>
