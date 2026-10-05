@@ -50,6 +50,13 @@ const HOTLINES = [
     { label: 'PNP Emergency',                 dial: '911',           display: '911',           desc: 'Police response for Iba, Zambales and nationwide.',     icon: IcoBadge, critical: true },
     { label: 'Barangay Palanginan VAWC Desk', dial: '+639286673772', display: '0928 667 3772', desc: 'Ms. Maria Theresa M. De Leon, Admin Assistant.',        icon: IcoDesk },
     { label: 'DSWD Hotline',                  dial: '1343',          display: '1343',          desc: 'Open 24/7 for violence and trafficking cases.',         icon: IcoCare },
+    // Moved here when the Contact page was removed as redundant. The desk can
+    // refer a case to the PAO, and the privacy notice tells her so, which makes a
+    // number she can reach them on worth carrying. The WCPD line is published
+    // with letters and cannot be dialled from a keypad, so it has no `dial` and
+    // renders as text: a wrong emergency number is worse than one she types.
+    { label: "Public Attorney's Office",      dial: '+63289299436',  display: '(02) 8929-9436', desc: 'Free legal assistance.',                                icon: IcoDesk },
+    { label: 'PNP Women & Children Desk',     dial: null,            display: '1800-188-PNP-107', desc: 'VAWC case handling, nationwide.',                     icon: IcoBadge },
     { label: 'Test Number',                   dial: '+639085267335', display: '0908 526 7335', desc: 'System testing only. This is not an official hotline.', icon: IcoFlask, test: true },
 ];
 
@@ -138,13 +145,15 @@ function SOSButton({ variant = 'block' }) {
                         <div style={S.list}>
                             {HOTLINES.map(h => {
                                 const Ico = h.icon;
+                                const Tag = h.dial ? 'a' : 'div';
                                 return (
-                                    <a
-                                        key={h.dial}
-                                        href={`tel:${h.dial}`}
+                                    <Tag
+                                        key={h.display}
+                                        {...(h.dial
+                                            ? { href: `tel:${h.dial}`, 'aria-label': `Call ${h.label} at ${h.display}` }
+                                            : {})}
                                         className="sos-row"
-                                        style={{ ...S.row, ...(h.test ? { opacity: 0.62 } : {}) }}
-                                        aria-label={`Call ${h.label} at ${h.display}`}
+                                        style={{ ...S.row, ...(h.test ? { opacity: 0.62 } : {}), ...(h.dial ? {} : { cursor: 'default' }) }}
                                     >
                                         <span style={S.rowIcon} aria-hidden="true"><Ico c="var(--text-body)" /></span>
                                         <span style={{ minWidth: 0, flex: 1 }}>
@@ -152,10 +161,12 @@ function SOSButton({ variant = 'block' }) {
                                             <span style={S.rowLabel}>{h.label}</span>
                                             <span style={S.rowDesc}>{h.desc}</span>
                                         </span>
-                                        <span className="sos-call" style={S.callBtn} aria-hidden="true">
-                                            <IcoPhone size={12.5} c="currentColor" /> Call
-                                        </span>
-                                    </a>
+                                        {h.dial && (
+                                            <span className="sos-call" style={S.callBtn} aria-hidden="true">
+                                                <IcoPhone size={12.5} c="currentColor" /> Call
+                                            </span>
+                                        )}
+                                    </Tag>
                                 );
                             })}
                         </div>

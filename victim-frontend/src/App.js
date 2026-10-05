@@ -10,7 +10,6 @@ import ReportNow from './pages/ReportNow';
 import MyCases from './pages/MyCases';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
-import ContactUs from './pages/ContactUs';
 import VerifyEmail from './pages/VerifyEmail';
 import ChangePassword from './pages/ChangePassword';
 import Awareness from './pages/Awareness';
@@ -29,7 +28,7 @@ import './styles/global.css';
 // useless, so they keep the pill.
 const NAV_ROUTES = [
   '/home', '/report', '/my-reports', '/profile', '/settings',
-  '/terms', '/contact', '/awareness', '/change-password',
+  '/terms', '/awareness', '/change-password',
 ];
 function GlobalQuickExit() {
   const { pathname } = useLocation();
@@ -58,7 +57,6 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify" element={<VerifyEmail />} />
         <Route path="/awareness" element={<Awareness />} />
-        <Route path="/contact" element={<ContactUs />} />
         <Route path="/terms" element={<Terms />} />
 
         {/* Protected routes */}
