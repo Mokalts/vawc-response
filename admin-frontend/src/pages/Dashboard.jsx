@@ -157,7 +157,21 @@ function StatusBadge({ rawStatus, displayLabel }) {
 }
 
 // ─── New Reports Modal ────────────────────────────────────────────────────────
-function ReportBriefPanel({ report, onClose, onConfirm, isConfirmed, isConfirming }) {
+
+// The statement, location and incident type belong to a REPORT, not to the case
+// that holds it. A new case has exactly one, so lift its fields up to the shape
+// this panel already expected.
+function firstReportFields(detail) {
+    const r = ((detail || {}).reports || []).find(x => !x.is_deleted) || ((detail || {}).reports || [])[0];
+    if (!r) return {};
+    return {
+        statement: r.statement,
+        address: r.address,
+        incident_type: (r.incident_types && r.incident_types[0]) || r.incident_type,
+    };
+}
+
+function ReportBriefPanel({ report, onClose, onConfirm, isConfirmed, isConfirming, detailLoading }) {
     return (
         <div style={{ borderTop: '1px solid var(--adm-border)', paddingTop: 12, marginTop: 4, animation: 'slideRight 0.15s ease' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
@@ -180,10 +194,20 @@ function ReportBriefPanel({ report, onClose, onConfirm, isConfirmed, isConfirmin
                         <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--adm-text)', fontFamily: "'Lexend',sans-serif" }}>{val}</p>
                     </div>
                 ))}
+                {detailLoading && !report.statement && (
+                    <div style={{ gridColumn: 'span 2', background: 'var(--adm-muted)', borderRadius: 4, padding: '8px 10px', border: '1px solid var(--adm-border)' }}>
+                        <p style={{ margin: 0, fontSize: 12.5, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>Loading statement…</p>
+                    </div>
+                )}
                 {report.statement && (
                     <div style={{ gridColumn: 'span 2', background: 'var(--adm-muted)', borderRadius: 4, padding: '8px 10px', border: '1px solid var(--adm-border)' }}>
                         <p style={{ margin: '0 0 3px', fontSize: 10, fontWeight: 700, color: 'var(--adm-text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: "'Lexend',sans-serif" }}>Statement</p>
-                        <p style={{ margin: 0, fontSize: 13, color: 'var(--adm-text-2)', fontFamily: "'Lexend',sans-serif", lineHeight: 1.5 }}>{truncate(report.statement, 150)}</p>
+                        {/* Whole statement, not a 150-character preview. This is the
+                            panel an officer confirms from, and confirming means taking
+                            responsibility for the case; a truncated account is not
+                            enough to decide that on. Scrolls so a long one cannot push
+                            the button out of reach. */}
+                        <p style={{ margin: 0, maxHeight: 132, overflowY: 'auto', fontSize: 13, color: 'var(--adm-text-2)', fontFamily: "'Lexend',sans-serif", lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{report.statement}</p>
                     </div>
                 )}
             </div>
@@ -204,6 +228,23 @@ function NewReportsModal({ onClose, onConfirmed }) {
     const [confirming, setConfirming] = useState({});
     const [confirmed, setConfirmed] = useState({});
     const [selected, setSelected] = useState(null);
+    // The list endpoint returns cases WITHOUT their reports, so the statement,
+    // location and incident type were always missing and those panels silently
+    // rendered nothing. Fetch the full case when an officer opens one, rather
+    // than decrypting every statement into a list nobody has opened yet.
+    const [detail, setDetail] = useState(null);
+    const [detailLoading, setDetailLoading] = useState(false);
+
+    useEffect(() => {
+        if (!selected) { setDetail(null); return; }
+        let alive = true;
+        setDetailLoading(true);
+        api.get(`/admin/cases/${selected.id}`)
+            .then(r => { if (alive) setDetail(r.data); })
+            .catch(() => { if (alive) setDetail(null); })
+            .finally(() => { if (alive) setDetailLoading(false); });
+        return () => { alive = false; };
+    }, [selected]);
 
     useEffect(() => {
         // Fetch submitted (unconfirmed) cases from the correct endpoint
@@ -216,7 +257,11 @@ function NewReportsModal({ onClose, onConfirmed }) {
     const handleConfirm = async (id) => {
         setConfirming(p => ({ ...p, [id]: true }));
         try {
-            await api.patch(`/admin/cases/${id}/status`, { status: 'awaiting_onsite_visit' });
+            // Was a direct jump to 'awaiting_onsite_visit', which skipped Under
+            // Assessment and told the complainant she would be called to the desk
+            // when nobody had arranged it. The confirm action lands at Under
+            // Assessment, assigns the case to whoever confirmed it, and records it.
+            await api.patch(`/admin/cases/${id}/confirm`);
             setConfirmed(p => ({ ...p, [id]: true }));
             setSelected(null);
             onConfirmed();
@@ -282,7 +327,11 @@ function NewReportsModal({ onClose, onConfirmed }) {
                     })}
                     {!loading && selected && (
                         <div style={{ padding: '8px 24px 16px' }}>
-                            <ReportBriefPanel report={selected} onClose={() => setSelected(null)} onConfirm={handleConfirm} isConfirmed={confirmed[selected.id]} isConfirming={confirming[selected.id] && !confirmed[selected.id]} />
+                            <ReportBriefPanel
+                                report={{ ...selected, ...(detail || {}), ...firstReportFields(detail) }}
+                                detailLoading={detailLoading}
+                                onClose={() => setSelected(null)} onConfirm={handleConfirm}
+                                isConfirmed={confirmed[selected.id]} isConfirming={confirming[selected.id] && !confirmed[selected.id]} />
                         </div>
                     )}
                 </div>
