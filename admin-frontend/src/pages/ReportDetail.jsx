@@ -699,6 +699,26 @@ const CaseActions = ({ cas, refetch, showToast }) => {
     <Card title="Case Actions" icon={<IcoShield size={16} color="#9B4DAB" />}>
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
+        {/* Confirm — only while the report is still unclaimed.
+            A deliberate action rather than something that fires when the case
+            is opened: reading a report is not the same as taking it on, and a
+            status that moved on a glance would tell her an officer had the case
+            when nobody did. Shown first and in the brand colour because, on a
+            new report, it is the only thing the officer should be doing. */}
+        {cas.status === "submitted" && (
+          <div>
+            <span style={lbl}>New Report</span>
+            <button className="rd-btn" style={{ ...btnP, background: "#C45E10", width: "100%", justifyContent: "center" }}
+              disabled={busy === "confirm"}
+              onClick={() => call("confirm", () => api.patch(`/admin/cases/${cas.id}/confirm`), "Report confirmed.")}>
+              {busy === "confirm" ? <Spinner size={12} /> : "Confirm Report"}
+            </button>
+            <p style={{ margin: "7px 0 0", fontSize: 11.5, lineHeight: 1.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+              Takes this case off the new-reports queue, assigns it to you, and tells the complainant it is under assessment.
+            </p>
+          </div>
+        )}
+
         {/* BPO */}
         <div>
           <span style={lbl}>Barangay Protection Order</span>

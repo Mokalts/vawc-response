@@ -35,6 +35,7 @@ ACTIVITY_LABELS = {
     "message_deleted":      "Message deleted",
     "respondent_corrected": "Respondent name corrected",
     "respondent_details_updated": "Respondent details updated",
+    "report_confirmed":     "Report confirmed",
 }
 
 
@@ -1112,4 +1113,59 @@ def update_respondent_details(
         "offender_address": decrypt(case.offender_address) if case.offender_address else None,
         "offender_contact": decrypt(case.offender_contact) if case.offender_contact else None,
         "offender_age":     decrypt(case.offender_age) if case.offender_age else None,
+    }
+
+
+# ── PATCH /admin/cases/{case_id}/confirm ──────────────────────────────────────
+@router.patch("/{case_id}/confirm")
+def confirm_case(
+    case_id: int,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Take a new report off the queue and onto an officer.
+
+    A deliberate action, not a side effect of opening the case. Reading a report
+    is not the same as accepting responsibility for it, and a status that moved
+    the moment someone glanced at the case would tell the victim an officer had
+    taken it on when nobody had. It also records WHO took it: the case is
+    assigned here, so "handled by" stops being blank.
+
+    Only from 'submitted'. Anything further along has already been confirmed,
+    and re-confirming would walk the case backwards.
+    """
+    case = _get_active_case(db, case_id)
+
+    if case.status != ReportStatus.submitted:
+        raise HTTPException(
+            status_code=409,
+            detail="This report has already been confirmed.",
+        )
+
+    case.status            = ReportStatus.under_assessment
+    case.admin_id          = current_admin.id
+    case.has_status_update = True
+    case.updated_at        = datetime.utcnow()
+    for r in case.reports:
+        r.is_read = True
+
+    log_activity(db, case.id, current_admin, "report_confirmed",
+                 "Submitted to Under Assessment")
+    db.commit()
+
+    victim       = case.user
+    victim_email = getattr(victim, "email", None)
+    if victim_email:
+        threading.Thread(
+            target=_send_status_email,
+            args=(victim_email, _full_name(victim), case.case_number,
+                  "under_assessment", STATUS_DISPLAY.get("under_assessment", "Under Assessment")),
+            daemon=True,
+        ).start()
+
+    return {
+        "message": "Report confirmed.",
+        "status": case.status.value,
+        "status_display": STATUS_DISPLAY.get(case.status.value, case.status.value),
+        "handled_by": current_admin.full_name,
     }
