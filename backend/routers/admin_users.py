@@ -25,9 +25,10 @@ from models.admin import Admin
 from models.case import Case
 from models.otp import OTP
 from core.admin_dependencies import get_current_admin_full_access
+from utils.cloudinary_helper import destroy_image
 from core.account_notice import notify_account_change
 from core.config import settings
-from core.security import hash_password
+from core.security import hash_password, create_media_token
 from routers.admin_auth import validate_password_strength
 
 router = APIRouter(prefix="/admin/users", tags=["Admin Users"])
@@ -72,6 +73,18 @@ def _serialize(u: User) -> dict:
         "deleted_at":            u.deleted_at.isoformat() if u.deleted_at else None,
         "created_at":            u.created_at.isoformat() if u.created_at else None,
         "updated_at":            u.updated_at.isoformat() if u.updated_at else None,
+
+        "id_status":             u.id_status or "none",
+        "id_type":               u.id_type,
+        "id_submitted_at":       u.id_submitted_at.isoformat() if u.id_submitted_at else None,
+        "id_reviewed_at":        u.id_reviewed_at.isoformat() if u.id_reviewed_at else None,
+        "id_reviewed_by":        u.id_reviewed_by,
+        "id_reject_reason":      u.id_reject_reason,
+        # Only exists while a decision is pending: the photograph is destroyed
+        # once an officer has decided, so there is nothing left to link to.
+        "id_document_url":       (
+            f"/media/photo?t={create_media_token(f'id:{u.id}')}" if u.id_document else None
+        ),
     }
 
 
@@ -130,6 +143,25 @@ def list_deleted_victims(
 
 
 # ─── GET /admin/users/{user_id} — single victim full profile ───────────────
+# ─── GET /admin/users/id-pending — accounts waiting on an ID decision ──────
+@router.get("/id-pending")
+def list_id_pending(
+    db: Session = Depends(get_db),
+    _: Admin = Depends(get_current_admin_full_access),
+):
+    """The review queue. Oldest first: somebody who uploaded days ago should not
+    sit behind somebody who uploaded this morning."""
+    rows = (
+        db.query(User)
+        .filter(User.id_status == "pending", User.is_deleted == False)
+        .order_by(User.id_submitted_at.asc())
+        .all()
+    )
+    return {"count": len(rows), "users": [_serialize(u) for u in rows]}
+
+
+# Declared BEFORE /{user_id}: FastAPI matches routes in order, and a literal
+# path registered after a parameterised one is never reached.
 @router.get("/{user_id}")
 def get_victim(
     user_id: int,
@@ -310,3 +342,62 @@ def cleanup_unverified(
         db.delete(u)
     db.commit()
     return {"message": f"Permanently deleted {count} unverified account(s) older than 90 days."}
+
+
+class IdReview(BaseModel):
+    approve: bool
+    reason: Optional[str] = None
+
+
+# ─── PATCH /admin/users/{user_id}/id-review — approve or reject an ID ──────
+@router.patch("/{user_id}/id-review")
+def review_id(
+    user_id: int,
+    payload: IdReview,
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Decide on an uploaded ID, then destroy the photograph.
+
+    The decision is the record worth keeping. Holding a photograph of a
+    government ID, carrying her face, birthdate, address and signature, after it
+    has served its purpose is a liability and nothing else: it cannot be leaked
+    if it is not there. That is data minimisation under RA 10173, and it is the
+    answer to "what do you do with the IDs you collect".
+
+    The image is destroyed whichever way the decision goes. A rejected ID is not
+    evidence of anything; she is told why and can upload again.
+    """
+    u = db.query(User).filter(User.id == user_id, User.is_deleted == False).first()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found.")
+    if u.id_status != "pending":
+        raise HTTPException(status_code=409, detail="There is no ID waiting for a decision on this account.")
+
+    reason = (payload.reason or "").strip()
+    if not payload.approve and not reason:
+        raise HTTPException(status_code=422, detail="Give a reason so she knows what to send instead.")
+
+    u.id_status = "approved" if payload.approve else "rejected"
+    u.id_reject_reason = None if payload.approve else reason[:300]
+    u.id_reviewed_at = datetime.utcnow()
+    u.id_reviewed_by = current_admin.full_name
+
+    # Destroy first, clear second: if the delete fails we still stop pointing at
+    # the asset, and the failure is logged rather than silently leaving an image
+    # the record says was removed.
+    destroy_image(u.id_document)
+    u.id_document = None
+
+    db.commit()
+
+    notify_account_change(
+        u,
+        ["ID verification approved" if payload.approve else "ID verification rejected"],
+        by_officer=True,
+    )
+    return {
+        "message": "ID approved." if payload.approve else "ID rejected.",
+        "id_status": u.id_status,
+        "id_reject_reason": u.id_reject_reason,
+    }

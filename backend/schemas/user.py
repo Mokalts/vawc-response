@@ -39,6 +39,12 @@ class UserResponse(BaseModel):
     guardian_relationship: Optional[str]
     created_at: datetime
 
+    # Identity verification. Never a condition of reporting; this only tells her
+    # whether an officer has seen an ID for the account yet.
+    id_status: str = "none"
+    id_type: Optional[str] = None
+    id_reject_reason: Optional[str] = None
+
     model_config = {"from_attributes": True}
 
 

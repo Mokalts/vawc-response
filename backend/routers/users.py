@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
@@ -7,6 +7,8 @@ from schemas.user import UserResponse, UserUpdate, PasswordChange
 from core.dependencies import get_current_user
 from core.security import verify_password, hash_password
 from core.account_notice import notify_account_change
+from utils.cloudinary_helper import upload_image
+import uuid
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 
@@ -125,3 +127,63 @@ def recover_account(
     db.commit()
 
     return {"message": "Account recovered successfully. You can now sign in."}
+
+
+# ─── POST /users/me/id-document — send an ID for checking ─────────────────────
+ID_ALLOWED_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic"}
+ID_MAX_MB = 10
+
+
+@router.post("/me/id-document")
+async def submit_id_document(
+    id_type: str = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Send an ID so an officer can confirm the account is a real person.
+
+    Entirely optional, and deliberately so. She can file a report the moment she
+    opens the app; this exists so the desk can tell real accounts from dummies,
+    not so identification becomes a condition of being helped. A woman deciding
+    whether to report is often doing it on a borrowed phone with her documents
+    in a house she has left, and a system that asked for ID first would lose
+    exactly the reports it exists to receive.
+
+    The photograph is uploaded as an authenticated asset, so its Cloudinary URL
+    is worth nothing on its own, and it is destroyed the moment an officer
+    decides either way.
+    """
+    if current_user.id_status == "pending":
+        raise HTTPException(status_code=409, detail="An ID is already waiting to be checked.")
+    if current_user.id_status == "approved":
+        raise HTTPException(status_code=409, detail="This account is already verified.")
+
+    kind = (id_type or "").strip()
+    if not kind:
+        raise HTTPException(status_code=422, detail="Say which ID this is.")
+    if file.content_type not in ID_ALLOWED_TYPES:
+        raise HTTPException(status_code=400, detail="Only JPEG, PNG, WEBP or HEIC images are allowed.")
+
+    file_bytes = await file.read()
+    if len(file_bytes) > ID_MAX_MB * 1024 * 1024:
+        raise HTTPException(status_code=400, detail=f"That image is too large. Maximum {ID_MAX_MB}MB.")
+
+    public_id = upload_image(
+        file_bytes,
+        f"id_{current_user.id}_{uuid.uuid4().hex}",
+        folder="vawc-response/ids",
+    )
+
+    current_user.id_document = public_id
+    current_user.id_type = kind[:80]
+    current_user.id_status = "pending"
+    current_user.id_submitted_at = datetime.utcnow()
+    current_user.id_reject_reason = None
+    db.commit()
+
+    return {
+        "message": "Sent. The barangay VAWC desk will check it.",
+        "id_status": "pending",
+        "id_type": current_user.id_type,
+    }
