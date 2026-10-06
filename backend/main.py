@@ -19,7 +19,7 @@ from models.endorsement import Endorsement
 from models.barangay_official import BarangayOfficial
 from database import Base
 from routers import auth, reports, cases, users, upload, admin_auth, admin_cases, admin_dashboard, admin_users
-from routers import admin_bpo, admin_endorsement, admin_officials
+from routers import admin_bpo, admin_endorsement, admin_officials, media
 
 # Creating tables must not be able to stop the app from starting. Neon suspends
 # a free database after idle time, so a Render restart can land while the
@@ -78,6 +78,7 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(reports.router)
 app.include_router(upload.router)
+app.include_router(media.router)
 app.include_router(users.router)
 app.include_router(admin_auth.router)
 app.include_router(admin_dashboard.router)

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { AdminLayout } from "../components/Sidebar";
 import { confirmDialog } from "../components/ConfirmDialog";
 import api from "../api/api";
-import { toDate } from '../utils/datetime';
+import { toDate, mediaUrl } from '../utils/datetime';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 const CSS = `
@@ -1354,8 +1354,8 @@ export default function ReportDetail() {
                         <p style={{ margin: "0 0 8px", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Evidence Photos ({r.photo_urls.length})</p>
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(100px,1fr))", gap: 8 }}>
                           {r.photo_urls.map((url, i) => (
-                            <div key={i} onClick={() => setLightbox(url)} style={{ aspectRatio: "1", borderRadius: 4, overflow: "hidden", cursor: "zoom-in", border: "1px solid var(--adm-border)" }}>
-                              <img src={url} alt={`Evidence ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.2s" }}
+                            <div key={i} onClick={() => setLightbox(mediaUrl(url))} style={{ aspectRatio: "1", borderRadius: 4, overflow: "hidden", cursor: "zoom-in", border: "1px solid var(--adm-border)" }}>
+                              <img src={mediaUrl(url)} alt={`Evidence ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.2s" }}
                                 onMouseEnter={e => e.target.style.transform = "scale(1.05)"}
                                 onMouseLeave={e => e.target.style.transform = "scale(1)"} />
                             </div>

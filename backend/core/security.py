@@ -80,3 +80,34 @@ def decode_reset_token(token: str) -> tuple[int | None, str | None]:
         return int(payload.get("sub")), payload.get("pwf")
     except (JWTError, TypeError, ValueError):
         return None, None
+
+
+# ── Media tokens ──────────────────────────────────────────────────────────────
+# A browser cannot send an Authorization header on an <img src>, and the apps
+# sit on a different origin from the api, so a cookie will not reliably ride
+# along either. The serializer therefore hands out a link carrying a short-lived
+# token that names exactly one image.
+#
+# This is what makes evidence photographs private. Cloudinary assets are
+# uploaded as authenticated and their signed links never leave this server;
+# everything a browser sees expires. A link copied out of the page, or left in
+# someone's history, is worthless within the hour.
+MEDIA_TOKEN_MINUTES = 30
+
+
+def create_media_token(ref: str) -> str:
+    """`ref` identifies one image, e.g. "report:12:0" or "id:7"."""
+    expire = datetime.utcnow() + timedelta(minutes=MEDIA_TOKEN_MINUTES)
+    return jwt.encode({"ref": ref, "type": "media", "exp": expire},
+                      settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def decode_media_token(token: str):
+    """Return the ref this token permits, or None if it is invalid or expired."""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    except Exception:
+        return None
+    if payload.get("type") != "media":
+        return None
+    return payload.get("ref")

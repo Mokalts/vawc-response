@@ -18,6 +18,21 @@ from typing import Optional
 from datetime import datetime, timedelta
 import threading
 
+def photo_links(report):
+    """Expiring links to a report's photographs.
+
+    The stored value is a Cloudinary public id that only this server can turn
+    into a real URL. What a browser gets is a link to our own /media endpoint
+    carrying a token that names one image and dies in half an hour, so a link
+    copied out of the page stops working.
+    """
+    from core.security import create_media_token
+    return [
+        f"/media/photo?t={create_media_token(f'report:{report.id}:{i}')}"
+        for i, _ in enumerate(report.photo_urls or [])
+    ]
+
+
 router = APIRouter(prefix="/admin/cases", tags=["Admin Cases"])
 
 # Plain wording for the officer reading the trail. "Assistance ended" rather
@@ -106,7 +121,7 @@ def _decrypt_report(r: Report) -> dict:
         "id":            r.id,
         "case_id":       r.case_id,
         "statement":     decrypt(r.statement),
-        "photo_urls":    r.photo_urls or [],
+        "photo_urls":    photo_links(r),
         "address":       decrypt(r.address),
         "latitude":      decrypt_float(r.latitude),
         "longitude":     decrypt_float(r.longitude),

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import BottomNavbar from '../components/BottomNavbar';
 import api from '../api';
-import { toDate } from '../utils/datetime';
+import { toDate, mediaUrl } from '../utils/datetime';
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id='vawc-font'; l.rel='stylesheet';
@@ -300,8 +300,8 @@ function ReportDetailModal({ report, index, onClose }) {
                             <p style={S.detailLabel}>Photos ({report.photo_urls.length})</p>
                             <div style={{display:'flex',flexWrap:'wrap',gap:8,marginTop:4}}>
                                 {report.photo_urls.map((url,i)=>(
-                                    <a key={i} href={url} target="_blank" rel="noreferrer">
-                                        <img src={url} alt={`Evidence ${i+1}`} style={{width:70,height:70,objectFit:'cover',borderRadius: 4,border:'1px solid var(--border)'}}/>
+                                    <a key={i} href={mediaUrl(url)} target="_blank" rel="noreferrer">
+                                        <img src={mediaUrl(url)} alt={`Evidence ${i+1}`} style={{width:70,height:70,objectFit:'cover',borderRadius: 4,border:'1px solid var(--border)'}}/>
                                     </a>
                                 ))}
                             </div>

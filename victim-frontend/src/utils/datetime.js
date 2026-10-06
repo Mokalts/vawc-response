@@ -22,3 +22,22 @@ export function toDate(value) {
     const hasTime = s.includes('T') || s.includes(' ');
     return new Date(hasZone || !hasTime ? s : s + 'Z');
 }
+
+/**
+ * Turning an API path into something an <img> can load.
+ *
+ * Evidence photographs are no longer public Cloudinary URLs. The API returns a
+ * path to its own /media endpoint carrying a token that names one image and
+ * expires, so the link has to be resolved against the API rather than against
+ * this app's own origin, which is a different host.
+ *
+ * Anything already absolute is returned untouched, so reports filed before the
+ * change still render.
+ */
+export function mediaUrl(value) {
+    if (!value) return '';
+    const s = String(value);
+    if (s.startsWith('http://') || s.startsWith('https://')) return s;
+    const base = (process.env.REACT_APP_API_URL || '').replace(/\/+$/, '');
+    return base + (s.startsWith('/') ? s : '/' + s);
+}
