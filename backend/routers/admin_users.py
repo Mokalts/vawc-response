@@ -25,6 +25,7 @@ from models.admin import Admin
 from models.case import Case
 from models.otp import OTP
 from core.admin_dependencies import get_current_admin_full_access
+from core.account_notice import notify_account_change
 from core.config import settings
 from core.security import hash_password
 from routers.admin_auth import validate_password_strength
@@ -142,6 +143,15 @@ def get_victim(
 
 
 # ─── PATCH /admin/users/{user_id} — edit victim profile ────────────────────
+# Field names as the person would recognise them. Values are never put in the
+# notice, only which field moved.
+_FIELD_LABELS = {
+    "first_name": "First name", "middle_name": "Middle name", "last_name": "Last name",
+    "email": "Email address", "phone_number": "Phone number", "birthdate": "Birthdate",
+    "sex": "Sex", "address": "Address", "is_minor": "Minor status",
+    "guardian_name": "Guardian name", "guardian_relationship": "Guardian relationship",
+}
+
 @router.patch("/{user_id}")
 def update_victim(
     user_id: int,
@@ -168,10 +178,23 @@ def update_victim(
         data["guardian_name"] = None
         data["guardian_relationship"] = None
 
+    # An email change has to reach the OLD address as well, or the one person
+    # who needs the warning is the one who stops receiving it.
+    old_email = u.email
+    changed = [
+        _FIELD_LABELS.get(k, k.replace("_", " ").capitalize())
+        for k, v in data.items() if v != getattr(u, k, None)
+    ]
+
     for k, v in data.items():
         setattr(u, k, v)
     db.commit()
     db.refresh(u)
+
+    notify_account_change(
+        u, changed, by_officer=True,
+        also_email=old_email if old_email != u.email else None,
+    )
     return _serialize(u)
 
 
@@ -189,6 +212,7 @@ def reset_victim_password(
     validate_password_strength(payload.new_password)
     u.password_hash = hash_password(payload.new_password)
     db.commit()
+    notify_account_change(u, ["Password"], by_officer=True)
     return {"message": f"Password reset for {u.first_name} {u.last_name}. Please share the new password with them securely (in person or by phone)."}
 
 
@@ -205,6 +229,7 @@ def archive_victim(
     u.is_deleted = True
     u.deleted_at = datetime.utcnow()
     db.commit()
+    notify_account_change(u, ["Account archived, recoverable for 30 days"], by_officer=True)
     return {"message": f"{u.first_name} {u.last_name}'s account archived. Recoverable for 30 days."}
 
 
@@ -226,6 +251,7 @@ def recover_victim(
     u.is_deleted = False
     u.deleted_at = None
     db.commit()
+    notify_account_change(u, ["Account restored"], by_officer=True)
     return {"message": f"{u.first_name} {u.last_name}'s account recovered successfully."}
 
 

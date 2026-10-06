@@ -6,6 +6,7 @@ from models.otp import OTP
 from schemas.user import UserResponse, UserUpdate, PasswordChange
 from core.dependencies import get_current_user
 from core.security import verify_password, hash_password
+from core.account_notice import notify_account_change
 from datetime import datetime, timedelta
 from pydantic import BaseModel
 
@@ -28,19 +29,20 @@ def update_my_profile(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if payload.first_name is not None:
-        current_user.first_name = payload.first_name
-    if payload.middle_name is not None:
-        current_user.middle_name = payload.middle_name
-    if payload.last_name is not None:
-        current_user.last_name = payload.last_name
-    if payload.address is not None:
-        current_user.address = payload.address
-    if payload.birthdate is not None:
-        current_user.birthdate = payload.birthdate
-    if payload.sex is not None:
-        current_user.sex = payload.sex
-    if payload.phone_number is not None:
+    # Only fields that genuinely change are collected: saving a form without
+    # touching anything should not send her a warning about nothing.
+    changed = []
+    for field, label in (
+        ("first_name", "First name"), ("middle_name", "Middle name"),
+        ("last_name", "Last name"), ("address", "Address"),
+        ("birthdate", "Birthdate"), ("sex", "Sex"),
+    ):
+        value = getattr(payload, field, None)
+        if value is not None and value != getattr(current_user, field):
+            setattr(current_user, field, value)
+            changed.append(label)
+
+    if payload.phone_number is not None and payload.phone_number != current_user.phone_number:
         existing = db.query(User).filter(
             User.phone_number == payload.phone_number,
             User.id != current_user.id
@@ -48,9 +50,11 @@ def update_my_profile(
         if existing:
             raise HTTPException(status_code=400, detail="Phone number already in use.")
         current_user.phone_number = payload.phone_number
+        changed.append("Phone number")
 
     db.commit()
     db.refresh(current_user)
+    notify_account_change(current_user, changed)
     return current_user
 
 
@@ -66,6 +70,7 @@ def change_password(
         raise HTTPException(status_code=400, detail="New password must be at least 6 characters.")
     current_user.password_hash = hash_password(payload.new_password)
     db.commit()
+    notify_account_change(current_user, ["Password"])
     return {"message": "Password updated successfully."}
 
 
@@ -82,6 +87,9 @@ def delete_my_account(
     current_user.deleted_at = datetime.utcnow()
     db.commit()
 
+    # Worth a notice even though she asked for it: if somebody else deleted her
+    # account, this is the only thing that tells her before the 30 days run out.
+    notify_account_change(current_user, ["Account deleted, recoverable for 30 days"])
     return {"message": "Account deleted. You can recover it within 30 days by signing in."}
 
 

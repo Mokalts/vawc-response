@@ -181,3 +181,35 @@ def case_message_email(victim_name: str, case_number: str, message: str):
         f"New message on case {case_number}",
         _shell(f"The barangay VAWC desk sent you a message about case {case_number}.", inner),
     )
+
+
+def account_changed_email(name: str, changes, when: str, by_officer: bool = False):
+    """Sent whenever something on an account changes.
+
+    Deliberately says WHAT changed and never the new value. An email that
+    quotes a new phone number or address hands that detail to anyone who can
+    read her inbox, and for this app that may be the person she is reporting.
+    "Your phone number was changed" is enough for her to know something is
+    wrong; the value itself is in the app behind her password.
+
+    The point of the notice is the last line: if it was not her, say so now.
+    A silent change is how an account gets taken over without anyone noticing.
+    """
+    rows = [("What changed", ", ".join(changes)), ("When", when)]
+    rows.append(("Changed by", "A barangay VAWC officer" if by_officer else "You, from your own account"))
+
+    inner = (
+        _heading(
+            f"Hello, {name}",
+            "Something on your VAWC-Response account was just changed.",
+        )
+        + _panel(rows)
+        + _note(
+            "If this was not you, contact the Barangay VAWC Desk straight away "
+            "and change your password. Do not reply to this email."
+        )
+    )
+    return (
+        "Your VAWC-Response account was changed",
+        _shell("Something on your VAWC-Response account was just changed.", inner),
+    )
