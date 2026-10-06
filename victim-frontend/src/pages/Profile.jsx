@@ -65,13 +65,18 @@ function Profile() {
     const [profile, setProfile]   = useState(null);
     const [form,    setForm]      = useState({});
 
+    // Named, because the ID card re-reads the profile after an upload so the
+    // status banner reflects what the server now holds rather than what the
+    // page assumed.
+    const load = () => api.get("/users/me")
+        .then(res => { setProfile(res.data); resetForm(res.data); })
+        .catch(err => {
+            if (err.response?.status === 401) { localStorage.removeItem("token"); navigate('/'); }
+        })
+        .finally(() => setLoading(false));
+
     useEffect(() => {
-        api.get("/users/me")
-            .then(res => { setProfile(res.data); resetForm(res.data); })
-            .catch(err => {
-                if (err.response?.status === 401) { localStorage.removeItem("token"); navigate('/'); }
-            })
-            .finally(() => setLoading(false));
+        load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -170,6 +175,8 @@ function Profile() {
                         </div>
                     )}
                 </div>
+
+                <IdVerification profile={profile} onUpdated={load} />
 
                 {/* Personal Info card */}
                 <div style={S.card}>
@@ -279,6 +286,93 @@ function Profile() {
         </div>
     );
 }
+
+// Sending an ID so the desk can confirm the account belongs to a real person.
+//
+// Optional, and said so plainly on the card. Reporting never waits on this: a
+// woman deciding whether to report is often doing it on a borrowed phone with
+// her documents in a house she has left, and a system that asked for ID first
+// would lose the reports it exists to receive. This is here so the desk can
+// tell real accounts from dummies, not so she has to prove herself first.
+//
+// The card also says the photograph is deleted once an officer has looked at
+// it, because that is the part someone hesitating would want to know.
+const IdVerification = ({ profile, onUpdated }) => {
+    const [file, setFile] = useState(null);
+    const [idType, setIdType] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [err, setErr] = useState('');
+    const status = profile.id_status || 'none';
+
+    const submit = async () => {
+        if (!file || !idType.trim()) { setErr('Pick an ID and say what it is.'); return; }
+        setBusy(true); setErr('');
+        try {
+            const body = new FormData();
+            body.append('id_type', idType.trim());
+            body.append('file', file);
+            await api.post('/users/me/id-document', body);
+            setFile(null); setIdType('');
+            onUpdated();
+        } catch (e) {
+            setErr(e.response?.data?.detail || 'Could not send that. Please try again.');
+        } finally { setBusy(false); }
+    };
+
+    const banner = {
+        approved: { bg:'#ECFDF5', bd:'#6EE7B7', fg:'#065F46', text:'Verified by the barangay VAWC desk.' },
+        pending:  { bg:'#EFF6FF', bd:'#93C5FD', fg:'#1E40AF', text:'Sent. The desk will check it.' },
+        rejected: { bg:'#FEF2F2', bd:'#FECACA', fg:'#991B1B', text: profile.id_reject_reason || 'Not accepted. You can send another.' },
+    }[status];
+
+    return (
+        <div style={S.card}>
+            <div style={S.section}>
+                <p style={S.sectionTitle}>Identity verification</p>
+                <p style={{ margin:0, fontSize:13, lineHeight:1.6, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
+                    Optional. You can report without this. Sending an ID lets the barangay confirm your account
+                    is yours. The photo is deleted as soon as an officer has checked it.
+                </p>
+
+                {banner && (
+                    <div style={{ backgroundColor:banner.bg, border:`1px solid ${banner.bd}`, borderRadius:8, padding:'10px 12px' }}>
+                        <p style={{ margin:0, fontSize:13, fontWeight:600, color:banner.fg, lineHeight:1.5, fontFamily:"'Lexend', sans-serif" }}>
+                            {banner.text}
+                        </p>
+                        {status === 'approved' && profile.id_type && (
+                            <p style={{ margin:'3px 0 0', fontSize:12, color:banner.fg, opacity:0.85, fontFamily:"'Lexend', sans-serif" }}>{profile.id_type}</p>
+                        )}
+                    </div>
+                )}
+
+                {(status === 'none' || status === 'rejected') && (
+                    <>
+                        <input
+                            type="text"
+                            value={idType}
+                            onChange={e => { setIdType(e.target.value); setErr(''); }}
+                            placeholder="Anong ID ito? e.g. Barangay ID, PhilSys, Driver's License"
+                            style={{ width:'100%', boxSizing:'border-box', border:'1px solid var(--border)', borderRadius:8, padding:'11px 12px', fontSize:14, fontFamily:"'Lexend', sans-serif", color:'var(--text)', background:'var(--surface-alt)', outline:'none' }}
+                        />
+                        <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/heic"
+                            onChange={e => { setFile(e.target.files?.[0] || null); setErr(''); }}
+                            style={{ fontSize:13, fontFamily:"'Lexend', sans-serif", color:'var(--text-body)' }}
+                        />
+                        {err && <p style={{ margin:0, fontSize:12.5, color:'#B91C1C', fontFamily:"'Lexend', sans-serif" }}>{err}</p>}
+                        <button
+                            onClick={submit}
+                            disabled={busy || !file || !idType.trim()}
+                            style={{ padding:'11px 0', borderRadius:8, border:'none', background:(busy || !file || !idType.trim()) ? 'var(--border)' : '#C45E10', color:(busy || !file || !idType.trim()) ? 'var(--text-muted)' : '#fff', fontSize:14, fontWeight:700, cursor:(busy || !file || !idType.trim()) ? 'not-allowed' : 'pointer', fontFamily:"'Lexend', sans-serif" }}>
+                            {busy ? 'Sending…' : 'Send ID for checking'}
+                        </button>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+};
 
 const S = {
     page:          { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', paddingBottom:92, fontFamily:"'Lexend', sans-serif" },

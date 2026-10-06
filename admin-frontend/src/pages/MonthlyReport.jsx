@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminLayout } from "../components/Sidebar";
 import api from "../api/api";
+import { toDate } from '../utils/datetime';
 
 // ─── Barangay constants ──────────────────────────────────────────────────────
 const BARANGAY = {
@@ -11,7 +12,7 @@ const MONTHS = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"];
 
 const blankRow = () => ({ case_number: "", date: "", complainant: "", respondent: "", title: "", remark: "Pending" });
-const fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric" }) : "";
+const fmtDate = (iso) => iso ? toDate(iso).toLocaleDateString("en-PH", { month: "long", day: "numeric", year: "numeric" }) : "";
 
 // ─── CSS - print-aware. On screen the paper is a real A4-landscape sheet, so
 // what you see is what prints. ──────────────────────────────────────────────

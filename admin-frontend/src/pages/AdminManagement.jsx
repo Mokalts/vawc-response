@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { AdminLayout } from "../components/Sidebar";
 import { confirmDialog } from "../components/ConfirmDialog";
 import api from "../api/api";
-import { toDate } from '../utils/datetime';
+import { toDate, mediaUrl } from '../utils/datetime';
 
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
@@ -23,7 +23,7 @@ const IconWarning = ({ size = 16, color = "currentColor" }) => (
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const initials  = (a) => [a.first_name, a.last_name].filter(Boolean).map(n => n[0]).join("").toUpperCase() || "?";
 const daysLeft  = (d)  => { if (!d) return 0; return Math.max(0, 30 - Math.floor((Date.now() - toDate(d).getTime()) / 86400000)); };
-const fmtDate   = (iso) => { if (!iso) return "-"; return new Date(iso).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }); };
+const fmtDate   = (iso) => { if (!iso) return "-"; return toDate(iso).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }); };
 
 // ─── Password helpers ─────────────────────────────────────────────────────────
 const validatePassword = (pw) => {
@@ -305,16 +305,20 @@ export default function AdminManagement() {
   const [resettingAdminPw, setResettingAdminPw] = useState(null); // admin whose password is being reset
   const [editingAdmin,     setEditingAdmin]     = useState(null); // admin whose name is being edited
   const [currentAdmin,     setCurrentAdmin]     = useState(null); // logged-in admin (for the super admin's own row)
+  const [idPending,        setIdPending]        = useState([]);   // accounts waiting on an ID decision
+  const [idBusy,           setIdBusy]           = useState(null); // id of the account being decided
 
   const fetchVictimData = useCallback(async () => {
     setVictimsLoading(true);
     try {
-      const [vRes, uRes, dRes] = await Promise.all([
+      const [vRes, uRes, dRes, idRes] = await Promise.all([
         api.get("/admin/users"),
         api.get("/admin/users/unverified"),
         api.get("/admin/users/deleted"),
+        api.get("/admin/users/id-pending"),
       ]);
       setVictims(vRes.data); setUnverifiedUsers(uRes.data); setDeletedVictims(dRes.data);
+      setIdPending(idRes.data?.users || []);
     } catch (err) {
       // Silent fail - non-super-admins get 403, just hide the tabs
     } finally {
@@ -323,6 +327,26 @@ export default function AdminManagement() {
   }, []);
 
   useEffect(() => { fetchVictimData(); }, [fetchVictimData]);
+
+  const decideId = async (u, approve) => {
+    let reason = null;
+    if (!approve) {
+      // A rejection she cannot act on is worse than no answer: the server
+      // refuses one without a reason, and this is where she gets told what to
+      // send instead.
+      reason = window.prompt(`Why is ${u.full_name}'s ID not accepted?
+
+She will be told this, so say what she should send instead.`);
+      if (!reason || !reason.trim()) return;
+    }
+    setIdBusy(u.id);
+    try {
+      await api.patch(`/admin/users/${u.id}/id-review`, { approve, reason });
+      await fetchVictimData();
+    } catch (err) {
+      alert(err.response?.data?.detail || "Could not record that decision.");
+    } finally { setIdBusy(null); }
+  };
 
   // Helper: filter by current search across name/email/phone
   const filterByVictimSearch = (list) => {
@@ -523,6 +547,7 @@ export default function AdminManagement() {
               {tab === "victims" && (victimsLoading ? "Loading…" : `${visibleVictims.length} verified victim${visibleVictims.length !== 1 ? "s" : ""}`)}
               {tab === "unverified" && (victimsLoading ? "Loading…" : `${visibleUnverified.length} unverified account${visibleUnverified.length !== 1 ? "s" : ""}`)}
               {tab === "deleted-victims" && (victimsLoading ? "Loading…" : `${visibleDeletedVictims.length} deleted victim${visibleDeletedVictims.length !== 1 ? "s" : ""}`)}
+              {tab === "id-review" && (victimsLoading ? "Loading…" : `${idPending.length} ID${idPending.length !== 1 ? "s" : ""} waiting`)}
             </p>
           </div>
           {tab === "admins" && (
@@ -548,6 +573,7 @@ export default function AdminManagement() {
             { key: "victims",         label: "Victims",            count: victims.length },
             { key: "unverified",      label: "Unverified",         count: unverifiedUsers.length },
             { key: "deleted-victims", label: "Deleted Victims",    count: deletedVictims.length },
+            { key: "id-review",       label: "ID Review",          count: idPending.length },
           ].map(t => {
             const active = tab === t.key;
             return (
@@ -891,6 +917,60 @@ export default function AdminManagement() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* ─── ID REVIEW tab ──────────────────────────────────────────── */}
+        {tab === "id-review" && (
+          <div className="tab-fade" style={S.tableCard}>
+            <div style={{ padding: "12px 16px", background: "#EFF6FF", borderBottom: "1px solid #BFDBFE", display: "flex", alignItems: "center", gap: 10 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#1D4ED8" strokeWidth="1.8" /><circle cx="9" cy="11" r="2" stroke="#1D4ED8" strokeWidth="1.8" /><path d="M14 10h4M14 14h4" stroke="#1D4ED8" strokeWidth="1.8" strokeLinecap="round" /></svg>
+              <p style={{ margin: 0, fontSize: 12.5, color: "#1E3A8A", fontFamily: "'Lexend',sans-serif", lineHeight: 1.5 }}>
+                Check the ID against the name and birthdate on the account. The photo is deleted the moment you decide, either way.
+              </p>
+            </div>
+
+            {idPending.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "44px 20px" }}>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>Nothing waiting</p>
+                <p style={{ margin: "5px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                  No account has sent an ID for checking.
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {idPending.map(u => (
+                  <div key={u.id} style={{ display: "flex", gap: 16, padding: "16px", borderBottom: "1px solid var(--adm-border)", flexWrap: "wrap" }}>
+                    {/* The photograph, beside what she registered with, because
+                        checking one against the other is the whole task. */}
+                    <a href={mediaUrl(u.id_document_url)} target="_blank" rel="noreferrer"
+                       style={{ flexShrink: 0, width: 150, height: 110, borderRadius: 6, overflow: "hidden", border: "1px solid var(--adm-border)", background: "var(--adm-muted)", display: "block" }}>
+                      <img src={mediaUrl(u.id_document_url)} alt={`ID submitted by ${u.full_name}`}
+                           style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    </a>
+
+                    <div style={{ flex: 1, minWidth: 220 }}>
+                      <p style={{ margin: 0, fontSize: 14.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>{u.full_name}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                        {u.id_type} · born {u.birthdate || "not given"} · sent {fmtDate(u.id_submitted_at)}
+                      </p>
+                      <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>{u.email} · {u.phone_number}</p>
+
+                      <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+                        <button className="rd-btn" disabled={idBusy === u.id} onClick={() => decideId(u, true)}
+                          style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#059669", color: "#fff", fontSize: 13, fontWeight: 700, cursor: idBusy === u.id ? "not-allowed" : "pointer", opacity: idBusy === u.id ? 0.6 : 1, fontFamily: "'Lexend',sans-serif" }}>
+                          {idBusy === u.id ? "Saving…" : "Approve"}
+                        </button>
+                        <button className="rd-btn" disabled={idBusy === u.id} onClick={() => decideId(u, false)}
+                          style={{ padding: "8px 16px", borderRadius: 8, border: "1.5px solid #FECACA", background: "transparent", color: "#B91C1C", fontSize: 13, fontWeight: 700, cursor: idBusy === u.id ? "not-allowed" : "pointer", opacity: idBusy === u.id ? 0.6 : 1, fontFamily: "'Lexend',sans-serif" }}>
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
