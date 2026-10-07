@@ -50,30 +50,11 @@ def upload_image(file_bytes: bytes, filename: str, folder: str = "vawc-response/
     return result["public_id"]
 
 
-def _delivery_url(public_id_or_url: str):
-    """The URL this server uses to fetch an asset. Never given to a browser.
-
-    Cloudinary's signed URLs do not expire on this account: expiry needs
-    token-based authentication, which is a paid feature and has no key
-    configured here. A signed link would therefore work forever for anyone who
-    came across it, which is the problem we are fixing, so signed links are used
-    only between this server and Cloudinary. Browsers get a short-lived link to
-    THIS api instead (see routers/media.py).
-
-    Tolerates a full URL as well as a public id, because reports filed before
-    authenticated delivery stored the URL itself.
-    """
-    if not public_id_or_url:
-        return None
-
-    value = str(public_id_or_url)
-    if value.startswith("http://") or value.startswith("https://"):
-        return value
-
+def _signed_url(public_id: str, delivery: str) -> str:
     url, _ = cloudinary.utils.cloudinary_url(
-        value,
+        public_id,
         resource_type="image",
-        type="authenticated",
+        type=delivery,
         sign_url=True,
         secure=True,
     )
@@ -81,20 +62,53 @@ def _delivery_url(public_id_or_url: str):
 
 
 def fetch_bytes(public_id_or_url: str):
-    """Download an asset server-side. Returns (bytes, content_type) or (None, None)."""
-    url = _delivery_url(public_id_or_url)
-    if not url:
+    """Download an asset server-side. Returns (bytes, content_type) or (None, None).
+
+    Two delivery types have to be tried, because the store holds both.
+
+    Anything uploaded since this app started asking for private assets is
+    `authenticated`, and signing is the only way to read it. Anything older is
+    an ordinary `upload`, which a signature for `authenticated` does not match:
+    Cloudinary answers 404 for an asset that exists, and the page shows a broken
+    image. That is what happened to every evidence photograph filed before the
+    change, which is most of them.
+
+    So: try authenticated, fall back to upload. Nothing is weakened by the
+    fallback. An old asset was already public and this does not make it more so,
+    since the Cloudinary link never leaves this server either way; the browser
+    only ever gets an expiring link to /media/photo. Running the migration that
+    flips the old assets to authenticated retires the fallback for good.
+
+    A stored value that is already a full URL is fetched as-is, which is how
+    reports filed before public ids were stored still work.
+    """
+    if not public_id_or_url:
         return None, None
-    try:
-        import requests
-        r = requests.get(url, timeout=20)
-        if r.status_code != 200:
-            print(f"[CLOUDINARY] fetch {public_id_or_url} -> {r.status_code}")
-            return None, None
-        return r.content, r.headers.get("Content-Type", "image/jpeg")
-    except Exception as e:  # noqa: BLE001
-        print(f"[CLOUDINARY] fetch failed for {public_id_or_url}: {e}")
-        return None, None
+
+    value = str(public_id_or_url)
+    import requests
+
+    if value.startswith("http://") or value.startswith("https://"):
+        candidates = [("stored url", value)]
+    else:
+        candidates = [
+            ("authenticated", _signed_url(value, "authenticated")),
+            ("upload", _signed_url(value, "upload")),
+        ]
+
+    last = None
+    for label, url in candidates:
+        try:
+            r = requests.get(url, timeout=20)
+        except Exception as e:  # noqa: BLE001
+            last = f"{label}: {e}"
+            continue
+        if r.status_code == 200:
+            return r.content, r.headers.get("Content-Type", "image/jpeg")
+        last = f"{label}: HTTP {r.status_code}"
+
+    print(f"[CLOUDINARY] could not fetch {public_id_or_url} ({last})")
+    return None, None
 
 
 def destroy_image(public_id: str) -> bool:
@@ -104,14 +118,22 @@ def destroy_image(public_id: str) -> bool:
     the decision that triggered it."""
     if not public_id:
         return False
-    try:
-        result = cloudinary.uploader.destroy(
-            public_id, resource_type="image", type="authenticated", invalidate=True
-        )
-        ok = result.get("result") == "ok"
-        if not ok:
-            print(f"[CLOUDINARY] could not destroy {public_id}: {result}")
-        return ok
-    except Exception as e:  # noqa: BLE001
-        print(f"[CLOUDINARY] destroy failed for {public_id}: {e}")
-        return False
+
+    # Both delivery types, for the same reason fetch_bytes tries both: an asset
+    # stored as an ordinary upload is not found by a destroy aimed at
+    # authenticated, and a photograph of someone ID that silently fails to
+    # delete is the worst way for this to go wrong.
+    last = None
+    for delivery in ("authenticated", "upload"):
+        try:
+            result = cloudinary.uploader.destroy(
+                public_id, resource_type="image", type=delivery, invalidate=True
+            )
+            if result.get("result") == "ok":
+                return True
+            last = f"{delivery}: {result}"
+        except Exception as e:  # noqa: BLE001
+            last = f"{delivery}: {e}"
+
+    print(f"[CLOUDINARY] could not destroy {public_id} ({last})")
+    return False
