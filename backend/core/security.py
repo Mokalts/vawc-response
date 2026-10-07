@@ -140,3 +140,27 @@ def decode_id_submit_token(token: str):
     if payload.get("type") != "id_submit":
         return None
     return payload.get("sub")
+
+
+# ── ID reference tokens ──────────────────────────────────────────────────────
+# An ID scanned during registration is uploaded before the account exists, so
+# the browser has to carry a reference to it until she submits the form. Signing
+# that reference stops one person's upload being attached to another person's
+# registration by editing the request.
+ID_REF_TOKEN_MINUTES = 60
+
+
+def create_id_ref_token(public_id: str) -> str:
+    expire = datetime.utcnow() + timedelta(minutes=ID_REF_TOKEN_MINUTES)
+    return jwt.encode({"pid": public_id, "type": "id_ref", "exp": expire},
+                      settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def decode_id_ref_token(token: str):
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    except Exception:
+        return None
+    if payload.get("type") != "id_ref":
+        return None
+    return payload.get("pid")

@@ -31,7 +31,10 @@ class Settings(BaseSettings):
 
     ENCRYPTION_KEY: str = ""  # Fernet key for encrypting report data
 
-    ABSTRACT_API_KEY: str = ""  # AbstractAPI email validation key
+    ABSTRACT_API_KEY: str = ""
+    # Free key from ocr.space. Without it an ID still uploads for the
+    # barangay to check; it simply fills nothing in on the form.
+    OCR_API_KEY: str = ""  # AbstractAPI email validation key
 
     # Where the victim app is hosted. Used to build links inside emails, such as
     # the "Verify my account" button. This must be the deployed site: a localhost
