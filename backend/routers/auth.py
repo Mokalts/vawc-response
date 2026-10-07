@@ -226,9 +226,10 @@ def register(request: Request, payload: UserRegister, db: Session = Depends(get_
         db.delete(user)
         db.commit()
         raise
-    # SMS is a secondary channel — run it in the background so a slow SMS
-    # provider never delays the registration response. Skipped entirely when SMS
-    # is off, which it is until a sender name is approved.
+    # SMS is a secondary channel: run it in the background so a slow provider,
+    # or a gateway handset that has to be woken, never delays the registration
+    # response. Skipped entirely while SMS is switched off, and the code has
+    # already gone out by email by this point either way.
     if sms_enabled():
         import threading
         threading.Thread(target=send_otp_sms, args=(user.phone_number, code), daemon=True).start()

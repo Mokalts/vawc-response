@@ -11,12 +11,28 @@ class Settings(BaseSettings):
     CLOUDINARY_API_KEY: str
     CLOUDINARY_API_SECRET: str
 
+    # Text messaging. "textbee" relays through an Android handset the barangay
+    # owns, which is the only route that works here without a carrier-registered
+    # A2P sender ID; "semaphore" is the hosted gateway, kept for the day a
+    # sender name is registered. See utils/otp_helper.py for why.
+    SMS_PROVIDER: str = "textbee"
+
+    # textbee: key from its dashboard after the phone app is paired. The device
+    # id is optional and only matters once more than one handset is enrolled,
+    # since without it the service picks which phone sends.
+    TEXTBEE_API_KEY: str = ""
+    TEXTBEE_DEVICE_ID: str = ""
+
+    # Semaphore, used only when SMS_PROVIDER is "semaphore".
     SMS_API_KEY: str = ""
     SMS_SENDER: str = ""
-    # OFF until a sender name is approved. Semaphore rejects every send without
-    # one, so attempting SMS just delays the caller and drops the message on the
-    # floor; with this off, anything that would have been texted goes by email.
-    # Flip to true once a sender name shows as Active in the Semaphore account.
+
+    # The master switch, deliberately separate from the keys. A key can be valid
+    # while every send still fails for a reason this code cannot detect: an
+    # unregistered sender name, an exhausted free tier, a gateway handset left
+    # switched off. While this is false, anything that would have been texted
+    # goes by email, which is the dependable channel. Turn it on only after a
+    # real test message arrives on a real phone.
     SMS_ENABLED: bool = False
 
     GMAIL_USER: str = ""
