@@ -145,6 +145,35 @@ def _labelled(lines, labels):
     return None
 
 
+def _looks_like_words(value: str) -> bool:
+    """Is this real text, or what OCR produces from a photograph it cannot read?
+
+    A blurred or skewed ID does not fail cleanly; it returns confident-looking
+    rubbish such as "CRR TC TCnI elO aET". Putting that in her address field is
+    worse than filling nothing, because she has to notice it and clear it, and
+    an address she does not notice is one that ends up on a printed form.
+
+    Real text has words with vowels and a few of reasonable length. Rubbish is
+    mostly short fragments with odd capitals in the middle.
+    """
+    words = [w for w in re.split(r"[\s,]+", value or "") if w]
+    if len(words) < 2:
+        return False
+
+    solid = [w for w in words if len(w) >= 3]
+    if len(solid) < 2:
+        return False
+
+    alpha = [w for w in solid if any(c.isalpha() for c in w)]
+    if alpha and not any(any(c in "aeiouAEIOU" for c in w) for w in alpha):
+        return False
+
+    # A capital inside a word, as in "TCnI", is a tell: real printing does not
+    # do it, and OCR does it constantly when it is guessing.
+    odd = sum(1 for w in words if len(w) > 2 and any(c.isupper() for c in w[1:]) and any(c.islower() for c in w))
+    return odd <= len(words) / 3
+
+
 def read_id(file_bytes: bytes, filename: str = "id.jpg"):
     """Return {suggestions, text_found}. Never raises.
 
@@ -188,7 +217,7 @@ def read_id(file_bytes: bytes, filename: str = "id.jpg"):
         suggestions["birthdate"] = birthdate
 
     address = _labelled(lines, ("address", "tirahan", "residence"))
-    if address:
+    if address and _looks_like_words(address):
         suggestions["street"] = address[:120]
 
     names = _name_lines(lines)
