@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import api from "../api";
@@ -114,6 +114,8 @@ function SignUp() {
     // exists, because until it exists there is nothing to attach it to.
     const [idType,       setIdType]       = useState('');
     const [idFile,       setIdFile]       = useState(null);
+    const [scanning,     setScanning]     = useState(false);
+    const [scanNote,     setScanNote]     = useState('');
     const SIGNUP_DRAFT_KEY = 'vawc_signup_draft';
     const blankForm = {
         first_name:'', middle_name:'', last_name:'', birthdate:'', sex:'',
@@ -129,6 +131,12 @@ function SignUp() {
         } catch { return blankForm; }
     });
 
+    // What the form holds right now, for the ID read to merge into when it
+    // comes back. The read takes seconds and she keeps typing through them, so
+    // a value captured when she picked the photo would be stale by then.
+    const formRef = useRef(form);
+    useEffect(() => { formRef.current = form; }, [form]);
+
     // Auto-save registration progress (never the password) so it survives a
     // back/refresh/close. Cleared once the account is submitted for verification.
     useEffect(() => {
@@ -140,6 +148,49 @@ function SignUp() {
         }, 600);
         return () => clearTimeout(t);
     }, [form]);
+
+    // Picking the photo starts the read. There is no second button: she chose
+    // a file, which is the whole instruction, and asking her to then press
+    // something to make it do its job is the step this form just lost.
+    //
+    // Everything that comes back is a SUGGESTION. Only EMPTY fields are filled,
+    // because overwriting something she has already typed because a photograph
+    // read differently is worse than filling nothing: she would have to notice
+    // the change to undo it. Nothing here can stop her registering, so every
+    // failure ends with a note and an untouched form.
+    const readId = async (fileObj) => {
+        if (!fileObj) return;
+        setScanning(true); setScanNote(''); setError('');
+        try {
+            const body = new FormData();
+            body.append('file', fileObj);
+            const res = await api.post('/auth/read-id', body);
+
+            // Worked out here rather than inside the setForm updater. React
+            // runs that updater later, and twice under StrictMode, so a list
+            // built in there is still empty when the note below is written: the
+            // form filled in correctly while the note claimed nothing was read.
+            const sug = res.data?.suggestions || {};
+            const current = formRef.current;
+            const next = { ...current };
+            const filled = [];
+            for (const [key, value] of Object.entries(sug)) {
+                if (value && key in next && !String(next[key] || '').trim()) {
+                    next[key] = value;
+                    filled.push(key.replace(/_/g, ' '));
+                }
+            }
+            if (filled.length) setForm(next);
+
+            setScanNote(
+                filled.length
+                    ? `Filled in ${filled.join(', ')} from your ID. Please check them and correct anything wrong.`
+                    : 'Nothing could be read from that photo, so please fill the form in yourself. The ID will still be sent to the barangay.'
+            );
+        } catch (e) {
+            setScanNote('Could not read that photo, so please fill the form in yourself. The ID will still be sent to the barangay.');
+        } finally { setScanning(false); }
+    };
 
     const handleChange = e => {
         setForm(p => ({ ...p, [e.target.name]: e.target.value }));
@@ -265,8 +316,9 @@ function SignUp() {
                         <path d="M14 10h4M14 14h4" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/>
                     </svg>
                     <p style={{ margin:0, fontSize:12.5, lineHeight:1.6, color:'var(--text-body)', fontFamily:"'Lexend', sans-serif" }}>
-                        You will need a photo of any ID to finish. The barangay checks it so that fake accounts
-                        stay out of their records, and the photo is deleted as soon as an officer has looked at it.
+                        You will need a photo of any ID to finish. We will fill in whatever we can read from it,
+                        for you to check. The barangay looks at the ID afterwards so that fake accounts stay out of
+                        their records, and the photo is deleted once an officer has.
                         <br />
                         <strong style={{ color:'var(--text)' }}>If you are in danger right now, you do not need an account.</strong>{' '}
                         The hotlines on the first screen work without signing in.
@@ -366,12 +418,23 @@ function SignUp() {
                         id="id_file"
                         type="file"
                         accept="image/jpeg,image/png,image/webp,image/heic"
-                        onChange={e => { setIdFile(e.target.files?.[0] || null); setError(''); }}
+                        onChange={e => {
+                            const f = e.target.files?.[0] || null;
+                            setIdFile(f); setError(''); setScanNote('');
+                            readId(f);
+                        }}
                         style={{ fontSize:13, fontFamily:"'Lexend', sans-serif", color:'var(--text-body)', width:'100%' }}
                     />
-                    <p style={{ margin:'6px 0 0', fontSize:12, lineHeight:1.5, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
-                        {idFile ? `Attached: ${idFile.name}` : 'JPEG, PNG, WEBP or HEIC. Up to 10MB.'}
+                    <p aria-live="polite" style={{ margin:'6px 0 0', fontSize:12, lineHeight:1.5, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
+                        {scanning
+                            ? 'Reading your ID\u2026'
+                            : idFile ? `Attached: ${idFile.name}` : 'JPEG, PNG, WEBP or HEIC. Up to 10MB.'}
                     </p>
+                    {!scanning && scanNote && (
+                        <p style={{ margin:'8px 0 0', fontSize:12.5, lineHeight:1.55, color:'#065F46', backgroundColor:'#ECFDF5', border:'1px solid #6EE7B7', borderRadius:8, padding:'9px 11px', fontFamily:"'Lexend', sans-serif" }}>
+                            {scanNote}
+                        </p>
+                    )}
                 </Field>
 
                 {/* Password */}

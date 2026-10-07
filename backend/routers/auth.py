@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status, UploadFile, File
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import get_db
@@ -17,6 +17,7 @@ from core.progressive_limiter import (
     check_rate_limit, record_failure, record_success, login_keys, IP_LOCKOUT_SCHEDULE, client_ip,
 )
 from utils.otp_helper import create_otp, verify_otp, send_otp_sms, send_otp_email, sms_enabled
+from utils.id_ocr import read_id
 from pydantic import BaseModel
 from datetime import datetime, timedelta
 import re
@@ -460,4 +461,49 @@ def refresh_victim_token(current_user: User = Depends(get_current_user)):
     return {
         "access_token": new_token,
         "token_type": "bearer",
+    }
+
+
+# ─── POST /auth/read-id — read a photographed ID to prefill the form ─────────
+
+ID_READ_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic"}
+ID_READ_MAX_MB = 10
+
+
+@router.post("/read-id")
+@limiter.limit("6/minute")
+@limiter.limit("30/hour")
+async def read_id_for_form(request: Request, file: UploadFile = File(...)):
+    """Read a photographed ID and offer back what it says. Stores nothing.
+
+    This exists so she does not have to type what is already printed on the card
+    she just photographed. The bytes are read, passed to the OCR service, and
+    dropped. Nothing is written to Cloudinary, nothing is written to the
+    database, and no account is touched or created.
+
+    That is the difference from the endpoint this replaces, which uploaded the
+    photograph before any account existed and handed back a signed reference to
+    it. An unauthenticated endpoint that stores images is a place to dump
+    images; one that only reads them is not. The rate limits are here because
+    the OCR quota is still spendable, which is the only thing left to abuse.
+
+    Unauthenticated because at this point she has no account, which is also why
+    it can say nothing about any account. It answers identically for everyone.
+
+    Everything it returns is a SUGGESTION, filled only into fields she has left
+    empty and editable afterwards. "Any ID" means no common layout, so partial
+    and wrong results are the normal case, and a misread surname that nobody
+    corrects would end up on a Barangay Protection Order.
+    """
+    if file.content_type not in ID_READ_TYPES:
+        raise HTTPException(status_code=400, detail="Only JPEG, PNG, WEBP or HEIC images are allowed.")
+
+    file_bytes = await file.read()
+    if len(file_bytes) > ID_READ_MAX_MB * 1024 * 1024:
+        raise HTTPException(status_code=400, detail=f"That image is too large. Maximum {ID_READ_MAX_MB}MB.")
+
+    result = read_id(file_bytes, file.filename or "id.jpg")
+    return {
+        "suggestions": result.get("suggestions", {}),
+        "scanned": result.get("text_found", False),
     }

@@ -54,6 +54,11 @@ class Settings(BaseSettings):
 
     ABSTRACT_API_KEY: str = ""   # AbstractAPI email validation key
 
+    # Free key from ocr.space, used to read a photographed ID and offer the
+    # registration form what it can make out. Without one the form simply
+    # suggests nothing and she fills it in herself, so this is never required.
+    OCR_API_KEY: str = ""
+
     # Where the victim app is hosted. Used to build links inside emails, such as
     # the "Verify my account" button. This must be the deployed site: a localhost
     # default ships emails whose buttons only work on the developer's own machine.
