@@ -265,21 +265,21 @@ function SignIn() {
                     </InfoBox>
                 )}
                 {idGate && (
-                    <div style={{ width:'100%', maxWidth:420, marginBottom:14, display:'flex', flexDirection:'column', gap:10 }}>
+                    <div style={{ width:'100%', maxWidth:420, marginTop:18, marginBottom:16, display:'flex', flexDirection:'column', gap:14 }}>
                         {/* Hotlines first. Sign-in now waits on an officer being at
                             the desk, and for someone in danger tonight the answer is
                             a phone number, not this form. */}
-                        <div style={{ backgroundColor:'#FFFBEB', border:'1px solid #FDE68A', borderRadius:12, padding:'13px 15px' }}>
+                        <div style={{ backgroundColor:'#FFFBEB', border:'1px solid #FDE68A', borderRadius:12, padding:'16px 18px' }}>
                             <p style={{ margin:0, fontSize:14, fontWeight:700, color:'#92400E', fontFamily:"'Lexend', sans-serif" }}>
                                 In danger right now?
                             </p>
-                            <p style={{ margin:'4px 0 11px', fontSize:12.5, lineHeight:1.5, color:'#A16207', fontFamily:"'Lexend', sans-serif" }}>
+                            <p style={{ margin:'6px 0 14px', fontSize:13, lineHeight:1.6, color:'#A16207', fontFamily:"'Lexend', sans-serif" }}>
                                 Call 911 or the barangay hotlines. They answer without an account.
                             </p>
                             <SOSButton variant="compact" />
                         </div>
 
-                        <div style={{ backgroundColor:'var(--surface)', border:'1px solid var(--border)', borderRadius:12, padding:'13px 15px' }}>
+                        <div style={{ backgroundColor:'var(--surface)', border:'1px solid var(--border)', borderRadius:12, padding:'16px 18px' }}>
                             <p style={{ margin:0, fontSize:14, fontWeight:700, color:'var(--text)', fontFamily:"'Lexend', sans-serif" }}>
                                 {idGate.status === 'pending'
                                     ? 'Your ID is being checked'
@@ -287,7 +287,7 @@ function SignIn() {
                                         ? 'Your ID was not accepted'
                                         : 'Send an ID to finish setting up'}
                             </p>
-                            <p style={{ margin:'4px 0 0', fontSize:12.5, lineHeight:1.55, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
+                            <p style={{ margin:'6px 0 0', fontSize:13, lineHeight:1.6, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
                                 {idGate.status === 'pending'
                                     ? 'The barangay VAWC desk will review it. You can sign in once it is approved.'
                                     : idGate.status === 'rejected'
