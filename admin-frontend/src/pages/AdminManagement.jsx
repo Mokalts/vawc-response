@@ -398,7 +398,7 @@ She will be told this, so say what she should send instead.`);
     const ok = await confirmDialog({
       title: "Permanently delete this account?",
       message:
-        `${[u.first_name, u.last_name].filter(Boolean).join(" ")}'s account will be erased, along with every case, report, message and BPO belonging to it.\n\n` +
+        `${[u.first_name, u.last_name].filter(Boolean).join(" ")}'s account will be erased, along with every case, report, message and BPO belonging to it. ` +
         `This cannot be undone, and nothing in the system keeps a copy.`,
       requireText: u.email,
       requireLabel: "Type the account's email address to confirm:",
