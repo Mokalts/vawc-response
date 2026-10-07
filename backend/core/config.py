@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     # since without it the service picks which phone sends.
     TEXTBEE_API_KEY: str = ""
     TEXTBEE_DEVICE_ID: str = ""
+    # Which SIM sends, on a handset with two. The subscription id shown on the
+    # textbee app's Dashboard, not the slot number. Needed where Android has no
+    # default SMS SIM to fall back on, which is why a send can fail with
+    # RESULT_NO_DEFAULT_SMS_APP on a phone whose messaging app is set correctly.
+    TEXTBEE_SIM_ID: str = ""
 
     # Semaphore, used only when SMS_PROVIDER is "semaphore".
     SMS_API_KEY: str = ""

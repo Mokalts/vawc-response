@@ -158,10 +158,32 @@ def _send_via_textbee(api_key: str, phone_number: str, message: str) -> bool:
     device = (getattr(settings, "TEXTBEE_DEVICE_ID", "") or "").strip()
     url = f"{TEXTBEE_BASE}/devices/{device}/send-sms" if device else f"{TEXTBEE_BASE}/send-sms"
 
+    body = {"recipients": [_e164_ph(phone_number)], "message": message}
+
+    # Which SIM sends it, on a handset with two.
+    #
+    # Android will not pick for you: with two SIMs and no default SMS
+    # subscription it refuses the send outright, reporting it as
+    # RESULT_NO_DEFAULT_SMS_APP even when a messaging app is set. Worse, some
+    # builds have no setting for a default SMS SIM at all, HyperOS 3 among them,
+    # so there is nowhere on the phone to answer the question.
+    #
+    # Setting this answers it from here instead. It is the SIM's subscription
+    # id, which the textbee app shows on its Dashboard, and NOT the slot number.
+    # Left empty, the phone falls back to the default SIM chosen in the app.
+    sim = str(getattr(settings, "TEXTBEE_SIM_ID", "") or "").strip()
+    if sim:
+        try:
+            body["simSubscriptionId"] = int(sim)
+        except ValueError:
+            # A wrong id is ignored by the phone, which then sends from whichever
+            # SIM it likes. Saying so beats a message leaving on the wrong number.
+            print(f"[SMS] TEXTBEE_SIM_ID {sim!r} is not a number; letting the app default decide.")
+
     resp = requests.post(
         url,
         headers={"x-api-key": api_key, "Content-Type": "application/json"},
-        json={"recipients": [_e164_ph(phone_number)], "message": message},
+        json=body,
         timeout=20,
     )
     if resp.status_code in (200, 201):
