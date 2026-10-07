@@ -115,29 +115,43 @@ def get_user_by_identifier(identifier: str, db: Session) -> User:
 
 
 def _deliver_code(user, code: str, prefer_sms: bool = False) -> None:
-    """Get the code to the person, by whatever channel actually works.
+    """Get the code to the person. Email always goes; SMS goes as well.
 
-    SMS is attempted only when it is switched on, and email takes over whenever
-    it is off or the send fails. Nothing in here may raise: these endpoints
-    answer identically for known and unknown accounts, and an exception escaping
-    would turn a delivery failure into a 500 that reveals the account exists.
+    Email is not a fallback here, it is the channel that is actually known to
+    have worked. The SMS gateway is an Android handset, and all it can report is
+    that the message was ACCEPTED for sending. Everything that happens after
+    that is invisible to this server: the phone can be out of load, out of
+    signal, switched off, or unable to choose between two SIMs. Every one of
+    those fails after the request has already come back as a success.
+
+    This used to send the email only when the SMS call returned false, which
+    made the accepted-but-not-sent case the worst one in the system: the person
+    was told a code had been sent, and no code existed anywhere she could reach.
+    Sending both costs a duplicate email in the normal case and guarantees the
+    code arrives in every case, which is the right way round for a login someone
+    may be attempting while in danger.
+
+    Nothing in here may raise: these endpoints answer identically for known and
+    unknown accounts, and an exception escaping would turn a delivery failure
+    into a 500 that reveals the account exists.
     """
-    delivered = False
+    sms_sent = False
     if prefer_sms and user.phone_number:
         try:
-            delivered = send_otp_sms(user.phone_number, code)
-        except Exception as e:
+            sms_sent = send_otp_sms(user.phone_number, code)
+        except Exception as e:  # noqa: BLE001
             print(f"[OTP] SMS failed for user {user.id}: {e}")
 
-    if not delivered and user.email:
+    emailed = False
+    if user.email:
         try:
             verify_link = f"{FRONTEND_URL}/verify?token={create_verify_token(user.id)}"
             send_otp_email(user.email, code, verify_link=verify_link)
-            delivered = True
-        except Exception as e:
+            emailed = True
+        except Exception as e:  # noqa: BLE001
             print(f"[OTP] email failed for user {user.id}: {e}")
 
-    if not delivered:
+    if not emailed and not sms_sent:
         print(f"[OTP] no channel delivered a code to user {user.id}.")
 
 
