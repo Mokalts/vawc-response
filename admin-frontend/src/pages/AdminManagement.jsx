@@ -307,6 +307,8 @@ export default function AdminManagement() {
   const [currentAdmin,     setCurrentAdmin]     = useState(null); // logged-in admin (for the super admin's own row)
   const [idPending,        setIdPending]        = useState([]);   // accounts waiting on an ID decision
   const [idBusy,           setIdBusy]           = useState(null); // id of the account being decided
+  const [idReview,         setIdReview]         = useState(null); // the account open for review
+  const [idReject,         setIdReject]         = useState('');   // reason being typed into the panel
 
   const fetchVictimData = useCallback(async () => {
     setVictimsLoading(true);
@@ -328,25 +330,31 @@ export default function AdminManagement() {
 
   useEffect(() => { fetchVictimData(); }, [fetchVictimData]);
 
-  const decideId = async (u, approve) => {
-    let reason = null;
-    if (!approve) {
-      // A rejection she cannot act on is worse than no answer: the server
-      // refuses one without a reason, and this is where she gets told what to
-      // send instead.
-      reason = window.prompt(`Why is ${u.full_name}'s ID not accepted?
-
-She will be told this, so say what she should send instead.`);
-      if (!reason || !reason.trim()) return;
-    }
+  // Called from the review panel, where the officer is looking at the ID and at
+  // what she registered with. A rejection carries a reason because she is told
+  // it, and a rejection she cannot act on is worse than no answer; the reason is
+  // typed into the panel rather than a window.prompt, which cannot be styled,
+  // cannot be read back, and is blocked outright in some browsers.
+  const decideId = async (u, approve, reason = null) => {
     setIdBusy(u.id);
     try {
       await api.patch(`/admin/users/${u.id}/id-review`, { approve, reason });
+      setIdReview(null);
+      setIdReject('');
       await fetchVictimData();
+      showToast(approve ? `${u.first_name}'s ID approved.` : `${u.first_name}'s ID was not accepted.`);
     } catch (err) {
-      alert(err.response?.data?.detail || "Could not record that decision.");
+      showToast(err.response?.data?.detail || "Could not record that decision.", false);
     } finally { setIdBusy(null); }
   };
+
+  // Escape closes the review panel, unless a decision is going through.
+  useEffect(() => {
+    if (!idReview) return;
+    const onKey = (e) => { if (e.key === "Escape" && !idBusy) { setIdReview(null); setIdReject(''); } };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [idReview, idBusy]);
 
   // Helper: filter by current search across name/email/phone
   const filterByVictimSearch = (list) => {
@@ -934,12 +942,18 @@ She will be told this, so say what she should send instead.`);
         )}
 
         {/* ─── ID REVIEW tab ──────────────────────────────────────────── */}
+        {/* A queue, not a wall. Each waiting account is one line; the ID and
+            everything she registered with open in a panel over the top, because
+            checking one against the other needs the photograph large and needs
+            the officer's attention on exactly one person. The thumbnails that
+            used to sit in this list also cost a round trip to Cloudinary each,
+            for a picture too small to decide anything from. */}
         {tab === "id-review" && (
           <div className="tab-fade" style={S.tableCard}>
             <div style={{ padding: "12px 16px", background: "#EFF6FF", borderBottom: "1px solid #BFDBFE", display: "flex", alignItems: "center", gap: 10 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#1D4ED8" strokeWidth="1.8" /><circle cx="9" cy="11" r="2" stroke="#1D4ED8" strokeWidth="1.8" /><path d="M14 10h4M14 14h4" stroke="#1D4ED8" strokeWidth="1.8" strokeLinecap="round" /></svg>
               <p style={{ margin: 0, fontSize: 12.5, color: "#1E3A8A", fontFamily: "'Lexend',sans-serif", lineHeight: 1.5 }}>
-                Everything she registered with is listed beside the ID. Check the two against each other. The photo is deleted the moment you decide, either way.
+                Open an account to see the ID beside what she registered with. The photo is deleted the moment you decide, either way.
               </p>
             </div>
 
@@ -953,76 +967,133 @@ She will be told this, so say what she should send instead.`);
             ) : (
               <div style={{ display: "flex", flexDirection: "column" }}>
                 {idPending.map(u => (
-                  <div key={u.id} style={{ display: "flex", gap: 16, padding: "16px", borderBottom: "1px solid var(--adm-border)", flexWrap: "wrap" }}>
-                    {/* The photograph, beside what she registered with, because
-                        checking one against the other is the whole task. */}
-                    <a href={mediaUrl(u.id_document_url)} target="_blank" rel="noreferrer"
-                       style={{ flexShrink: 0, width: 150, height: 110, borderRadius: 6, overflow: "hidden", border: "1px solid var(--adm-border)", background: "var(--adm-muted)", display: "block" }}>
-                      <img src={mediaUrl(u.id_document_url)} alt={`ID submitted by ${u.full_name}`}
-                           style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    </a>
-
-                    <div style={{ flex: 1, minWidth: 220 }}>
-                      <p style={{ margin: 0, fontSize: 14.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>
+                  <div key={u.id} className="adm-row" style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 16px", borderBottom: "1px solid var(--adm-border)" }}>
+                    <div style={{ ...S.avatar, background: "var(--adm-muted)", color: "var(--adm-text-muted)", flexShrink: 0 }}>{initials(u)}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {[u.first_name, u.middle_name, u.last_name].filter(Boolean).join(" ") || u.full_name}
                       </p>
-                      <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                      <p style={{ margin: "2px 0 0", fontSize: 12, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {u.id_type || "ID type not given"} · sent {fmtDate(u.id_submitted_at)}
                       </p>
-
-                      {/* Everything she filled in at registration. The officer
-                          is deciding whether this person is who the account
-                          says she is, and a name and a birthdate are thin
-                          grounds for that when the address printed on the card
-                          is sitting right there unused. A field she left blank
-                          is shown as blank rather than hidden: the gap is part
-                          of what the officer is weighing. */}
-                      <dl style={{ margin: "11px 0 0", display: "grid", gridTemplateColumns: "auto 1fr", gap: "7px 14px", fontSize: 12.5, fontFamily: "'Lexend',sans-serif", alignItems: "baseline" }}>
-                        {[
-                          ["First name",   u.first_name],
-                          ["Middle name",  u.middle_name],
-                          ["Last name",    u.last_name],
-                          ["Birthdate",    u.birthdate],
-                          ["Sex",          u.sex],
-                          ["Address",      u.address],
-                          ["Email",        u.email],
-                          ["Phone",        u.phone_number],
-                          ...(u.is_minor ? [
-                            ["Guardian",     u.guardian_name],
-                            ["Relationship", u.guardian_relationship],
-                          ] : []),
-                          ["Registered",   fmtDate(u.created_at)],
-                        ].map(([label, value]) => (
-                          <React.Fragment key={label}>
-                            <dt style={{ color: "var(--adm-text-muted)", whiteSpace: "nowrap" }}>{label}</dt>
-                            <dd style={{ margin: 0, color: value ? "var(--adm-text)" : "var(--adm-text-muted)", fontWeight: value ? 600 : 400, fontStyle: value ? "normal" : "italic", wordBreak: "break-word" }}>
-                              {value || "not given"}
-                            </dd>
-                          </React.Fragment>
-                        ))}
-                      </dl>
-
-                      {u.is_minor && (
-                        <p style={{ margin: "10px 0 0", display: "inline-flex", padding: "3px 10px", borderRadius: 9999, fontSize: 11.5, fontWeight: 700, color: "#92400E", background: "#FFFBEB", border: "1.5px solid #FDE68A", fontFamily: "'Lexend',sans-serif" }}>
-                          Registered as a minor
-                        </p>
-                      )}
-
-                      <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
-                        <button className="rd-btn" disabled={idBusy === u.id} onClick={() => decideId(u, true)}
-                          style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#059669", color: "#fff", fontSize: 13, fontWeight: 700, cursor: idBusy === u.id ? "not-allowed" : "pointer", opacity: idBusy === u.id ? 0.6 : 1, fontFamily: "'Lexend',sans-serif" }}>
-                          {idBusy === u.id ? "Saving…" : "Approve"}
-                        </button>
-                        <button className="rd-btn" disabled={idBusy === u.id} onClick={() => decideId(u, false)}
-                          style={{ padding: "8px 16px", borderRadius: 8, border: "1.5px solid #FECACA", background: "transparent", color: "#B91C1C", fontSize: 13, fontWeight: 700, cursor: idBusy === u.id ? "not-allowed" : "pointer", opacity: idBusy === u.id ? 0.6 : 1, fontFamily: "'Lexend',sans-serif" }}>
-                          Reject
-                        </button>
-                      </div>
                     </div>
+                    <button className="rd-btn" onClick={() => { setIdReview(u); setIdReject(''); }}
+                      style={{ flexShrink: 0, padding: "9px 16px", borderRadius: 9, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                      Check ID
+                    </button>
                   </div>
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ─── The reviewing window ───────────────────────────────────── */}
+        {idReview && (
+          <div onClick={() => { if (!idBusy) { setIdReview(null); setIdReject(''); } }}
+            style={{ position: "fixed", inset: 0, zIndex: 2800, background: "rgba(15,23,42,0.55)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, fontFamily: "'Lexend',sans-serif" }}
+            role="dialog" aria-modal="true" aria-label={`Checking the ID sent by ${idReview.full_name}`}>
+            <div onClick={e => e.stopPropagation()}
+              style={{ background: "var(--adm-card)", borderRadius: 16, width: "100%", maxWidth: 860, maxHeight: "92vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(15,23,42,0.3)", animation: "adm-popIn 0.2s ease" }}>
+
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 14, padding: "18px 20px 14px", borderBottom: "1px solid var(--adm-border)" }}>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "var(--adm-text)", letterSpacing: "-0.2px" }}>
+                    {[idReview.first_name, idReview.middle_name, idReview.last_name].filter(Boolean).join(" ") || idReview.full_name}
+                  </p>
+                  <p style={{ margin: "3px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)" }}>
+                    {idReview.id_type || "ID type not given"} · sent {fmtDate(idReview.id_submitted_at)}
+                  </p>
+                </div>
+                <button onClick={() => { setIdReview(null); setIdReject(''); }} aria-label="Close"
+                  style={{ flexShrink: 0, width: 32, height: 32, borderRadius: 8, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-muted)", fontSize: 17, lineHeight: 1, cursor: "pointer" }}>×</button>
+              </div>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 20, padding: "18px 20px" }}>
+                {/* The photograph, as large as the panel allows. Opens full size
+                    in its own tab, because a barangay ID photographed at an
+                    angle often needs zooming before a surname is legible. */}
+                <div style={{ flex: "1 1 320px", minWidth: 280 }}>
+                  <a href={mediaUrl(idReview.id_document_url)} target="_blank" rel="noreferrer"
+                    style={{ display: "block", borderRadius: 10, overflow: "hidden", border: "1px solid var(--adm-border)", background: "var(--adm-muted)" }}>
+                    <img src={mediaUrl(idReview.id_document_url)} alt={`ID sent by ${idReview.full_name}`}
+                      style={{ display: "block", width: "100%", maxHeight: 380, objectFit: "contain", background: "var(--adm-muted)" }} />
+                  </a>
+                  <p style={{ margin: "8px 0 0", fontSize: 11.5, color: "var(--adm-text-muted)" }}>
+                    Click the photo to open it full size.
+                  </p>
+                </div>
+
+                {/* What she registered with. A name and a birthdate are thin
+                    grounds for deciding whether someone is who the account says
+                    she is, with the address printed on the card sitting unused.
+                    A field she left blank shows as blank: the gap is part of
+                    what is being weighed. */}
+                <div style={{ flex: "1 1 280px", minWidth: 260 }}>
+                  <p style={{ margin: "0 0 10px", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)" }}>
+                    What she registered with
+                  </p>
+                  <dl style={{ margin: 0, display: "grid", gridTemplateColumns: "auto 1fr", gap: "8px 14px", fontSize: 12.5, alignItems: "baseline" }}>
+                    {[
+                      ["First name",   idReview.first_name],
+                      ["Middle name",  idReview.middle_name],
+                      ["Last name",    idReview.last_name],
+                      ["Birthdate",    idReview.birthdate],
+                      ["Sex",          idReview.sex],
+                      ["Address",      idReview.address],
+                      ["Email",        idReview.email],
+                      ["Phone",        idReview.phone_number],
+                      ...(idReview.is_minor ? [
+                        ["Guardian",     idReview.guardian_name],
+                        ["Relationship", idReview.guardian_relationship],
+                      ] : []),
+                      ["Registered",   fmtDate(idReview.created_at)],
+                    ].map(([label, value]) => (
+                      <React.Fragment key={label}>
+                        <dt style={{ color: "var(--adm-text-muted)", whiteSpace: "nowrap" }}>{label}</dt>
+                        <dd style={{ margin: 0, color: value ? "var(--adm-text)" : "var(--adm-text-muted)", fontWeight: value ? 600 : 400, fontStyle: value ? "normal" : "italic", wordBreak: "break-word" }}>
+                          {value || "not given"}
+                        </dd>
+                      </React.Fragment>
+                    ))}
+                  </dl>
+
+                  {idReview.is_minor && (
+                    <p style={{ margin: "12px 0 0", display: "inline-flex", padding: "3px 10px", borderRadius: 9999, fontSize: 11.5, fontWeight: 700, color: "#92400E", background: "#FFFBEB", border: "1.5px solid #FDE68A" }}>
+                      Registered as a minor
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div style={{ borderTop: "1px solid var(--adm-border)", padding: "16px 20px" }}>
+                <label htmlFor="id-reject-reason" style={{ display: "block", fontSize: 12.5, color: "var(--adm-text-2)", marginBottom: 6 }}>
+                  If you are not accepting it, say why. She is shown this, so write what she should send instead.
+                </label>
+                <input id="id-reject-reason" value={idReject} onChange={e => setIdReject(e.target.value)}
+                  placeholder="e.g. The photo was too blurred to read the name."
+                  style={{ width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 9, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 13, fontFamily: "'Lexend',sans-serif", outline: "none" }} />
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
+                  <button className="rd-btn" disabled={!!idBusy} onClick={() => { setIdReview(null); setIdReject(''); }}
+                    style={{ padding: "10px 18px", borderRadius: 9, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 13.5, fontWeight: 600, cursor: idBusy ? "not-allowed" : "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                    Decide later
+                  </button>
+                  {/* Rejecting without a reason is refused by the server, so the
+                      button says so rather than letting her find out. */}
+                  <button className="rd-btn" disabled={!!idBusy || !idReject.trim()}
+                    onClick={() => decideId(idReview, false, idReject.trim())}
+                    title={idReject.trim() ? "" : "Give a reason first"}
+                    style={{ padding: "10px 18px", borderRadius: 9, border: "1.5px solid #FECACA", background: "transparent", color: "#B91C1C", fontSize: 13.5, fontWeight: 700, cursor: (idBusy || !idReject.trim()) ? "not-allowed" : "pointer", opacity: (idBusy || !idReject.trim()) ? 0.5 : 1, fontFamily: "'Lexend',sans-serif" }}>
+                    Not accepted
+                  </button>
+                  <button className="rd-btn" disabled={!!idBusy} onClick={() => decideId(idReview, true)}
+                    style={{ padding: "10px 20px", borderRadius: 9, border: "none", background: "#059669", color: "#fff", fontSize: 13.5, fontWeight: 700, cursor: idBusy ? "not-allowed" : "pointer", opacity: idBusy ? 0.6 : 1, fontFamily: "'Lexend',sans-serif" }}>
+                    {idBusy ? "Saving…" : "Approve"}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
