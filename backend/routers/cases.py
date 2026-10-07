@@ -14,6 +14,7 @@ from models.user import User
 from core.dependencies import get_current_user
 from core.encryption import encrypt, encrypt_float, decrypt, decrypt_float
 from core.timeutil import ph_local_to_utc
+from core.id_gate import require_verified_id
 
 from core.status_labels import STATUS_DISPLAY
 
@@ -211,6 +212,8 @@ def submit_report(
     - Otherwise → creates a new case
     Returns: { merged, case_number, case_id, report_id }
     """
+    require_verified_id(current_user)
+
     if not payload.statement.strip():
         raise HTTPException(status_code=400, detail="Statement is required.")
     if not payload.offender_name.strip():

@@ -109,6 +109,13 @@ for i, (first, last, relation, itypes, statement, address, status) in enumerate(
         address="Barangay Palanginan, Iba, Zambales",
         password_hash=hash_password(DEMO_PASSWORD),
         is_verified=True,
+        # Reporting is gated on an approved ID, so demo accounts arrive already
+        # approved. Without this every demo account could sign in and then be
+        # refused at the one screen a walkthrough needs to show.
+        id_status="approved",
+        id_type="Barangay ID",
+        id_reviewed_at=now,
+        id_reviewed_by="Seed data",
     )
     db.add(user)
     db.flush()

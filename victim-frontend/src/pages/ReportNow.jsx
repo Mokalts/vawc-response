@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import BottomNavbar from '../components/BottomNavbar';
+import IdVerification from '../components/IdVerification';
 import LocationPicker from '../components/LocationPicker';
 import api from '../api';
 
@@ -105,6 +106,11 @@ function ReportNow() {
     const navigate = useNavigate();
     const draft0 = loadDraft();
     const [step,          setStep]          = useState(1);
+    // Reporting is gated on an approved ID, so this page has to know before
+    // she writes anything. Finding out after typing out the worst night of her
+    // life that the system will not take it is the one outcome worth coding
+    // around. null = still loading, so nothing flashes.
+    const [idStatus,      setIdStatus]      = useState(null);
     const [statement,     setStatement]     = useState(draft0.statement || '');
     const [imageFiles,    setImageFiles]    = useState([]);
     const [imagePreviews, setImagePreviews] = useState([]);
@@ -132,6 +138,12 @@ function ReportNow() {
     const addChild = () => setChildren(c => [...c, { name: '', date_of_birth: '', sex: '', under_her_care: false }]);
     const setChild = (i, k, v) => setChildren(c => c.map((x, idx) => idx === i ? { ...x, [k]: v } : x));
     const removeChild = (i) => setChildren(c => c.filter((_, idx) => idx !== i));
+
+    useEffect(() => {
+        api.get('/users/me')
+            .then(r => setIdStatus(r.data?.id_status || 'none'))
+            .catch(() => setIdStatus('none'));
+    }, []);
 
     // Auto-save the text draft (debounced) so a back/refresh/close does not lose it.
     // Photos are intentionally NOT persisted. Cleared on successful submit or discard.
@@ -412,6 +424,43 @@ function ReportNow() {
             </div>
         );
     }
+
+    // ── Not verified yet ──────────────────────────────────────────────────────
+    // Shown INSTEAD of the form, not after it. The hotlines come first on this
+    // screen because for a woman in danger tonight they are the answer and this
+    // form is not: an officer has to be at the desk to approve an ID.
+    if (idStatus && idStatus !== 'approved') return (
+        <div style={S.page}>
+            <main style={{ padding:'24px 18px', display:'flex', flexDirection:'column', gap:16, width:'100%', maxWidth:560, marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' }}>
+                <div style={{ backgroundColor:'#FFFBEB', border:'1px solid #FDE68A', borderRadius:12, padding:'16px 18px' }}>
+                    <p style={{ margin:0, fontSize:15, fontWeight:700, color:'#92400E', fontFamily:"'Lexend', sans-serif" }}>
+                        In danger right now?
+                    </p>
+                    <p style={{ margin:'6px 0 0', fontSize:13.5, lineHeight:1.6, color:'#92400E', fontFamily:"'Lexend', sans-serif" }}>
+                        Call 911 or the hotlines on the home screen. They answer without an account and without
+                        waiting for anyone to check your ID.
+                    </p>
+                    <button onClick={() => navigate('/home')}
+                        style={{ marginTop:12, padding:'11px 18px', borderRadius:8, border:'none', background:'#B91C1C', color:'#fff', fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:"'Lexend', sans-serif" }}>
+                        Go to the hotlines
+                    </button>
+                </div>
+
+                <div>
+                    <h1 style={{ margin:0, fontSize:18, fontWeight:800, color:'var(--text)', fontFamily:"'Lexend', sans-serif" }}>
+                        Your ID has to be checked first
+                    </h1>
+                    <p style={{ margin:'6px 0 0', fontSize:13.5, lineHeight:1.6, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
+                        The barangay VAWC desk checks every account before it accepts a report, so that fake
+                        reports stay out of their records. Send an ID below and they will review it.
+                    </p>
+                </div>
+
+                <IdVerification profile={{ id_status: idStatus }} onUpdated={() => setIdStatus('pending')} />
+            </main>
+            <BottomNavbar active="report" />
+        </div>
+    );
 
     // ── Merge Modal ───────────────────────────────────────────────────────────
     if (showMerge && mergeInfo) return (

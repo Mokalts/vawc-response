@@ -10,6 +10,7 @@ from schemas.report import ReportCreate, ReportResponse, ReportListItem
 from core.dependencies import get_current_user
 from core.encryption import encrypt, encrypt_float, decrypt, decrypt_float
 from core.timeutil import ph_local_to_utc
+from core.id_gate import require_verified_id
 
 from core.status_labels import STATUS_DISPLAY
 
@@ -28,6 +29,8 @@ def submit_report(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    require_verified_id(current_user)
+
     report = Report(
         user_id       = current_user.id,
         statement     = encrypt(payload.statement),
