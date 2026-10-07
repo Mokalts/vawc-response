@@ -24,10 +24,10 @@ from models.user import User
 from models.admin import Admin
 from models.case import Case
 from models.otp import OTP
+from models.case_activity import CaseActivity
 from core.admin_dependencies import get_current_admin_full_access
 from utils.cloudinary_helper import destroy_image
 from core.account_notice import notify_account_change
-from core.config import settings
 from core.security import hash_password, create_media_token
 from routers.admin_auth import validate_password_strength
 
@@ -132,14 +132,33 @@ def list_deleted_victims(
     db: Session = Depends(get_db),
     _: Admin = Depends(get_current_admin_full_access),
 ):
+    """Every archived account, not only the ones still inside the 30 days.
+
+    It used to filter on deleted_at >= cutoff, which quietly created accounts
+    nobody could reach. Past day 30 the row vanished from this list while still
+    sitting in the database, and sign-in told her the account was "permanently
+    deleted" when nothing had deleted it. The data was kept for ever and the one
+    person who could remove it could no longer see it.
+
+    So everything archived is listed, with recovery_expired saying which side of
+    the 30 days it falls on. A row with no deleted_at timestamp is listed too
+    and counted as still recoverable: an unknown date is not evidence that the
+    window has closed, and leaving it out is what made it unreachable before.
+    """
     cutoff = datetime.utcnow() - timedelta(days=30)
     users = (
         db.query(User)
-        .filter(User.is_deleted == True, User.deleted_at >= cutoff)
+        .filter(User.is_deleted == True)
         .order_by(desc(User.deleted_at))
         .all()
     )
-    return [_serialize(u) for u in users]
+
+    out = []
+    for u in users:
+        row = _serialize(u)
+        row["recovery_expired"] = bool(u.deleted_at and u.deleted_at < cutoff)
+        out.append(row)
+    return out
 
 
 # ─── GET /admin/users/{user_id} — single victim full profile ───────────────
@@ -273,13 +292,17 @@ def recover_victim(
     _: Admin = Depends(get_current_admin_full_access),
 ):
     cutoff = datetime.utcnow() - timedelta(days=30)
-    u = db.query(User).filter(
-        User.id == user_id,
-        User.is_deleted == True,
-        User.deleted_at >= cutoff,
-    ).first()
+    u = db.query(User).filter(User.id == user_id, User.is_deleted == True).first()
     if not u:
-        raise HTTPException(status_code=404, detail="User not found or recovery window expired (30 days).")
+        raise HTTPException(status_code=404, detail="Archived account not found.")
+    # A row with no deleted_at is treated as recoverable. The window exists to
+    # stop a stale account being revived years later, not to trap one whose
+    # timestamp went missing.
+    if u.deleted_at and u.deleted_at < cutoff:
+        raise HTTPException(
+            status_code=410,
+            detail="The 30-day recovery window for this account has passed. It can only be permanently deleted now.",
+        )
     u.is_deleted = False
     u.deleted_at = None
     db.commit()
@@ -288,40 +311,74 @@ def recover_victim(
 
 
 # ─── DELETE /admin/users/{user_id}/force — permanent delete (Super Admin) ──
+class ForceDeletePayload(BaseModel):
+    # The account's own email address, typed out by the officer. See below.
+    confirm_email: str
+
+
 @router.delete("/{user_id}/force")
 def force_delete_victim(
     user_id: int,
+    payload: ForceDeletePayload,
     db: Session = Depends(get_db),
-    _: Admin = Depends(get_current_admin_full_access),
+    admin: Admin = Depends(get_current_admin_full_access),
 ):
-    """
-    Permanently remove an archived (soft-deleted) victim account and ALL related
-    data (cases -> reports, and OTPs). Guarded so only accounts already in the
-    Deleted Victims list can be purged. This is irreversible.
+    """Permanently remove an archived victim account and everything attached to
+    it: cases, the reports under them, their messages, BPOs, endorsements,
+    children, the activity trail, and any outstanding OTPs. There is no undo and
+    no backup inside the app.
 
-    Off unless ALLOW_HARD_DELETE is set: during the pilot a mis-click here wipes
-    a woman's account and every report she ever filed, with no recovery.
-    """
-    if not settings.ALLOW_HARD_DELETE:
-        raise HTTPException(
-            status_code=403,
-            detail="Permanent deletion is disabled. Accounts stay in Deleted Victims.",
-        )
+    This was switched off behind ALLOW_HARD_DELETE because one mis-click here
+    erases every report a woman ever filed. The flag is a poor guard, though: it
+    is either on, in which case the mis-click is live again, or off, in which
+    case archived accounts pile up for ever with no way to clear them. Neither
+    is what a data-protection officer would ask for.
 
+    So the guard moved from configuration to the moment of the act. The officer
+    has to type the account's own email address, which cannot be done by
+    mis-clicking and cannot be done without looking at which account is about to
+    go. Only archived accounts qualify, so a live account is always two
+    deliberate steps away from deletion.
+    """
     u = db.query(User).filter(User.id == user_id, User.is_deleted == True).first()
     if not u:
         raise HTTPException(
             status_code=404,
-            detail="Deleted account not found. Only archived accounts (Deleted Victims) can be permanently removed.",
+            detail="Archived account not found. Only accounts in Deleted Victims can be permanently removed.",
         )
+
+    typed = (payload.confirm_email or "").strip().lower()
+    if typed != (u.email or "").strip().lower():
+        raise HTTPException(
+            status_code=400,
+            detail="That is not this account's email address. Type it exactly to confirm.",
+        )
+
     name = f"{u.first_name} {u.last_name}"
 
-    # remove related records first to satisfy foreign keys
+    # The activity trail is the one child of a case with no cascade on the
+    # relationship, so deleting a case out from under it raises a foreign key
+    # error and the whole deletion rolls back. Append-only means the app never
+    # edits a row, not that a case can be removed while its rows still point at
+    # it, so these go first and explicitly.
+    case_ids = [c.id for c in db.query(Case).filter(Case.user_id == user_id).all()]
+    if case_ids:
+        db.query(CaseActivity).filter(CaseActivity.case_id.in_(case_ids)).delete(
+            synchronize_session=False
+        )
+
+    # Any ID photograph still held goes with the account, and is destroyed
+    # before the row disappears, since afterwards nothing records where it was.
+    if u.id_document:
+        destroy_image(u.id_document)
+
     for c in db.query(Case).filter(Case.user_id == user_id).all():
-        db.delete(c)  # cascades to reports (delete-orphan)
+        db.delete(c)  # cascades to reports, messages, BPOs, endorsements, children
     db.query(OTP).filter(OTP.user_id == user_id).delete()
     db.delete(u)
     db.commit()
+
+    print(f"[ADMIN] {admin.username} permanently deleted victim {user_id} ({name}), {len(case_ids)} case(s).")
     return {"message": f"{name}'s account and all related data permanently deleted."}
 
 

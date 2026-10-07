@@ -370,7 +370,7 @@ She will be told this, so say what she should send instead.`);
       await api.patch(`/admin/users/${u.id}/archive`);
       setVictims(p => p.filter(x => x.id !== u.id));
       setUnverifiedUsers(p => p.filter(x => x.id !== u.id));
-      setDeletedVictims(p => [{ ...u, is_deleted: true, deleted_at: new Date().toISOString() }, ...p]);
+      setDeletedVictims(p => [{ ...u, is_deleted: true, deleted_at: new Date().toISOString(), recovery_expired: false }, ...p]);
       showToast(`${u.first_name}'s account archived.`);
     } catch (err) {
       showToast(err.response?.data?.detail || "Failed to archive.", false);
@@ -390,11 +390,24 @@ She will be told this, so say what she should send instead.`);
     }
   };
 
-  // TEMPORARY: permanently delete an archived victim account (Super Admin).
+  // Permanently delete an archived victim account. There is no undo and no
+  // backup inside the app, so the officer types the account's own email address
+  // to confirm: a mis-click cannot produce it, and neither can muscle memory on
+  // the wrong row.
   const handleForceDeleteVictim = async (u) => {
-    if (!(await confirmDialog({ title: "Permanently delete account?", message: `${u.first_name} ${u.last_name}'s account and ALL their data (cases, reports) will be erased. This cannot be undone.`, confirmLabel: "Delete Permanently", danger: true }))) return;
+    const ok = await confirmDialog({
+      title: "Permanently delete this account?",
+      message:
+        `${[u.first_name, u.last_name].filter(Boolean).join(" ")}'s account will be erased, along with every case, report, message and BPO belonging to it.\n\n` +
+        `This cannot be undone, and nothing in the system keeps a copy.`,
+      requireText: u.email,
+      requireLabel: "Type the account's email address to confirm:",
+      confirmLabel: "Delete Permanently",
+      danger: true,
+    });
+    if (!ok) return;
     try {
-      await api.delete(`/admin/users/${u.id}/force`);
+      await api.delete(`/admin/users/${u.id}/force`, { data: { confirm_email: u.email } });
       setDeletedVictims(p => p.filter(x => x.id !== u.id));
       showToast(`${u.first_name}'s account permanently deleted.`);
     } catch (err) {
@@ -926,7 +939,7 @@ She will be told this, so say what she should send instead.`);
             <div style={{ padding: "12px 16px", background: "#EFF6FF", borderBottom: "1px solid #BFDBFE", display: "flex", alignItems: "center", gap: 10 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#1D4ED8" strokeWidth="1.8" /><circle cx="9" cy="11" r="2" stroke="#1D4ED8" strokeWidth="1.8" /><path d="M14 10h4M14 14h4" stroke="#1D4ED8" strokeWidth="1.8" strokeLinecap="round" /></svg>
               <p style={{ margin: 0, fontSize: 12.5, color: "#1E3A8A", fontFamily: "'Lexend',sans-serif", lineHeight: 1.5 }}>
-                Check the ID against the name and birthdate on the account. The photo is deleted the moment you decide, either way.
+                Everything she registered with is listed beside the ID. Check the two against each other. The photo is deleted the moment you decide, either way.
               </p>
             </div>
 
@@ -950,13 +963,52 @@ She will be told this, so say what she should send instead.`);
                     </a>
 
                     <div style={{ flex: 1, minWidth: 220 }}>
-                      <p style={{ margin: 0, fontSize: 14.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>{u.full_name}</p>
-                      <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
-                        {u.id_type} · born {u.birthdate || "not given"} · sent {fmtDate(u.id_submitted_at)}
+                      <p style={{ margin: 0, fontSize: 14.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>
+                        {[u.first_name, u.middle_name, u.last_name].filter(Boolean).join(" ") || u.full_name}
                       </p>
-                      <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>{u.email} · {u.phone_number}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                        {u.id_type || "ID type not given"} · sent {fmtDate(u.id_submitted_at)}
+                      </p>
 
-                      <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+                      {/* Everything she filled in at registration. The officer
+                          is deciding whether this person is who the account
+                          says she is, and a name and a birthdate are thin
+                          grounds for that when the address printed on the card
+                          is sitting right there unused. A field she left blank
+                          is shown as blank rather than hidden: the gap is part
+                          of what the officer is weighing. */}
+                      <dl style={{ margin: "11px 0 0", display: "grid", gridTemplateColumns: "auto 1fr", gap: "7px 14px", fontSize: 12.5, fontFamily: "'Lexend',sans-serif", alignItems: "baseline" }}>
+                        {[
+                          ["First name",   u.first_name],
+                          ["Middle name",  u.middle_name],
+                          ["Last name",    u.last_name],
+                          ["Birthdate",    u.birthdate],
+                          ["Sex",          u.sex],
+                          ["Address",      u.address],
+                          ["Email",        u.email],
+                          ["Phone",        u.phone_number],
+                          ...(u.is_minor ? [
+                            ["Guardian",     u.guardian_name],
+                            ["Relationship", u.guardian_relationship],
+                          ] : []),
+                          ["Registered",   fmtDate(u.created_at)],
+                        ].map(([label, value]) => (
+                          <React.Fragment key={label}>
+                            <dt style={{ color: "var(--adm-text-muted)", whiteSpace: "nowrap" }}>{label}</dt>
+                            <dd style={{ margin: 0, color: value ? "var(--adm-text)" : "var(--adm-text-muted)", fontWeight: value ? 600 : 400, fontStyle: value ? "normal" : "italic", wordBreak: "break-word" }}>
+                              {value || "not given"}
+                            </dd>
+                          </React.Fragment>
+                        ))}
+                      </dl>
+
+                      {u.is_minor && (
+                        <p style={{ margin: "10px 0 0", display: "inline-flex", padding: "3px 10px", borderRadius: 9999, fontSize: 11.5, fontWeight: 700, color: "#92400E", background: "#FFFBEB", border: "1.5px solid #FDE68A", fontFamily: "'Lexend',sans-serif" }}>
+                          Registered as a minor
+                        </p>
+                      )}
+
+                      <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
                         <button className="rd-btn" disabled={idBusy === u.id} onClick={() => decideId(u, true)}
                           style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#059669", color: "#fff", fontSize: 13, fontWeight: 700, cursor: idBusy === u.id ? "not-allowed" : "pointer", opacity: idBusy === u.id ? 0.6 : 1, fontFamily: "'Lexend',sans-serif" }}>
                           {idBusy === u.id ? "Saving…" : "Approve"}
@@ -979,15 +1031,16 @@ She will be told this, so say what she should send instead.`);
           <div className="tab-fade" style={S.tableCard}>
             <div style={{ padding: "12px 16px", background: "#FFF3E0", borderBottom: "1px solid #FFCC99", display: "flex", alignItems: "center", gap: 10 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
-              <p style={{ margin: 0, fontSize: 12.5, color: "#7C2D12", fontFamily: "'Lexend',sans-serif" }}>
-                Archived victim accounts. Recoverable within 30 days of deletion.
+              <p style={{ margin: 0, fontSize: 12.5, color: "#7C2D12", fontFamily: "'Lexend',sans-serif", lineHeight: 1.5 }}>
+                Archived victim accounts. Recoverable for 30 days. Past that they stay listed here, because an account
+                nobody can see is one nobody can clear.
               </p>
             </div>
             <div className="adm-table-wrap" style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
                 <thead>
                   <tr style={{ backgroundColor: "var(--adm-muted)", borderBottom: "1px solid var(--adm-border)" }}>
-                    {["", "Name & Email", "Phone", "Deleted", "Days Left", "Actions"].map((h, i) => (
+                    {["", "Name & Email", "Phone", "Deleted", "Recovery", "Actions"].map((h, i) => (
                       <th key={i} style={{ ...S.th, textAlign: i === 5 ? "right" : "left" }}>{h}</th>
                     ))}
                   </tr>
@@ -998,13 +1051,17 @@ She will be told this, so say what she should send instead.`);
                     <tr><td colSpan={6}>
                       <div style={S.emptyState}>
                         <div style={S.emptyIcon}><IconUserSolid size={22} color="#94A3B8" /></div>
-                        <p style={S.emptyTitle}>{search ? "No matches" : "No recently deleted victims"}</p>
-                        <p style={S.emptySub}>{search ? `No deleted victims match "${search}".` : "Archived accounts will appear here for 30 days."}</p>
+                        <p style={S.emptyTitle}>{search ? "No matches" : "No archived victim accounts"}</p>
+                        <p style={S.emptySub}>{search ? `No deleted victims match "${search}".` : "Archived accounts appear here until they are permanently deleted."}</p>
                       </div>
                     </td></tr>
                   ) : (
                     visibleDeletedVictims.map(u => {
                       const daysLft = daysLeft(u.deleted_at);
+                      // The server decides this, since it owns the clock. A row
+                      // with no deleted_at counts as recoverable: an unknown
+                      // date is not evidence the window has closed.
+                      const expired = !!u.recovery_expired;
                       return (
                         <tr key={u.id} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
                           <td style={{ padding: "12px 16px", width: 52 }}>
@@ -1017,14 +1074,23 @@ She will be told this, so say what she should send instead.`);
                           <td style={{ ...S.td, color: "var(--adm-text-2)", fontFamily: "monospace" }}>{u.phone_number || "-"}</td>
                           <td style={{ ...S.td, color: "var(--adm-text-2)" }}>{fmtDate(u.deleted_at)}</td>
                           <td style={S.td}>
-                            <span style={{ display: "inline-flex", padding: "3px 10px", borderRadius: 9999, fontSize: 11.5, fontWeight: 700, color: daysLft <= 7 ? "#C62828" : "#C45E10", background: daysLft <= 7 ? "#FEF2F2" : "#FFF3E0", border: `1.5px solid ${daysLft <= 7 ? "#FECACA" : "#FFCC99"}` }}>
-                              {daysLft} day{daysLft === 1 ? "" : "s"} left
-                            </span>
+                            {expired ? (
+                              <span style={{ display: "inline-flex", padding: "3px 10px", borderRadius: 9999, fontSize: 11.5, fontWeight: 700, color: "var(--adm-text-muted)", background: "var(--adm-muted)", border: "1.5px solid var(--adm-border)" }}>
+                                Window closed
+                              </span>
+                            ) : (
+                              <span style={{ display: "inline-flex", padding: "3px 10px", borderRadius: 9999, fontSize: 11.5, fontWeight: 700, color: daysLft <= 7 ? "#C62828" : "#C45E10", background: daysLft <= 7 ? "#FEF2F2" : "#FFF3E0", border: `1.5px solid ${daysLft <= 7 ? "#FECACA" : "#FFCC99"}` }}>
+                                {daysLft} day{daysLft === 1 ? "" : "s"} left
+                              </span>
+                            )}
                           </td>
                           <td style={{ ...S.td, textAlign: "right" }}>
                             <div style={{ display: "inline-flex", gap: 6, justifyContent: "flex-end" }}>
-                              <ActionBtn label="Recover" variant="success" onClick={() => handleRecoverVictim(u)} />
-                              <ActionBtn label="Force Delete" variant="danger" onClick={() => handleForceDeleteVictim(u)} />
+                              {/* Past 30 days the server refuses to recover, so
+                                  the button is not offered rather than offered
+                                  and then rejected. */}
+                              {!expired && <ActionBtn label="Recover" variant="success" onClick={() => handleRecoverVictim(u)} />}
+                              <ActionBtn label="Delete Permanently" variant="danger" onClick={() => handleForceDeleteVictim(u)} />
                             </div>
                           </td>
                         </tr>

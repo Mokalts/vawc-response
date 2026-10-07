@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
@@ -7,7 +7,8 @@ from schemas.user import UserResponse, UserUpdate, PasswordChange
 from core.dependencies import get_current_user, get_user_for_id_submission
 from core.security import verify_password, hash_password
 from core.account_notice import notify_account_change
-from utils.cloudinary_helper import upload_image
+from core.progressive_limiter import check_rate_limit, record_failure, record_success, login_keys
+from utils.cloudinary_helper import upload_image, destroy_image
 import uuid
 from datetime import datetime, timedelta
 from pydantic import BaseModel
@@ -85,6 +86,18 @@ def delete_my_account(
     # OTPs cleaned up since they're temporary tokens
     db.query(OTP).filter(OTP.user_id == current_user.id).delete()
 
+    # A photograph of her government ID must not outlive the account. It was
+    # held only so an officer could check it, and once she has closed the
+    # account there is nobody left to check it for. The verification decision
+    # stays on the row; the picture goes. If she recovers the account she is
+    # asked for an ID again, which costs her a minute and is the right trade
+    # against keeping a picture of her ID indefinitely.
+    if current_user.id_document:
+        destroy_image(current_user.id_document)
+        current_user.id_document = None
+        if (current_user.id_status or "none") == "pending":
+            current_user.id_status = "none"
+
     current_user.is_deleted = True
     current_user.deleted_at = datetime.utcnow()
     db.commit()
@@ -98,16 +111,36 @@ def delete_my_account(
 @router.post("/recover")
 def recover_account(
     payload: RecoverAccountPayload,
+    request: Request,
     db: Session = Depends(get_db),
 ):
-    """Public endpoint — recover a soft-deleted account from the sign-in page."""
+    """Public endpoint — recover a soft-deleted account from the sign-in page.
+
+    This takes an email and a password and is open to anyone, which makes it a
+    login in everything but name. It therefore carries the same two brakes as
+    /auth/login, and for the same reason: without them it is the one unguarded
+    place to guess a password, and guessing is how an abuser gets in.
+
+    It also answers identically for an unknown email and a wrong password.
+    Before, an unknown email returned 404 and a wrong password 401, which told
+    anyone who asked whether a given woman had an account here. That is not an
+    abstract leak for this app.
+    """
+    limit_key, ip_key = login_keys("recover", request, payload.email)
+    for key in (limit_key, ip_key):
+        check = check_rate_limit(key)
+        if not check["allowed"]:
+            raise HTTPException(status_code=429, detail=check["message"])
+
     user = db.query(User).filter(User.email == payload.email).first()
 
-    if not user:
-        raise HTTPException(status_code=404, detail="No account found with that email.")
+    if not user or not verify_password(payload.password, user.password_hash):
+        record_failure(limit_key)
+        record_failure(ip_key)
+        raise HTTPException(status_code=401, detail="Invalid email or password.")
 
-    if not verify_password(payload.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Incorrect password.")
+    record_success(limit_key)
+    record_success(ip_key)
 
     if not getattr(user, "is_deleted", False):
         raise HTTPException(status_code=400, detail="This account is not deleted.")

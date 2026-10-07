@@ -7,6 +7,10 @@ let _open = null;
 export function confirmDialog(opts = {}) {
     return new Promise((resolve) => {
         if (_open) _open({ ...opts, resolve });
+        // No host mounted. window.confirm cannot ask anyone to type anything,
+        // so a dialog that wanted a typed confirmation refuses instead of
+        // quietly degrading to a single OK on something irreversible.
+        else if (opts.requireText) resolve(false);
         else resolve(window.confirm(opts.message || "Are you sure?"));
     });
 }
@@ -16,21 +20,30 @@ const FF = "'Lexend', sans-serif";
 // Mount <ConfirmHost /> once (in AdminLayout). It renders the dialog on demand.
 export function ConfirmHost() {
     const [state, setState] = useState(null);
+    // What the officer has typed, when the dialog asks them to type something.
+    const [typed, setTyped] = useState("");
 
     useEffect(() => {
-        _open = (s) => setState(s);
+        _open = (s) => { setTyped(""); setState(s); };
         return () => { _open = null; };
     }, []);
+
+    // Set only when the caller asked for a typed confirmation. An action that
+    // cannot be undone should not be reachable by hitting Enter twice, so while
+    // this is on, Enter does nothing and the confirm button stays disabled
+    // until the exact words are there.
+    const requireText = state && state.requireText ? String(state.requireText) : null;
+    const matched = !requireText || typed.trim().toLowerCase() === requireText.trim().toLowerCase();
 
     useEffect(() => {
         if (!state) return;
         const onKey = (e) => {
             if (e.key === "Escape") { state.resolve(false); setState(null); }
-            if (e.key === "Enter") { state.resolve(true); setState(null); }
+            if (e.key === "Enter" && !requireText) { state.resolve(true); setState(null); }
         };
         window.addEventListener("keydown", onKey);
         return () => window.removeEventListener("keydown", onKey);
-    }, [state]);
+    }, [state, requireText]);
 
     if (!state) return null;
 
@@ -54,12 +67,42 @@ export function ConfirmHost() {
                     </div>
                     <p style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "var(--adm-text)", letterSpacing: "-0.2px" }}>{state.title || "Are you sure?"}</p>
                 </div>
-                <p style={{ margin: "0 0 22px", fontSize: 13.5, color: "var(--adm-text-2)", lineHeight: 1.65, whiteSpace: "pre-line" }}>{state.message}</p>
+                <p style={{ margin: requireText ? "0 0 16px" : "0 0 22px", fontSize: 13.5, color: "var(--adm-text-2)", lineHeight: 1.65, whiteSpace: "pre-line" }}>{state.message}</p>
+
+                {requireText && (
+                    <div style={{ marginBottom: 22 }}>
+                        <label htmlFor="adm-confirm-text" style={{ display: "block", fontSize: 12.5, color: "var(--adm-text-2)", marginBottom: 7, lineHeight: 1.5 }}>
+                            {state.requireLabel || "Type this to confirm:"}{" "}
+                            <span style={{ fontWeight: 700, color: "var(--adm-text)", wordBreak: "break-all" }}>{requireText}</span>
+                        </label>
+                        <input
+                            id="adm-confirm-text"
+                            value={typed}
+                            onChange={(e) => setTyped(e.target.value)}
+                            autoFocus
+                            autoComplete="off"
+                            spellCheck={false}
+                            aria-describedby="adm-confirm-hint"
+                            style={{
+                                width: "100%", boxSizing: "border-box", padding: "10px 12px", borderRadius: 10,
+                                border: `1.5px solid ${typed && !matched ? "#FECACA" : "var(--adm-border)"}`,
+                                background: "var(--adm-card)", color: "var(--adm-text)",
+                                fontSize: 13.5, fontFamily: FF, outline: "none",
+                            }}
+                        />
+                        <p id="adm-confirm-hint" role={typed && !matched ? "alert" : undefined}
+                           style={{ margin: "7px 0 0", fontSize: 12, minHeight: 16, color: typed && !matched ? "#B91C1C" : "var(--adm-text-muted)", lineHeight: 1.5 }}>
+                            {typed && !matched ? "That does not match yet." : " "}
+                        </p>
+                    </div>
+                )}
+
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
                     <button onClick={() => done(false)} style={{ padding: "9px 18px", borderRadius: 10, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: FF }}>
                         {state.cancelLabel || "Cancel"}
                     </button>
-                    <button onClick={() => done(true)} autoFocus style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: accent, color: "#fff", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: FF, boxShadow: `0 4px 12px ${shadow}` }}>
+                    <button onClick={() => matched && done(true)} disabled={!matched} autoFocus={!requireText}
+                        style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: accent, color: "#fff", fontSize: 13.5, fontWeight: 700, fontFamily: FF, cursor: matched ? "pointer" : "not-allowed", opacity: matched ? 1 : 0.45, boxShadow: matched ? `0 4px 12px ${shadow}` : "none" }}>
                         {state.confirmLabel || "Confirm"}
                     </button>
                 </div>

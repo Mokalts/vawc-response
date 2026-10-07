@@ -115,16 +115,6 @@ function SignUp() {
         guardian_name:'', guardian_relationship:'',
         password:'', confirm_password:'',
     };
-    // The ID she scans here is uploaded before the account exists, so the form
-    // holds a signed reference to it until she submits. Without this she would
-    // register, be refused at sign-in, and only then be asked for an ID she had
-    // already handed over.
-    const [idRef, setIdRef]       = useState(null);
-    const [idType, setIdType]     = useState('');
-    const [idFile, setIdFile]     = useState(null);
-    const [scanning, setScanning] = useState(false);
-    const [scanNote, setScanNote] = useState('');
-
     const [form, setForm] = useState(() => {
         try {
             const saved = JSON.parse(localStorage.getItem(SIGNUP_DRAFT_KEY)) || {};
@@ -144,43 +134,6 @@ function SignUp() {
         }, 600);
         return () => clearTimeout(t);
     }, [form]);
-
-    const scanId = async () => {
-        if (!idFile || !idType.trim()) { setError('Pick an ID and say what it is.'); return; }
-        setScanning(true); setError(''); setScanNote('');
-        try {
-            const body = new FormData();
-            body.append('id_type', idType.trim());
-            body.append('file', idFile);
-            const res = await api.post('/auth/scan-id', body);
-            setIdRef(res.data.id_ref);
-
-            // Only EMPTY fields are filled. Overwriting something she has
-            // already typed because a photograph read differently would be
-            // worse than filling nothing: she would have to notice the change
-            // to undo it.
-            const sug = res.data.suggestions || {};
-            const filled = [];
-            setForm(f => {
-                const next = { ...f };
-                for (const [key, value] of Object.entries(sug)) {
-                    if (value && !String(next[key] || '').trim()) {
-                        next[key] = value;
-                        filled.push(key.replace('_', ' '));
-                    }
-                }
-                return next;
-            });
-
-            setScanNote(
-                filled.length
-                    ? `ID received. Filled in ${filled.join(', ')} — please check them and correct anything wrong.`
-                    : 'ID received. Nothing could be read from the photo, so please fill the form in yourself.'
-            );
-        } catch (e) {
-            setError(e.response?.data?.detail || 'Could not read that image. Please try another photo.');
-        } finally { setScanning(false); }
-    };
 
     const handleChange = e => {
         setForm(p => ({ ...p, [e.target.name]: e.target.value }));
@@ -202,7 +155,6 @@ function SignUp() {
         if (!form.purok)                         { setError("Please enter your purok or zone."); return; }
         if (isMinor && !form.guardian_name.trim()) { setError("Please enter the guardian's full name."); return; }
         if (isMinor && !form.guardian_relationship) { setError("Please select the guardian's relationship."); return; }
-        if (!idRef) { setError("Please send a photo of any ID first. The barangay checks it before your account is opened."); return; }
         if (!form.password || !form.confirm_password) { setError("Please fill in both password fields."); return; }
         const pwErr = validatePassword(form.password);
         if (pwErr) { setError(pwErr); return; }
@@ -227,8 +179,6 @@ function SignUp() {
                 is_minor: isMinor,
                 guardian_name: isMinor ? form.guardian_name.trim() : null,
                 guardian_relationship: isMinor ? form.guardian_relationship : null,
-                id_ref: idRef,
-                id_type: idType.trim() || null,
             });
             localStorage.setItem("pending_phone", form.phone_number);
             localStorage.setItem("pending_email",  form.email);
@@ -270,56 +220,29 @@ function SignUp() {
 
             <div style={S.card}>
 
-                {/* Scan an ID — first, because everything below can come from it.
-                    Required: sign-in waits on a barangay officer approving an ID,
-                    so letting her finish without one would mean registering into
-                    an account she cannot open. Whatever is read is a SUGGESTION
-                    she checks: "any ID" means no common layout, and a misread
-                    surname nobody corrects ends up on a protection order. */}
-                <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#C45E10" strokeWidth="1.8"/><circle cx="9" cy="11" r="2" stroke="#C45E10" strokeWidth="1.8"/><path d="M14 10h4M14 14h4" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Your ID" />
-
-                <p style={{ margin:'0 0 10px', fontSize:13, lineHeight:1.6, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
-                    Send a photo of any ID. The barangay checks it before opening your account, so that fake
-                    accounts stay out of their records. We will fill in what we can read, and the photo is
-                    deleted once an officer has checked it.
-                </p>
-
-                {!idRef ? (
-                    <div style={{ display:'flex', flexDirection:'column', gap:10, marginBottom:16 }}>
-                        <input
-                            type="text"
-                            value={idType}
-                            onChange={e => { setIdType(e.target.value); setError(''); }}
-                            placeholder="Anong ID ito? e.g. Barangay ID, PhilSys, Driver's License"
-                            style={{ width:'100%', boxSizing:'border-box', border:'1px solid var(--border)', borderRadius:8, padding:'11px 12px', fontSize:14, fontFamily:"'Lexend', sans-serif", color:'var(--text)', background:'var(--surface-alt)', outline:'none' }}
-                        />
-                        <input
-                            type="file"
-                            accept="image/jpeg,image/png,image/webp,image/heic"
-                            onChange={e => { setIdFile(e.target.files?.[0] || null); setError(''); }}
-                            style={{ fontSize:13, fontFamily:"'Lexend', sans-serif", color:'var(--text-body)' }}
-                        />
-                        <button
-                            type="button"
-                            onClick={scanId}
-                            disabled={scanning || !idFile || !idType.trim()}
-                            style={{ padding:'11px 0', borderRadius:8, border:'none', background:(scanning || !idFile || !idType.trim()) ? 'var(--border)' : '#C45E10', color:(scanning || !idFile || !idType.trim()) ? 'var(--text-muted)' : '#fff', fontSize:14, fontWeight:700, cursor:(scanning || !idFile || !idType.trim()) ? 'not-allowed' : 'pointer', fontFamily:"'Lexend', sans-serif" }}>
-                            {scanning ? 'Reading your ID…' : 'Send ID'}
-                        </button>
-                    </div>
-                ) : (
-                    <div style={{ backgroundColor:'#ECFDF5', border:'1px solid #6EE7B7', borderRadius:8, padding:'11px 13px', marginBottom:16 }}>
-                        <p style={{ margin:0, fontSize:13, lineHeight:1.55, color:'#065F46', fontWeight:600, fontFamily:"'Lexend', sans-serif" }}>
-                            {scanNote || 'ID received.'}
-                        </p>
-                        <button
-                            type="button"
-                            onClick={() => { setIdRef(null); setIdFile(null); setScanNote(''); }}
-                            style={{ marginTop:8, padding:'6px 12px', borderRadius:6, border:'1px solid #6EE7B7', background:'transparent', color:'#065F46', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:"'Lexend', sans-serif" }}>
-                            Use a different ID
-                        </button>
-                    </div>
-                )}
+                {/* Registration is the form and nothing else. The ID is asked
+                    for at the first sign-in instead, because that is where the
+                    gate actually is: an officer has to approve the ID before
+                    the account opens, and collecting it here meant she could
+                    not finish creating an account at all until she had an ID
+                    photographed and uploaded. Told plainly up front, since
+                    being asked for an ID at sign-in is a worse surprise than
+                    being told about it now. */}
+                <div style={{ display:'flex', gap:10, alignItems:'flex-start', backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', borderRadius:10, padding:'12px 14px', marginBottom:18 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink:0, marginTop:1 }}>
+                        <rect x="3" y="5" width="18" height="14" rx="2" stroke="#C45E10" strokeWidth="1.8"/>
+                        <circle cx="9" cy="11" r="2" stroke="#C45E10" strokeWidth="1.8"/>
+                        <path d="M14 10h4M14 14h4" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/>
+                    </svg>
+                    <p style={{ margin:0, fontSize:12.5, lineHeight:1.6, color:'var(--text-body)', fontFamily:"'Lexend', sans-serif" }}>
+                        After you create your account, you will be asked for a photo of any ID the first time you
+                        sign in. The barangay checks it so that fake accounts stay out of their records, and the
+                        photo is deleted as soon as an officer has looked at it.
+                        <br />
+                        <strong style={{ color:'var(--text)' }}>If you are in danger right now, you do not need an account.</strong>{' '}
+                        The hotlines on the first screen work without signing in.
+                    </p>
+                </div>
 
                 {/* Personal Info */}
                 <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#C45E10" strokeWidth="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Personal Information" />

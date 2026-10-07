@@ -33,7 +33,13 @@ def get_current_user(
         raise credentials_exception
 
     user = db.query(User).filter(User.id == user_id).first()
-    if user is None:
+    # A deleted account must stop working the moment it is deleted. Only the
+    # browser's copy of the token was being thrown away, so the token itself
+    # stayed valid until it expired: anyone else holding it, on a shared phone
+    # or from a device she no longer has, could still read her profile and file
+    # reports from an account she had closed. The delete dialog promises she
+    # will be signed out immediately, and this is what makes that true.
+    if user is None or user.is_deleted:
         raise credentials_exception
 
     return user
