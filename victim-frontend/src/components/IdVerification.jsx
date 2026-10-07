@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../api';
+import axios from 'axios';
 
 // Sending an ID so the barangay can confirm the account belongs to a real
 // person. REQUIRED before the system will take a report.
@@ -93,6 +94,60 @@ const IdVerification = ({ profile, onUpdated }) => {
         </div>
     );
 };
+
+/**
+ * Sending an ID when there is no session to send it with.
+ *
+ * Sign-in is refused until a barangay officer approves the ID, so the upload on
+ * the sign-in screen has no logged-in user behind it. The server hands back a
+ * token that opens this one endpoint and nothing else; it is held in memory for
+ * the life of the screen and never stored, because it is not a session.
+ *
+ * Raw axios rather than the shared client: that client's interceptor overwrites
+ * Authorization with whatever token is in localStorage, which at a refused
+ * sign-in is either absent or stale, and either way not the one that works.
+ */
+export function IdUpload({ token, onSent }) {
+    const [file, setFile] = useState(null);
+    const [idType, setIdType] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [err, setErr] = useState('');
+
+    const submit = async () => {
+        if (!file || !idType.trim()) { setErr('Pick an ID and say what it is.'); return; }
+        setBusy(true); setErr('');
+        try {
+            const body = new FormData();
+            body.append('id_type', idType.trim());
+            body.append('file', file);
+            await axios.post(
+                (process.env.REACT_APP_API_URL || 'http://localhost:8000') + '/users/me/id-document',
+                body,
+                { headers: { Authorization: `Bearer ${token}` } },
+            );
+            onSent();
+        } catch (e) {
+            setErr(e.response?.data?.detail || 'Could not send that. Please try again.');
+        } finally { setBusy(false); }
+    };
+
+    const ready = file && idType.trim() && !busy;
+    return (
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+            <input type="text" value={idType} onChange={e => { setIdType(e.target.value); setErr(''); }}
+                placeholder="Anong ID ito? e.g. Barangay ID, PhilSys"
+                style={{ width:'100%', boxSizing:'border-box', border:'1px solid var(--border)', borderRadius:8, padding:'11px 12px', fontSize:14, fontFamily:"'Lexend', sans-serif", color:'var(--text)', background:'var(--surface-alt)', outline:'none' }} />
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/heic"
+                onChange={e => { setFile(e.target.files?.[0] || null); setErr(''); }}
+                style={{ fontSize:13, fontFamily:"'Lexend', sans-serif", color:'var(--text-body)' }} />
+            {err && <p style={{ margin:0, fontSize:12.5, color:'#B91C1C', fontFamily:"'Lexend', sans-serif" }}>{err}</p>}
+            <button onClick={submit} disabled={!ready}
+                style={{ padding:'11px 0', borderRadius:8, border:'none', background: ready ? '#C45E10' : 'var(--border)', color: ready ? '#fff' : 'var(--text-muted)', fontSize:14, fontWeight:700, cursor: ready ? 'pointer' : 'not-allowed', fontFamily:"'Lexend', sans-serif" }}>
+                {busy ? 'Sending…' : 'Send ID'}
+            </button>
+        </div>
+    );
+}
 
 const ST = {
     card:         { backgroundColor:'var(--surface)', borderRadius: 12, overflow:'hidden', border:'1px solid var(--border)', boxShadow:'0 2px 12px rgba(244,121,32,0.06)' },

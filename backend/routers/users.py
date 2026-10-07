@@ -4,7 +4,7 @@ from database import get_db
 from models.user import User
 from models.otp import OTP
 from schemas.user import UserResponse, UserUpdate, PasswordChange
-from core.dependencies import get_current_user
+from core.dependencies import get_current_user, get_user_for_id_submission
 from core.security import verify_password, hash_password
 from core.account_notice import notify_account_change
 from utils.cloudinary_helper import upload_image
@@ -139,7 +139,7 @@ async def submit_id_document(
     id_type: str = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_user_for_id_submission),
 ):
     """Send an ID so an officer can confirm the account is a real person.
 

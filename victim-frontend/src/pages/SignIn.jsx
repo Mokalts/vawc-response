@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from "../api";
 import SOSButton from '../components/SOSButton';
+import { IdUpload } from '../components/IdVerification';
 import ThemeToggle from '../components/ThemeToggle';
 import TermsModal, { hasAcceptedTerms } from '../components/TermsModal';
 
@@ -70,6 +71,7 @@ function SignIn() {
     const [waking, setWaking] = useState(false);
     const [error, setError] = useState('');
     const [form, setForm] = useState({ email: '', password: '' });
+    const [idGate, setIdGate] = useState(null);
     const [recovery, setRecovery] = useState(false);
     const [recovering, setRecovering] = useState(false);
     const [recovered, setRecovered] = useState(false);
@@ -142,7 +144,14 @@ function SignIn() {
                 const raw = err.response?.data?.detail;
                 const status = err.response?.status;
                 const detail = Array.isArray(raw) ? raw.map(e => e.msg).join(', ') : raw;
-                if (status === 429) setError(detail || "Too many failed attempts. Please try again later.");
+                // Sign-in refused because her ID is not approved yet. The server
+                // sends back a token that opens the upload and nothing else, so
+                // a rejected ID does not strand the account with no way to send
+                // another. Held in memory only: it is not a session.
+                if (detail && detail.code === "id_not_verified") {
+                    setIdGate({ status: detail.id_status, reason: detail.reject_reason, token: detail.id_token });
+                }
+                else if (status === 429) setError(detail || "Too many failed attempts. Please try again later.");
                 else if (detail === "account_deleted") setRecovery("recoverable");
                 else if (detail === "account_permanently_deleted") setRecovery("permanent");
                 else if (detail === "unverified_pending") setRecovery("unverified_pending");
@@ -254,6 +263,45 @@ function SignIn() {
                         text="This account was deleted more than 30 days ago and cannot be recovered.">
                         <div style={{ marginTop: 12 }}><ActBtn label="Create New Account" onClick={() => navigate('/signup')} /></div>
                     </InfoBox>
+                )}
+                {idGate && (
+                    <div style={{ width:'100%', maxWidth:420, marginBottom:16, display:'flex', flexDirection:'column', gap:12 }}>
+                        {/* Hotlines first. Sign-in now waits on an officer being at
+                            the desk, and for someone in danger tonight the answer is
+                            a phone number, not this form. */}
+                        <div style={{ backgroundColor:'#FFFBEB', border:'1px solid #FDE68A', borderRadius:12, padding:'14px 16px' }}>
+                            <p style={{ margin:0, fontSize:14.5, fontWeight:700, color:'#92400E', fontFamily:"'Lexend', sans-serif" }}>
+                                In danger right now?
+                            </p>
+                            <p style={{ margin:'5px 0 10px', fontSize:13, lineHeight:1.6, color:'#92400E', fontFamily:"'Lexend', sans-serif" }}>
+                                Call 911 or the barangay hotlines. They answer without an account and without
+                                waiting for anyone to check your ID.
+                            </p>
+                            <SOSButton variant="compact" />
+                        </div>
+
+                        <div style={{ backgroundColor:'var(--surface)', border:'1px solid var(--border)', borderRadius:12, padding:'16px 18px' }}>
+                            <p style={{ margin:0, fontSize:15, fontWeight:700, color:'var(--text)', fontFamily:"'Lexend', sans-serif" }}>
+                                {idGate.status === 'pending'
+                                    ? 'Your ID is being checked'
+                                    : idGate.status === 'rejected'
+                                        ? 'Your ID was not accepted'
+                                        : 'Send an ID to finish setting up'}
+                            </p>
+                            <p style={{ margin:'6px 0 0', fontSize:13, lineHeight:1.6, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
+                                {idGate.status === 'pending'
+                                    ? 'The barangay VAWC desk will review it. You can sign in once it is approved.'
+                                    : idGate.status === 'rejected'
+                                        ? (idGate.reason || 'Send another one and the desk will review it again.')
+                                        : 'The barangay checks every account before it is opened, so that fake accounts stay out of their records.'}
+                            </p>
+                            {(idGate.status === 'none' || idGate.status === 'rejected') && (
+                                <div style={{ marginTop:12 }}>
+                                    <IdUpload token={idGate.token} onSent={() => setIdGate(g => ({ ...g, status:'pending' }))} />
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 )}
                 {recovery === "unverified_pending" && (
                     <InfoBox variant="warn" icon={<IcoClock />} title="Account not yet verified"

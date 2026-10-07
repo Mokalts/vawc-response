@@ -10,6 +10,7 @@ from core.security import (
     hash_password, verify_password, create_access_token,
     create_verify_token, decode_verify_token,
     create_reset_token, decode_reset_token, password_fingerprint,
+    create_id_submit_token,
 )
 from slowapi import Limiter
 from core.progressive_limiter import (
@@ -262,10 +263,29 @@ def login(payload: UserLogin, request: Request, db: Session = Depends(get_db)):
         else:
             raise HTTPException(status_code=403, detail="unverified_pending")
 
-    # Clear both buckets. Leaving the network bucket alone meant failures piled
-    # up on a shared address indefinitely, since nothing ever reset it.
+    # Sign-in waits on a barangay officer approving her ID. The password was
+    # right, so the failure buckets are cleared first: this is not a failed
+    # login attempt and must not count toward a lockout.
     record_success(limit_key)
     record_success(ip_key)
+
+    if (user.id_status or "none") != "approved":
+        # No session is issued. What comes back is a single-purpose token that
+        # opens the ID upload and nothing else, because otherwise a rejected ID
+        # would strand the account: locked out, and with no way to send another.
+        #
+        # The hotlines need no account at all, which is the answer for someone
+        # in danger while this is pending, and the app says so on this screen.
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "id_not_verified",
+                "id_status": user.id_status or "none",
+                "id_type": user.id_type,
+                "reject_reason": user.id_reject_reason,
+                "id_token": create_id_submit_token(user.id),
+            },
+        )
 
     token = create_access_token({"sub": str(user.id)})
     return {"access_token": token, "token_type": "bearer", "user": user}

@@ -111,3 +111,32 @@ def decode_media_token(token: str):
     if payload.get("type") != "media":
         return None
     return payload.get("ref")
+
+
+# ── ID submission tokens ─────────────────────────────────────────────────────
+# Sign-in is refused until a barangay officer approves her ID, so she cannot
+# reach the upload screen the normal way. Without something like this a rejected
+# ID would strand the account for good: no session, therefore no way to send
+# another, therefore no way ever to be approved.
+#
+# This token is minted only after she has proved her password at sign-in, lasts
+# half an hour, and opens exactly one door: submitting an ID. It is not a
+# session, and get_current_user refuses it, so it cannot read a case or a
+# profile.
+ID_SUBMIT_TOKEN_MINUTES = 30
+
+
+def create_id_submit_token(user_id: int) -> str:
+    expire = datetime.utcnow() + timedelta(minutes=ID_SUBMIT_TOKEN_MINUTES)
+    return jwt.encode({"sub": str(user_id), "type": "id_submit", "exp": expire},
+                      settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def decode_id_submit_token(token: str):
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+    except Exception:
+        return None
+    if payload.get("type") != "id_submit":
+        return None
+    return payload.get("sub")
