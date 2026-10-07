@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import get_db
@@ -10,7 +10,7 @@ from core.security import (
     hash_password, verify_password, create_access_token,
     create_verify_token, decode_verify_token,
     create_reset_token, decode_reset_token, password_fingerprint,
-    create_id_submit_token, create_id_ref_token, decode_id_ref_token,
+    create_id_submit_token,
 )
 from slowapi import Limiter
 from core.progressive_limiter import (
@@ -21,9 +21,6 @@ from pydantic import BaseModel
 from datetime import datetime, timedelta
 import re
 import requests
-import uuid
-from utils.cloudinary_helper import upload_image
-from utils.id_ocr import read_id
 from core.security import create_access_token
 from core.dependencies import get_current_user
 
@@ -197,15 +194,6 @@ def register(request: Request, payload: UserRegister, db: Session = Depends(get_
         guardian_relationship=payload.guardian_relationship if payload.is_minor else None,
     )
 
-    # Attach the ID she scanned on the form, so the barangay has something to
-    # approve straight away. Without this she would register, be refused at
-    # sign-in, and only then be asked for the ID she already handed over.
-    pending_id = decode_id_ref_token(payload.id_ref) if payload.id_ref else None
-    if pending_id:
-        user.id_document = pending_id
-        user.id_type = (payload.id_type or "").strip()[:80] or None
-        user.id_status = "pending"
-        user.id_submitted_at = datetime.utcnow()
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -453,51 +441,4 @@ def refresh_victim_token(current_user: User = Depends(get_current_user)):
     return {
         "access_token": new_token,
         "token_type": "bearer",
-    }
-
-
-# ─── POST /auth/scan-id — read an ID at registration ──────────────────────────
-@router.post("/scan-id")
-@limiter.limit("6/minute")
-@limiter.limit("30/hour")
-async def scan_id(
-    request: Request,
-    id_type: str = Form(...),
-    file: UploadFile = File(...),
-):
-    """Upload an ID while registering: fill in what we can, keep it for review.
-
-    Unauthenticated, because at this point she has no account. That is also why
-    it is rate limited: an open upload endpoint is otherwise a way to burn the
-    OCR quota and fill the image store.
-
-    Everything it reads back is a SUGGESTION. "Any ID" means no common layout,
-    so partial results are normal, and a misread surname that nobody corrects
-    ends up on a Barangay Protection Order. The form stays editable and is never
-    submitted on her behalf.
-
-    The image is kept and handed to the account on registration, so the barangay
-    has something to approve rather than asking her for it a second time after
-    she has already been locked out.
-    """
-    if file.content_type not in {"image/jpeg", "image/png", "image/webp", "image/heic"}:
-        raise HTTPException(status_code=400, detail="Only JPEG, PNG, WEBP or HEIC images are allowed.")
-
-    file_bytes = await file.read()
-    if len(file_bytes) > 10 * 1024 * 1024:
-        raise HTTPException(status_code=400, detail="That image is too large. Maximum 10MB.")
-
-    public_id = upload_image(
-        file_bytes, f"pending_{uuid.uuid4().hex}", folder="vawc-response/ids"
-    )
-
-    result = read_id(file_bytes, file.filename or "id.jpg")
-
-    return {
-        # Signed so it cannot be swapped for someone else's upload on the way to
-        # register, and short-lived because it only has to survive one form.
-        "id_ref": create_id_ref_token(public_id),
-        "id_type": (id_type or "").strip()[:80],
-        "suggestions": result.get("suggestions", {}),
-        "scanned": result.get("text_found", False),
     }

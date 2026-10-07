@@ -16,11 +16,6 @@ class UserRegister(BaseModel):
     is_minor: bool = False
     guardian_name: Optional[str] = None
     guardian_relationship: Optional[str] = None
-    # The ID she scanned during registration, as a signed reference to the
-    # image already uploaded. Optional only so an older client does not break;
-    # without it the account is created unverified and cannot sign in.
-    id_ref: Optional[str] = None
-    id_type: Optional[str] = None
 
 
 class UserLogin(BaseModel):
