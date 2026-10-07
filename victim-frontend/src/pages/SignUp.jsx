@@ -205,6 +205,8 @@ function SignUp() {
     };
 
     const handleSubmit = async () => {
+        if (!idType.trim())   { setError("Please say what ID you are sending."); return; }
+        if (!idFile)          { setError("Please attach a photo of your ID."); return; }
         if (!form.first_name || !form.last_name) { setError("Please enter your first and last name."); return; }
         if (!form.phone_number)                  { setError("Please enter your mobile number."); return; }
         if (!form.email)                         { setError("Please enter your email address."); return; }
@@ -212,8 +214,6 @@ function SignUp() {
         if (!form.purok)                         { setError("Please enter your purok or zone."); return; }
         if (isMinor && !form.guardian_name.trim()) { setError("Please enter the guardian's full name."); return; }
         if (isMinor && !form.guardian_relationship) { setError("Please select the guardian's relationship."); return; }
-        if (!idType.trim())   { setError("Please say what ID you are sending."); return; }
-        if (!idFile)          { setError("Please attach a photo of your ID."); return; }
         if (!form.password || !form.confirm_password) { setError("Please fill in both password fields."); return; }
         const pwErr = validatePassword(form.password);
         if (pwErr) { setError(pwErr); return; }
@@ -316,14 +316,56 @@ function SignUp() {
                         <path d="M14 10h4M14 14h4" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/>
                     </svg>
                     <p style={{ margin:0, fontSize:12.5, lineHeight:1.6, color:'var(--text-body)', fontFamily:"'Lexend', sans-serif" }}>
-                        You will need a photo of any ID to finish. We will fill in whatever we can read from it,
-                        for you to check. The barangay looks at the ID afterwards so that fake accounts stay out of
+                        Start with a photo of any ID. We will fill in whatever we can read from it, for you to
+                        check and correct. The barangay looks at the ID afterwards so that fake accounts stay out of
                         their records, and the photo is deleted once an officer has.
                         <br />
                         <strong style={{ color:'var(--text)' }}>If you are in danger right now, you do not need an account.</strong>{' '}
                         The hotlines on the first screen work without signing in.
                     </p>
                 </div>
+
+                {/* First, because it fills the rest of the form in. Sitting after the
+                    address it had nothing left to fill: by the time she reached it
+                    she had already typed everything it could have read off the card,
+                    and the only thing it could do was tell her so. */}
+                {/* Your ID */}
+                <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#C45E10" strokeWidth="1.8"/><circle cx="9" cy="11" r="2" stroke="#C45E10" strokeWidth="1.8"/><path d="M14 10h4M14 14h4" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Your ID" />
+
+                <Field label="What ID is this?" htmlFor="id_type">
+                    <input
+                        id="id_type"
+                        type="text"
+                        value={idType}
+                        onChange={e => { setIdType(e.target.value); setError(''); }}
+                        placeholder="e.g. Barangay ID, PhilSys, Driver's License"
+                        style={{ width:'100%', boxSizing:'border-box', border:'1px solid var(--border)', borderRadius:8, padding:'11px 12px', fontSize:14, fontFamily:"'Lexend', sans-serif", color:'var(--text)', background:'var(--surface-alt)', outline:'none' }}
+                    />
+                </Field>
+
+                <Field label="Photo of the ID" htmlFor="id_file">
+                    <input
+                        id="id_file"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/heic"
+                        onChange={e => {
+                            const f = e.target.files?.[0] || null;
+                            setIdFile(f); setError(''); setScanNote('');
+                            readId(f);
+                        }}
+                        style={{ fontSize:13, fontFamily:"'Lexend', sans-serif", color:'var(--text-body)', width:'100%' }}
+                    />
+                    <p aria-live="polite" style={{ margin:'6px 0 0', fontSize:12, lineHeight:1.5, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
+                        {scanning
+                            ? 'Reading your ID\u2026'
+                            : idFile ? `Attached: ${idFile.name}` : 'JPEG, PNG, WEBP or HEIC. Up to 10MB.'}
+                    </p>
+                    {!scanning && scanNote && (
+                        <p style={{ margin:'8px 0 0', fontSize:12.5, lineHeight:1.55, color:'#065F46', backgroundColor:'#ECFDF5', border:'1px solid #6EE7B7', borderRadius:8, padding:'9px 11px', fontFamily:"'Lexend', sans-serif" }}>
+                            {scanNote}
+                        </p>
+                    )}
+                </Field>
 
                 {/* Personal Info */}
                 <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#C45E10" strokeWidth="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Personal Information" />
@@ -398,44 +440,6 @@ function SignUp() {
                 <Field label="House No. / Street" htmlFor="street"><Input name="street" placeholder="e.g. 12 Mabini Street" value={form.street} onChange={handleChange} /></Field>
                 <Field label="Purok / Zone" htmlFor="purok"><Input name="purok" placeholder="e.g. Purok 3 or Zone 2" value={form.purok} onChange={handleChange} /></Field>
                 <Field label="Landmark" optional htmlFor="landmark"><Input name="landmark" placeholder="e.g. Near the covered court" value={form.landmark} onChange={handleChange} /></Field>
-
-                {/* Your ID */}
-                <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#C45E10" strokeWidth="1.8"/><circle cx="9" cy="11" r="2" stroke="#C45E10" strokeWidth="1.8"/><path d="M14 10h4M14 14h4" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Your ID" />
-
-                <Field label="What ID is this?" htmlFor="id_type">
-                    <input
-                        id="id_type"
-                        type="text"
-                        value={idType}
-                        onChange={e => { setIdType(e.target.value); setError(''); }}
-                        placeholder="e.g. Barangay ID, PhilSys, Driver's License"
-                        style={{ width:'100%', boxSizing:'border-box', border:'1px solid var(--border)', borderRadius:8, padding:'11px 12px', fontSize:14, fontFamily:"'Lexend', sans-serif", color:'var(--text)', background:'var(--surface-alt)', outline:'none' }}
-                    />
-                </Field>
-
-                <Field label="Photo of the ID" htmlFor="id_file">
-                    <input
-                        id="id_file"
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,image/heic"
-                        onChange={e => {
-                            const f = e.target.files?.[0] || null;
-                            setIdFile(f); setError(''); setScanNote('');
-                            readId(f);
-                        }}
-                        style={{ fontSize:13, fontFamily:"'Lexend', sans-serif", color:'var(--text-body)', width:'100%' }}
-                    />
-                    <p aria-live="polite" style={{ margin:'6px 0 0', fontSize:12, lineHeight:1.5, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
-                        {scanning
-                            ? 'Reading your ID\u2026'
-                            : idFile ? `Attached: ${idFile.name}` : 'JPEG, PNG, WEBP or HEIC. Up to 10MB.'}
-                    </p>
-                    {!scanning && scanNote && (
-                        <p style={{ margin:'8px 0 0', fontSize:12.5, lineHeight:1.55, color:'#065F46', backgroundColor:'#ECFDF5', border:'1px solid #6EE7B7', borderRadius:8, padding:'9px 11px', fontFamily:"'Lexend', sans-serif" }}>
-                            {scanNote}
-                        </p>
-                    )}
-                </Field>
 
                 {/* Password */}
                 <SectionHeader icon={<IcoLock />} title="Create Password" />
