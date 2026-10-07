@@ -11,12 +11,26 @@ if (!document.getElementById('vawc-font')) {
 }
 if (!document.getElementById('vawc-victim-css')) {
     const s = document.createElement('style'); s.id='vawc-victim-css';
-    s.textContent=`@keyframes spin{to{transform:rotate(360deg)}} @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}} .vi-otp{transition:all 0.15s;} .vi-otp:focus{border-color:#F47920!important;box-shadow:0 0 0 3px rgba(244,121,32,0.15)!important;outline:none;background:#fff!important;} .vi-btn{transition:all 0.15s ease;} .vi-btn:hover:not([disabled]){background:#C45E10!important;transform:translateY(-1px);}`;
+    s.textContent=`
+      @keyframes spin{to{transform:rotate(360deg)}}
+      @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+      /* The box she is typing in is the only thing on this screen that moves. */
+      .vi-otp{transition:border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;}
+      .vi-otp:focus{border-color:#F47920!important;box-shadow:0 0 0 3px rgba(244,121,32,0.18)!important;outline:none;}
+      /* Darkens on hover rather than lifting. Buttons that rise off the page are
+         the same costume as a gradient: decoration standing in for hierarchy. */
+      .vi-btn{transition:background-color 0.15s ease;}
+      .vi-btn:hover:not([disabled]){background:#C45E10!important;}
+      .vi-ghost{transition:background-color 0.15s ease, border-color 0.15s ease;}
+      .vi-ghost:hover:not([disabled]){background:var(--surface-tint)!important;border-color:#F0B27A!important;}
+      .vi-link{transition:opacity 0.15s ease;}
+      .vi-link:hover{opacity:0.72;}
+      @media (prefers-reduced-motion: reduce){ .vi-otp,.vi-btn,.vi-ghost,.vi-link{transition:none} }
+    `;
     document.head.appendChild(s);
 }
 
 const IcoShield = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#F47920" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoInfo   = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#0369A1" strokeWidth="1.8"/><line x1="12" y1="16" x2="12" y2="12" stroke="#0369A1" strokeWidth="1.8" strokeLinecap="round"/><line x1="12" y1="8" x2="12.01" y2="8" stroke="#0369A1" strokeWidth="2.4" strokeLinecap="round"/></svg>);
 const IcoWarn   = ({ c='#92400E' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke={c} strokeWidth="1.8" strokeLinecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke={c} strokeWidth="2.4" strokeLinecap="round"/></svg>);
 const IcoCheck  = () => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoPhone  = ({ c='#475569' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
@@ -107,7 +121,10 @@ function OTP() {
                 <div>
                     <h1 style={S.brandTitle}>Verify Your Account</h1>
                     <p style={S.brandSub}>
-                        {channel==='email' ? <>Code sent to <strong style={{color:'#065F46'}}>{maskedEmail}</strong></> : <>Code sent to <strong style={{color:'#065F46'}}>{maskedPhone}</strong></>}
+                        {/* Themed, not a fixed dark green: on the dark background that colour
+                            sat almost on top of it, and the address is the one thing here
+                            she needs to read back to herself. */}
+                        {channel==='email' ? <>Code sent to <strong style={{color:'var(--text)'}}>{maskedEmail}</strong></> : <>Code sent to <strong style={{color:'var(--text)'}}>{maskedPhone}</strong></>}
                     </p>
                 </div>
             </div>
@@ -123,21 +140,12 @@ function OTP() {
             )}
 
             <div style={S.card}>
-                {/* Instructions */}
-                <div style={S.instructBox}>
-                    <div style={{display:'flex',alignItems:'center',gap:7,marginBottom:9}}>
-                        <IcoInfo />
-                        <p style={{margin:0,fontSize:12.5,fontWeight:700,color:'#0369A1',fontFamily:"'Lexend', sans-serif"}}>How to verify</p>
-                    </div>
-                    <ul style={{margin:0,paddingLeft:16,display:'flex',flexDirection:'column',gap:4}}>
-                        {[
-                            `Enter the 6-digit code sent to your ${channel==='email'?'email':'mobile number'}.`,
-                            'Code expires in 5 minutes - use Resend if needed.',
-                            'A verification link was also emailed - valid for 1 hour.',
-                            "Can't find the email? Check your spam folder.",
-                        ].map((t,i)=><li key={i} style={{fontSize:12.5,color:'#0369A1',lineHeight:1.6,fontFamily:"'Lexend', sans-serif"}}>{t}</li>)}
-                    </ul>
-                </div>
+                {/* One line, not four bullets in a third colour. Three of them said
+                    what the screen already shows, and a wall of instructions above
+                    an input is the thing people scroll past to reach the input. */}
+                <p style={S.lead}>
+                    Enter the 6-digit code. It expires in 5 minutes.
+                </p>
 
                 {/* OTP boxes */}
                 <div style={S.otpRow} role="group" aria-label="6-digit verification code">
@@ -148,18 +156,18 @@ function OTP() {
                             onChange={e=>handleChange(e.target.value,i)}
                             onKeyDown={e=>handleKeyDown(e,i)}
                             onPaste={e=>handlePaste(e,i)}
-                            style={{...S.otpBox, borderColor:digit?'#F47920':'var(--border)', backgroundColor:digit?'#FFF0F3':'var(--surface-alt)'}} />
+                            style={{...S.otpBox, borderColor:digit?'#F47920':'var(--border)'}} />
                     ))}
                 </div>
 
                 {error && (
-                    <div style={{display:'flex',alignItems:'center',gap:8,backgroundColor:'#FFF1F2',border:'1px solid #FECDD3',borderRadius: 4,padding:'10px 13px',marginBottom:14,animation:'fadeUp 0.2s ease'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8,backgroundColor:'#FFF1F2',border:'1px solid #FECDD3',borderRadius:10,padding:'10px 13px',marginBottom:14,animation:'fadeUp 0.2s ease'}}>
                         <IcoWarn c="#BE123C" />
                         <p style={{margin:0,fontSize:13,color:'#BE123C',fontFamily:"'Lexend', sans-serif"}}>{error}</p>
                     </div>
                 )}
                 {resendSuccess && (
-                    <div style={{display:'flex',alignItems:'center',gap:8,backgroundColor:'#ECFDF5',border:'1px solid #A7F3D0',borderRadius: 4,padding:'10px 13px',marginBottom:14,animation:'fadeUp 0.2s ease'}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8,backgroundColor:'#ECFDF5',border:'1px solid #A7F3D0',borderRadius:10,padding:'10px 13px',marginBottom:14,animation:'fadeUp 0.2s ease'}}>
                         <IcoCheck />
                         <p style={{margin:0,fontSize:13,color:'#065F46',fontFamily:"'Lexend', sans-serif"}}>New code sent. Check your {channel==='email'?'email (and spam folder)':'mobile number'}.</p>
                     </div>
@@ -171,24 +179,33 @@ function OTP() {
 
                 <div style={S.divider} />
 
-                <p style={{textAlign:'center',fontSize:14,color:'var(--text-muted)',marginBottom:channel==='email'?14:0,fontFamily:"'Lexend', sans-serif"}}>
+                <p style={S.foot}>
                     Didn't receive a code?{' '}
                     {canResend
-                        ? <button type="button" style={S.link} onClick={handleResend}>Resend Code</button>
-                        : <span style={{color:'#78716C',fontWeight:600,fontFamily:"'Lexend', sans-serif"}}>Resend in 0:{countdown<10?`0${countdown}`:countdown}</span>
+                        ? <button type="button" className="vi-link" style={S.link} onClick={handleResend}>Resend</button>
+                        : <span style={{color:'var(--text-muted)',fontWeight:600}}>Resend in 0:{countdown<10?`0${countdown}`:countdown}</span>
                     }
                 </p>
 
+                {channel==='email' && (
+                    <p style={{...S.foot, fontSize:12.5, marginTop:4}}>
+                        Check your spam folder. The email also carries a link that works for an hour.
+                    </p>
+                )}
+
+                {/* Asking for the text is what sends it. Nothing was texted at
+                    registration, so this is not a duplicate of something she
+                    already has. */}
                 {channel==='email' && smsAvailable && (
-                    <button style={{...S.switchBtn,opacity:switchLoading?0.7:1}} onClick={handleSwitch} disabled={switchLoading}>
+                    <button className="vi-ghost" style={{...S.switchBtn,opacity:switchLoading?0.7:1}} onClick={handleSwitch} disabled={switchLoading}>
                         <IcoPhone />
-                        {switchLoading?"Sending to mobile…":"Send code to mobile number instead"}
+                        {switchLoading?"Sending…":"Text it to me instead"}
                     </button>
                 )}
                 {channel==='phone' && (
-                    <p style={{textAlign:'center',fontSize:13.5,color:'var(--text-muted)',fontFamily:"'Lexend', sans-serif"}}>
+                    <p style={{...S.foot, marginTop:12}}>
                         Wrong number?{' '}
-                        <button type="button" style={S.link} onClick={()=>{setChannel('email');setOtp(['','','','','','']);setCountdown(45);setCanResend(false);setError('');setResendSuccess(false);}}>Use email instead</button>
+                        <button type="button" className="vi-link" style={S.link} onClick={()=>{setChannel('email');setOtp(['','','','','','']);setCountdown(45);setCanResend(false);setError('');setResendSuccess(false);}}>Use email instead</button>
                     </p>
                 )}
             </div>
@@ -199,20 +216,26 @@ function OTP() {
 const S = {
     page:       {minHeight:'100vh',background:'var(--page-grad)',color:'var(--text)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px',fontFamily:"'Lexend', sans-serif"},
     brand:      {display:'flex',alignItems:'center',gap:14,marginBottom:16,width:'100%',maxWidth:420},
-    brandIcon:  {width:44,height:44,borderRadius: '50%',backgroundColor:'var(--surface)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,boxShadow:'0 2px 8px rgba(244,121,32,0.1)'},
+    brandIcon:  {width:44,height:44,borderRadius:12,backgroundColor:'var(--surface)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0},
     brandTitle: {fontSize:18,fontWeight:800,color:'var(--accent-text)',margin:'0 0 3px',fontFamily:"'Lexend', sans-serif"},
     brandSub:   {fontSize:13,color:'var(--text-body)',margin:0,fontFamily:"'Lexend', sans-serif"},
-    banner:     {display:'flex',alignItems:'flex-start',gap:10,borderRadius: 4,padding:'13px 15px',border:'1.5px solid',boxSizing:'border-box'},
+    banner:     {display:'flex',alignItems:'flex-start',gap:10,borderRadius:12,padding:'13px 15px',border:'1px solid',boxSizing:'border-box'},
     bannerTitle:{fontSize:13.5,fontWeight:700,color:'#92400E',margin:'0 0 3px',fontFamily:"'Lexend', sans-serif"},
     bannerText: {fontSize:12.5,color:'#78350F',margin:0,lineHeight:1.5,fontFamily:"'Lexend', sans-serif"},
-    card:       {backgroundColor:'var(--surface)',borderRadius: 12,padding:'24px',width:'100%',maxWidth:420,boxShadow:'0 4px 20px rgba(244,121,32,0.08)',border:'1px solid var(--border)'},
-    instructBox:{backgroundColor:'#F3E5F5',border:'1.5px solid #BFDBFE',borderRadius: 12,padding:'13px 15px',marginBottom:20},
+    // One radius scale, 12 for anything that holds something and 10 for
+    // controls, instead of the 4 / 12 / 50% mixture that was here. A surface
+    // that cannot decide how round it is looks assembled rather than designed.
+    card:       {backgroundColor:'var(--surface)',borderRadius:14,padding:'22px 20px',width:'100%',maxWidth:420,boxShadow:'0 1px 3px rgba(15,23,42,0.06)',border:'1px solid var(--border)'},
+    lead:       {margin:'0 0 16px',fontSize:13,lineHeight:1.55,color:'var(--text-muted)',textAlign:'center',fontFamily:"'Lexend', sans-serif"},
     otpRow:     {display:'flex',justifyContent:'space-between',gap:8,marginBottom:18},
-    otpBox:     {width:'100%',maxWidth:56,height:60,borderRadius: 4,border:'2px solid var(--border)',fontSize:22,fontWeight:700,textAlign:'center',color:'var(--accent-text)',outline:'none',fontFamily:"'Lexend', sans-serif"},
-    verifyBtn:  {width:'100%',padding:13,backgroundColor:'#F47920',color:'#fff',fontSize:15,fontWeight:600,border:'none',borderRadius: 4,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'Lexend', sans-serif",boxShadow:'0 2px 8px rgba(244,121,32,0.25)'},
-    divider:    {height:1,backgroundColor:'var(--border-soft)',margin:'18px 0'},
+    // Taller and quieter. A filled box used to go pink behind an orange border,
+    // two accents on the same 50px of screen; now only the border answers.
+    otpBox:     {width:'100%',maxWidth:54,height:62,borderRadius:10,border:'1.5px solid var(--border)',backgroundColor:'var(--surface-alt)',fontSize:24,fontWeight:700,textAlign:'center',color:'var(--text)',outline:'none',fontFamily:"'Lexend', sans-serif",caretColor:'#F47920'},
+    verifyBtn:  {width:'100%',padding:'14px 16px',backgroundColor:'#F47920',color:'#fff',fontSize:15,fontWeight:700,border:'none',borderRadius:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'Lexend', sans-serif"},
+    divider:    {height:1,backgroundColor:'var(--border-soft)',margin:'18px 0 14px'},
+    foot:       {textAlign:'center',fontSize:13.5,lineHeight:1.55,color:'var(--text-muted)',margin:0,fontFamily:"'Lexend', sans-serif"},
     link:       {color:'var(--accent-text)',fontWeight:700,cursor:'pointer',fontFamily:"'Lexend', sans-serif",background:'none',border:'none',padding:0,fontSize:'inherit'},
-    switchBtn:  {width:'100%',padding:'11px 14px',backgroundColor:'var(--surface-alt)',color:'var(--text-body)',fontSize:13.5,fontWeight:600,border:'1.5px solid var(--border)',borderRadius: 4,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'Lexend', sans-serif",marginTop:8},
+    switchBtn:  {width:'100%',padding:'12px 14px',backgroundColor:'var(--surface)',color:'var(--text-body)',fontSize:13.5,fontWeight:600,border:'1.5px solid var(--border)',borderRadius:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'Lexend', sans-serif",marginTop:14},
 };
 
 export default OTP;

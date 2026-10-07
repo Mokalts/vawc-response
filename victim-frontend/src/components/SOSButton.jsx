@@ -14,9 +14,13 @@ if (!document.getElementById('vawc-sos-css')) {
         @keyframes sosSlideUp { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
         /* No idle pulse. A control that throbs forever reads as decoration and
            competes with the report CTA; the size and colour already carry it. */
-        .sos-btn { transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease; }
-        .sos-btn:hover  { transform: translateY(-1px); filter: brightness(1.05); box-shadow: 0 12px 26px rgba(185,28,28,0.32); }
-        .sos-btn:active { transform: scale(0.98); }
+        .sos-btn { transition: background-color 0.15s ease, box-shadow 0.15s ease; }
+        /* Darkens rather than lifting and glowing. A button that rises off the
+           page on hover is the same costume as the gradient it used to wear. */
+        .sos-btn:hover  { background-color: #A81D1D; }
+        .sos-btn:active { background-color: #911919; }
+        .sos-btn:focus-visible { outline: 3px solid rgba(198,36,36,0.35); outline-offset: 2px; }
+        @media (prefers-reduced-motion: reduce) { .sos-btn { transition: none; } }
         /* Rows separate by whitespace; hover is a background wash, not a border. */
         .sos-row { transition: background 0.18s ease; }
         .sos-row:hover { background: var(--surface-alt); }
@@ -184,29 +188,34 @@ function SOSButton({ variant = 'block' }) {
 
 const S = {
     // ── SOS button variants
-    // One line, centred, tall. A CTA has to read as pressable at a glance; the
-    // inset top highlight gives it a lit edge without adding another element.
+    // One flat colour, no gradient, no lit edge, no glow. The vertical gradient
+    // and inset highlight this used to carry are the house style of a template,
+    // and on the one control that has to look like it means it, looking
+    // generated is the wrong note. Size, weight and a single confident red do
+    // the work; the small shadow is there to lift it off the card, not to glow.
     blockBtn: {
         width: '100%', minHeight: 56, padding: '0 20px',
-        background: 'linear-gradient(180deg, #DC2626 0%, #B0181C 100%)',
-        color: '#fff', fontSize: 16.5, fontWeight: 800, letterSpacing: '-0.2px',
-        border: 'none', borderRadius: 14, cursor: 'pointer', touchAction: 'manipulation',
+        background: '#C62424',
+        color: '#fff', fontSize: 16.5, fontWeight: 700, letterSpacing: '-0.2px',
+        border: 'none', borderRadius: 12, cursor: 'pointer', touchAction: 'manipulation',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
         fontFamily: "'Lexend', sans-serif",
-        boxShadow: '0 10px 24px rgba(176,24,28,0.34), inset 0 1px 0 rgba(255,255,255,0.28)',
+        boxShadow: '0 1px 2px rgba(15,23,42,0.10)',
     },
     blockCaption: {
         margin: '9px 2px 0', fontSize: 11.5, lineHeight: 1.5,
         color: 'var(--text-muted)', textAlign: 'center', fontFamily: "'Lexend', sans-serif",
     },
+    // Same treatment, and square-ish rather than a full pill: it sits inside a
+    // card with a 12px radius, and a lozenge next to that reads as borrowed.
     compactBtn: {
-        minHeight: 44, padding: '10px 16px',
-        background: 'linear-gradient(135deg, #E8641C 0%, #B91C1C 100%)',
-        color: '#fff', fontSize: 13, fontWeight: 700,
-        border: 'none', borderRadius: 9999, cursor: 'pointer',
-        display: 'inline-flex', alignItems: 'center', gap: 8,
+        minHeight: 44, padding: '11px 18px',
+        background: '#C62424',
+        color: '#fff', fontSize: 13.5, fontWeight: 700,
+        border: 'none', borderRadius: 10, cursor: 'pointer',
+        display: 'inline-flex', alignItems: 'center', gap: 9,
         fontFamily: "'Lexend', sans-serif", letterSpacing: '0.01em',
-        boxShadow: '0 6px 16px rgba(185,28,28,0.22)',
+        boxShadow: '0 1px 2px rgba(15,23,42,0.10)',
     },
 
     // ── Modal

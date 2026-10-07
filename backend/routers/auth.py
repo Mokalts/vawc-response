@@ -229,13 +229,16 @@ def register(request: Request, payload: UserRegister, db: Session = Depends(get_
         db.delete(user)
         db.commit()
         raise
-    # SMS is a secondary channel: run it in the background so a slow provider,
-    # or a gateway handset that has to be woken, never delays the registration
-    # response. Skipped entirely while SMS is switched off, and the code has
-    # already gone out by email by this point either way.
-    if sms_enabled():
-        import threading
-        threading.Thread(target=send_otp_sms, args=(user.phone_number, code), daemon=True).start()
+    # No text here, even when SMS is switched on. The code has just gone out by
+    # email, and texting the same code as well left her on a screen offering
+    # "send to SMS instead" for something she had already received. Pressing it
+    # then issued a SECOND code, which quietly retired the first: anyone who had
+    # started typing the text she already had was entering a code that no longer
+    # worked.
+    #
+    # So SMS is on demand. She asks for it from the verification screen, and
+    # asking is what sends it. That also keeps the free tier for the people who
+    # actually need the other channel.
 
     # The form sends the ID photograph next, on the same button press. It has no
     # session yet and will not get one until an officer approves that ID, so it
