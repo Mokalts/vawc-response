@@ -50,9 +50,9 @@ def upload_image(file_bytes: bytes, filename: str, folder: str = "vawc-response/
     return result["public_id"]
 
 
-def _signed_url(public_id: str, delivery: str) -> str:
+def _signed_url(public_id: str, delivery: str, ext: str = None) -> str:
     url, _ = cloudinary.utils.cloudinary_url(
-        public_id,
+        public_id + ("." + ext if ext else ""),
         resource_type="image",
         type=delivery,
         sign_url=True,
@@ -61,23 +61,36 @@ def _signed_url(public_id: str, delivery: str) -> str:
     return url
 
 
+# What worked last time for a given public id, so the second view of a case does
+# not repeat the search. Process-local and purely an optimisation: an empty one
+# is correct, just slower, which is what happens after a restart.
+_RESOLVED = {}
+
+# Ordered by what actually turns up. A signed URL with no extension serves the
+# original for most assets but 404s for some, with no way to tell which from the
+# public id alone, so the extension has to be guessed. Authenticated is tried
+# before upload because that is what everything is being moved to.
+_CANDIDATES = [
+    ("authenticated", None), ("authenticated", "jpg"), ("authenticated", "png"),
+    ("authenticated", "webp"),
+    ("upload", None), ("upload", "jpg"), ("upload", "png"), ("upload", "webp"),
+]
+
+
 def fetch_bytes(public_id_or_url: str):
     """Download an asset server-side. Returns (bytes, content_type) or (None, None).
 
-    Two delivery types have to be tried, because the store holds both.
+    Harder than it should be, for two reasons that only show up on real data.
 
-    Anything uploaded since this app started asking for private assets is
-    `authenticated`, and signing is the only way to read it. Anything older is
-    an ordinary `upload`, which a signature for `authenticated` does not match:
-    Cloudinary answers 404 for an asset that exists, and the page shows a broken
-    image. That is what happened to every evidence photograph filed before the
-    change, which is most of them.
+    The store holds two delivery types. Anything uploaded since this app started
+    asking for private assets is `authenticated` and needs a signature; anything
+    older is an ordinary `upload`, and a signature for the wrong type gets a 404
+    for an asset that plainly exists. That is what broke every evidence
+    photograph at once.
 
-    So: try authenticated, fall back to upload. Nothing is weakened by the
-    fallback. An old asset was already public and this does not make it more so,
-    since the Cloudinary link never leaves this server either way; the browser
-    only ever gets an expiring link to /media/photo. Running the migration that
-    flips the old assets to authenticated retires the fallback for good.
+    And a signed URL without a file extension serves the original for most
+    assets but not all, with nothing in the public id to say which. So the
+    extension is guessed too, and whatever worked is remembered.
 
     A stored value that is already a full URL is fetched as-is, which is how
     reports filed before public ids were stored still work.
@@ -89,25 +102,32 @@ def fetch_bytes(public_id_or_url: str):
     import requests
 
     if value.startswith("http://") or value.startswith("https://"):
-        candidates = [("stored url", value)]
-    else:
-        candidates = [
-            ("authenticated", _signed_url(value, "authenticated")),
-            ("upload", _signed_url(value, "upload")),
-        ]
+        try:
+            r = requests.get(value, timeout=20)
+            if r.status_code == 200:
+                return r.content, r.headers.get("Content-Type", "image/jpeg")
+            print(f"[CLOUDINARY] stored url for {value[:60]} -> {r.status_code}")
+        except Exception as e:  # noqa: BLE001
+            print(f"[CLOUDINARY] stored url failed: {e}")
+        return None, None
+
+    known = _RESOLVED.get(value)
+    order = ([known] + [c for c in _CANDIDATES if c != known]) if known else _CANDIDATES
 
     last = None
-    for label, url in candidates:
+    for delivery, ext in order:
         try:
-            r = requests.get(url, timeout=20)
+            r = requests.get(_signed_url(value, delivery, ext), timeout=20)
         except Exception as e:  # noqa: BLE001
-            last = f"{label}: {e}"
+            last = f"{delivery}/{ext}: {e}"
             continue
         if r.status_code == 200:
+            _RESOLVED[value] = (delivery, ext)
             return r.content, r.headers.get("Content-Type", "image/jpeg")
-        last = f"{label}: HTTP {r.status_code}"
+        last = f"{delivery}/{ext}: HTTP {r.status_code}"
 
-    print(f"[CLOUDINARY] could not fetch {public_id_or_url} ({last})")
+    _RESOLVED.pop(value, None)
+    print(f"[CLOUDINARY] could not fetch {value} (last tried {last})")
     return None, None
 
 
