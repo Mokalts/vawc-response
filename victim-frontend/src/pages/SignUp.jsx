@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import api from "../api";
+import axios from 'axios';
 import { hasAcceptedTerms } from '../components/TermsModal';
 
 if (!document.getElementById('vawc-font')) {
@@ -108,6 +109,11 @@ function SignUp() {
     const [loading,      setLoading]      = useState(false);
     const [error,        setError]        = useState('');
     const [isMinor,      setIsMinor]      = useState(false);
+    // The ID travels with the form rather than being a step of its own. It is
+    // uploaded on the same Create Account press, straight after the account
+    // exists, because until it exists there is nothing to attach it to.
+    const [idType,       setIdType]       = useState('');
+    const [idFile,       setIdFile]       = useState(null);
     const SIGNUP_DRAFT_KEY = 'vawc_signup_draft';
     const blankForm = {
         first_name:'', middle_name:'', last_name:'', birthdate:'', sex:'',
@@ -155,6 +161,8 @@ function SignUp() {
         if (!form.purok)                         { setError("Please enter your purok or zone."); return; }
         if (isMinor && !form.guardian_name.trim()) { setError("Please enter the guardian's full name."); return; }
         if (isMinor && !form.guardian_relationship) { setError("Please select the guardian's relationship."); return; }
+        if (!idType.trim())   { setError("Please say what ID you are sending."); return; }
+        if (!idFile)          { setError("Please attach a photo of your ID."); return; }
         if (!form.password || !form.confirm_password) { setError("Please fill in both password fields."); return; }
         const pwErr = validatePassword(form.password);
         if (pwErr) { setError(pwErr); return; }
@@ -166,7 +174,7 @@ function SignUp() {
 
         setLoading(true); setError('');
         try {
-            await api.post("/auth/register", {
+            const res = await api.post("/auth/register", {
                 first_name: form.first_name,
                 middle_name: form.middle_name || null,
                 last_name: form.last_name,
@@ -180,6 +188,32 @@ function SignUp() {
                 guardian_name: isMinor ? form.guardian_name.trim() : null,
                 guardian_relationship: isMinor ? form.guardian_relationship : null,
             });
+
+            // Raw axios, and the token out of the response rather than the
+            // shared client: that client sends whatever is in localStorage, and
+            // there is no session here. There will not be one until an officer
+            // approves this ID.
+            //
+            // A failure here is not worth losing the account over. She is asked
+            // for the ID again at her first sign-in, on a screen that exists for
+            // exactly this, so the upload fails quietly rather than stranding a
+            // registration that otherwise worked.
+            const idToken = res.data?.id_token;
+            if (idToken) {
+                try {
+                    const body = new FormData();
+                    body.append('id_type', idType.trim());
+                    body.append('file', idFile);
+                    await axios.post(
+                        (process.env.REACT_APP_API_URL || 'http://localhost:8000') + '/users/me/id-document',
+                        body,
+                        { headers: { Authorization: `Bearer ${idToken}` } },
+                    );
+                } catch (e) {
+                    console.warn('ID upload failed; she is asked again at sign-in.', e);
+                }
+            }
+
             localStorage.setItem("pending_phone", form.phone_number);
             localStorage.setItem("pending_email",  form.email);
             try { localStorage.removeItem(SIGNUP_DRAFT_KEY); } catch {}
@@ -220,14 +254,10 @@ function SignUp() {
 
             <div style={S.card}>
 
-                {/* Registration is the form and nothing else. The ID is asked
-                    for at the first sign-in instead, because that is where the
-                    gate actually is: an officer has to approve the ID before
-                    the account opens, and collecting it here meant she could
-                    not finish creating an account at all until she had an ID
-                    photographed and uploaded. Told plainly up front, since
-                    being asked for an ID at sign-in is a worse surprise than
-                    being told about it now. */}
+                {/* Said before the form rather than after it: an ID is
+                    needed to finish, and finding that out at the Create Account
+                    button, after filling in everything else, is the version of
+                    this that wastes her time. */}
                 <div style={{ display:'flex', gap:10, alignItems:'flex-start', backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', borderRadius:10, padding:'12px 14px', marginBottom:18 }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink:0, marginTop:1 }}>
                         <rect x="3" y="5" width="18" height="14" rx="2" stroke="#C45E10" strokeWidth="1.8"/>
@@ -235,9 +265,8 @@ function SignUp() {
                         <path d="M14 10h4M14 14h4" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/>
                     </svg>
                     <p style={{ margin:0, fontSize:12.5, lineHeight:1.6, color:'var(--text-body)', fontFamily:"'Lexend', sans-serif" }}>
-                        After you create your account, you will be asked for a photo of any ID the first time you
-                        sign in. The barangay checks it so that fake accounts stay out of their records, and the
-                        photo is deleted as soon as an officer has looked at it.
+                        You will need a photo of any ID to finish. The barangay checks it so that fake accounts
+                        stay out of their records, and the photo is deleted as soon as an officer has looked at it.
                         <br />
                         <strong style={{ color:'var(--text)' }}>If you are in danger right now, you do not need an account.</strong>{' '}
                         The hotlines on the first screen work without signing in.
@@ -317,6 +346,33 @@ function SignUp() {
                 <Field label="House No. / Street" htmlFor="street"><Input name="street" placeholder="e.g. 12 Mabini Street" value={form.street} onChange={handleChange} /></Field>
                 <Field label="Purok / Zone" htmlFor="purok"><Input name="purok" placeholder="e.g. Purok 3 or Zone 2" value={form.purok} onChange={handleChange} /></Field>
                 <Field label="Landmark" optional htmlFor="landmark"><Input name="landmark" placeholder="e.g. Near the covered court" value={form.landmark} onChange={handleChange} /></Field>
+
+                {/* Your ID */}
+                <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#C45E10" strokeWidth="1.8"/><circle cx="9" cy="11" r="2" stroke="#C45E10" strokeWidth="1.8"/><path d="M14 10h4M14 14h4" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Your ID" />
+
+                <Field label="What ID is this?" htmlFor="id_type">
+                    <input
+                        id="id_type"
+                        type="text"
+                        value={idType}
+                        onChange={e => { setIdType(e.target.value); setError(''); }}
+                        placeholder="e.g. Barangay ID, PhilSys, Driver's License"
+                        style={{ width:'100%', boxSizing:'border-box', border:'1px solid var(--border)', borderRadius:8, padding:'11px 12px', fontSize:14, fontFamily:"'Lexend', sans-serif", color:'var(--text)', background:'var(--surface-alt)', outline:'none' }}
+                    />
+                </Field>
+
+                <Field label="Photo of the ID" htmlFor="id_file">
+                    <input
+                        id="id_file"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/heic"
+                        onChange={e => { setIdFile(e.target.files?.[0] || null); setError(''); }}
+                        style={{ fontSize:13, fontFamily:"'Lexend', sans-serif", color:'var(--text-body)', width:'100%' }}
+                    />
+                    <p style={{ margin:'6px 0 0', fontSize:12, lineHeight:1.5, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
+                        {idFile ? `Attached: ${idFile.name}` : 'JPEG, PNG, WEBP or HEIC. Up to 10MB.'}
+                    </p>
+                </Field>
 
                 {/* Password */}
                 <SectionHeader icon={<IcoLock />} title="Create Password" />

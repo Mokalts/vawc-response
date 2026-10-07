@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
 from models.otp import OTP
-from schemas.user import UserRegister, UserLogin, TokenResponse, UserResponse
+from schemas.user import UserRegister, UserLogin, TokenResponse, UserResponse, RegisterResponse
 from schemas.otp import OTPRequest, OTPVerify
 from core.security import (
     hash_password, verify_password, create_access_token,
@@ -164,7 +164,7 @@ def available_channels():
 
 # ─── Register ─────────────────────────────────────────────────────────────────
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
 @limiter.limit("12/hour")
 def register(request: Request, payload: UserRegister, db: Session = Depends(get_db)):
     validate_password_strength(payload.password)
@@ -236,7 +236,12 @@ def register(request: Request, payload: UserRegister, db: Session = Depends(get_
         import threading
         threading.Thread(target=send_otp_sms, args=(user.phone_number, code), daemon=True).start()
 
-    return user
+    # The form sends the ID photograph next, on the same button press. It has no
+    # session yet and will not get one until an officer approves that ID, so it
+    # is handed the single-purpose token that opens the upload and nothing else.
+    out = UserResponse.model_validate(user).model_dump()
+    out["id_token"] = create_id_submit_token(user.id)
+    return out
 
 
 # ─── Login ────────────────────────────────────────────────────────────────────

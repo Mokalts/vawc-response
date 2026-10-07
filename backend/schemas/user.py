@@ -48,6 +48,20 @@ class UserResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class RegisterResponse(UserResponse):
+    """What registration answers with.
+
+    Carries a single-purpose token for sending the ID photograph, so the form
+    can upload it on the same Create Account press rather than making her do a
+    second thing. It opens the ID upload and nothing else, it expires in half an
+    hour, and it is handed only to whoever just created the account.
+
+    The account itself is not usable yet: sign-in still waits on an officer
+    approving the ID, and this token cannot be exchanged for a session.
+    """
+    id_token: Optional[str] = None
+
+
 class UserUpdate(BaseModel):
     first_name: Optional[str] = None
     middle_name: Optional[str] = None

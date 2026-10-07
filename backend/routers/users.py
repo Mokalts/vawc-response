@@ -176,12 +176,14 @@ async def submit_id_document(
 ):
     """Send an ID so an officer can confirm the account is a real person.
 
-    Entirely optional, and deliberately so. She can file a report the moment she
-    opens the app; this exists so the desk can tell real accounts from dummies,
-    not so identification becomes a condition of being helped. A woman deciding
-    whether to report is often doing it on a borrowed phone with her documents
-    in a house she has left, and a system that asked for ID first would lose
-    exactly the reports it exists to receive.
+    Reached from two places: the registration form, which asks for one, and a
+    refused sign-in, for an account that has none or whose ID was rejected.
+
+    Identification is a condition of holding an ACCOUNT, not of being helped.
+    That distinction is the whole design and is worth keeping straight: a woman
+    deciding whether to report is often on a borrowed phone with her documents
+    in a house she has left, and the hotlines on the first screen reach the
+    barangay, the PNP and the DSWD without any of this.
 
     The photograph is uploaded as an authenticated asset, so its Cloudinary URL
     is worth nothing on its own, and it is destroyed the moment an officer
