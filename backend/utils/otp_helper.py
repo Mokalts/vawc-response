@@ -76,6 +76,10 @@ def verify_otp(db: Session, user_id: int, code: str) -> bool:
 SEMAPHORE_URL = "https://api.semaphore.co/api/v4/messages"
 TEXTBEE_BASE = "https://api.textbee.dev/api/v1/gateway"
 
+# Android subscription ids are small counters, not identifiers of any size.
+# Anything longer than this is something else that happens to be digits.
+MAX_SIM_ID_DIGITS = 4
+
 
 def _normalize_ph_number(phone: str) -> str:
     """A Philippine mobile number as Semaphore wants it: 09xxxxxxxxx."""
@@ -173,12 +177,21 @@ def _send_via_textbee(api_key: str, phone_number: str, message: str) -> bool:
     # Left empty, the phone falls back to the default SIM chosen in the app.
     sim = str(getattr(settings, "TEXTBEE_SIM_ID", "") or "").strip()
     if sim:
-        try:
+        # Android hands out subscription ids as small counters, so a real one is
+        # one or two digits. A phone number also parses as an integer, and that
+        # is the mistake this setting invites: it sits next to an API key and a
+        # device id and looks like somewhere a number belongs.
+        #
+        # Refusing is better than passing it on. textbee does not check the id
+        # against the phone, so a wrong one is ignored and the handset sends
+        # from whichever SIM it likes, which looks exactly like the problem this
+        # setting was added to solve.
+        if sim.isdigit() and len(sim) <= MAX_SIM_ID_DIGITS:
             body["simSubscriptionId"] = int(sim)
-        except ValueError:
-            # A wrong id is ignored by the phone, which then sends from whichever
-            # SIM it likes. Saying so beats a message leaving on the wrong number.
-            print(f"[SMS] TEXTBEE_SIM_ID {sim!r} is not a number; letting the app default decide.")
+        else:
+            print(f"[SMS] TEXTBEE_SIM_ID {sim!r} is not a subscription id. It should be the "
+                  f"small number the textbee app shows under Dashboard, SIM Cards, not a phone "
+                  f"number or a slot. Letting the app default decide.")
 
     resp = requests.post(
         url,
