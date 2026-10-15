@@ -44,10 +44,21 @@ seed_super_admin()
 # the way the login lockout already did.
 limiter = Limiter(key_func=client_ip)
 
+from core.config import settings as _settings
+
+# Whether this is a deployed environment, decided the same way CORS decides it:
+# real origins configured means production. Locally the docs stay on, because
+# browsing them is how you work on the thing.
+_IS_DEPLOYED = bool((_settings.ALLOWED_ORIGINS or "").strip())
+_DOCS_ON = _settings.ENABLE_DOCS or not _IS_DEPLOYED
+
 app = FastAPI(
     title="VAWC-Response API",
     description="Backend API for the VAWC Reporting and Monitoring System",
     version="1.0.0",
+    docs_url="/docs" if _DOCS_ON else None,
+    redoc_url="/redoc" if _DOCS_ON else None,
+    openapi_url="/openapi.json" if _DOCS_ON else None,
 )
 
 app.state.limiter = limiter
@@ -55,7 +66,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Allowed CORS origins: localhost defaults for dev + any production origins
 # supplied via the ALLOWED_ORIGINS setting (comma-separated, from .env or OS env).
-from core.config import settings
+settings = _settings
 _DEFAULT_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
@@ -116,12 +127,17 @@ def root():
     return {"message": "VAWC-Response API is running."}
 
 
+# Keep-warm endpoint that ALSO touches the database. Rate limited despite being
+# trivial: it is the one public route that reaches Postgres, and on a free Neon
+# plan compute is the budget. A monitor polling it too often is what took this
+# system down once already, and anyone can poll it.
 # Keep-warm endpoint that ALSO touches the database. Point the uptime monitor
 # here (instead of "/") so the free-tier Postgres (Neon) stays awake too — not
 # just the web server. This prevents a slow first login when the DB has
 # auto-suspended after inactivity. Accepts HEAD so uptime monitors get a 200.
 @app.api_route("/health/db", methods=["GET", "HEAD"], tags=["Health"])
-def health_db(db: Session = Depends(get_db)):
+@limiter.limit("30/minute")
+def health_db(request: Request, db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
         return {"status": "ok", "db": "up"}

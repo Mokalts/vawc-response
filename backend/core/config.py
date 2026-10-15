@@ -87,6 +87,16 @@ class Settings(BaseSettings):
     # Extra CORS origins for production (comma-separated). localhost is always allowed.
     ALLOWED_ORIGINS: str = ""
 
+    # The interactive API docs at /docs, /redoc and /openapi.json. Off wherever
+    # ALLOWED_ORIGINS is set, because that is a deployed environment, and there
+    # they hand anyone who asks a complete map of the system: every endpoint,
+    # every field name, every shape of request that will be accepted. None of
+    # that is secret on its own and none of it is a way in, but it turns
+    # "find the attack surface" into "read the manual", and this is a system
+    # whose records are worth more than most. Set it true for a moment if you
+    # need to poke at the API by hand, then clear it.
+    ENABLE_DOCS: bool = False
+
     # Auth cookie settings. For a cross-site setup (frontend on a different domain
     # than the API, e.g. *.web.app + *.onrender.com) the browser only sends the
     # cookie when SameSite=None AND Secure=True (HTTPS). Locally, keep the defaults
