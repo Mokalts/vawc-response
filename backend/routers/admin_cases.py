@@ -6,6 +6,7 @@ from database import get_db
 from models.case import Case
 from models.case_message import CaseMessage
 from models.case_activity import CaseActivity, log_activity
+from models.deletion_record import record_deletion
 from models.report import Report, ReportStatus
 from models.user import User
 from models.admin import Admin
@@ -908,7 +909,7 @@ def delete_case(
 def force_delete_case(
     case_id: int,
     db: Session = Depends(get_db),
-    _: Admin = Depends(get_current_admin_full_access),
+    admin: Admin = Depends(get_current_admin_full_access),
 ):
     """
     Permanently remove a soft-deleted case and all its reports (cascade).
@@ -933,9 +934,12 @@ def force_delete_case(
             detail="Deleted case not found. Only cases already in Recently Deleted can be permanently removed.",
         )
     case_number = case.case_number
+    # The case's own trail goes with it, so the fact of the deletion is recorded
+    # somewhere the deletion cannot reach.
+    record_deletion(db, "case", case.id, admin, [case_number])
+
     # The audit rows point at this case, so they have to go first or the foreign
-    # key refuses the delete. Permanent means permanent: a purged case leaves no
-    # trail, which is why this is Super-Admin-only and off by default.
+    # key refuses the delete.
     db.query(CaseActivity).filter(CaseActivity.case_id == case.id).delete()
     db.delete(case)  # cascades to reports via delete-orphan
     db.commit()

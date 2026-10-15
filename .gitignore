@@ -72,3 +72,7 @@ TODO_PRIVATE.md
 
 # Database snapshots from backup_db.py. Case data: never commit these.
 backend/backups/
+
+# Test scratch database
+backend/_pytest.db
+backend/_pytest.db-journal

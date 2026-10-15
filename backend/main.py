@@ -11,6 +11,7 @@ from models import User, Report, OTP
 from models.case import Case
 from models.case_message import CaseMessage
 from models.case_activity import CaseActivity
+from models.deletion_record import DeletionRecord
 from models.admin import Admin
 # New lawful-flow models — imported so create_all registers their tables.
 from models.bpo import BPO
@@ -60,6 +61,26 @@ app = FastAPI(
     redoc_url="/redoc" if _DOCS_ON else None,
     openapi_url="/openapi.json" if _DOCS_ON else None,
 )
+
+# ── What this instance is running with ───────────────────────────────────────
+# Printed once, loudly, because two of these are meant to be temporary and a
+# temporary setting nobody is reminded of is a permanent one.
+if _IS_DEPLOYED and _DOCS_ON:
+    print("[CONFIG] WARNING: API docs are OPEN on a deployed instance. "
+          "Clear ENABLE_DOCS when you have finished.")
+
+if (_settings.FACE_BYPASS_CODE or "").strip():
+    print("[CONFIG] WARNING: FACE_BYPASS_CODE is SET. Any admin holding it can "
+          "skip the face check with only a password. This is for a demo. "
+          "Clear it afterwards.")
+
+if not (_settings.ENCRYPTION_KEY or "").strip():
+    print("[CONFIG] WARNING: ENCRYPTION_KEY is empty. Anything that should be "
+          "encrypted at rest will not be.")
+
+if _settings.ALLOW_HARD_DELETE:
+    print("[CONFIG] NOTE: permanent case deletion is enabled.")
+
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)

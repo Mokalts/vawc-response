@@ -112,6 +112,20 @@ def _e164_ph(phone: str) -> str:
     return phone or ""
 
 
+def _mask(phone: str) -> str:
+    """A number as it should appear in a log: 0927****700.
+
+    Render keeps these lines, and they are read by whoever can open the
+    dashboard. A server log is a reasonable place to learn that an SMS failed
+    and an unreasonable place to learn who was being texted, which on this
+    system means who is reporting abuse.
+    """
+    d = "".join(ch for ch in (phone or "") if ch.isdigit())
+    if len(d) < 7:
+        return "a number"
+    return d[:4] + "*" * (len(d) - 7) + d[-3:]
+
+
 def _provider() -> str:
     return (getattr(settings, "SMS_PROVIDER", "") or "textbee").strip().lower()
 
@@ -218,12 +232,12 @@ def send_sms(phone_number: str, message: str) -> bool:
     still has to have signal and credit, which this code cannot see.
     """
     if not sms_enabled():
-        print(f"[SMS] skipped for {phone_number}: SMS is switched off.")
+        print(f"[SMS] skipped for {_mask(phone_number)}: SMS is switched off.")
         return False
 
     api_key = _provider_key()
     if not api_key:
-        print(f"[DEV] SMS to {phone_number}: {message}  (no provider key set, SMS skipped)")
+        print(f"[DEV] SMS to {_mask(phone_number)}: {message}  (no provider key set, SMS skipped)")
         return False
 
     provider = _provider()
@@ -236,7 +250,7 @@ def send_sms(phone_number: str, message: str) -> bool:
             print(f"[SMS] unknown SMS_PROVIDER {provider!r}; expected textbee or semaphore.")
             return False
         if ok:
-            print(f"[SMS] sent to {phone_number} via {provider}.")
+            print(f"[SMS] sent to {_mask(phone_number)} via {provider}.")
         return ok
     except Exception as e:  # noqa: BLE001
         print(f"[SMS] failed to send via {provider}: {e}")

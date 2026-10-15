@@ -7,6 +7,45 @@ const api = axios.create({
     baseURL: API_URL,
 });
 
+
+// Where to go when the proxy itself is unreachable.
+//
+// Every request goes through a Cloudflare Worker, because this barangay's ISP
+// blackholes the two addresses vawc-response.onrender.com resolves to, and
+// without the Worker phones on that network cannot reach the API at all. That
+// fixed one network by making every network depend on one Worker.
+//
+// So: a request that fails with no HTTP response at all (DNS, connection
+// refused, the Worker down) is retried once against Render directly. A request
+// that comes back with a status is NOT retried, because the server answered
+// and a 401 or a 429 means what it says.
+//
+// On the barangay's own network the retry will fail too, which is expected:
+// those addresses are the ones being blackholed. It is for everyone else.
+//
+// The admin app deliberately does NOT do this. Its session is a host-only
+// cookie bound to the Worker's domain, so a request sent straight to Render
+// would carry no cookie, come back 401, fail the silent refresh and sign the
+// officer out. There, a fallback turns a brief proxy blip into a forced
+// logout. Here the session is a bearer token in a header, which travels.
+const FALLBACK_URL = "https://vawc-response.onrender.com";
+
+function isUnreachable(error) {
+    return !error.response && error.code !== "ECONNABORTED" && !axios.isCancel(error);
+}
+
+async function retryDirect(error) {
+    const cfg = error.config;
+    if (!cfg || cfg._triedFallback) return null;
+    if (!isUnreachable(error)) return null;
+    if ((cfg.baseURL || "") === FALLBACK_URL) return null;
+
+    cfg._triedFallback = true;
+    cfg.baseURL = FALLBACK_URL;
+    console.warn("[api] proxy unreachable, trying the backend directly");
+    return axios(cfg);
+}
+
 // ── Token helpers ─────────────────────────────────────────────────────────────
 function getToken() { return localStorage.getItem("token"); }
 function setToken(t) { localStorage.setItem("token", t); }
@@ -105,6 +144,9 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
+        const direct = await retryDirect(error);
+        if (direct) return direct;
+
         const status = error.response?.status;
         const url    = error.config?.url || "";
 

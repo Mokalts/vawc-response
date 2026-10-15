@@ -25,6 +25,7 @@ from models.admin import Admin
 from models.case import Case
 from models.otp import OTP
 from models.case_activity import CaseActivity
+from models.deletion_record import DeletionRecord, record_deletion
 from core.admin_dependencies import get_current_admin_full_access
 from utils.cloudinary_helper import destroy_image
 from core.account_notice import notify_account_change
@@ -356,6 +357,13 @@ def force_delete_victim(
 
     name = f"{u.first_name} {u.last_name}"
 
+    # Written before anything is removed, in the same transaction, so the record
+    # of the deletion lands or rolls back with the deletion itself. Without it
+    # this operation erased the evidence that it had ever run.
+    cases = db.query(Case).filter(Case.user_id == user_id).all()
+    record_deletion(db, "victim_account", user_id, admin,
+                    [c.case_number for c in cases])
+
     # The activity trail is the one child of a case with no cascade on the
     # relationship, so deleting a case out from under it raises a foreign key
     # error and the whole deletion rolls back. Append-only means the app never
@@ -380,6 +388,36 @@ def force_delete_victim(
 
     print(f"[ADMIN] {admin.username} permanently deleted victim {user_id} ({name}), {len(case_ids)} case(s).")
     return {"message": f"{name}'s account and all related data permanently deleted."}
+
+
+# ─── GET /admin/users/deletion-log — what was permanently removed ─────────
+@router.get("/deletion-log")
+def deletion_log(
+    limit: int = Query(100, le=500),
+    db: Session = Depends(get_db),
+    _: Admin = Depends(get_current_admin_full_access),
+):
+    """Every permanent deletion, newest first.
+
+    Deliberately holds nothing about the person who was removed, so this is not
+    a back door to the records she asked to have erased. It answers a different
+    question: what happened to case 2026-014, and who decided.
+    """
+    rows = (
+        db.query(DeletionRecord)
+        .order_by(desc(DeletionRecord.created_at))
+        .limit(limit)
+        .all()
+    )
+    return [{
+        "id":           r.id,
+        "kind":         r.kind,
+        "subject_id":   r.subject_id,
+        "case_numbers": r.case_numbers,
+        "case_count":   r.case_count,
+        "admin_name":   r.admin_name,
+        "created_at":   r.created_at.isoformat() if r.created_at else None,
+    } for r in rows]
 
 
 # ─── DELETE /admin/users/cleanup-unverified — purge dummy accounts > 90d ───
