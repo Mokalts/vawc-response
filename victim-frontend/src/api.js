@@ -30,11 +30,21 @@ const api = axios.create({
 // logout. Here the session is a bearer token in a header, which travels.
 const FALLBACK_URL = "https://vawc-response.onrender.com";
 
+// Only when this build is actually pointed at the proxy. Without this check a
+// failed request during local development quietly retried against LIVE
+// PRODUCTION, carrying the developer's real token: a test submission or a test
+// deletion would land on real records. Caught by watching the console while the
+// local API was stopped on purpose.
+const PROXIED = /^https:\/\//.test(API_URL)
+    && !/localhost|127\.0\.0\.1/.test(API_URL)
+    && API_URL !== FALLBACK_URL;
+
 function isUnreachable(error) {
     return !error.response && error.code !== "ECONNABORTED" && !axios.isCancel(error);
 }
 
 async function retryDirect(error) {
+    if (!PROXIED) return null;
     const cfg = error.config;
     if (!cfg || cfg._triedFallback) return null;
     if (!isUnreachable(error)) return null;

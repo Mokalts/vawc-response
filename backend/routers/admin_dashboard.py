@@ -13,6 +13,8 @@ from core.status_labels import CLOSURE_REASON_DISPLAY, RELATIONSHIP_DISPLAY, abu
 from datetime import datetime, timedelta
 import calendar
 
+from core.timeutil import ph_local_to_utc, utc_to_ph_local
+
 router = APIRouter(prefix="/admin", tags=["Admin Dashboard"])
 
 
@@ -102,10 +104,16 @@ def _resolve_range(period: str, start: str = None, end: str = None):
             e = e.replace(hour=23, minute=59, second=59)
         if e < s:
             raise HTTPException(status_code=400, detail="End date cannot be before start date.")
+        # The officer picked these in a date field, so they mean Manila days.
         label = f"{s.strftime('%b %d, %Y')} — {e.strftime('%b %d, %Y')}"
-        return s, e, label
+        return ph_local_to_utc(s), ph_local_to_utc(e), label
 
-    now = datetime.utcnow()
+    # Manila's today, not the server's. The window is then converted back to
+    # UTC at the end, because created_at is UTC. Computed in UTC, every month
+    # boundary sat eight hours early: a case filed at 2am on the 1st was stored
+    # as the previous day in UTC and counted in the previous month. That is a
+    # wrong number on the Lupon monthly report, which is a filed document.
+    now = utc_to_ph_local(datetime.utcnow())
     y, m = now.year, now.month
     if period == "monthly":
         s = datetime(y, m, 1)
@@ -126,7 +134,8 @@ def _resolve_range(period: str, start: str = None, end: str = None):
         s = datetime(y, q_start, 1)
         e = datetime(y, q_end, calendar.monthrange(y, q_end)[1], 23, 59, 59)
         label = f"Q{(m - 1) // 3 + 1} {y}"
-    return s, e, label
+    # s and e are Manila wall-clock; the column they are compared against is UTC.
+    return ph_local_to_utc(s), ph_local_to_utc(e), label
 
 
 from core.status_labels import STATUS_DISPLAY
@@ -150,8 +159,10 @@ def monthly_report(
 
     Any face-verified admin: the officer who handles the cases is the one who
     files this report, and it carries full complainant and respondent names."""
-    start = datetime(year, month, 1)
-    end   = datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1)
+    # Manila months, converted to UTC for the comparison. Same eight-hour slip
+    # as the dashboard had, on the report that actually gets filed.
+    start = ph_local_to_utc(datetime(year, month, 1))
+    end   = ph_local_to_utc(datetime(year + 1, 1, 1) if month == 12 else datetime(year, month + 1, 1))
 
     cases = db.query(Case).filter(
         Case.is_deleted == False,
@@ -194,10 +205,18 @@ def get_dashboard_stats(
 ):
     start_dt, end_dt, period_label = _resolve_range(period, start, end)
 
+    # One meaning of "case", shared with the Profiles page.
+    #
+    # This counted everything including `submitted`, which is a report nobody at
+    # the desk has confirmed yet. Profiles lists only confirmed ones. So the two
+    # screens disagreed by however many were waiting, and the dashboard also
+    # counted each of those twice: once here and once in its own New Reports
+    # tile beside it.
     in_range = (
         Case.created_at >= start_dt,
         Case.created_at <= end_dt,
         Case.is_deleted == False,
+        Case.status != ReportStatus.submitted,
     )
 
     total_cases = db.query(Case).filter(*in_range).count()

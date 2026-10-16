@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
-from core.timeutil import ph_local_to_utc
+from core.timeutil import ph_local_to_utc, utc_to_ph_local
 
 from database import get_db
 from models.case import Case
@@ -62,9 +63,28 @@ def _active_official(db, role):
 
 
 def _bpo_number(db) -> str:
-    year = datetime.utcnow().year
-    n = db.query(BPO).filter(BPO.bpo_number.like(f"BPO-{year}-%")).count()
-    return f"BPO-{year}-{str(n + 1).zfill(3)}"
+    """Next protection order number, as BPO-YYYY-NNN.
+
+    Both halves of this were wrong in the same two ways the case number was, and
+    were fixed there and not here.
+
+    The year is Manila's. Until 8am on the 1st of January, UTC is still in the
+    old year, and a protection order issued at 2am on New Year's Day carried it.
+
+    And the sequence is the HIGHEST existing, not a count. bpo_number is unique;
+    a count drops when anything is deleted, including a BPO carried off by a
+    force-deleted case, and the next number then collides with one already
+    issued. That is a 500 at the moment an officer is trying to issue a
+    protection order, which is the worst moment this system has.
+    """
+    year = utc_to_ph_local(datetime.utcnow()).year
+    highest = 0
+    for (num,) in db.query(BPO.bpo_number).filter(BPO.bpo_number.like(f"BPO-{year}-%")).all():
+        try:
+            highest = max(highest, int(str(num).rsplit("-", 1)[-1]))
+        except (ValueError, TypeError):
+            continue
+    return f"BPO-{year}-{str(highest + 1).zfill(3)}"
 
 
 def _serialize(b: BPO) -> dict:
@@ -117,7 +137,21 @@ def create_bpo(
         relief_stay_away_100m=payload.relief_stay_away_100m,
         applied_at=datetime.utcnow(),
     )
-    db.add(bpo)
+    # Retried for the same reason the case number is: the number is read before
+    # it is written, and two officers issuing at once read the same one. The
+    # savepoint opens before the add; see routers/cases.py for why.
+    for attempt in range(6):
+        savepoint = db.begin_nested()
+        try:
+            db.add(bpo)
+            db.flush()
+            savepoint.commit()
+            break
+        except IntegrityError:
+            savepoint.rollback()
+            if attempt == 5:
+                raise HTTPException(status_code=503, detail="Could not assign a BPO number. Please try again.")
+            bpo.bpo_number = _bpo_number(db)
     case.status = ReportStatus.bpo_applied
     case.admin_id = current_admin.id
     case.has_status_update = True

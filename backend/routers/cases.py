@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from pydantic import BaseModel
@@ -13,7 +14,7 @@ from models.report import Report, ReportStatus
 from models.user import User
 from core.dependencies import get_current_user
 from core.encryption import encrypt, encrypt_float, decrypt, decrypt_float
-from core.timeutil import ph_local_to_utc
+from core.timeutil import ph_local_to_utc, utc_to_ph_local
 from core.id_gate import require_verified_id
 
 from core.status_labels import STATUS_DISPLAY
@@ -53,12 +54,22 @@ def _fuzzy_match(a: str, b: str) -> bool:
 def _generate_case_number(db: Session) -> str:
     """Next case number in format YYYY-000-NNN.
 
+    The year is Manila's, not the server's. Between midnight and 8am on the 1st
+    of January, Manila is already in the new year while UTC is still in the old
+    one, so a case filed at 2am on New Year's Day was numbered with the year
+    that had just ended. case_number is unique and never reissued, so that is
+    wrong on a document for as long as the document exists.
+
     Uses the HIGHEST existing sequence for the year, not a count: if any case is
     ever permanently deleted the count no longer matches the numbering and a
     count-based value collides with an existing case_number (unique), which
     surfaced as a 500 on submit.
+
+    Still only as good as the moment it is read. Two reports submitted in the
+    same instant both see the same highest number and both build the next one,
+    and the unique index refuses the second. The caller retries; see below.
     """
-    year = datetime.utcnow().year
+    year = utc_to_ph_local(datetime.utcnow()).year
     prefix = f"{year}-000-"
     highest = 0
     for (cn,) in db.query(Case.case_number).filter(Case.case_number.like(f"{year}-%")).all():
@@ -253,8 +264,30 @@ def submit_report(
                 target_case.relationship_to_offender = RelationshipToOffender(payload.relationship_to_offender)
             except ValueError:
                 pass
-        db.add(target_case)
-        db.flush()  # get ID without committing
+        # Retried, because the number above is read before it is written and two
+        # submissions in the same instant read the same one. The loser of that
+        # race used to get a 500 on a report she had just spent several minutes
+        # writing.
+        #
+        # The savepoint has to be opened BEFORE the add: rolling one back
+        # removes the pending object from the session, so the next attempt adds
+        # it again with a fresh number. Flushing inside a savepoint opened after
+        # the add leaves the whole transaction unusable instead.
+        for attempt in range(6):
+            savepoint = db.begin_nested()
+            try:
+                db.add(target_case)
+                db.flush()  # get ID without committing
+                savepoint.commit()
+                break
+            except IntegrityError:
+                savepoint.rollback()
+                if attempt == 5:
+                    raise HTTPException(
+                        status_code=503,
+                        detail="The desk is busy right now. Your draft is saved. Please tap Submit again.",
+                    )
+                target_case.case_number = _generate_case_number(db)
 
         # Optional children (BPO Application items 4/4a) — encrypted minor data.
         for ch in (payload.children or []):

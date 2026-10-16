@@ -142,7 +142,17 @@ function ReportNow() {
     useEffect(() => {
         api.get('/users/me')
             .then(r => setIdStatus(r.data?.id_status || 'none'))
-            .catch(() => setIdStatus('none'));
+            // Left as null, which lets the form through. It used to fall to
+            // 'none', and 'none' puts the ID screen in place of the whole
+            // report form: a cold start or a weak signal told a woman whose ID
+            // was approved weeks ago that she had to verify it before she could
+            // report anything.
+            //
+            // Nobody reaches this page without an approved ID, because sign-in
+            // refuses the rest. So the only thing this request can tell us is
+            // something we already know, and when it fails the safe assumption
+            // is the one that lets her file.
+            .catch(() => setIdStatus(null));
     }, []);
 
     // Auto-save the text draft (debounced) so a back/refresh/close does not lose it.
@@ -274,7 +284,7 @@ function ReportNow() {
                 const timedOut = err.code === "ECONNABORTED" || /timeout/i.test(err.message || "");
                 setSubmitErr(
                     (timedOut
-                        ? "The server took too long to respond. Your report was NOT sent, but your draft is saved. Please try again in a moment."
+                        ? "The server took too long to answer, so we cannot tell whether your report went through. Your draft is saved. Tap Submit again in a moment: if the first one did arrive, this will be added to the same case rather than starting a new one."
                         : "Cannot reach the server right now. Your report was NOT sent, but your draft is saved. Please check your internet and tap Submit again.")
                     + ` [${err.code || "network"}${imageFiles.length ? ", " + imageFiles.length + " photo(s)" : ""}]`
                 );

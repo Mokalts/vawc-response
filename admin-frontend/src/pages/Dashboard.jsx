@@ -235,6 +235,10 @@ function NewReportsModal({ onClose, onConfirmed }) {
     // than decrypting every statement into a list nobody has opened yet.
     const [detail, setDetail] = useState(null);
     const [detailLoading, setDetailLoading] = useState(false);
+    // Anything that went wrong in here. Every path below used to swallow its
+    // error, so a failed confirm looked exactly like a successful one that had
+    // not refreshed, and a failed load looked like an empty desk.
+    const [failure, setFailure] = useState('');
 
     useEffect(() => {
         if (!selected) { setDetail(null); return; }
@@ -250,8 +254,8 @@ function NewReportsModal({ onClose, onConfirmed }) {
     useEffect(() => {
         // Fetch submitted (unconfirmed) cases from the correct endpoint
         api.get('/admin/cases?status=submitted&limit=50')
-            .then(r => setReports(r.data.cases || r.data.reports || []))
-            .catch(() => { })
+            .then(r => { setReports(r.data.cases || r.data.reports || []); setFailure(''); })
+            .catch(() => setFailure('Could not load the new reports. Check your connection and reopen this.'))
             .finally(() => setLoading(false));
     }, []);
 
@@ -265,8 +269,14 @@ function NewReportsModal({ onClose, onConfirmed }) {
             await api.patch(`/admin/cases/${id}/confirm`);
             setConfirmed(p => ({ ...p, [id]: true }));
             setSelected(null);
+            setFailure('');
             onConfirmed();
-        } catch { }
+        } catch (err) {
+            // Said out loud. The officer pressed Confirm, the spinner stopped,
+            // and nothing happened or was said; the only way to find out it had
+            // failed was to notice the case still sitting there afterwards.
+            setFailure(err.response?.data?.detail || 'Could not confirm that case. Nothing was changed. Please try again.');
+        }
         finally { setConfirming(p => ({ ...p, [id]: false })); }
     };
 
@@ -286,12 +296,22 @@ function NewReportsModal({ onClose, onConfirmed }) {
                         <div>
                             <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#7B2D8B', fontFamily: "'Lexend',sans-serif" }}>New Reports</p>
                             <p style={{ margin: 0, fontSize: 12, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>
-                                {loading ? 'Loading…' : pending.length > 0 ? `${pending.length} awaiting confirmation` : 'All confirmed'}
+                                {loading
+                                    ? 'Loading…'
+                                    : pending.length > 0
+                                        ? `${pending.length} awaiting confirmation${reports.length >= 50 ? ' (first 50 shown)' : ''}`
+                                        : 'All confirmed'}
                             </p>
                         </div>
                     </div>
                     <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 4, border: 'none', background: 'var(--adm-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}><IcoX /></button>
                 </div>
+
+                {failure && (
+                    <div role="alert" style={{ margin: '12px 24px 0', padding: '10px 12px', borderRadius: 8, background: '#FEF2F2', border: '1px solid #FECACA', color: '#B91C1C', fontSize: 12.5, lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
+                        {failure}
+                    </div>
+                )}
 
                 {/* Body */}
                 <div style={{ overflowY: 'auto', flex: 1, padding: '4px 0' }}>

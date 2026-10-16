@@ -96,9 +96,6 @@ export default function Reports() {
   const [toast, setToast] = useState(null);
   const timer = useRef(null);
 
-  // Read for display purposes; record access is no longer split by role.
-  const currentAdmin = (() => { try { return JSON.parse(localStorage.getItem("admin_user") || localStorage.getItem("admin") || "{}"); } catch { return {}; } })();
-
   const showToast = (msg, success = true) => { setToast({ msg, success }); setTimeout(() => setToast(null), 3500); };
 
   const handleSearch = (e) => {

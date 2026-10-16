@@ -396,7 +396,9 @@ def get_victim_list(
             User.last_name.ilike(f"%{search}%")  |
             User.email.ilike(f"%{search}%")
         )
-    victims = query.order_by(User.last_name, User.first_name).all()
+    # Capped. A barangay will not reach this, but an unbounded .all() on a page
+    # that loads on sight is the kind of thing that is fine until it is not.
+    victims = query.order_by(User.last_name, User.first_name).limit(500).all()
 
     is_super = True   # records are not masked by role
     result = []
