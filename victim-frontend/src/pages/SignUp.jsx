@@ -68,10 +68,20 @@ const Spinner      = () => (<span style={{ width:14, height:14, border:'2px soli
 const ROW  = { display:'flex', gap:12, flexWrap:'wrap' };
 const CELL = { flex:'1 1 150px', minWidth:0 };
 
+// Required is the default and is marked; optional is the exception and is
+// marked too. It used to label only the optional ones, which asks her to work
+// out what is required by noticing what is NOT labelled, and that is backwards.
+//
+// The asterisk is announced as "required" rather than read out as a star, and
+// the legend above the form says what it means, because a symbol nobody
+// explained is not an explanation.
 const Field = ({ label, optional, htmlFor, children, style }) => (
     <div style={{ marginBottom:16, ...style }}>
         <label htmlFor={htmlFor} style={{ display:'block', fontSize:11, fontWeight:700, color:'var(--accent-text)', marginBottom:6, textTransform:'uppercase', letterSpacing:'0.07em', fontFamily:"'Lexend', sans-serif" }}>
-            {label}{optional && <span style={{ fontWeight:400, color:'var(--text-muted)', fontSize:10.5, textTransform:'none', letterSpacing:0 }}> (optional)</span>}
+            {label}
+            {optional
+                ? <span style={{ fontWeight:400, color:'var(--text-muted)', fontSize:10.5, textTransform:'none', letterSpacing:0 }}> (optional)</span>
+                : <span aria-label="required" style={{ color:'#C62828', marginLeft:3 }}>*</span>}
         </label>
         {children}
     </div>
@@ -329,6 +339,10 @@ function SignUp() {
                     address it had nothing left to fill: by the time she reached it
                     she had already typed everything it could have read off the card,
                     and the only thing it could do was tell her so. */}
+                <p style={{ margin:'0 0 14px', fontSize:12, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
+                    Fields marked <span style={{ color:'#C62828', fontWeight:700 }}>*</span> are required.
+                </p>
+
                 {/* Your ID */}
                 <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#C45E10" strokeWidth="1.8"/><circle cx="9" cy="11" r="2" stroke="#C45E10" strokeWidth="1.8"/><path d="M14 10h4M14 14h4" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Your ID" />
 
@@ -377,8 +391,8 @@ function SignUp() {
                 <Field label="Middle Name" optional htmlFor="middle_name"><Input name="middle_name" placeholder="Middle name" value={form.middle_name} onChange={handleChange} /></Field>
 
                 <div style={ROW}>
-                    <Field label="Birthdate" htmlFor="birthdate" style={CELL}><Input type="date" name="birthdate" value={form.birthdate} onChange={handleChange} /></Field>
-                    <Field label="Sex" htmlFor="sex" style={CELL}>
+                    <Field optional label="Birthdate" htmlFor="birthdate" style={CELL}><Input type="date" name="birthdate" value={form.birthdate} onChange={handleChange} /></Field>
+                    <Field optional label="Sex" htmlFor="sex" style={CELL}>
                         <Select name="sex" value={form.sex} onChange={handleChange}>
                             <option value="">Select</option>
                             <option value="Female">Female</option>

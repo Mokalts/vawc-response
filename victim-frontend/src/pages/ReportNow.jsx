@@ -572,6 +572,10 @@ function ReportNow() {
                     {/* ── Step 1: Incident Details ── */}
                     {step === 1 && (
                         <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                            <p style={{ margin:'0 0 12px', fontSize:12, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
+                                Sections marked <span style={{ color:'#C62828', fontWeight:700 }}>*</span> are required.
+                            </p>
+
                             {/* Offender name */}
                             <div style={S.card}>
                                 <div style={S.cardHeader}>
@@ -579,8 +583,8 @@ function ReportNow() {
                                         <IcoEdit />
                                     </div>
                                     <div>
-                                        <h2 id="lbl-offender" style={S.cardTitle}>Offender's Name</h2>
-                                        <p style={S.cardSub}>Pangalan ng salarin - required</p>
+                                        <h2 id="lbl-offender" style={S.cardTitle}>Offender's Name<span aria-label="required" style={{ color:'#C62828', marginLeft:4 }}>*</span></h2>
+                                        <p style={S.cardSub}>Pangalan ng salarin</p>
                                     </div>
                                 </div>
                                 <input
@@ -603,8 +607,8 @@ function ReportNow() {
                                         <IcoEdit />
                                     </div>
                                     <div>
-                                        <h2 id="lbl-date" style={S.cardTitle}>Date of Incident</h2>
-                                        <p style={S.cardSub}>Petsa ng pangyayari - required</p>
+                                        <h2 id="lbl-date" style={S.cardTitle}>Date of Incident<span aria-label="required" style={{ color:'#C62828', marginLeft:4 }}>*</span></h2>
+                                        <p style={S.cardSub}>Petsa ng pangyayari</p>
                                     </div>
                                 </div>
                                 <input
@@ -622,8 +626,8 @@ function ReportNow() {
                                 <div style={S.cardHeader}>
                                     <div style={{ ...S.iconBox, backgroundColor:'var(--surface-tint)', borderColor:'var(--border)' }}><IcoEdit /></div>
                                     <div>
-                                        <h2 id="lbl-rel" style={S.cardTitle}>Relationship to the Offender</h2>
-                                        <p style={S.cardSub}>Ugnayan sa nang-abuso - required</p>
+                                        <h2 id="lbl-rel" style={S.cardTitle}>Relationship to the Offender<span aria-label="required" style={{ color:'#C62828', marginLeft:4 }}>*</span></h2>
+                                        <p style={S.cardSub}>Ugnayan sa nang-abuso</p>
                                     </div>
                                 </div>
                                 <select aria-labelledby="lbl-rel" value={relationship} onChange={e => setRelationship(e.target.value)}
@@ -638,7 +642,7 @@ function ReportNow() {
                                 <div style={S.cardHeader}>
                                     <div style={{ ...S.iconBox, backgroundColor:'var(--surface-tint)', borderColor:'var(--border)' }}><IcoEdit /></div>
                                     <div>
-                                        <h2 style={S.cardTitle}>Type of Abuse</h2>
+                                        <h2 style={S.cardTitle}>Type of Abuse<span aria-label="required" style={{ color:'#C62828', marginLeft:4 }}>*</span></h2>
                                         <p style={S.cardSub}>Uri ng pang-aabuso - piliin lahat ng angkop</p>
                                     </div>
                                 </div>
@@ -690,7 +694,7 @@ function ReportNow() {
                                         <IcoEdit />
                                     </div>
                                     <div>
-                                        <h2 id="lbl-statement" style={S.cardTitle}>Your Statement</h2>
+                                        <h2 id="lbl-statement" style={S.cardTitle}>Your Statement<span aria-label="required" style={{ color:'#C62828', marginLeft:4 }}>*</span></h2>
                                         <p style={S.cardSub}>Ilarawan ang nangyari</p>
                                     </div>
                                 </div>

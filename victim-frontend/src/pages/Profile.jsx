@@ -31,9 +31,15 @@ const IcoCheck    = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill=
 const IcoGuardian = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#92400E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="7" r="4" stroke="#92400E" strokeWidth="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#92400E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const Spinner     = ({ c='#F47920', size=22 }) => (<div style={{ width:size, height:size, border:`2.5px solid ${c}30`, borderTopColor:c, borderRadius: '50%', animation:'spin 0.75s linear infinite' }} />);
 
-const Field = ({ label, value, editing, inputProps }) => (
+// `required` shows only while editing: on a page she is reading, a red star
+// beside her own name means nothing, and the only two fields the save actually
+// enforces are the first and last name.
+const Field = ({ label, value, editing, required, inputProps }) => (
     <div style={FS.group}>
-        <p style={FS.label}>{label}</p>
+        <p style={FS.label}>
+            {label}
+            {editing && required && <span aria-label="required" style={{ color:'#C62828', marginLeft:3 }}>*</span>}
+        </p>
         {editing
             ? <input className="vp-input" style={FS.input} aria-label={label} {...inputProps} />
             : <p style={FS.value}>{value || <span style={{ color:'#CBD5E1' }}>-</span>}</p>}
@@ -184,9 +190,9 @@ function Profile() {
                     <div style={S.section}>
                         <p style={S.sectionTitle}>Personal Information</p>
                         <div style={S.fieldGrid}>
-                            <Field label="First Name" value={profile.first_name} editing={editing}
+                            <Field required label="First Name" value={profile.first_name} editing={editing}
                                 inputProps={{ value:form.first_name, placeholder:'First name', onChange:e=>set('first_name',e.target.value) }} />
-                            <Field label="Last Name" value={profile.last_name} editing={editing}
+                            <Field required label="Last Name" value={profile.last_name} editing={editing}
                                 inputProps={{ value:form.last_name, placeholder:'Last name', onChange:e=>set('last_name',e.target.value) }} />
                         </div>
                         <div style={S.divider} />
