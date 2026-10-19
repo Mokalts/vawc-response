@@ -14,11 +14,12 @@ if (!document.getElementById('vawc-sos-css')) {
         @keyframes sosSlideUp { from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:translateY(0)} }
         /* No idle pulse. A control that throbs forever reads as decoration and
            competes with the report CTA; the size and colour already carry it. */
-        .sos-btn { transition: background-color 0.15s ease, box-shadow 0.15s ease; }
-        /* Darkens rather than lifting and glowing. A button that rises off the
-           page on hover is the same costume as the gradient it used to wear. */
-        .sos-btn:hover  { background-color: #A81D1D; }
-        .sos-btn:active { background-color: #911919; }
+        .sos-btn { transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+        /* Darkens AND lifts, slightly. Colour alone was too quiet to read as a
+           response, and this is the control that most needs to feel alive. It
+           still does not glow: that was the costume, this is feedback. */
+        .sos-btn:hover  { background-color: #A81D1D; transform: translateY(-2px); box-shadow: 0 8px 18px rgba(168,29,29,0.28); }
+        .sos-btn:active { background-color: #911919; transform: translateY(0) scale(0.99); }
         .sos-btn:focus-visible { outline: 3px solid rgba(198,36,36,0.35); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) { .sos-btn { transition: none; } }
         /* Rows separate by whitespace; hover is a background wash, not a border. */

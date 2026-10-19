@@ -588,7 +588,7 @@ const S = {
     empty:       { display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',padding:'60px 24px',gap:10 },
     emptyTitle:  { fontSize:18,fontWeight:700,color:'var(--accent-text)',fontFamily:"'Lexend',sans-serif" },
     emptyText:   { fontSize:14,color:'var(--text-muted)',lineHeight:1.6,fontFamily:"'Lexend',sans-serif",maxWidth:280 },
-    emptyBtn:    { marginTop:8,padding:'13px 28px',backgroundColor:'#F47920',color:'#fff',fontSize:15,fontWeight:600,border:'none',borderRadius: 4,cursor:'pointer',fontFamily:"'Lexend',sans-serif",boxShadow:'0 2px 8px rgba(244,121,32,0.25)' },
+    emptyBtn:    { marginTop:8,padding:'13px 28px',backgroundColor:'#CC4B00',color:'#fff',fontSize:15,fontWeight:600,border:'none',borderRadius: 4,cursor:'pointer',fontFamily:"'Lexend',sans-serif",boxShadow:'0 2px 8px rgba(244,121,32,0.25)' },
     backdrop:    { position:'fixed',inset:0,backgroundColor:'rgba(15,23,42,0.45)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:500,backdropFilter:'blur(3px)',padding:'20px 16px',animation:'fadeIn 0.18s ease' },
     modal:       { backgroundColor:'var(--surface)',borderRadius: 16,width:'100%',maxWidth:420,maxHeight:'88vh',display:'flex',flexDirection:'column',boxShadow:'0 20px 60px rgba(15,23,42,0.2)',animation:'popIn 0.22s ease' },
     modalHead:   { display:'flex',justifyContent:'space-between',alignItems:'center',padding:'18px 20px 14px',borderBottom:'1px solid var(--border-soft)',flexShrink:0 },
@@ -598,7 +598,7 @@ const S = {
     detailItem:  { backgroundColor:'var(--surface-alt)',borderRadius: 0,padding:'14px 15px',border:'1px solid var(--border)' },
     detailLabel: { fontSize:10.5,fontWeight:700,color:'var(--accent-text)',textTransform:'uppercase',letterSpacing:'0.7px',margin:'0 0 6px',fontFamily:"'Lexend',sans-serif" },
     detailValue: { fontSize:14.5,color:'var(--text)',lineHeight:1.6,margin:0,fontFamily:"'Lexend',sans-serif" },
-    closeFullBtn:{ flex:1,padding:13,backgroundColor:'#F47920',color:'#fff',fontSize:15,fontWeight:600,border:'none',borderRadius: 4,cursor:'pointer',fontFamily:"'Lexend',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:6 },
+    closeFullBtn:{ flex:1,padding:13,backgroundColor:'#CC4B00',color:'#fff',fontSize:15,fontWeight:600,border:'none',borderRadius: 4,cursor:'pointer',fontFamily:"'Lexend',sans-serif",display:'flex',alignItems:'center',justifyContent:'center',gap:6 },
 };
 
 export default MyCases;

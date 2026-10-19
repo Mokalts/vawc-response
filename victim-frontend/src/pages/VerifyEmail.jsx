@@ -154,7 +154,7 @@ const S = {
     progressBar:   { height:5, backgroundColor:'var(--border-soft)', borderRadius: 4, overflow:'hidden', marginBottom:8 },
     progressFill:  { height:'100%', width:'100%', backgroundColor:'#6EE7B7', borderRadius: 4, animation:'pulse 1s ease infinite' },
     progressLabel: { fontSize:12, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" },
-    btn:           { width:'100%', padding:'13px', backgroundColor:'#F47920', color:'#fff', border:'none', borderRadius: 8, fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.25)', marginBottom:10 },
+    btn:           { width:'100%', padding:'13px', backgroundColor:'#CC4B00', color:'#fff', border:'none', borderRadius: 8, fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.25)', marginBottom:10 },
     outlineBtn:    { width:'100%', padding:'13px', backgroundColor:'transparent', color:'var(--accent-text)', border:'2px solid var(--border)', borderRadius: 8, fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:"'Lexend', sans-serif" },
     footer:        { marginTop:28, fontSize:11.5, color:'#78716C', textAlign:'center', fontFamily:"'Lexend', sans-serif" },
 };

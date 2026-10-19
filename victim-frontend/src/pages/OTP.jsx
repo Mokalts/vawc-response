@@ -243,7 +243,7 @@ const S = {
     // Taller and quieter. A filled box used to go pink behind an orange border,
     // two accents on the same 50px of screen; now only the border answers.
     otpBox:     {width:'100%',maxWidth:54,height:62,borderRadius:10,border:'1.5px solid var(--border)',backgroundColor:'var(--surface-alt)',fontSize:24,fontWeight:700,textAlign:'center',color:'var(--text)',outline:'none',fontFamily:"'Lexend', sans-serif",caretColor:'#F47920'},
-    verifyBtn:  {width:'100%',padding:'14px 16px',backgroundColor:'#F47920',color:'#fff',fontSize:15,fontWeight:700,border:'none',borderRadius:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'Lexend', sans-serif"},
+    verifyBtn:  {width:'100%',padding:'14px 16px',backgroundColor:'#CC4B00',color:'#fff',fontSize:15,fontWeight:700,border:'none',borderRadius:10,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'Lexend', sans-serif"},
     divider:    {height:1,backgroundColor:'var(--border-soft)',margin:'18px 0 14px'},
     foot:       {textAlign:'center',fontSize:13.5,lineHeight:1.55,color:'var(--text-muted)',margin:0,fontFamily:"'Lexend', sans-serif"},
     link:       {color:'var(--accent-text)',fontWeight:700,cursor:'pointer',fontFamily:"'Lexend', sans-serif",background:'none',border:'none',padding:0,fontSize:'inherit'},

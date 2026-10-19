@@ -1799,6 +1799,25 @@ function OfficialsPanel({ showToast }) {
     try { await api.patch(`/admin/officials/${o.id}`, { is_active: !o.is_active }); load(); }
     catch (e) { showToast(e.response?.data?.detail || "Failed.", false); }
   };
+  // Deactivating is the right move for someone who has left office: it keeps
+  // the record of who held the role. Removing is for a row that should never
+  // have existed, which is why the dialog says so rather than just asking
+  // whether you are sure.
+  const remove = async (o) => {
+    const ok = await confirmDialog({
+      title: "Remove this official?",
+      message: `${o.full_name} will be removed from ${o.role_display || o.role}.
+
+` +
+               `Documents already issued keep the name printed on them, so nothing signed is affected. ` +
+               `If this person simply left office, Deactivate instead: that keeps the record of who held the role.`,
+      confirmLabel: "Remove",
+      danger: true,
+    });
+    if (!ok) return;
+    try { await api.delete(`/admin/officials/${o.id}`); showToast(`${o.full_name} removed.`); load(); }
+    catch (e) { showToast(e.response?.data?.detail || "Could not remove.", false); }
+  };
 
   return (
     <div className="tab-fade" style={{ ...S.tableCard, marginBottom: 16 }}>
@@ -1811,7 +1830,7 @@ function OfficialsPanel({ showToast }) {
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {officials.map(o => (
               <div key={o.id} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--adm-border)" }}>
-                <span style={{ minWidth: 140, fontSize: 12, fontWeight: 700, color: "#7B2D8B", fontFamily: "'Lexend',sans-serif" }}>{o.role_display || o.role}</span>
+                <span style={{ minWidth: 140, fontSize: 12, fontWeight: 700, color: "#C45E10", fontFamily: "'Lexend',sans-serif" }}>{o.role_display || o.role}</span>
                 {editId === o.id
                   ? <><input style={{ ...S2.input, flex: 1, marginBottom: 0 }} value={editName} onChange={e => setEditName(e.target.value)} />
                       <button style={S2.btnPrimary} onClick={() => saveName(o)}>Save</button>
@@ -1819,7 +1838,8 @@ function OfficialsPanel({ showToast }) {
                   : <><span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>{o.full_name}</span>
                       <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 9999, background: o.is_active ? "#ECFDF5" : "var(--adm-border)", color: o.is_active ? "#059669" : "#94A3B8" }}>{o.is_active ? "Active" : "Inactive"}</span>
                       <button style={S2.btnGhost} onClick={() => { setEditId(o.id); setEditName(o.full_name); }}>Edit</button>
-                      <button style={S2.btnGhost} onClick={() => toggle(o)}>{o.is_active ? "Deactivate" : "Activate"}</button></>}
+                      <button style={S2.btnGhost} onClick={() => toggle(o)}>{o.is_active ? "Deactivate" : "Activate"}</button>
+                      <button style={{ ...S2.btnGhost, color: "#B91C1C", borderColor: "#FECACA" }} onClick={() => remove(o)}>Remove</button></>}
               </div>
             ))}
             {officials.length === 0 && <p style={{ fontSize: 13, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>No officials yet. Add them below.</p>}

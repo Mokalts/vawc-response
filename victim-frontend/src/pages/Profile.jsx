@@ -313,9 +313,9 @@ const S = {
     fieldGrid:     { display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 },
     divider:       { height:1, backgroundColor:'var(--border-soft)' },
     errorBox:      { display:'flex', alignItems:'center', gap:8, backgroundColor:'#FFF1F2', border:'1px solid #FECDD3', borderRadius: 8, padding:'10px 14px' },
-    editBtn:       { width:'100%', padding:'13px', backgroundColor:'#F47920', color:'#fff', border:'none', borderRadius: 8, fontSize:15, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.25)' },
+    editBtn:       { width:'100%', padding:'13px', backgroundColor:'#CC4B00', color:'#fff', border:'none', borderRadius: 8, fontSize:15, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.25)' },
     cancelBtn:     { flex:1, padding:'13px', backgroundColor:'transparent', color:'var(--accent-text)', border:'2px solid var(--border)', borderRadius: 4, fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:"'Lexend', sans-serif" },
-    saveBtn:       { flex:1, padding:'13px', backgroundColor:'#F47920', color:'#fff', border:'none', borderRadius: 4, fontSize:15, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.25)' },
+    saveBtn:       { flex:1, padding:'13px', backgroundColor:'#CC4B00', color:'#fff', border:'none', borderRadius: 4, fontSize:15, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.25)' },
 };
 
 export default Profile;

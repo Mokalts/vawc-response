@@ -36,21 +36,21 @@ if (!document.getElementById('vawc-home-css')) {
             75% { transform: rotate(4deg); }
         }
         .vh-anim { animation: fadeUp 0.4s ease both; }
-        .vh-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .vh-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-strong) !important; }
+        .vh-card { transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease; }
+        .vh-card:hover { transform: translateY(-4px); box-shadow: 0 16px 34px rgba(204,75,0,0.18) !important; border-color: #FF7A00 !important; }
         .vh-card:active { transform: scale(0.985); }
-        .vh-hero-btn { transition: all 0.15s ease; }
-        .vh-hero-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,0.18) !important; }
-        .vh-hero-btn:active { transform: scale(0.97); }
-        .vh-report-btn { transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease; }
-        .vh-report-btn:hover { filter: brightness(1.04); transform: translateY(-2px); box-shadow: 0 16px 32px rgba(196,94,16,0.4), inset 0 1px 0 rgba(255,255,255,0.3) !important; }
+        .vh-hero-btn { transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease; }
+        .vh-hero-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0,0,0,0.26) !important; background-color: #FFF3E0 !important; }
+        .vh-hero-btn:active { transform: translateY(0) scale(0.98); }
+        .vh-report-btn { transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease; }
+        .vh-report-btn:hover { background-color: #A83D00 !important; transform: translateY(-2px); box-shadow: 0 10px 22px rgba(204,75,0,0.3) !important; }
         .vh-report-btn:active { transform: translateY(0) scale(0.99); }
         /* Arrow nudges on hover: 3px of feedback, no layout shift. */
         .vh-report-arrow { transition: transform 0.18s ease; }
         .vh-report-btn:hover .vh-report-arrow { transform: translateX(3px); }
         /* Soft highlight that drifts across the CTA so it catches the eye without
            blinking at the user. Stops entirely under reduced-motion. */
-        .vh-report-glow {
+        .vh-report-glow { display: none;
             position: absolute; top: -60%; left: -30%; width: 45%; height: 220%;
             background: linear-gradient(100deg, transparent, rgba(255,255,255,0.22), transparent);
             transform: translateX(-120%); pointer-events: none;
@@ -61,9 +61,8 @@ if (!document.getElementById('vawc-home-css')) {
             88%, 100% { transform: translateX(420%); }
         }
         @media (prefers-reduced-motion: reduce) { .vh-report-glow { display: none; } }
-        .vh-report-btn:hover .vh-report-glow { animation-duration: 2.4s; }
-        .vh-icon-btn { transition: all 0.15s ease; }
-        .vh-icon-btn:hover { filter: brightness(0.97); transform: translateY(-1px); }
+        .vh-icon-btn { transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease; }
+        .vh-icon-btn:hover { background: var(--surface-tint) !important; border-color: #FF7A00 !important; transform: translateY(-1px); }
         .vh-icon-btn:active { transform: scale(0.95); }
         .bell-ring { animation: bellRing 0.6s ease; }
         .awareness-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
@@ -495,7 +494,7 @@ const S = {
 
     // Matches the Hotlines button's shape and height so the two read as one
     // family; only the colour separates report from emergency.
-    reportBtn:   { position: 'relative', overflow: 'hidden', width: '100%', minHeight: 56, padding: '0 20px', background: 'linear-gradient(180deg, #F47920 0%, #C45E10 100%)', color: '#fff', border: 'none', borderRadius: 14, cursor: 'pointer', touchAction: 'manipulation', fontFamily: FF, boxShadow: '0 10px 24px rgba(196,94,16,0.34), inset 0 1px 0 rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    reportBtn:   { position: 'relative', overflow: 'hidden', width: '100%', minHeight: 56, padding: '0 20px', background: '#CC4B00', color: '#fff', border: 'none', borderRadius: 14, cursor: 'pointer', touchAction: 'manipulation', fontFamily: FF, boxShadow: '0 2px 6px rgba(204,75,0,0.22)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
     reportLabel: { position: 'relative', display: 'inline-flex', alignItems: 'center', gap: 10, fontSize: 16.5, fontWeight: 800, letterSpacing: '-0.2px', fontFamily: FF },
     reportCaption:{ margin: '9px 2px 0', fontSize: 11.5, lineHeight: 1.5, color: 'var(--text-muted)', textAlign: 'center', fontFamily: FF },
 };

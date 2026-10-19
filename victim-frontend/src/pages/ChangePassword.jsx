@@ -241,7 +241,7 @@ const S = {
     pwInput:    { flex:1, padding:'12px 14px', border:'none', fontSize:15, color:'var(--text)', backgroundColor:'transparent', outline:'none', fontFamily:"'Lexend', sans-serif" },
     eyeBtn:     { padding:'0 13px', background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', flexShrink:0 },
     divider:    { height:1, backgroundColor:'var(--border-soft)' },
-    submitBtn:  { width:'100%', padding:'14px', backgroundColor:'#F47920', color:'#fff', border:'none', borderRadius: 8, fontSize:15, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:9, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 10px rgba(244,121,32,0.3)' },
+    submitBtn:  { width:'100%', padding:'14px', backgroundColor:'#CC4B00', color:'#fff', border:'none', borderRadius: 8, fontSize:15, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:9, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 10px rgba(244,121,32,0.3)' },
 };
 
 export default ChangePassword;

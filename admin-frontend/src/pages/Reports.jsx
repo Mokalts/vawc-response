@@ -21,7 +21,13 @@ const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap');
   @keyframes shimmer   { 0%{background-position:200% 0}100%{background-position:-200% 0} }
   @keyframes slideDown { from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)} }
-  .row-hover:hover td  { background:var(--adm-primary-bg) !important; cursor:pointer; }
+  /* Back to a neutral, which read better against the orange chips in the row,
+     but two steps darker than --adm-muted was. The old one was a hair off
+     white on a wide table, which is the one place a row hover has to be
+     obvious. The left edge marks the row as well, so the cue does not rest on
+     a background tint alone. */
+  .row-hover:hover td  { background:#EEF1F6 !important; cursor:pointer; }
+  .row-hover:hover td:first-child { box-shadow: inset 3px 0 0 #CC4B00; }
   .row-hover td        { transition:background 0.15s ease; }
   /* The chevron leans toward the thing it opens. Only on a real pointer:
      there is no hover on a touch screen, and a permanent nudge is just a

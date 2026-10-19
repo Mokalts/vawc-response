@@ -1,6 +1,10 @@
 :root {
   /* ───── VAWC Philippines official palette, brand hues (constant in both themes) ───── */
-  --vawc-orange:       #F47920;
+  /* The accent orange, used for dots, rules, icon strokes and tints.
+     Nothing carries text on it, so it can be as vivid as it likes.
+     Buttons use #CC4B00 instead: measured at 4.59 against white, where
+     this one measures 2.76 and fails. */
+  --vawc-orange:       #FF7A00;
   --vawc-orange-light: #FF9A4D;
   --vawc-orange-tint:  #FFF3E0;
   --vawc-orange-dark:  #C45E10;
@@ -116,8 +120,21 @@ code {
   *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+
+    /* Colour still fades; nothing moves.
+       This used to flatten transition-duration to nothing, which killed every
+       transition in the app including a 0.2s colour change on hover. That is
+       more than the preference asks for: what makes people ill is movement,
+       parallax and things that slide or pulse, not a button warming up under
+       the cursor. Removing all feedback also leaves the interface feeling
+       broken, which is its own problem for someone already distressed.
+
+       Overriding transition-property to a list without `transform` drops the
+       motion and keeps the rest. */
+    transition-property: background-color, border-color, color, box-shadow,
+                         opacity, fill, stroke !important;
+    transition-duration: 0.18s !important;
   }
 }
 

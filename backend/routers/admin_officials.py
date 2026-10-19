@@ -87,3 +87,32 @@ def update_official(
         o.is_active = payload.is_active
     db.commit(); db.refresh(o)
     return {"message": "Official updated.", "official": _serialize(o)}
+
+
+@router.delete("/{official_id}")
+def delete_official(
+    official_id: int,
+    db: Session = Depends(get_db),
+    _: Admin = Depends(get_current_admin_full_access),
+):
+    """Remove an official outright.
+
+    Safe to do, and worth saying why: a BPO stores `issued_by_official` and an
+    endorsement stores `signed_by_official` as SNAPSHOT strings taken when the
+    document was issued. Removing the person here does not touch a document
+    that already carries their name, which is the thing that would actually
+    matter.
+
+    Deactivating is still the better move for someone who has left office,
+    because it keeps the record of who used to hold the role. Deleting is for a
+    row that should never have been added: a typo, a duplicate, the wrong name.
+    """
+    o = db.query(BarangayOfficial).filter(BarangayOfficial.id == official_id).first()
+    if not o:
+        raise HTTPException(status_code=404, detail="Official not found.")
+
+    name, role = o.full_name, o.role.value if hasattr(o.role, "value") else o.role
+    db.delete(o)
+    db.commit()
+    print(f"[OFFICIALS] removed {role}: {name}")
+    return {"message": f"{name} removed."}

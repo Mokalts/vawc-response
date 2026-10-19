@@ -541,7 +541,7 @@ const S = {
     card:       { backgroundColor:'var(--surface)', borderRadius: 12, padding:'24px', width:'100%', maxWidth:460, boxShadow:'0 4px 20px rgba(244,121,32,0.08)', border:'1px solid var(--border)' },
     pwWrap:     { display:'flex', alignItems:'center', border:'1.5px solid var(--border)', borderRadius: 12, backgroundColor:'var(--surface-alt)', overflow:'hidden' },
     eyeBtn:     { padding:'0 13px', background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', flexShrink:0 },
-    submitBtn:  { width:'100%', padding:13, backgroundColor:'#F47920', color:'#fff', fontSize:15, fontWeight:600, border:'none', borderRadius: 10, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.25)' },
+    submitBtn:  { width:'100%', padding:13, backgroundColor:'#CC4B00', color:'#fff', fontSize:15, fontWeight:600, border:'none', borderRadius: 10, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.25)' },
     divider:    { height:1, backgroundColor:'var(--border-soft)', margin:'20px 0' },
     bottomText: { textAlign:'center', fontSize:14, color:'var(--text-muted)', margin:0, fontFamily:"'Lexend', sans-serif" },
     bottomLink: { color:'#B45309', fontWeight:700, cursor:'pointer', transition:'color 0.12s', background:'none', border:'none', padding:0, fontSize:14, fontFamily:"'Lexend', sans-serif" },

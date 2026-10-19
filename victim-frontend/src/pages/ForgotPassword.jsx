@@ -291,7 +291,7 @@ const S = {
     otpBox:     {width:'100%',maxWidth:52,height:58,borderRadius: 4,border:'2px solid var(--border)',fontSize:22,fontWeight:700,textAlign:'center',color:'var(--accent-text)',outline:'none',fontFamily:"'Lexend', sans-serif"},
     errorBox:   {display:'flex',alignItems:'center',gap:8,backgroundColor:'#FFF1F2',border:'1px solid #FECDD3',borderRadius: 8,padding:'10px 13px',marginBottom:16,animation:'fadeUp 0.2s ease'},
     errorText:  {margin:0,fontSize:13,color:'#BE123C',fontFamily:"'Lexend', sans-serif"},
-    submitBtn:  {width:'100%',padding:13,backgroundColor:'#F47920',color:'#fff',fontSize:15,fontWeight:600,border:'none',borderRadius: 8,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'Lexend', sans-serif",boxShadow:'0 2px 8px rgba(244,121,32,0.25)'},
+    submitBtn:  {width:'100%',padding:13,backgroundColor:'#CC4B00',color:'#fff',fontSize:15,fontWeight:600,border:'none',borderRadius: 8,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8,fontFamily:"'Lexend', sans-serif",boxShadow:'0 2px 8px rgba(244,121,32,0.25)'},
     link:       {color:'#047857',fontWeight:700,cursor:'pointer',fontFamily:"'Lexend', sans-serif",background:'none',border:'none',padding:0,fontSize:'inherit'},
 };
 

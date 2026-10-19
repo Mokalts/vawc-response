@@ -951,7 +951,7 @@ const S = {
     cardSub:      { fontSize:12, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif", marginTop:1 },
     hint:         { fontSize:13, color:'var(--text-body)', lineHeight:1.65, marginBottom:16, fontFamily:"'Lexend', sans-serif" },
     textarea:     { width:'100%', padding:'13px 14px', borderRadius: 4, border:'1.5px solid var(--border)', fontSize:15, backgroundColor:'var(--surface-alt)', outline:'none', color:'var(--text)', resize:'vertical', lineHeight:1.65, fontFamily:"'Lexend', sans-serif", boxSizing:'border-box', transition:'border-color 0.15s' },
-    uploadSolid:  { display:'flex', alignItems:'center', justifyContent:'center', gap:9, width:'100%', padding:'14px', backgroundColor:'#F47920', color:'#fff', fontSize:15, fontWeight:600, borderRadius: 4, cursor:'pointer', boxSizing:'border-box', fontFamily:"'Lexend', sans-serif" },
+    uploadSolid:  { display:'flex', alignItems:'center', justifyContent:'center', gap:9, width:'100%', padding:'14px', backgroundColor:'#CC4B00', color:'#fff', fontSize:15, fontWeight:600, borderRadius: 4, cursor:'pointer', boxSizing:'border-box', fontFamily:"'Lexend', sans-serif" },
     uploadOutline:{ display:'flex', alignItems:'center', justifyContent:'center', gap:9, width:'100%', padding:'14px', backgroundColor:'transparent', color:'var(--accent-text)', fontSize:15, fontWeight:600, borderRadius: 4, cursor:'pointer', border:'2px dashed var(--border)', boxSizing:'border-box', fontFamily:"'Lexend', sans-serif" },
     locBtn:       { width:'100%', padding:'15px', backgroundColor:'#1FA87A', color:'#fff', fontSize:15, fontWeight:600, border:'none', borderRadius: 4, cursor:'pointer', fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(31,168,122,0.25)' },
     noteBox:      { backgroundColor:'#ECFDF5', borderRadius: 4, padding:'12px 14px', marginTop:14, border:'1px solid #6EE7B7' },
@@ -961,7 +961,7 @@ const S = {
     reviewLabel:  { fontSize:10.5, fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.7px', marginBottom:5, fontFamily:"'Lexend', sans-serif" },
     reviewVal:    { fontSize:14, color:'var(--text)', lineHeight:1.65, fontFamily:"'Lexend', sans-serif", wordBreak:'break-word' },
     prevBtn:      { flex:1, padding:'13px', backgroundColor:'transparent', color:'var(--accent-text)', fontSize:15, fontWeight:600, border:'2px solid var(--border)', borderRadius: 4, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:"'Lexend', sans-serif" },
-    nextBtn:      { flex:1, padding:'13px', backgroundColor:'#F47920', color:'#fff', fontSize:15, fontWeight:600, border:'none', borderRadius: 4, display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.3)' },
+    nextBtn:      { flex:1, padding:'13px', backgroundColor:'#CC4B00', color:'#fff', fontSize:15, fontWeight:600, border:'none', borderRadius: 4, display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.3)' },
     submitBtn:    { flex:1, padding:'13px', backgroundColor:'#C45E10', color:'#fff', fontSize:15, fontWeight:700, border:'none', borderRadius: 8, cursor:'pointer', fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 10px rgba(244,121,32,0.3)' },
 };
 

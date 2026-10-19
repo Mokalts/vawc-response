@@ -214,7 +214,7 @@ const S = {
     },
     acceptBtn: {
         flex: 2, padding: '12px 16px',
-        background: '#F47920', color: '#fff',
+        background: '#CC4B00', color: '#fff',
         border: 'none', borderRadius: 10,
         fontSize: 14, fontWeight: 800, cursor: 'pointer',
         fontFamily: "'Lexend', sans-serif",
