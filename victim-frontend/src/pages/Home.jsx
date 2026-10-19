@@ -445,7 +445,7 @@ const S = {
     content:     { padding: '18px 18px', display: 'flex', flexDirection: 'column', gap: 16 },
 
     // Hero, brand purple (works on both themes)
-    hero:        { position: 'relative', overflow: 'hidden', background: '#C45E10', borderRadius: 'var(--radius-card)', padding: '28px 22px', boxShadow: '0 1px 3px rgba(15,23,42,0.10)' },
+    hero:        { position: 'relative', overflow: 'hidden', background: '#CC4B00', borderRadius: 'var(--radius-card)', padding: '28px 22px', boxShadow: '0 1px 3px rgba(15,23,42,0.10)' },
     heroBlob:    { position: 'absolute', top: -46, right: -46, width: 150, height: 150, borderRadius: '50%', border: '22px solid rgba(255,255,255,0.08)' },
     heroBlob2:   { position: 'absolute', bottom: -50, left: -20, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' },
     heroHello:   { display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.82)', marginBottom: 9, fontFamily: FF },

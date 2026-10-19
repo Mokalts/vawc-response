@@ -34,6 +34,7 @@ const IcoFolder = ({ c='#CBD5E1', size=48 }) => (<svg width={size} height={size}
 const IcoDoc    = ({ c='#CBD5E1', size=36 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoX      = ({ c='#64748B', size=16 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke={c} strokeWidth="2" strokeLinecap="round"/></svg>);
 const IcoArrow  = () => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#F47920" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoBack   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 18l-6-6 6-6" stroke="#C45E10" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoBell   = ({ c='#F47920' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoCal    = ({ c='#64748B', size=13 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke={c} strokeWidth="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoPin    = ({ c='#64748B', size=13 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="10" r="3" stroke={c} strokeWidth="1.8"/></svg>);
@@ -517,9 +518,12 @@ function MyCases() {
     return (
         <div style={S.page}>
             <header style={S.topBar}>
-                <div>
+                <div style={{display:'flex',alignItems:'center',gap:12,minWidth:0}}>
+                    <button style={S.backBtn} onClick={() => navigate('/home')} aria-label="Bumalik sa Home"><IcoBack /></button>
+                    <div style={{minWidth:0}}>
                     <p style={S.title}>My Cases</p>
                     <p style={S.count}>{cases.length} case{cases.length!==1?'s':''} · {totalReports} report{totalReports!==1?'s':''}{newCount>0?` · ${newCount} updated`:''}</p>
+                    </div>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:8}}>
                     <ThemeToggle size={40} />
@@ -572,6 +576,7 @@ function MyCases() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const S = {
     page:        { minHeight:'100vh',background:'var(--page-grad)',color:'var(--text)',display:'flex',flexDirection:'column',paddingBottom:80,fontFamily:"'Lexend',sans-serif" },
+    backBtn:     { width:44,height:44,borderRadius:10,backgroundColor:'var(--surface-tint)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0 },
     topBar:      { display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 20px',backgroundColor:'var(--surface)',borderBottom:'1px solid var(--border)',position:'sticky',top:0,zIndex:100,boxShadow:'0 1px 8px rgba(244,121,32,0.06)' },
     title:       { fontSize:18,fontWeight:800,color:'var(--accent-text)',fontFamily:"'Lexend',sans-serif",margin:'0 0 2px' },
     count:       { fontSize:12.5,fontWeight:600,color:'var(--text-muted)',fontFamily:"'Lexend',sans-serif",margin:0 },

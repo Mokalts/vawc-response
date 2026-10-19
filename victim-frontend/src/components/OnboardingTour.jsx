@@ -176,7 +176,7 @@ export default function OnboardingTour({ steps = [], run = false, onClose }) {
                         {steps.map((_, i) => (
                             <span key={i} style={{
                                 width: i === index ? 18 : 6, height: 6, borderRadius: 3,
-                                background: i === index ? '#F47920' : '#FFE0C2', transition: 'all 0.2s ease',
+                                background: i === index ? '#CC4B00' : '#FFE0C2', transition: 'all 0.2s ease',
                             }} />
                         ))}
                     </div>
@@ -188,9 +188,9 @@ export default function OnboardingTour({ steps = [], run = false, onClose }) {
                             }}>Back</button>
                         )}
                         <button className="vt-btn" onClick={next} style={{
-                            padding: '9px 18px', background: 'linear-gradient(135deg,#F47920,#E8641C)', color: '#fff',
-                            border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 800, cursor: 'pointer', fontFamily: FF,
-                            boxShadow: '0 4px 12px rgba(196,94,16,0.3)',
+                            padding: '9px 18px', background: '#CC4B00', color: '#fff',
+                            border: 'none', borderRadius: 10, fontSize: 13.5, fontWeight: 700, cursor: 'pointer', fontFamily: FF,
+                            boxShadow: '0 1px 2px rgba(15,23,42,0.10)',
                         }}>{isLast ? 'Done' : 'Next'}</button>
                     </div>
                 </div>
