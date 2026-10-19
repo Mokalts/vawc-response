@@ -592,6 +592,7 @@ export default function AdminManagement() {
           {[
             // Creating and removing admin accounts stays with the Super Admin.
             ...(currentAdmin?.is_super_admin ? [{ key: "admins", label: "Admins", count: admins.length }] : []),
+            ...(currentAdmin?.is_super_admin ? [] : [{ key: "my-account", label: "My Account" }]),
             { key: "victims",         label: "Victims",            count: victims.length },
             { key: "unverified",      label: "Unverified",         count: unverifiedUsers.length },
             { key: "deleted-victims", label: "Deleted Victims",    count: deletedVictims.length },
@@ -943,6 +944,49 @@ export default function AdminManagement() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {/* ─── MY ACCOUNT tab ─────────────────────────────────────────── */}
+        {tab === "my-account" && currentAdmin && (
+          <div className="tab-fade" style={S.tableCard}>
+            <div style={{ padding: "18px 20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
+                <div style={{ ...S.avatar, background: "var(--adm-muted)", color: "var(--adm-text-muted)", flexShrink: 0 }}>{initials(currentAdmin)}</div>
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 15.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>
+                    {[currentAdmin.first_name, currentAdmin.middle_name, currentAdmin.last_name].filter(Boolean).join(" ")}
+                  </p>
+                  <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                    {currentAdmin.position} · {currentAdmin.email}
+                  </p>
+                </div>
+              </div>
+
+              <dl style={{ margin: "0 0 18px", display: "grid", gridTemplateColumns: "auto 1fr", gap: "8px 16px", fontSize: 12.5, alignItems: "baseline", fontFamily: "'Lexend',sans-serif" }}>
+                {[
+                  ["Username", currentAdmin.username],
+                  ["Employee ID", currentAdmin.employee_id],
+                  ["Face enrolled", currentAdmin.is_face_enrolled ? "Yes" : "Not yet"],
+                ].map(([k, v]) => (
+                  <React.Fragment key={k}>
+                    <dt style={{ color: "var(--adm-text-muted)", whiteSpace: "nowrap" }}>{k}</dt>
+                    <dd style={{ margin: 0, color: "var(--adm-text)", fontWeight: 600 }}>{v || "-"}</dd>
+                  </React.Fragment>
+                ))}
+              </dl>
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <ActionBtn label="Change Password" onClick={() => setChangingPassword(true)} />
+                {currentAdmin.is_face_enrolled && (
+                  <ActionBtn label="Reset My Face" onClick={() => setConfirm({ type: "resetSelf", admin: currentAdmin, loading: false })} />
+                )}
+              </div>
+
+              <p style={{ margin: "16px 0 0", fontSize: 12, lineHeight: 1.55, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                Changing your own name or creating accounts stays with the Super Admin. Ask them if either needs doing.
+              </p>
             </div>
           </div>
         )}

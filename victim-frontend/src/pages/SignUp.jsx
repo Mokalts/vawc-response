@@ -305,6 +305,18 @@ function SignUp() {
     return (
         <div style={S.page}>
             <div style={{ position: 'fixed', top: 14, right: 14, zIndex: 50 }}><ThemeToggle size={44} /></div>
+            {/* Her draft is saved as she types, so leaving here does not lose it. */}
+            <button type="button" onClick={() => navigate('/')}
+                style={{ alignSelf:'flex-start', display:'inline-flex', alignItems:'center', gap:7, marginBottom:12,
+                    padding:'9px 14px', minHeight:44, borderRadius:10, border:'1px solid var(--border)',
+                    background:'var(--surface)', color:'var(--text-body)', fontSize:13.5, fontWeight:600,
+                    cursor:'pointer', fontFamily:"'Lexend', sans-serif" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Back to Sign In
+            </button>
+
             <div style={S.brand}>
                 <div style={S.brandIcon}><IcoShield /></div>
                 <div>

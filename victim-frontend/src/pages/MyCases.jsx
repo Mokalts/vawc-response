@@ -194,11 +194,11 @@ function CaseCard({ cas, onClick }) {
         <div className="vmc-card" role="button" tabIndex={0}
             aria-label={`Kaso ${cas.case_number} laban kay ${cas.offender_name}, ${cas.status_display || st.label}. Buksan.`}
             onKeyDown={(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onClick(); } }}
-            style={{...S.card, border: cas.has_status_update?'1.5px solid #F47920':'1px solid var(--border)'}} onClick={onClick}>
+            style={{...S.card, border: cas.has_status_update?'1.5px solid #C62828':'1px solid var(--border)'}} onClick={onClick}>
             {cas.has_status_update && (
-                <div style={{display:'flex',alignItems:'center',gap:5,marginBottom:8}}>
-                    <span style={{width:8,height:8,borderRadius: '50%',background:'#F47920',flexShrink:0}}/>
-                    <span style={{fontSize:11,fontWeight:700,color:'var(--accent-text)',fontFamily:"'Lexend',sans-serif"}}>Status Updated</span>
+                <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8}}>
+                    <span style={{width:9,height:9,borderRadius:'50%',background:'#C62828',flexShrink:0}}/>
+                    <span style={{fontSize:11,fontWeight:700,color:'#C62828',fontFamily:"'Lexend',sans-serif"}}>New update</span>
                 </div>
             )}
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:10}}>
@@ -522,11 +522,6 @@ function MyCases() {
                     <p style={S.count}>{cases.length} case{cases.length!==1?'s':''} · {totalReports} report{totalReports!==1?'s':''}{newCount>0?` · ${newCount} updated`:''}</p>
                 </div>
                 <div style={{display:'flex',alignItems:'center',gap:8}}>
-                    {newCount>0&&(
-                        <span style={{display:'inline-flex',alignItems:'center',gap:5,padding:'5px 12px',borderRadius: 9999,background:'var(--surface-tint)',color:'var(--accent-text)',fontSize:12,fontWeight:700,fontFamily:"'Lexend',sans-serif",border:'1px solid var(--border)'}}>
-                            <IcoBell/> {newCount} update{newCount>1?'s':''}
-                        </span>
-                    )}
                     <ThemeToggle size={40} />
                 </div>
             </header>
