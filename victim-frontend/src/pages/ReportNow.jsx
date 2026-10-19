@@ -614,11 +614,18 @@ function ReportNow() {
                                 <input
                                     type="datetime-local"
                                     aria-labelledby="lbl-date"
+                                    aria-describedby="hint-date"
                                     value={incidentDate}
                                     max={new Date().toISOString().slice(0,16)}
                                     onChange={e => setIncidentDate(e.target.value)}
                                     style={{ ...S.textarea, resize:'none', padding:'12px 14px', minHeight:'unset', colorScheme:'light' }}
                                 />
+                                <p id="hint-date" style={{ margin:'7px 0 0', fontSize:12, lineHeight:1.55, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
+                                    Date then time, as <strong style={{ color:'var(--text-body)' }}>mm/dd/yyyy</strong> and{' '}
+                                    <strong style={{ color:'var(--text-body)' }}>hh:mm AM/PM</strong>. Example: 03/15/2026, 02:30 PM.
+                                    <br />
+                                    Kung hindi mo matandaan ang oras, pumili ng pinakamalapit na nasa isip mo.
+                                </p>
                             </div>
 
                             {/* Relationship to offender */}

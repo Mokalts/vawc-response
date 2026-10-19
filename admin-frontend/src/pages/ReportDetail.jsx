@@ -1160,7 +1160,7 @@ export default function ReportDetail() {
   const victimName = cas.victim_name || [victim.first_name, victim.middle_name, victim.last_name].filter(Boolean).join(" ") || "-";
 
   return (
-    <AdminLayout breadcrumbs={[{ label: "Profiles", onClick: () => navigate("/reports") }, victimName, cas.case_number, "Reports"]}>
+    <AdminLayout breadcrumbs={[{ label: "Case Records", onClick: () => navigate("/reports") }, victimName, cas.case_number, "Reports"]}>
       <style>{CSS}</style>
       <div style={{ maxWidth: 1200, fontFamily: "'Lexend',sans-serif" }}>
 

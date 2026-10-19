@@ -185,7 +185,7 @@ export default function OnboardingTour({ steps = [], run = false, onClose }) {
                             <button className="vt-btn" onClick={back} style={{
                                 padding: '9px 14px', background: 'var(--surface-tint)', color: 'var(--accent-text)', border: 'none',
                                 borderRadius: 10, fontSize: 13.5, fontWeight: 700, cursor: 'pointer', fontFamily: FF,
-                            }}>Balik</button>
+                            }}>Back</button>
                         )}
                         <button className="vt-btn" onClick={next} style={{
                             padding: '9px 18px', background: 'linear-gradient(135deg,#F47920,#E8641C)', color: '#fff',

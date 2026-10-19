@@ -189,10 +189,10 @@ export default function Reports() {
   const backToVictims = () => { setView("victims"); setSelectedVictim(null); setSelectedCase(null); setCaseDetail(null); };
   const backToCases   = () => { setView("cases"); setSelectedCase(null); setCaseDetail(null); };
   const crumbs =
-      view === "deleted" ? ["Profiles", "Recently Deleted"]
-    : view === "cases" && selectedVictim ? [{ label: "Profiles", onClick: backToVictims }, selectedVictim.full_name]
-    : view === "reports" && selectedCase ? [{ label: "Profiles", onClick: backToVictims }, { label: selectedVictim?.full_name || "-", onClick: backToCases }, selectedCase.case_number, "Reports"]
-    : ["Profiles"];
+      view === "deleted" ? ["Case Records", "Recently Deleted"]
+    : view === "cases" && selectedVictim ? [{ label: "Case Records", onClick: backToVictims }, selectedVictim.full_name]
+    : view === "reports" && selectedCase ? [{ label: "Case Records", onClick: backToVictims }, { label: selectedVictim?.full_name || "-", onClick: backToCases }, selectedCase.case_number, "Reports"]
+    : ["Case Records"];
 
   return (
     <AdminLayout breadcrumbs={crumbs}>

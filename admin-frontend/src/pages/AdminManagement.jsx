@@ -303,7 +303,8 @@ export default function AdminManagement() {
   const [editingVictim,   setEditingVictim]   = useState(null);  // {id, ...} when modal open
   const [resettingPw,     setResettingPw]     = useState(null);  // {id, first_name, last_name} when modal open
   const [resettingAdminPw, setResettingAdminPw] = useState(null); // admin whose password is being reset
-  const [editingAdmin,     setEditingAdmin]     = useState(null); // admin whose name is being edited
+  const [editingAdmin,     setEditingAdmin]     = useState(null);
+  const [changingPassword, setChangingPassword] = useState(false); // admin whose name is being edited
   const [currentAdmin,     setCurrentAdmin]     = useState(null); // logged-in admin (for the super admin's own row)
   const [idPending,        setIdPending]        = useState([]);   // accounts waiting on an ID decision
   const [idBusy,           setIdBusy]           = useState(null); // id of the account being decided
@@ -761,6 +762,11 @@ export default function AdminManagement() {
                         <ActionBtn label="Edit Name" onClick={() => setEditingAdmin(currentAdmin)} />
                         {/* Re-enrol your own face: a bad first scan otherwise
                             needed another Super Admin to clear it for you. */}
+                        {/* The account is handed on when an officer leaves the
+                            barangay, and until now the only way to change its
+                            password was for another Super Admin to reset it.
+                            There is not always another Super Admin. */}
+                        <ActionBtn label="Change Password" onClick={() => setChangingPassword(true)} />
                         {currentAdmin.is_face_enrolled && (
                           <ActionBtn label="Reset My Face" onClick={() => setConfirm({ type: "resetSelf", admin: currentAdmin, loading: false })} />
                         )}
@@ -1304,6 +1310,13 @@ export default function AdminManagement() {
         />
       )}
 
+      {changingPassword && (
+        <ChangeOwnPasswordModal
+          onClose={() => setChangingPassword(false)}
+          onSaved={() => { setChangingPassword(false); showToast("Your password was changed."); }}
+          onError={(msg) => showToast(msg, false)}
+        />
+      )}
       {editingAdmin && (
         <EditAdminNameModal
           admin={editingAdmin}
@@ -1313,6 +1326,79 @@ export default function AdminManagement() {
         />
       )}
     </AdminLayout>
+  );
+}
+
+// ─── Change Your Own Password ───────────────────────────────────────────────
+// Asks for the current one as well as the new one, so somebody who finds an
+// unlocked session cannot lock the real officer out of their own account.
+function ChangeOwnPasswordModal({ onClose, onSaved, onError }) {
+  const [form, setForm] = useState({ current_password: "", new_password: "", confirm_password: "" });
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+  const handleChange = (k) => (e) => { setForm(p => ({ ...p, [k]: e.target.value })); setErr(""); };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // Checked here as well as on the server, so she is told before the round
+    // trip rather than after it.
+    const problem = validatePassword(form.new_password);
+    if (problem) { setErr(problem); return; }
+    if (form.new_password !== form.confirm_password) { setErr("The two new passwords do not match."); return; }
+    if (form.new_password === form.current_password) { setErr("The new password must be different from the current one."); return; }
+
+    setSaving(true);
+    try {
+      await api.patch("/admin/auth/me/change-password", {
+        current_password: form.current_password,
+        new_password: form.new_password,
+      });
+      onSaved();
+    } catch (e2) {
+      const detail = e2.response?.data?.detail;
+      setErr(typeof detail === "string" ? detail : "Could not change the password.");
+      setSaving(false);
+    }
+  };
+
+  const ready = form.current_password && form.new_password && form.confirm_password && !saving;
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }} onClick={onClose}>
+      <form onSubmit={handleSubmit} onClick={e => e.stopPropagation()} style={{ background: "var(--adm-card)", borderRadius: 12, maxWidth: 440, width: "100%", padding: 24, fontFamily: "'Lexend',sans-serif", boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}>
+        <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "var(--adm-text)" }}>Change Password</h2>
+        <p style={{ margin: "0 0 18px", fontSize: 12.5, color: "var(--adm-text-muted)", lineHeight: 1.55 }}>
+          Changes your own sign-in password. Do this when the account is handed to someone else, and when it is handed to you.
+        </p>
+
+        <FormField label="Current Password *">
+          <input type="password" autoComplete="current-password" required value={form.current_password} onChange={handleChange("current_password")} style={S2.input} />
+        </FormField>
+        <FormField label="New Password *">
+          <input type="password" autoComplete="new-password" required value={form.new_password} onChange={handleChange("new_password")} style={S2.input} />
+        </FormField>
+        <FormField label="Confirm New Password *">
+          <input type="password" autoComplete="new-password" required value={form.confirm_password} onChange={handleChange("confirm_password")} style={S2.input} />
+        </FormField>
+
+        <p style={{ margin: "2px 0 0", fontSize: 11.5, lineHeight: 1.5, color: "var(--adm-text-muted)" }}>
+          At least 8 characters, with an uppercase letter, a number and a special character.
+        </p>
+
+        {err && (
+          <p role="alert" style={{ margin: "12px 0 0", padding: "9px 11px", borderRadius: 8, background: "#FEF2F2", border: "1px solid #FECACA", color: "#B91C1C", fontSize: 12.5, lineHeight: 1.5 }}>
+            {err}
+          </p>
+        )}
+
+        <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 18 }}>
+          <button type="button" onClick={onClose} style={S2.btnGhost}>Cancel</button>
+          <button type="submit" disabled={!ready} style={{ ...S2.btnPrimary, opacity: ready ? 1 : 0.55, cursor: ready ? "pointer" : "not-allowed" }}>
+            {saving ? "Saving…" : "Change Password"}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
 

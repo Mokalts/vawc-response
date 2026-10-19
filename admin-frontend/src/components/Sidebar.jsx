@@ -90,7 +90,7 @@ const IcoChevron = ({ size = 12, color = 'currentColor' }) => (
 
 const NAV = [
     { label: 'Dashboard', path: '/dashboard', icon: IcoDashboard, superOnly: false, section: 'Menu' },
-    { label: 'Profiles', path: '/reports', icon: IcoReports, superOnly: false, section: 'Menu' },
+    { label: 'Case Records', path: '/reports', icon: IcoReports, superOnly: false, section: 'Menu' },
     { label: 'Monthly Report', path: '/monthly-report', icon: IcoMonthly, superOnly: false, section: 'Management' },
     // Victim accounts live here too, so every officer needs the page. The
     // Admins tab inside it is still Super Admin only.
@@ -324,7 +324,7 @@ function TopBar({ breadcrumbs }) {
 
     const titles = {
         '/dashboard': 'Dashboard',
-        '/reports': 'Profiles',
+        '/reports': 'Case Records',
         '/admin-management': 'Admin Management',
     };
     const pathBase = '/' + location.pathname.split('/')[1];
