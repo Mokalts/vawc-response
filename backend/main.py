@@ -20,7 +20,7 @@ from models.endorsement import Endorsement
 from models.barangay_official import BarangayOfficial
 from database import Base
 from routers import auth, reports, cases, users, upload, admin_auth, admin_cases, admin_dashboard, admin_users
-from routers import admin_bpo, admin_endorsement, admin_officials, media
+from routers import admin_bpo, admin_endorsement, admin_officials, admin_history, media
 
 # Creating tables must not be able to stop the app from starting. Neon suspends
 # a free database after idle time, so a Render restart can land while the
@@ -140,6 +140,7 @@ async def _unhandled_exception_handler(request: Request, exc: Exception):
 app.include_router(admin_bpo.router)
 app.include_router(admin_endorsement.router)
 app.include_router(admin_officials.router)
+app.include_router(admin_history.router)
 
 # Accept both GET and HEAD so uptime monitors (which use HEAD by default) get a
 # 200 instead of a 405 — keeps the free instance awake without false "down" alerts.

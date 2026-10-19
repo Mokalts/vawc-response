@@ -21,8 +21,18 @@ const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap');
   @keyframes shimmer   { 0%{background-position:200% 0}100%{background-position:-200% 0} }
   @keyframes slideDown { from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)} }
-  .row-hover:hover td  { background:var(--adm-muted) !important; cursor:pointer; }
-  .row-hover td        { transition:background 0.1s; }
+  .row-hover:hover td  { background:var(--adm-primary-bg) !important; cursor:pointer; }
+  .row-hover td        { transition:background 0.15s ease; }
+  /* The chevron leans toward the thing it opens. Only on a real pointer:
+     there is no hover on a touch screen, and a permanent nudge is just a
+     crooked arrow. */
+  .row-chevron         { transition:transform 0.15s ease, opacity 0.15s ease; opacity:0.55; }
+  @media (hover: hover) and (pointer: fine) {
+    .row-hover:hover .row-chevron { transform:translateX(3px); opacity:1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .row-hover td, .row-chevron { transition:none; }
+  }
   .back-btn:hover      { background:var(--adm-border) !important; }
   .recover-btn:hover:not([disabled]) { background:#059669 !important; color:#fff !important; }
   .recover-btn         { transition:all 0.15s; }
@@ -41,7 +51,7 @@ const daysLeft = (d) => !d ? 0 : Math.max(0, 30 - Math.floor((Date.now() - toDat
 const IcoSearch = () => (<svg width="15" height="15" viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6" stroke="#94A3B8" strokeWidth="1.8" /><path d="M13.5 13.5L17 17" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round" /></svg>);
 const IcoUser = ({ size = 32, color = "#9B4DAB" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke={color} strokeWidth="1.8" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={color} strokeWidth="1.8" strokeLinecap="round" /></svg>);
 const IcoDoc = ({ size = 32, color = "#CBD5E1" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
-const IcoChevron = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#9B4DAB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>);
+const IcoChevron = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke="#C45E10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoBack = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoWarn = ({ size = 20 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#EF4444" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><line x1="12" y1="9" x2="12" y2="13" stroke="#EF4444" strokeWidth="1.8" strokeLinecap="round" /><line x1="12" y1="17" x2="12.01" y2="17" stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round" /></svg>);
 
@@ -379,11 +389,11 @@ export default function Reports() {
                           <th style={S.th}>Location</th>
                           <th style={S.th}>Date Filed</th>
                           <th style={S.th}>Photos</th>
-                          <th style={S.th}>View Case</th>
+                          <th style={{ ...S.th, textAlign: "right" }} aria-label="Open"></th>
                         </tr>
                       </thead>
                       <tbody>
-                        {(!caseDetail.reports || caseDetail.reports.length === 0) && <tr><td colSpan={6} style={{ textAlign: "center", padding: "48px" }}><IcoDoc size={36} /><p style={{ fontSize: 14, color: "var(--adm-text-muted)", marginTop: 10, fontFamily: "'Lexend',sans-serif" }}>No reports in this case.</p></td></tr>}
+                        {(!caseDetail.reports || caseDetail.reports.length === 0) && <tr><td colSpan={7} style={{ textAlign: "center", padding: "48px" }}><IcoDoc size={36} /><p style={{ fontSize: 14, color: "var(--adm-text-muted)", marginTop: 10, fontFamily: "'Lexend',sans-serif" }}>No reports in this case.</p></td></tr>}
                         {caseDetail.reports?.map((r, idx) => (
                           <tr key={r.id} className="row-hover" onClick={() => navigate(`/reports/${caseDetail.id}#report-${idx + 1}`)}>
                             <td style={S.td}><span style={{ fontSize: 12, fontWeight: 700, color: "var(--adm-text-2)", background: "var(--adm-border)", padding: "2px 8px", borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>Report {idx + 1}</span></td>
@@ -392,6 +402,7 @@ export default function Reports() {
                             <td style={S.td}><span style={{ fontSize: 13, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>{truncate(r.address, 35)}</span></td>
                             <td style={S.td}><p style={{ margin: 0, fontSize: 13, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>{fmtDate(r.created_at)}</p><p style={{ margin: 0, fontSize: 11.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>{fmtTime(r.created_at)}</p></td>
                             <td style={{ ...S.td, textAlign: "center" }}>{r.photo_urls?.length > 0 ? <span style={{ fontSize: 12.5, color: "#C45E10", fontFamily: "'Lexend',sans-serif" }}>{r.photo_urls.length} photo{r.photo_urls.length > 1 ? "s" : ""}</span> : <span style={{ color: "var(--adm-border-strong)" }}>-</span>}</td>
+                            <td style={{ ...S.td, textAlign: "right" }}><span className="row-chevron" style={{ display: "inline-flex" }}><IcoChevron /></span></td>
                           </tr>
                         ))}
                       </tbody>

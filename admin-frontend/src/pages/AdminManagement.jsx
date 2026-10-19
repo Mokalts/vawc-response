@@ -23,6 +23,9 @@ const IconWarning = ({ size = 16, color = "currentColor" }) => (
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const initials  = (a) => [a.first_name, a.last_name].filter(Boolean).map(n => n[0]).join("").toUpperCase() || "?";
 const daysLeft  = (d)  => { if (!d) return 0; return Math.max(0, 30 - Math.floor((Date.now() - toDate(d).getTime()) / 86400000)); };
+// The log shows a time as well as a date: two actions on the same case an
+// hour apart are a different story from two a week apart.
+const fmtTime   = (iso) => { if (!iso) return ""; return toDate(iso).toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" }); };
 const fmtDate   = (iso) => { if (!iso) return "-"; return toDate(iso).toLocaleDateString("en-PH", { month: "short", day: "numeric", year: "numeric" }); };
 
 // ─── Password helpers ─────────────────────────────────────────────────────────
@@ -304,7 +307,12 @@ export default function AdminManagement() {
   const [resettingPw,     setResettingPw]     = useState(null);  // {id, first_name, last_name} when modal open
   const [resettingAdminPw, setResettingAdminPw] = useState(null); // admin whose password is being reset
   const [editingAdmin,     setEditingAdmin]     = useState(null);
-  const [changingPassword, setChangingPassword] = useState(false); // admin whose name is being edited
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [history,          setHistory]          = useState(null);
+  const [historyLoading,   setHistoryLoading]   = useState(false);
+  const [historyError,     setHistoryError]     = useState('');
+  const [historyDays,      setHistoryDays]      = useState(30);
+  const [historyKind,      setHistoryKind]      = useState(''); // admin whose name is being edited
   const [currentAdmin,     setCurrentAdmin]     = useState(null); // logged-in admin (for the super admin's own row)
   const [idPending,        setIdPending]        = useState([]);   // accounts waiting on an ID decision
   const [idBusy,           setIdBusy]           = useState(null); // id of the account being decided
@@ -356,6 +364,19 @@ export default function AdminManagement() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [idReview, idBusy]);
+
+  useEffect(() => {
+    if (tab !== "history" || !currentAdmin?.is_super_admin) return;
+    let alive = true;
+    setHistoryLoading(true);
+    setHistoryError('');
+    const q = `?days=${historyDays}${historyKind ? `&kind=${historyKind}` : ''}`;
+    api.get(`/admin/history${q}`)
+      .then(r => { if (alive) setHistory(r.data); })
+      .catch(err => { if (alive) setHistoryError(err.response?.data?.detail || 'Could not load the history.'); })
+      .finally(() => { if (alive) setHistoryLoading(false); });
+    return () => { alive = false; };
+  }, [tab, historyDays, historyKind, currentAdmin]);
 
   // Helper: filter by current search across name/email/phone
   const filterByVictimSearch = (list) => {
@@ -593,6 +614,10 @@ export default function AdminManagement() {
             // Creating and removing admin accounts stays with the Super Admin.
             ...(currentAdmin?.is_super_admin ? [{ key: "admins", label: "Admins", count: admins.length }] : []),
             ...(currentAdmin?.is_super_admin ? [] : [{ key: "my-account", label: "My Account" }]),
+            // Super Admin only. The log says who did what: shown to everyone it
+            // becomes a way to watch colleagues, shown to the person answerable
+            // for the desk it is accountability.
+            ...(currentAdmin?.is_super_admin ? [{ key: "history", label: "History" }] : []),
             { key: "victims",         label: "Victims",            count: victims.length },
             { key: "unverified",      label: "Unverified",         count: unverifiedUsers.length },
             { key: "deleted-victims", label: "Deleted Victims",    count: deletedVictims.length },
@@ -945,6 +970,101 @@ export default function AdminManagement() {
                 </tbody>
               </table>
             </div>
+          </div>
+        )}
+
+        {/* ─── HISTORY tab ────────────────────────────────────────────── */}
+        {tab === "history" && currentAdmin?.is_super_admin && (
+          <div className="tab-fade" style={S.tableCard}>
+            <div style={{ padding: "12px 16px", background: "#EFF6FF", borderBottom: "1px solid #BFDBFE", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <p style={{ margin: 0, fontSize: 12.5, color: "#1E3A8A", fontFamily: "'Lexend',sans-serif", lineHeight: 1.5, flex: "1 1 260px" }}>
+                Every recorded action, newest first. Read-only: nothing in this portal can edit or remove a line of it.
+              </p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <select value={historyKind} onChange={e => setHistoryKind(e.target.value)} aria-label="Kind of action"
+                  style={{ padding: "7px 10px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 12.5, fontFamily: "'Lexend',sans-serif" }}>
+                  <option value="">Everything</option>
+                  <option value="case">Case actions</option>
+                  <option value="deletion">Permanent deletions</option>
+                  <option value="id_review">ID decisions</option>
+                </select>
+                <select value={historyDays} onChange={e => setHistoryDays(Number(e.target.value))} aria-label="How far back"
+                  style={{ padding: "7px 10px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 12.5, fontFamily: "'Lexend',sans-serif" }}>
+                  <option value={7}>Last 7 days</option>
+                  <option value={30}>Last 30 days</option>
+                  <option value={90}>Last 90 days</option>
+                  <option value={365}>Last year</option>
+                </select>
+              </div>
+            </div>
+
+            {historyError && (
+              <p role="alert" style={{ margin: 0, padding: "12px 16px", background: "#FEF2F2", borderBottom: "1px solid #FECACA", color: "#B91C1C", fontSize: 12.5, fontFamily: "'Lexend',sans-serif" }}>
+                {historyError}
+              </p>
+            )}
+
+            {historyLoading ? (
+              <div style={{ padding: "8px 0" }}>
+                {/* Not SkeletonRow: that renders a <tr>, and this list is not a
+                    table. A <tr> inside a <div> is invalid and React says so. */}
+                {[1, 2, 3, 4].map(i => (
+                  <div key={i} style={{ display: "flex", gap: 12, padding: "12px 16px", borderBottom: "1px solid var(--adm-border)" }}>
+                    <div style={{ width: 120, height: 20, borderRadius: 9999, flexShrink: 0, background: "var(--adm-border)" }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ width: "45%", height: 12, borderRadius: 4, marginBottom: 6, background: "var(--adm-border)" }} />
+                      <div style={{ width: "70%", height: 10, borderRadius: 4, background: "var(--adm-border)" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : !history || history.entries.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "44px 20px" }}>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>Nothing recorded</p>
+                <p style={{ margin: "5px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                  No actions in this window. Try a longer one.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  {history.entries.map((e, i) => {
+                    const tone = e.kind === "deletion" ? "#B91C1C" : e.kind === "id_review" ? "#1D4ED8" : "#C45E10";
+                    const toneBg = e.kind === "deletion" ? "#FEF2F2" : e.kind === "id_review" ? "#EFF6FF" : "var(--adm-primary-bg)";
+                    return (
+                      <div key={i} style={{ display: "flex", gap: 12, padding: "12px 16px", borderBottom: "1px solid var(--adm-border)", alignItems: "flex-start" }}>
+                        <span style={{ flexShrink: 0, marginTop: 2, padding: "2px 9px", borderRadius: 9999, fontSize: 11, fontWeight: 700, color: tone, background: toneBg, border: `1px solid ${tone}33`, fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap" }}>
+                          {e.label}
+                        </span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: 13, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", wordBreak: "break-word" }}>
+                            <strong>{e.by}</strong>{e.subject ? <> &middot; {e.subject}</> : null}
+                          </p>
+                          {e.detail && (
+                            <p style={{ margin: "2px 0 0", fontSize: 12, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", wordBreak: "break-word" }}>{e.detail}</p>
+                          )}
+                        </div>
+                        <span style={{ flexShrink: 0, fontSize: 11.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", textAlign: "right" }}>
+                          {fmtDate(e.at)}<br />{fmtTime(e.at)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Said out loud, so a cut-off list is not read as the whole story. */}
+                {history.truncated && (
+                  <p style={{ margin: 0, padding: "12px 16px", fontSize: 12, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", textAlign: "center" }}>
+                    Showing the most recent {history.count}. Narrow the window or the kind to see the rest.
+                  </p>
+                )}
+
+                {/* The one gap in this log, stated rather than left to be found. */}
+                <p style={{ margin: 0, padding: "12px 16px", borderTop: "1px solid var(--adm-border)", fontSize: 11.5, lineHeight: 1.55, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                  A permanently deleted case takes its own trail with it, because those lines point at the case. What remains is the deletion itself: who did it, when, and which case numbers.
+                </p>
+              </>
+            )}
           </div>
         )}
 

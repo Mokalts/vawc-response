@@ -46,7 +46,7 @@ const STATUS_MAP = {
     submitted:             { label:'Submitted',               bg:'var(--border-soft)', color:'var(--text-body)', dot:'#64748B' },
     under_assessment:      { label:'Under Assessment',        bg:'#ECFEFF', color:'#0E7490', dot:'#06B6D4' },
     awaiting_onsite_visit: { label:'Awaiting Onsite Visit',   bg:'#FFFBEB', color:'#92400E', dot:'#F59E0B' },
-    bpo_applied:           { label:'BPO Applied',             bg:'#F3E5F5', color:'#7B2D8B', dot:'#9B4DAB' },
+    bpo_applied:           { label:'BPO Applied',             bg:'#FFF8F0', color:'#AD530F', dot:'#FFB066' },
     bpo_issued:            { label:'BPO Issued',              bg:'#FFF3E0', color:'#C45E10', dot:'#F47920' },
     bpo_served:            { label:'BPO Served',              bg:'#FFFBEB', color:'#92400E', dot:'#D97706' },
     endorsed:              { label:'Endorsed',                bg:'var(--surface-tint)', color:'var(--accent-text)', dot:'#F47920' },
@@ -236,7 +236,7 @@ function ReportRow({ report, index, onClick }) {
                         Report #{index+1}
                     </span>
                     {report.incident_type&&(
-                        <span style={{fontSize:11,color:'#4A1259',background:'var(--surface-tint)',padding:'2px 7px',borderRadius: 4,fontFamily:"'Lexend',sans-serif",fontWeight:600}}>
+                        <span style={{fontSize:11,color:'#8A3C08',background:'var(--surface-tint)',padding:'2px 7px',borderRadius: 4,fontFamily:"'Lexend',sans-serif",fontWeight:600}}>
                             {report.incident_type}
                         </span>
                     )}
@@ -364,16 +364,16 @@ function CaseDetailModal({ cas, onClose, onStatusRead }) {
 
                     {/* Messages from the barangay (log, e.g., hearing schedule / venue) */}
                     {cas.messages && cas.messages.length > 0 && (
-                        <div style={{backgroundColor:'#F3E5F5',borderRadius:12,padding:'14px 15px',border:'1.5px solid #E1BEE7'}}>
+                        <div style={{backgroundColor:'#FFF3E0',borderRadius:12,padding:'14px 15px',border:'1.5px solid #FFD9B3'}}>
                             <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
-                                <IcoBell c="#7B2D8B"/>
-                                <p style={{margin:0,fontSize:13.5,fontWeight:800,color:'#4A1259',fontFamily:"'Lexend',sans-serif"}}>Messages from the Barangay ({cas.messages.length})</p>
+                                <IcoBell c="#C45E10"/>
+                                <p style={{margin:0,fontSize:13.5,fontWeight:800,color:'#8A3C08',fontFamily:"'Lexend',sans-serif"}}>Messages from the Barangay ({cas.messages.length})</p>
                             </div>
                             <div style={{display:'flex',flexDirection:'column',gap:10}}>
                                 {cas.messages.map(m => (
-                                    <div key={m.id} style={{backgroundColor:'var(--surface)',borderRadius:8,padding:'10px 12px',border:'1px solid #E1BEE7'}}>
-                                        <p style={{margin:0,fontSize:13.5,color:'#4A1259',lineHeight:1.6,whiteSpace:'pre-line',fontFamily:"'Lexend',sans-serif"}}>{m.message}</p>
-                                        <p style={{margin:'6px 0 0',fontSize:11,color:'#9B4DAB',fontFamily:"'Lexend',sans-serif"}}>{fmtDate(m.created_at)}</p>
+                                    <div key={m.id} style={{backgroundColor:'var(--surface)',borderRadius:8,padding:'10px 12px',border:'1px solid #FFD9B3'}}>
+                                        <p style={{margin:0,fontSize:13.5,color:'#8A3C08',lineHeight:1.6,whiteSpace:'pre-line',fontFamily:"'Lexend',sans-serif"}}>{m.message}</p>
+                                        <p style={{margin:'6px 0 0',fontSize:11,color:'#C45E10',fontFamily:"'Lexend',sans-serif"}}>{fmtDate(m.created_at)}</p>
                                     </div>
                                 ))}
                             </div>

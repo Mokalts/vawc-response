@@ -4,6 +4,9 @@
   --vawc-orange-light: #FF9A4D;
   --vawc-orange-tint:  #FFF3E0;
   --vawc-orange-dark:  #C45E10;
+  /* The violet half of the official palette. Nothing in the victim app uses
+     these any more: orange carries the identity, and violet was decoration
+     that competed with it. Kept because they are the published brand hues. */
   --vawc-purple:       #7B2D8B;
   --vawc-purple-light: #9B4DAB;
   --vawc-purple-tint:  #F3E5F5;
@@ -15,16 +18,14 @@
   /* ───── Semantic THEME tokens, components reference these, not raw hex ─────
      Highlight (orange/purple) identity stays the same across themes; only
      surfaces, text, and borders flip. Defaults below = LIGHT. */
-  --page:         #FFF3E0;                                   /* solid page bg */
-  /* Page backdrop: geometric shapes (blobs, dot grids, hatched discs, rings,
-     slash marks) from assets/bg-shapes.svg, over the warm base gradient. The
-     layer is fixed so the shapes stay put while content scrolls, and it sits
-     under every page that uses var(--page-grad), so this is the only place to
-     edit it. Opacities live in the SVG and are kept low enough not to touch
-     text contrast. */
-  --page-grad:
-      url('./assets/bg-shapes.svg') no-repeat center center / cover fixed,
-      linear-gradient(180deg, #FFF9F3 0%, #FFF3E0 100%);
+  --page:         #FAFAF8;                                   /* solid page bg */
+  /* A plain off-white, and nothing else.
+     This used to be a fixed SVG of blobs, dot grids, hatched discs and rings
+     over a warm gradient. It read as decoration on a screen where the content
+     is somebody describing being hurt, and the white cards had to fight it to
+     look like the surface you are meant to read. Off-white rather than pure
+     white so those cards still lift off the page. */
+  --page-grad:   #FAFAF8;
   --surface:      #FFFFFF;                                   /* card surface */
   --surface-tint: #FFF3E0;                                   /* orange-tint fills, icon boxes */
   --surface-alt:  #F8FAFC;                                   /* neutral inset (inputs, review rows) */
@@ -48,22 +49,20 @@
   /* Awareness / category accents (AA text colour + soft icon-box tint) */
   --acc-pink:    #BE185D;  --tint-pink:   #FDF2F8;
   --acc-green:   #047857;  --tint-green:  #ECFDF5;
-  --acc-purple:  #7B2D8B;  --tint-purple: #F3E5F5;
+  --acc-purple:  #C45E10;  --tint-purple: #FFF3E0;   /* was violet */
   --acc-orange:  #C45E10;  --tint-orange: #FFF3E0;
 
   /* Semantic status boxes (theme-aware note/banner surfaces) */
   --bg-warn:    #FFFBEB;  --bd-warn:    #FDE68A;  --tx-warn:    #92400E;
   --bg-success: #ECFDF5;  --bd-success: #A7F3D0;  --tx-success: #065F46;
   --bg-error:   #FFF1F2;  --bd-error:   #FECDD3;  --tx-error:   #BE123C;
-  --bg-info:    #F3E5F5;  --bd-info:    #E1BEE7;  --tx-info:    #4A1259;
+  --bg-info:    #FFF3E0;  --bd-info:    #FFD9B3;  --tx-info:    #8A3C08;
 }
 
 :root[data-theme="dark"] {
   --page:         #171311;
-  /* Same composition, dark-tuned accents (see assets/bg-shapes-dark.svg). */
-  --page-grad:
-      url('./assets/bg-shapes-dark.svg') no-repeat center center / cover fixed,
-      linear-gradient(180deg, #1B1512 0%, #171311 100%);
+  /* Flat here too, for the same reason. */
+  --page-grad:   #171311;
   --surface:      #221B17;
   --surface-tint: #33251A;                                   /* dark warm tint (was peach) */
   /* Inputs and insets sit ON the card, so in dark mode this has to be LIGHTER

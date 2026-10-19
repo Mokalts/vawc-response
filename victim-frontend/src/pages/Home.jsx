@@ -141,7 +141,7 @@ const IcoGuide  = ({ size }) => (<Svg size={size}><path d="M12 6.6C10.4 5.3 8.4 
 // status reads the same colour wherever the victim sees it.
 const STATUS_DOT = {
     submitted: '#64748B', under_assessment: '#06B6D4', awaiting_onsite_visit: '#F59E0B',
-    bpo_applied: '#9B4DAB', bpo_issued: '#F47920', bpo_served: '#D97706',
+    bpo_applied: '#FFB066', bpo_issued: '#F47920', bpo_served: '#D97706',
     endorsed: '#F47920', closed: '#64748B',
 };
 const statusDot = (s) => STATUS_DOT[s] || '#64748B';
@@ -301,7 +301,7 @@ function Home() {
                                 A safe and confidential space to report incidents and seek support under Republic Act 9262.
                             </p>
                             <button data-tour="report" className="vh-hero-btn" style={S.heroBtn} onClick={() => navigate('/report')}>
-                                Report an Incident <IcoArrow c="#4A1259" />
+                                Report an Incident <IcoArrow c="#8A3C08" />
                             </button>
                         </div>
                     </section>
@@ -374,7 +374,6 @@ function Home() {
                     <div>
                         <h2 style={S.sectionLabel}>Legal Awareness</h2>
                         <p style={S.sectionSub}>
-                            <span style={S.sectionRule} aria-hidden="true" />
                             Know your rights under Republic Act 9262
                         </p>
                     </div>
@@ -447,13 +446,13 @@ const S = {
     content:     { padding: '18px 18px', display: 'flex', flexDirection: 'column', gap: 16 },
 
     // Hero, brand purple (works on both themes)
-    hero:        { position: 'relative', overflow: 'hidden', background: 'linear-gradient(150deg, #8A3C9C 0%, #4A1259 88%)', borderRadius: 'var(--radius-card)', padding: '28px 22px', boxShadow: '0 12px 34px rgba(74,18,89,0.34)' },
+    hero:        { position: 'relative', overflow: 'hidden', background: '#C45E10', borderRadius: 'var(--radius-card)', padding: '28px 22px', boxShadow: '0 1px 3px rgba(15,23,42,0.10)' },
     heroBlob:    { position: 'absolute', top: -46, right: -46, width: 150, height: 150, borderRadius: '50%', border: '22px solid rgba(255,255,255,0.08)' },
     heroBlob2:   { position: 'absolute', bottom: -50, left: -20, width: 110, height: 110, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' },
     heroHello:   { display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.82)', marginBottom: 9, fontFamily: FF },
     heroTitle:   { fontSize: 26, fontWeight: 700, color: '#fff', margin: '0 0 9px', fontFamily: FF, letterSpacing: '-0.4px', lineHeight: 1.12 },
     heroText:    { fontSize: 13.5, color: 'rgba(255,255,255,0.9)', lineHeight: 1.6, margin: '0 0 18px', fontFamily: FF, maxWidth: 320 },
-    heroBtn:     { display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '12px 20px', backgroundColor: '#fff', color: '#4A1259', fontSize: 14, fontWeight: 700, border: 'none', borderRadius: 14, cursor: 'pointer', fontFamily: FF, boxShadow: '0 8px 20px rgba(0,0,0,0.18)' },
+    heroBtn:     { display: 'inline-flex', alignItems: 'center', gap: 8, minHeight: 44, padding: '12px 20px', backgroundColor: '#fff', color: '#8A3C08', fontSize: 14, fontWeight: 700, border: 'none', borderRadius: 14, cursor: 'pointer', fontFamily: FF, boxShadow: '0 8px 20px rgba(0,0,0,0.18)' },
 
     // Reassurance chips — clean vertical "trust badges" on phone (icon on top,
     // centered); desktop overrides to a bigger horizontal card (see injected CSS).

@@ -41,7 +41,7 @@ const getStrength = (pw) => {
     return score;
 };
 const STRENGTH_LABEL = ['', 'Weak', 'Fair', 'Good', 'Strong'];
-const STRENGTH_COLOR = ['', '#EF4444', '#F59E0B', '#9B4DAB', '#059669'];
+const STRENGTH_COLOR = ['', '#EF4444', '#F59E0B', '#F47920', '#059669'];
 
 const REQUIREMENTS = [
     { test: pw => pw.length >= 8,           label: 'At least 8 characters' },
