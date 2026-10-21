@@ -17,6 +17,7 @@ import ChangePassword from './pages/ChangePassword';
 import Awareness from './pages/Awareness';
 import Terms from './pages/Terms';
 import QuickExit, { useTripleEscape } from './components/QuickExit';
+import ScrollToTop from './components/ScrollToTop';
 
 import './styles/global.css';
 
@@ -52,6 +53,7 @@ function RequireAuth({ children }) {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<SignIn />} />

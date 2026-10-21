@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 import Login from './pages/Login';
+import ScrollToTop from './components/ScrollToTop';
 import FaceEnroll from './pages/FaceEnroll';
 import FaceVerify from './pages/FaceVerify';
 import Dashboard from './pages/Dashboard';
@@ -34,6 +35,7 @@ function ProtectedRoute({ children }) {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Login />} />
 

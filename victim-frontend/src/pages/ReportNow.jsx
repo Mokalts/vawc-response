@@ -108,6 +108,15 @@ function ReportNow() {
     const navigate = useNavigate();
     const draft0 = loadDraft();
     const [step,          setStep]          = useState(1);
+
+    // Each step is a new screen as far as she is concerned, but it is the same
+    // route, so the router's scroll reset never fires. Without this, reaching
+    // Next at the bottom of step one opened step two already scrolled past its
+    // own heading.
+    useEffect(() => {
+        try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }
+        catch { window.scrollTo(0, 0); }
+    }, [step]);
     // Reporting is gated on an approved ID, so this page has to know before
     // she writes anything. Finding out after typing out the worst night of her
     // life that the system will not take it is the one outcome worth coding
