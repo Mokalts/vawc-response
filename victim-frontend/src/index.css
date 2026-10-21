@@ -56,6 +56,22 @@
   --acc-purple:  #C45E10;  --tint-purple: #FFF3E0;   /* was violet */
   --acc-orange:  #C45E10;  --tint-orange: #FFF3E0;
 
+  /* Awareness illustrations (unDraw, inlined as components so these apply).
+     The artwork is paper in a heavy frame; on dark the paper darkens and the
+     frame lightens, rather than three white rectangles glowing on the tints.
+     --ill-on-accent is the mark drawn INSIDE an accent shape, so it flips to
+     dark on the brighter dark-mode orange where white would fall under 3:1. */
+  --ill-paper:      #FFFFFF;
+  --ill-paper-tint: #FAFAFA;
+  --ill-frame:      #1C1917;
+  --ill-accent:     #CC4B00;
+  --ill-on-accent:  #FFFFFF;
+  --ill-badge:      #D6D6E3;
+  --ill-on-badge:   #FFFFFF;
+  --ill-muted:      #E6E6E6;
+  --ill-map:        #E9E7E4;
+  --ill-street:     #FFFFFF;
+
   /* Semantic status boxes (theme-aware note/banner surfaces) */
   --bg-warn:    #FFFBEB;  --bd-warn:    #FDE68A;  --tx-warn:    #92400E;
   --bg-success: #ECFDF5;  --bd-success: #A7F3D0;  --tx-success: #065F46;
@@ -89,6 +105,17 @@
   --acc-green:   #34D399;  --tint-green:  #123227;
   --acc-purple:  #C084FC;  --tint-purple: #2E1A38;
   --acc-orange:  #FF9A4D;  --tint-orange: #33251A;
+
+  --ill-paper:      #231F1A;
+  --ill-paper-tint: #2B2620;
+  --ill-frame:      #5C5248;
+  --ill-accent:     #FF8A3D;
+  --ill-on-accent:  #1A1512;
+  --ill-badge:      #4B4654;
+  --ill-on-badge:   #F2EFEA;
+  --ill-muted:      #3B342D;
+  --ill-map:        #2E2822;
+  --ill-street:     #231F1A;
 
   --bg-warn:    #2C2410;  --bd-warn:    #544418;  --tx-warn:    #FCD34D;
   --bg-success: #0F241C;  --bd-success: #1F4A3A;  --tx-success: #6EE7B7;

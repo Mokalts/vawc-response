@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ReactComponent as ArtSigns } from '../assets/awareness/signs.svg';
+import { ReactComponent as ArtTodo }  from '../assets/awareness/todo.svg';
+import { ReactComponent as ArtWhere } from '../assets/awareness/where.svg';
 import BottomNavbar from '../components/BottomNavbar';
 import SidebarMenu from '../components/SidebarMenu';
 import SOSButton from '../components/SOSButton';
@@ -85,6 +88,9 @@ if (!document.getElementById('vawc-home-css')) {
         /* Side widgets */
         @keyframes shimmerFade { 0%,100%{opacity:1} 50%{opacity:0.4} }
         .vh-widgets { display: flex; flex-direction: column; gap: 10px; }
+        .vh-card-art { height: 118px; max-width: 82%; width: auto; display: block; }
+        .vh-card-art, .vh-card-glyph { transition: transform 0.22s ease; }
+        .vh-card:hover .vh-card-art { transform: scale(1.03); }
         .vh-widget { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
         .vh-widget:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-strong) !important; border-color: #FFCC99; }
         .vh-widget:active { transform: scale(0.99); }
@@ -155,9 +161,9 @@ const initials = (u) => {
 // `tint` colours only the card's preview panel, never the glyph — the icon
 // itself always renders in the theme's text colour.
 const awarenessItems = [
-    { Icon: IcoAlert, tint: 'var(--tint-pink)',   section: 'signs', tag: 'RA 9262',     title: 'Recognize Abuse', desc: 'Identify the signs of VAWC and understand what counts as abuse.' },
-    { Icon: IcoDoc,   tint: 'var(--tint-purple)', section: 'todo',  tag: 'Legal Steps', title: 'Your Remedies',   desc: 'Step-by-step actions you can take to protect yourself.' },
-    { Icon: IcoHands, tint: 'var(--tint-green)',  section: 'where', tag: 'Agencies',    title: 'Seek Support',    desc: 'Where to file a report and get professional help.' },
+    { Icon: IcoAlert, Art: ArtSigns, tint: 'var(--tint-pink)',   section: 'signs', tag: 'RA 9262',     title: 'Recognize Abuse', desc: 'Identify the signs of VAWC and understand what counts as abuse.' },
+    { Icon: IcoDoc,   Art: ArtTodo,  tint: 'var(--tint-purple)', section: 'todo',  tag: 'Legal Steps', title: 'Your Remedies',   desc: 'Step-by-step actions you can take to protect yourself.' },
+    { Icon: IcoHands, Art: ArtWhere, tint: 'var(--tint-green)',  section: 'where', tag: 'Agencies',    title: 'Seek Support',    desc: 'Where to file a report and get professional help.' },
 ];
 
 
@@ -387,7 +393,9 @@ function Home() {
                             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/awareness?section=${item.section}`); } }}>
                             {/* Preview panel: the tint carries the category, the glyph stays monochrome */}
                             <div style={{ ...S.awarePreview, background: item.tint }}>
-                                <span className="vh-card-glyph" style={S.awareGlyph}><item.Icon size={34} /></span>
+                                {item.Art
+                                    ? <item.Art className="vh-card-art" aria-hidden="true" focusable="false" />
+                                    : <span className="vh-card-glyph" style={S.awareGlyph}><item.Icon size={34} /></span>}
                                 <span style={S.awareTag}>{item.tag}</span>
                             </div>
                             <div style={S.awareBody}>
