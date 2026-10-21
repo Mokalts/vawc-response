@@ -9,7 +9,9 @@ import Home from './pages/Home';
 import ReportNow from './pages/ReportNow';
 import MyCases from './pages/MyCases';
 import Profile from './pages/Profile';
-import Settings from './pages/Settings';
+import EditProfile from './pages/EditProfile';
+import NotificationSettings from './pages/NotificationSettings';
+import ActivityLog from './pages/ActivityLog';
 import VerifyEmail from './pages/VerifyEmail';
 import ChangePassword from './pages/ChangePassword';
 import Awareness from './pages/Awareness';
@@ -27,7 +29,8 @@ import './styles/global.css';
 // the sign-in and verification screens, where a bar of in-app links would be
 // useless, so they keep the pill.
 const NAV_ROUTES = [
-  '/home', '/report', '/my-reports', '/profile', '/settings',
+  '/home', '/report', '/my-reports', '/profile', '/profile/edit',
+  '/profile/notifications', '/profile/activity',
   '/terms', '/awareness', '/change-password',
 ];
 function GlobalQuickExit() {
@@ -64,7 +67,9 @@ function App() {
         <Route path="/report"          element={<RequireAuth><ReportNow /></RequireAuth>} />
         <Route path="/my-reports"      element={<RequireAuth><MyCases /></RequireAuth>} />
         <Route path="/profile"         element={<RequireAuth><Profile /></RequireAuth>} />
-        <Route path="/settings"        element={<RequireAuth><Settings /></RequireAuth>} />
+        <Route path="/profile/edit"    element={<RequireAuth><EditProfile /></RequireAuth>} />
+        <Route path="/profile/notifications" element={<RequireAuth><NotificationSettings /></RequireAuth>} />
+        <Route path="/profile/activity"      element={<RequireAuth><ActivityLog /></RequireAuth>} />
         <Route path="/change-password" element={<RequireAuth><ChangePassword /></RequireAuth>} />
       </Routes>
       <GlobalQuickExit />

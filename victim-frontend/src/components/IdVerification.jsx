@@ -45,15 +45,19 @@ const IdVerification = ({ profile, onUpdated }) => {
         <div style={ST.card}>
             <div style={ST.section}>
                 <p style={ST.sectionTitle}>Identity verification</p>
-                <p style={{ margin:0, fontSize:13, lineHeight:1.6, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
-                    The barangay checks your ID before you can file a report. This keeps fake reports out of
-                    the desk's records. Any ID will do, and the photo is deleted as soon as an officer has
-                    checked it.
-                </p>
-                <p style={{ margin:0, fontSize:12.5, lineHeight:1.6, color:'#92400E', backgroundColor:'#FFFBEB', border:'1px solid #FDE68A', borderRadius:8, padding:'9px 11px', fontFamily:"'Lexend', sans-serif" }}>
-                    If you are in danger right now, do not wait for this. Call 911 or the hotlines on the home
-                    screen. They do not need an account.
-                </p>
+                {status !== 'approved' && (
+                    <>
+                        <p style={{ margin:0, fontSize:13, lineHeight:1.6, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
+                            The barangay checks your ID before you can file a report. This keeps fake reports out of
+                            the desk's records. Any ID will do, and the photo is deleted as soon as an officer has
+                            checked it.
+                        </p>
+                        <p style={{ margin:0, fontSize:12.5, lineHeight:1.6, color:'#92400E', backgroundColor:'#FFFBEB', border:'1px solid #FDE68A', borderRadius:8, padding:'9px 11px', fontFamily:"'Lexend', sans-serif" }}>
+                            If you are in danger right now, do not wait for this. Call 911 or the hotlines on the home
+                            screen. They do not need an account.
+                        </p>
+                    </>
+                )}
 
                 {banner && (
                     <div style={{ backgroundColor:banner.bg, border:`1px solid ${banner.bd}`, borderRadius:8, padding:'10px 12px' }}>

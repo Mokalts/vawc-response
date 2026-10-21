@@ -102,7 +102,7 @@ function ChangePassword() {
             });
             setSuccess(true);
             setForm({ current_password:'', new_password:'', confirm_password:'' });
-            setTimeout(() => navigate('/settings'), 2500);
+            setTimeout(() => navigate('/profile'), 2500);
         } catch (err) {
             setError(err.response?.data?.detail || "Failed to change password.");
         } finally {
@@ -118,7 +118,7 @@ function ChangePassword() {
                 </div>
                 <h2 style={{ fontSize:20, fontWeight:800, color:'#059669', marginBottom:10, fontFamily:"'Lexend', sans-serif" }}>Password Updated!</h2>
                 <p style={{ fontSize:14, color:'var(--text-body)', lineHeight:1.7, fontFamily:"'Lexend', sans-serif" }}>
-                    Your password has been changed successfully. Redirecting you back to Settings…
+                    Your password has been changed successfully. Taking you back to your profile…
                 </p>
             </div>
         </div>
@@ -127,7 +127,7 @@ function ChangePassword() {
     return (
         <div style={S.page}>
             <header style={S.topBar}>
-                <button style={S.backBtn} onClick={() => navigate('/settings')} aria-label="Bumalik sa Settings"><IcoArrow /></button>
+                <button style={S.backBtn} onClick={() => navigate('/profile')} aria-label="Bumalik sa My Profile"><IcoArrow /></button>
                 <h1 style={S.title}>Change Password</h1>
                 <ThemeToggle size={44} />
             </header>

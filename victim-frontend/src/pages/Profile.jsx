@@ -13,70 +13,73 @@ if (!document.getElementById('vawc-font')) {
 if (!document.getElementById('vawc-profile-css')) {
     const s = document.createElement('style'); s.id='vawc-profile-css';
     s.textContent=`
-        @keyframes spin   { to{transform:rotate(360deg)} }
-        @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-        .vp-input { transition: border-color 0.15s, box-shadow 0.15s; }
-        .vp-input:focus { border-color:#F47920 !important; outline:none; box-shadow:0 0 0 3px rgba(244,121,32,0.1) !important; background:#fff !important; }
-        .vp-btn { transition: opacity 0.15s, transform 0.15s; }
-        .vp-btn:hover:not([disabled]) { opacity:0.88; transform:translateY(-1px); }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        .vp-btn { transition: background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease; }
+        .vp-btn:hover:not([disabled]) { background-color:#A83D00; transform:translateY(-1px); }
+        .vp-btn:active:not([disabled]) { transform:translateY(0) scale(0.99); }
+        /* Rows are the whole screen now, so the press state has to read on a
+           phone where there is no hover at all. */
+        .vp-row { transition: background-color 0.15s ease; }
+        .vp-row:hover  { background-color: var(--surface-tint); }
+        .vp-row:active { background-color: var(--border-soft); }
+        .vp-row:focus-visible { outline:2px solid #CC4B00; outline-offset:-2px; }
+        .vp-row-danger:hover  { background-color:#FFF1F2; }
+        :root[data-theme="dark"] .vp-row-danger:hover { background-color:#2E1517; }
+        .vp-chev { transition: transform 0.15s ease; }
+        .vp-row:hover .vp-chev { transform: translateX(2px); }
     `;
     document.head.appendChild(s);
 }
 
-const IcoArrow    = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#C45E10" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoEdit     = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoWarn     = () => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#BE123C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="#BE123C" strokeWidth="1.8" strokeLinecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="#BE123C" strokeWidth="2.4" strokeLinecap="round"/></svg>);
-const IcoLock     = () => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#64748B" strokeWidth="1.8"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/></svg>);
-const IcoCheck    = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoGuardian = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#92400E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="7" r="4" stroke="#92400E" strokeWidth="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#92400E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const Spinner     = ({ c='#F47920', size=22 }) => (<div style={{ width:size, height:size, border:`2.5px solid ${c}30`, borderTopColor:c, borderRadius: '50%', animation:'spin 0.75s linear infinite' }} />);
+const IcoArrow   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#C45E10" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoEdit    = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoChevron = ({ c='var(--text-muted)' }) => (<svg className="vp-chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoKey     = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoBell    = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoClock   = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#64748B" strokeWidth="1.8"/><path d="M12 7v5l3 2" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoTrash   = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6" stroke="#C62828" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoLogout  = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="#C62828" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoWarn    = () => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#BE123C" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="#BE123C" strokeWidth="1.8" strokeLinecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="#BE123C" strokeWidth="2.4" strokeLinecap="round"/></svg>);
+const IcoCheck   = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const Spinner    = ({ c='#CC4B00', size=22 }) => (<div style={{ width:size, height:size, border:`2.5px solid ${c}30`, borderTopColor:c, borderRadius:'50%', animation:'spin 0.75s linear infinite' }} />);
 
-// `required` shows only while editing: on a page she is reading, a red star
-// beside her own name means nothing, and the only two fields the save actually
-// enforces are the first and last name.
-const Field = ({ label, value, editing, required, inputProps }) => (
-    <div style={FS.group}>
-        <p style={FS.label}>
-            {label}
-            {editing && required && <span aria-label="required" style={{ color:'#C62828', marginLeft:3 }}>*</span>}
-        </p>
-        {editing
-            ? <input className="vp-input" style={FS.input} aria-label={label} {...inputProps} />
-            : <p style={FS.value}>{value || <span style={{ color:'#CBD5E1' }}>-</span>}</p>}
+// One row shape for the whole list. Kept at 56px tall rather than the 44px
+// minimum: these are the only controls on the screen and there is room.
+const Row = ({ icon, label, desc, onClick, right, danger, last }) => (
+    <div className={`vp-row${danger ? ' vp-row-danger' : ''}`} onClick={onClick}
+        role="button" tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}
+        style={{ ...S.row, borderBottom: last ? 'none' : '1px solid var(--border-soft)' }}>
+        <span style={S.rowIcon}>{icon}</span>
+        <span style={{ flex:1, minWidth:0 }}>
+            <span style={{ ...S.rowLabel, color: danger ? '#C62828' : 'var(--text)' }}>{label}</span>
+            {desc && <span style={S.rowDesc}>{desc}</span>}
+        </span>
+        {right !== undefined ? right : <IcoChevron c={danger ? '#FCA5A5' : 'var(--text-muted)'} />}
     </div>
 );
 
-const ReadOnlyField = ({ label, value, muted }) => (
-    <div style={FS.group}>
-        <p style={FS.label}>{label}</p>
-        <p style={{ ...FS.value, color: muted ? '#64748B' : 'var(--text)', fontStyle: muted ? 'italic' : 'normal' }}>
-            {value || <span style={{ color:'#CBD5E1' }}>-</span>}
-        </p>
-    </div>
+const Group = ({ title, children }) => (
+    <section style={{ display:'flex', flexDirection:'column', gap:7 }}>
+        {title && <p style={S.groupTitle}>{title}</p>}
+        <div style={S.card}>{children}</div>
+    </section>
 );
-
-const FS = {
-    group: { marginBottom:0 },
-    label: { fontSize:10.5, fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.7px', marginBottom:5, fontFamily:"'Lexend', sans-serif" },
-    value: { fontSize:15, color:'var(--text)', fontFamily:"'Lexend', sans-serif", lineHeight:1.4 },
-    input: { width:'100%', boxSizing:'border-box', padding:'10px 13px', borderRadius: 8, border:'1.5px solid var(--border)', fontSize:15, color:'var(--text)', backgroundColor:'var(--surface-alt)', fontFamily:"'Lexend', sans-serif" },
-};
 
 function Profile() {
     const navigate = useNavigate();
-    const [editing, setEditing]   = useState(false);
-    const [loading, setLoading]   = useState(true);
-    const [saving,  setSaving]    = useState(false);
-    const [error,   setError]     = useState('');
-    const [saved,   setSaved]     = useState(false);
-    const [profile, setProfile]   = useState(null);
-    const [form,    setForm]      = useState({});
+    const [loading, setLoading] = useState(true);
+    const [profile, setProfile] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [deleting, setDeleting] = useState(false);
+    const [deleteErr, setDeleteErr] = useState('');
+    const [saved, setSaved] = useState(false);
 
     // Named, because the ID card re-reads the profile after an upload so the
-    // status banner reflects what the server now holds rather than what the
-    // page assumed.
+    // status reflects what the server now holds rather than what the page
+    // assumed.
     const load = () => api.get("/users/me")
-        .then(res => { setProfile(res.data); resetForm(res.data); })
+        .then(res => setProfile(res.data))
         .catch(err => {
             if (err.response?.status === 401) { localStorage.removeItem("token"); navigate('/'); }
         })
@@ -84,64 +87,57 @@ function Profile() {
 
     useEffect(() => {
         load();
+        // Edit Profile sends us back here after a save; the pill is the only
+        // confirmation she gets that it went through.
+        try {
+            if (sessionStorage.getItem('vawc_profile_saved') === '1') {
+                sessionStorage.removeItem('vawc_profile_saved');
+                setSaved(true);
+                setTimeout(() => setSaved(false), 3000);
+            }
+        } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const resetForm = (data) => setForm({
-        first_name:   data.first_name   || '',
-        middle_name:  data.middle_name  || '',
-        last_name:    data.last_name    || '',
-        phone_number: data.phone_number || '',
-        address:      data.address      || '',
-        birthdate:    data.birthdate    || '',
-        sex:          data.sex          || '',
-    });
+    useEffect(() => {
+        if (!showDeleteConfirm) return;
+        const onKey = (e) => { if (e.key === 'Escape' && !deleting) setShowDeleteConfirm(false); };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [showDeleteConfirm, deleting]);
 
-    const handleSave = async () => {
-        if (!form.first_name.trim() || !form.last_name.trim()) { setError("First name and last name are required."); return; }
-        setSaving(true); setError('');
+    const handleSignOut = () => {
+        try { api.post('/auth/logout').catch(() => {}); } catch {}
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate('/');
+    };
+
+    const handleDeleteAccount = async () => {
+        setDeleting(true); setDeleteErr('');
         try {
-            const res = await api.patch("/users/me", {
-                first_name:   form.first_name,
-                middle_name:  form.middle_name  || null,
-                last_name:    form.last_name,
-                phone_number: form.phone_number,
-                address:      form.address      || null,
-                birthdate:    form.birthdate    || null,
-                sex:          form.sex          || null,
-            });
-            setProfile(res.data);
-            resetForm(res.data);
-            setEditing(false);
-            setSaved(true);
-            setTimeout(() => setSaved(false), 3000);
-            try {
-                const u = JSON.parse(localStorage.getItem('user') || '{}');
-                localStorage.setItem('user', JSON.stringify({ ...u, first_name: res.data.first_name, last_name: res.data.last_name }));
-            } catch {}
+            await api.delete("/users/me");
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            navigate('/');
         } catch (err) {
-            setError(err.response?.data?.detail || "Failed to save changes.");
+            setDeleteErr(err.response?.data?.detail || "Failed to delete account. Please try again.");
         } finally {
-            setSaving(false);
+            setDeleting(false);
         }
     };
 
-    const set = (k, v) => { setForm(f => ({ ...f, [k]: v })); setError(''); };
-
-    const initials = profile
-        ? [profile.first_name, profile.last_name].filter(Boolean).map(n => n[0]).join('').toUpperCase()
-        : '?';
-    const fullName = profile
-        ? [profile.first_name, profile.middle_name, profile.last_name].filter(Boolean).join(' ')
-        : '';
+    const header = (
+        <header style={S.topBar}>
+            <button style={S.backBtn} onClick={() => navigate('/home')} aria-label="Bumalik sa Home"><IcoArrow /></button>
+            <h1 style={S.title}>My Profile</h1>
+            <ThemeToggle size={44} />
+        </header>
+    );
 
     if (loading || !profile) return (
         <div style={S.page}>
-            <header style={S.topBar}>
-                <button style={S.backBtn} onClick={() => navigate('/home')} aria-label="Bumalik sa Home"><IcoArrow /></button>
-                <h1 style={S.title}>My Profile</h1>
-                <ThemeToggle size={44} />
-            </header>
+            {header}
             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', flex:1, gap:12 }}>
                 <Spinner /><p style={{ fontSize:14, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>Loading profile…</p>
             </div>
@@ -151,145 +147,89 @@ function Profile() {
         </div>
     );
 
-    const isMinor = profile.is_minor || false;
+    const initials = [profile.first_name, profile.last_name].filter(Boolean).map(n => n[0]).join('').toUpperCase() || '?';
+    const fullName = [profile.first_name, profile.middle_name, profile.last_name].filter(Boolean).join(' ');
+    const isMinor  = profile.is_minor || false;
 
     return (
         <div style={S.page}>
-            <header style={S.topBar}>
-                <button style={S.backBtn} onClick={() => editing ? (resetForm(profile), setEditing(false), setError('')) : navigate('/home')}
-                    aria-label={editing ? 'Kanselahin ang pag-edit' : 'Bumalik sa Home'}>
-                    <IcoArrow />
-                </button>
-                <h1 style={S.title}>{editing ? 'Edit Profile' : 'My Profile'}</h1>
-                <ThemeToggle size={44} />
-            </header>
+            {header}
 
             <main style={S.content}>
 
-                {/* Avatar */}
-                <div style={S.avatarSection}>
+                {/* Who she is, and the one button that changes it. */}
+                <div style={S.identity}>
                     <div style={S.avatar}>{initials}</div>
-                    <p style={S.avatarName}>{fullName}</p>
-                    <p style={S.avatarEmail}>{profile.email}</p>
-                    {isMinor && (
-                        <div style={{ display:'flex', alignItems:'center', gap:6, backgroundColor:'#FEF3C7', border:'1px solid #FCD34D', borderRadius: 4, padding:'4px 12px', fontSize:12, fontWeight:600, color:'#92400E', fontFamily:"'Lexend', sans-serif", marginTop:4 }}>
-                            Minor Account
-                        </div>
-                    )}
-                    {saved && (
-                        <div style={S.savedPill}>
-                            <IcoCheck /><span>Profile saved</span>
-                        </div>
-                    )}
+                    <div style={{ flex:1, minWidth:0 }}>
+                        <p style={S.identityName}>{fullName}</p>
+                        <p style={S.identityEmail}>{profile.email}</p>
+                        {isMinor && <span style={S.minorPill}>Minor Account</span>}
+                    </div>
                 </div>
 
+                {saved && (
+                    <div style={S.savedPill}><IcoCheck /><span>Profile saved</span></div>
+                )}
+
+                <button className="vp-btn" style={S.editBtn} onClick={() => navigate('/profile/edit')}>
+                    <IcoEdit /> Edit Profile
+                </button>
+
+                {/* The ID gate stays a full card rather than a row: until it is
+                    approved she cannot file a report, which is too important to
+                    reduce to a line of text with a chevron. */}
                 <IdVerification profile={profile} onUpdated={load} />
 
-                {/* Personal Info card */}
-                <div style={S.card}>
-                    <div style={S.section}>
-                        <p style={S.sectionTitle}>Personal Information</p>
-                        <div style={S.fieldGrid}>
-                            <Field required label="First Name" value={profile.first_name} editing={editing}
-                                inputProps={{ value:form.first_name, placeholder:'First name', onChange:e=>set('first_name',e.target.value) }} />
-                            <Field required label="Last Name" value={profile.last_name} editing={editing}
-                                inputProps={{ value:form.last_name, placeholder:'Last name', onChange:e=>set('last_name',e.target.value) }} />
-                        </div>
-                        <div style={S.divider} />
-                        <Field label="Middle Name" value={profile.middle_name} editing={editing}
-                            inputProps={{ value:form.middle_name, placeholder:'Optional', onChange:e=>set('middle_name',e.target.value) }} />
-                        <div style={S.divider} />
-                        <div style={S.fieldGrid}>
-                            <Field label="Birthdate" value={profile.birthdate} editing={editing}
-                                inputProps={{ type:'date', value:form.birthdate, onChange:e=>set('birthdate',e.target.value) }} />
-                            <div style={FS.group}>
-                                <p style={FS.label}>Sex</p>
-                                {editing
-                                    ? <select className="vp-input" aria-label="Sex" style={{ ...FS.input, appearance:'auto' }} value={form.sex} onChange={e=>set('sex',e.target.value)}>
-                                        <option value="">Select</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Male">Male</option>
-                                    </select>
-                                    : <p style={FS.value}>{profile.sex || <span style={{color:'#CBD5E1'}}>-</span>}</p>}
-                            </div>
-                        </div>
-                    </div>
+                <Group title="Account">
+                    <Row icon={<IcoKey />} label="Change Password" desc="Update your login password"
+                        onClick={() => navigate('/change-password')} />
+                    <Row icon={<IcoBell />} label="Notifications"
+                        desc="Choose what the barangay tells you about"
+                        onClick={() => navigate('/profile/notifications')} />
+                    <Row icon={<IcoClock />} label="Activity"
+                        desc="Sign-ins, and what happened with your case"
+                        onClick={() => navigate('/profile/activity')} last />
+                </Group>
 
-                    <div style={S.divider} />
+                <Group>
+                    <Row icon={<IcoTrash />} label="Delete Account" desc="Recoverable within 30 days" danger
+                        onClick={() => { setDeleteErr(''); setShowDeleteConfirm(true); }} />
+                    <Row icon={<IcoLogout />} label="Sign Out" danger last
+                        onClick={handleSignOut} />
+                </Group>
 
-                    {/* Contact */}
-                    <div style={S.section}>
-                        <p style={S.sectionTitle}>Contact Details</p>
-                        <Field label="Mobile Number" value={profile.phone_number} editing={editing}
-                            inputProps={{ type:'tel', value:form.phone_number, placeholder:'09xxxxxxxxx', onChange:e=>set('phone_number',e.target.value) }} />
-                        <div style={S.divider} />
-                        <div style={FS.group}>
-                            <p style={FS.label}>Email Address</p>
-                            <p style={FS.value}>{profile.email}</p>
-                            <div style={{ display:'flex', alignItems:'center', gap:5, marginTop:4 }}>
-                                <IcoLock /><p style={{ fontSize:11.5, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>Email cannot be changed.</p>
-                            </div>
-                        </div>
-                        <div style={S.divider} />
-                        <Field label="Home Address" value={profile.address} editing={editing}
-                            inputProps={{ value:form.address, placeholder:'Optional', onChange:e=>set('address',e.target.value) }} />
-                    </div>
-
-                    {/* ── Guardian Info (always visible, never editable) ── */}
-                    <div style={S.divider} />
-                    <div style={S.section}>
-                        <div style={{ display:'flex', alignItems:'center', gap:7, marginBottom:2 }}>
-                            <IcoGuardian />
-                            <p style={{ ...S.sectionTitle, color:'#92400E', margin:0 }}>Guardian Information</p>
-                        </div>
-                        <div style={{ backgroundColor: isMinor ? '#FFFBEB' : 'var(--surface-alt)', border:`1px solid ${isMinor ? '#FCD34D' : 'var(--border)'}`, borderRadius: 4, padding:'14px', marginTop:6 }}>
-                            {isMinor ? (
-                                <div style={S.fieldGrid}>
-                                    <ReadOnlyField label="Guardian Name" value={profile.guardian_name} />
-                                    <ReadOnlyField label="Relationship" value={profile.guardian_relationship} />
-                                </div>
-                            ) : (
-                                <p style={{ margin:0, fontSize:13, color:'var(--text-muted)', fontStyle:'italic', fontFamily:"'Lexend', sans-serif" }}>
-                                    Not applicable - account is not registered as a minor.
-                                </p>
-                            )}
-                            <div style={{ display:'flex', alignItems:'center', gap:5, marginTop: isMinor ? 12 : 8 }}>
-                                <IcoLock />
-                                <p style={{ fontSize:11.5, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif", margin:0 }}>
-                                    Guardian information is set during registration and cannot be changed here.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Error */}
-                {error && (
-                    <div style={S.errorBox}>
-                        <IcoWarn /><p style={{ fontSize:13, color:'#BE123C', fontFamily:"'Lexend', sans-serif", margin:0 }}>{error}</p>
-                    </div>
-                )}
-
-                {/* Buttons */}
-                {editing ? (
-                    <div style={{ display:'flex', gap:12 }}>
-                        <button className="vp-btn" style={S.cancelBtn}
-                            onClick={() => { resetForm(profile); setError(''); setEditing(false); }}>
-                            Cancel
-                        </button>
-                        <button className="vp-btn" style={{ ...S.saveBtn, opacity: saving?0.75:1 }}
-                            onClick={handleSave} disabled={saving}>
-                            {saving ? <><Spinner c="#fff" size={16} /><span>Saving…</span></> : 'Save Changes'}
-                        </button>
-                    </div>
-                ) : (
-                    <button className="vp-btn" style={S.editBtn} onClick={() => setEditing(true)}>
-                        <IcoEdit /> Edit Profile
-                    </button>
-                )}
+                <p style={S.version}>VAWC-Response · Barangay Palanginan, Iba, Zambales</p>
             </main>
 
             <BottomNavbar />
+
+            {/* Delete confirm modal */}
+            {showDeleteConfirm && (
+                <div style={S.backdrop} onClick={() => !deleting && setShowDeleteConfirm(false)}>
+                    <div style={S.modal} onClick={e => e.stopPropagation()}
+                        role="dialog" aria-modal="true" aria-label="Kumpirmahin ang pagtanggal ng account">
+                        <div style={S.modalIcon}><IcoTrash /></div>
+                        <h2 style={S.modalTitle}>Delete Account?</h2>
+                        <p style={S.modalText}>
+                            Your account and reports will be hidden immediately. The barangay can restore them
+                            within 30 days; after that they are erased for good.
+                        </p>
+                        {deleteErr && (
+                            <div style={S.errorBox}>
+                                <IcoWarn /><p style={{ fontSize:13, color:'#BE123C', fontFamily:"'Lexend', sans-serif", margin:0 }}>{deleteErr}</p>
+                            </div>
+                        )}
+                        <div style={{ display:'flex', gap:10, width:'100%' }}>
+                            <button className="vp-btn" style={S.cancelBtn} onClick={() => setShowDeleteConfirm(false)} disabled={deleting}>
+                                Cancel
+                            </button>
+                            <button style={{ ...S.deleteBtn, opacity: deleting ? 0.75 : 1 }} onClick={handleDeleteAccount} disabled={deleting}>
+                                {deleting ? <><Spinner c="#fff" size={15} /><span>Deleting…</span></> : 'Yes, Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -297,25 +237,37 @@ function Profile() {
 const S = {
     page:          { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', paddingBottom:92, fontFamily:"'Lexend', sans-serif" },
     topBar:        { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', backgroundColor:'var(--surface)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100 },
-    backBtn:       { width:44, height:44, borderRadius: 10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
+    backBtn:       { width:44, height:44, borderRadius:10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
     title:         { fontSize:17, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },
     // Capped and centred to match the Home page, which tops out at 1060px.
-    // Without this the page stretched the full window width on a monitor.
-    content:       { padding:'20px 18px', display:'flex', flexDirection:'column', gap:16, width:'100%', maxWidth:1060, marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' },
-    avatarSection: { display:'flex', flexDirection:'column', alignItems:'center', gap:6, padding:'12px 0 4px' },
-    avatar:        { width:72, height:72, borderRadius: '50%', background:'linear-gradient(135deg,var(--border),#F47920)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, fontWeight:800, color:'#fff', fontFamily:"'Lexend', sans-serif", marginBottom:4 },
-    avatarName:    { fontSize:17, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },
-    avatarEmail:   { fontSize:13, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" },
-    savedPill:     { display:'flex', alignItems:'center', gap:6, backgroundColor:'#ECFDF5', border:'1px solid #6EE7B7', borderRadius: 4, padding:'4px 12px', fontSize:12, fontWeight:600, color:'#059669', fontFamily:"'Lexend', sans-serif", marginTop:4 },
-    card:          { backgroundColor:'var(--surface)', borderRadius: 12, overflow:'hidden', border:'1px solid var(--border)', boxShadow:'0 2px 12px rgba(244,121,32,0.06)' },
-    section:       { padding:'16px 18px', display:'flex', flexDirection:'column', gap:14 },
-    sectionTitle:  { fontSize:10.5, fontWeight:700, color:'var(--accent-text)', textTransform:'uppercase', letterSpacing:'0.7px', fontFamily:"'Lexend', sans-serif" },
-    fieldGrid:     { display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 },
-    divider:       { height:1, backgroundColor:'var(--border-soft)' },
-    errorBox:      { display:'flex', alignItems:'center', gap:8, backgroundColor:'#FFF1F2', border:'1px solid #FECDD3', borderRadius: 8, padding:'10px 14px' },
-    editBtn:       { width:'100%', padding:'13px', backgroundColor:'#CC4B00', color:'#fff', border:'none', borderRadius: 8, fontSize:15, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.25)' },
-    cancelBtn:     { flex:1, padding:'13px', backgroundColor:'transparent', color:'var(--accent-text)', border:'2px solid var(--border)', borderRadius: 4, fontSize:15, fontWeight:600, cursor:'pointer', fontFamily:"'Lexend', sans-serif" },
-    saveBtn:       { flex:1, padding:'13px', backgroundColor:'#CC4B00', color:'#fff', border:'none', borderRadius: 4, fontSize:15, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.25)' },
+    content:       { padding:'20px 18px', display:'flex', flexDirection:'column', gap:16, width:'100%', maxWidth:620, marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' },
+
+    identity:      { display:'flex', alignItems:'center', gap:14, padding:'4px 2px' },
+    avatar:        { width:64, height:64, flexShrink:0, borderRadius:'50%', background:'linear-gradient(135deg,var(--border),#F47920)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:21, fontWeight:800, color:'#fff', fontFamily:"'Lexend', sans-serif" },
+    identityName:  { fontSize:17, fontWeight:700, color:'var(--text)', fontFamily:"'Lexend', sans-serif", overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' },
+    identityEmail: { fontSize:13, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif", marginTop:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' },
+    minorPill:     { display:'inline-block', backgroundColor:'#FEF3C7', border:'1px solid #FCD34D', borderRadius:999, padding:'3px 10px', fontSize:11.5, fontWeight:600, color:'#92400E', fontFamily:"'Lexend', sans-serif", marginTop:6 },
+    savedPill:     { display:'flex', alignSelf:'flex-start', alignItems:'center', gap:6, backgroundColor:'#ECFDF5', border:'1px solid #6EE7B7', borderRadius:999, padding:'5px 13px', fontSize:12, fontWeight:600, color:'#059669', fontFamily:"'Lexend', sans-serif" },
+
+    editBtn:       { width:'100%', padding:'13px', backgroundColor:'#CC4B00', color:'#fff', border:'none', borderRadius:10, fontSize:15, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 6px rgba(204,75,0,0.22)' },
+
+    groupTitle:    { fontSize:10.5, fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.8px', fontFamily:"'Lexend', sans-serif", paddingLeft:2 },
+    card:          { backgroundColor:'var(--surface)', borderRadius:12, overflow:'hidden', border:'1px solid var(--border)', boxShadow:'var(--card-shadow)' },
+    row:           { display:'flex', alignItems:'center', gap:12, padding:'0 16px', minHeight:56, cursor:'pointer', boxSizing:'border-box' },
+    rowIcon:       { width:34, height:34, flexShrink:0, borderRadius:9, backgroundColor:'var(--surface-alt)', display:'flex', alignItems:'center', justifyContent:'center' },
+    rowLabel:      { display:'block', fontSize:14.5, fontWeight:600, fontFamily:"'Lexend', sans-serif" },
+    rowDesc:       { display:'block', fontSize:12, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif", marginTop:1 },
+
+    version:       { fontSize:11.5, color:'var(--text-muted)', textAlign:'center', fontFamily:"'Lexend', sans-serif", paddingTop:4 },
+
+    backdrop:      { position:'fixed', inset:0, backgroundColor:'var(--overlay)', display:'flex', alignItems:'center', justifyContent:'center', padding:20, zIndex:2000 },
+    modal:         { backgroundColor:'var(--surface)', borderRadius:16, padding:'24px 22px', width:'100%', maxWidth:380, display:'flex', flexDirection:'column', alignItems:'center', gap:12, border:'1px solid var(--border)' },
+    modalIcon:     { width:52, height:52, borderRadius:'50%', backgroundColor:'#FFF1F2', display:'flex', alignItems:'center', justifyContent:'center' },
+    modalTitle:    { fontSize:18, fontWeight:700, color:'var(--text)', fontFamily:"'Lexend', sans-serif" },
+    modalText:     { fontSize:13.5, color:'var(--text-muted)', textAlign:'center', lineHeight:1.6, fontFamily:"'Lexend', sans-serif" },
+    errorBox:      { display:'flex', alignItems:'center', gap:8, backgroundColor:'#FFF1F2', border:'1px solid #FECDD3', borderRadius:8, padding:'10px 14px', width:'100%', boxSizing:'border-box' },
+    cancelBtn:     { flex:1, padding:'12px', backgroundColor:'transparent', color:'var(--text)', border:'1.5px solid var(--border)', borderRadius:10, fontSize:14.5, fontWeight:600, cursor:'pointer', fontFamily:"'Lexend', sans-serif" },
+    deleteBtn:     { flex:1, padding:'12px', backgroundColor:'#C62828', color:'#fff', border:'none', borderRadius:10, fontSize:14.5, fontWeight:600, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:8, fontFamily:"'Lexend', sans-serif" },
 };
 
 export default Profile;
