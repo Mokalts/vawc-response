@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "vawc-victim-2026"
-  }
+  },
+  "targets": {
+    "vawc-victim-2026": {
+      "hosting": {
+        "primary": [
+          "vawc-response"
+        ],
+        "legacy": [
+          "vawc-victim-2026"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

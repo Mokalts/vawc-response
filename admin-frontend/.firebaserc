@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "vawc-admin-2026"
-  }
+  },
+  "targets": {
+    "vawc-admin-2026": {
+      "hosting": {
+        "primary": [
+          "vawc-response-admin"
+        ],
+        "legacy": [
+          "vawc-admin-2026"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
