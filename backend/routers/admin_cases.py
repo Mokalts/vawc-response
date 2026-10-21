@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, asc, func
 from pydantic import BaseModel
 from database import get_db
 from models.case import Case
@@ -377,18 +377,40 @@ def get_deleted_cases(
 @router.get("/victims")
 def get_victim_list(
     search: Optional[str] = Query(None),
+    sort: str = Query("recent", pattern="^(recent|oldest|name|cases)$"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(100, ge=1, le=200),
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin_full_access),
 ):
-    query = (
-        db.query(User)
-        .join(Case, Case.user_id == User.id)
+    """One page of the people with at least one confirmed case.
+
+    This used to return everything, capped at 500. A cap is not pagination: it
+    is a silent cut, and the page gave no sign that anything was missing. The
+    answer now carries the total, so the list can say which part of it you are
+    looking at.
+    """
+    # One row per person, carrying the two things the list is sorted by. The
+    # join to this replaces a DISTINCT over a plain join to Case, and lets the
+    # database do the ordering: sorting in the browser would only ever reach
+    # the page already fetched.
+    summary = (
+        db.query(
+            Case.user_id.label("user_id"),
+            func.max(Case.updated_at).label("latest"),
+            func.count(Case.id).label("case_count"),
+        )
         .filter(
             Case.is_deleted == False,
-            User.is_deleted == False,
             Case.status     != ReportStatus.submitted,
         )
-        .distinct()
+        .group_by(Case.user_id)
+        .subquery()
+    )
+    query = (
+        db.query(User)
+        .join(summary, summary.c.user_id == User.id)
+        .filter(User.is_deleted == False)
     )
     if search:
         query = query.filter(
@@ -396,9 +418,21 @@ def get_victim_list(
             User.last_name.ilike(f"%{search}%")  |
             User.email.ilike(f"%{search}%")
         )
-    # Capped. A barangay will not reach this, but an unbounded .all() on a page
-    # that loads on sight is the kind of thing that is fine until it is not.
-    victims = query.order_by(User.last_name, User.first_name).limit(500).all()
+    # Counted before slicing, so the page can say "1 to 100 of 240" rather than
+    # just showing a hundred rows and leaving the rest to be guessed at.
+    total = query.order_by(None).count()
+    order = {
+        "recent": (desc(summary.c.latest),),
+        "oldest": (asc(summary.c.latest),),
+        "name":   (User.last_name, User.first_name),
+        "cases":  (desc(summary.c.case_count), User.last_name, User.first_name),
+    }[sort]
+    victims = (
+        query.order_by(*order, User.id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
 
     is_super = True   # records are not masked by role
     result = []
@@ -433,13 +467,21 @@ def get_victim_list(
             "latest_case_date":      latest.updated_at,
             "restricted":            not is_super,
         })
-    return result
+    return {
+        "items": result,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "pages": max(1, (total + page_size - 1) // page_size),
+    }
 
 
 # ── GET /admin/cases/victims/{user_id} ────────────────────────────────────────
 @router.get("/victims/{user_id}")
 def get_victim_cases(
     user_id: int,
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
     current_admin: Admin = Depends(get_current_admin_full_access),
 ):
@@ -447,14 +489,17 @@ def get_victim_cases(
     if not victim:
         raise HTTPException(status_code=404, detail="Victim not found.")
 
+    case_query = db.query(Case).filter(
+        Case.user_id    == user_id,
+        Case.is_deleted == False,
+        Case.status     != ReportStatus.submitted,
+    )
+    total = case_query.count()
     cases = (
-        db.query(Case)
-        .filter(
-            Case.user_id    == user_id,
-            Case.is_deleted == False,
-            Case.status     != ReportStatus.submitted,
-        )
+        case_query
         .order_by(desc(Case.updated_at))
+        .offset((page - 1) * page_size)
+        .limit(page_size)
         .all()
     )
     is_super = True   # records are not masked by role
@@ -474,6 +519,10 @@ def get_victim_cases(
     return {
         "victim":     victim_payload,
         "cases":      [_serialize_case(c) for c in cases],
+        "total":      total,
+        "page":       page,
+        "page_size":  page_size,
+        "pages":      max(1, (total + page_size - 1) // page_size),
         "restricted": not is_super,
     }
 

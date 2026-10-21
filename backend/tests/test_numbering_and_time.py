@@ -187,4 +187,6 @@ def test_the_dashboard_and_profiles_count_the_same_things(client, db, as_officer
     ).count()
 
     assert stats["total_reports"] == confirmed == 1
-    assert isinstance(victims_endpoint, list)
+    # The endpoint is paged now, so the count to compare against is the total
+    # it reports rather than the length of the list it used to return.
+    assert victims_endpoint["items"][0]["case_count"] == confirmed == 1

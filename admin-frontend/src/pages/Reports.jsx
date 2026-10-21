@@ -51,6 +51,43 @@ const fmtTime = (d) => d ? toDate(d).toLocaleTimeString("en-PH", { hour: "2-digi
 // the date threw away something she took the trouble to give, and the hour of
 // an incident is on the complaint form and matters to the four-hour report.
 const fmt = (d) => d ? `${fmtDate(d)}, ${fmtTime(d)}` : "-";
+// Named here rather than scattered through the fetches, so the three numbers
+// are visible together and can be changed without hunting.
+const PER_PAGE = { victims: 100, cases: 20, reports: 20 };
+
+// One control for all three lists. Deliberately plain: Previous, Next, and a
+// line saying which slice of what you are looking at. A long list of numbered
+// pages is harder to read than the sentence it replaces, and an officer
+// looking for a person uses the search box, not page seven.
+function Pager({ page, pages, total, perPage, onPage, noun }) {
+  if (!total) return null;
+  const first = (page - 1) * perPage + 1;
+  const last = Math.min(page * perPage, total);
+  const only = pages <= 1;
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", padding: "12px 16px", borderTop: "1px solid var(--adm-border)" }}>
+      <span style={{ fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+        {only ? `${total} ${noun}${total === 1 ? "" : "s"}` : `${first} to ${last} of ${total} ${noun}${total === 1 ? "" : "s"}`}
+      </span>
+      {!only && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button className="rd-btn" disabled={page <= 1} onClick={() => onPage(page - 1)}
+            style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 12.5, fontWeight: 600, cursor: page <= 1 ? "not-allowed" : "pointer", opacity: page <= 1 ? 0.45 : 1, fontFamily: "'Lexend',sans-serif" }}>
+            Previous
+          </button>
+          <span style={{ fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap" }}>
+            Page {page} of {pages}
+          </span>
+          <button className="rd-btn" disabled={page >= pages} onClick={() => onPage(page + 1)}
+            style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 12.5, fontWeight: 600, cursor: page >= pages ? "not-allowed" : "pointer", opacity: page >= pages ? 0.45 : 1, fontFamily: "'Lexend',sans-serif" }}>
+            Next
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const truncate = (s, n) => !s ? "-" : s.length > n ? s.slice(0, n) + "…" : s;
 const daysLeft = (d) => !d ? 0 : Math.max(0, 30 - Math.floor((Date.now() - toDate(d).getTime()) / 86400000));
 
@@ -92,6 +129,8 @@ export default function Reports() {
   const [selectedVictim, setSelectedVictim] = useState(null);
   const [selectedCase, setSelectedCase] = useState(null);
   const [victims, setVictims] = useState([]);
+  const [victimPage, setVictimPage] = useState(1);
+  const [victimMeta, setVictimMeta] = useState({ total: 0, pages: 1 });
   const [victimLoading, setVictimLoading] = useState(true);
   const [victimError, setVictimError] = useState(null);
   const [victimSearch, setVictimSearch] = useState("");
@@ -100,6 +139,12 @@ export default function Reports() {
   const tabRefs = useRef({});
   const [tabInd, setTabInd] = useState({ left: 0, width: 0 });
   const [cases, setCases] = useState([]);
+  const [casePage, setCasePage] = useState(1);
+  const [caseMeta, setCaseMeta] = useState({ total: 0, pages: 1 });
+  // The reports of one case arrive inside the case, so this page is sliced
+  // here rather than asked for. A case holds a handful of testimonies, not a
+  // table worth paging over the network.
+  const [reportPage, setReportPage] = useState(1);
   const [caseLoading, setCaseLoading] = useState(false);
   const [caseError, setCaseError] = useState(null);
   const [caseDetail, setCaseDetail] = useState(null);
@@ -115,6 +160,7 @@ export default function Reports() {
   const showToast = (msg, success = true) => { setToast({ msg, success }); setTimeout(() => setToast(null), 3500); };
 
   const handleSearch = (e) => {
+    setVictimPage(1);
     setVictimSearch(e.target.value);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setDebouncedSearch(e.target.value), 350);
@@ -123,21 +169,28 @@ export default function Reports() {
   const fetchVictims = useCallback(async () => {
     setVictimLoading(true); setVictimError(null);
     try {
-      const p = debouncedSearch ? `?search=${encodeURIComponent(debouncedSearch)}` : "";
-      const r = await api.get(`/admin/cases/victims${p}`);
-      setVictims(r.data);
+      const q = new URLSearchParams({ page: victimPage, page_size: PER_PAGE.victims, sort: sortBy });
+      if (debouncedSearch) q.set("search", debouncedSearch);
+      const r = await api.get(`/admin/cases/victims?${q}`);
+      // Tolerates the old shape, which was a bare array, so a stale cached
+      // bundle against a new server does not render an empty table.
+      const body = Array.isArray(r.data) ? { items: r.data, total: r.data.length, pages: 1 } : r.data;
+      setVictims(body.items || []);
+      setVictimMeta({ total: body.total ?? 0, pages: body.pages ?? 1 });
     } catch { setVictimError("Failed to load victims."); }
     finally { setVictimLoading(false); }
-  }, [debouncedSearch]);
+  }, [debouncedSearch, victimPage, sortBy]);
 
   const fetchCases = useCallback(async (userId) => {
     setCaseLoading(true); setCaseError(null);
     try {
-      const r = await api.get(`/admin/cases/victims/${userId}`);
+      const q = new URLSearchParams({ page: casePage, page_size: PER_PAGE.cases });
+      const r = await api.get(`/admin/cases/victims/${userId}?${q}`);
       setCases(r.data.cases || []);
+      setCaseMeta({ total: r.data.total ?? (r.data.cases || []).length, pages: r.data.pages ?? 1 });
     } catch { setCaseError("Failed to load cases."); }
     finally { setCaseLoading(false); }
-  }, []);
+  }, [casePage]);
 
   const fetchCaseDetail = useCallback(async (caseId) => {
     setDetailLoading(true); setDetailError(null);
@@ -155,14 +208,21 @@ export default function Reports() {
     finally { setDeletedLoading(false); }
   }, []);
 
+  // `fetchVictims` is rebuilt when the search text or the page changes, which
+  // is what makes this effect run again. A second effect watching
+  // `debouncedSearch` used to sit below this one and fired a duplicate request
+  // for every keystroke.
   useEffect(() => { if (view === "victims") fetchVictims(); if (view === "deleted") fetchDeleted(); }, [view, fetchVictims, fetchDeleted]);
-  // Search changes only: the effect above already refetches when `view` does,
-  // and listing it here as well would fire two requests for one switch.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (view === "victims") fetchVictims(); }, [debouncedSearch]);
 
-  const openCases = (v) => { setSelectedVictim(v); setView("cases"); fetchCases(v.user_id); };
-  const openDetail = (c) => { setSelectedCase(c); setView("reports"); fetchCaseDetail(c.id); };
+  // Same shape for one person's cases: `fetchCases` is rebuilt when `casePage`
+  // changes, so pressing Next fetches page two instead of only relabelling the
+  // twenty rows already on screen.
+  useEffect(() => {
+    if (view === "cases" && selectedVictim) fetchCases(selectedVictim.user_id);
+  }, [view, selectedVictim, fetchCases]);
+
+  const openCases = (v) => { setSelectedVictim(v); setCasePage(1); setView("cases"); };
+  const openDetail = (c) => { setSelectedCase(c); setReportPage(1); setView("reports"); fetchCaseDetail(c.id); };
 
   const handleRecover = async (id) => {
     setRecoveringId(id);
@@ -181,16 +241,6 @@ export default function Reports() {
   };
 
   const isVictimTab = view === "victims" || view === "cases" || view === "reports";
-
-  const sortedVictims = [...victims].sort((a, b) => {
-    switch (sortBy) {
-      case "oldest": return new Date(a.latest_case_date || 0) - new Date(b.latest_case_date || 0);
-      case "name":   return (a.full_name || "").localeCompare(b.full_name || "");
-      case "cases":  return (b.case_count || 0) - (a.case_count || 0);
-      case "recent":
-      default:       return new Date(b.latest_case_date || 0) - new Date(a.latest_case_date || 0);
-    }
-  });
 
   // Slide the active-tab underline to the selected tab.
   useEffect(() => {
@@ -242,7 +292,7 @@ export default function Reports() {
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginLeft: "auto" }}>
                 <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
                   <span>Sort by</span>
-                  <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+                  <select value={sortBy} onChange={e => { setVictimPage(1); setSortBy(e.target.value); }}
                     style={{ padding: "7px 10px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 12.5, fontFamily: "'Lexend',sans-serif", cursor: "pointer" }}>
                     <option value="recent">Recent activity</option>
                     <option value="oldest">Oldest activity</option>
@@ -250,7 +300,6 @@ export default function Reports() {
                     <option value="cases">Most cases</option>
                   </select>
                 </label>
-                <span style={S.countLabel}>{victimLoading ? "Loading…" : `${victims.length} victim${victims.length !== 1 ? "s" : ""}`}</span>
               </div>
             </div>
             <div style={{ overflowX: "auto" }}>
@@ -269,7 +318,7 @@ export default function Reports() {
                   {victimLoading && [1, 2, 3, 4].map(i => <SkelRow key={i} cols={6} />)}
                   {!victimLoading && victimError && <tr><td colSpan={6} style={{ textAlign: "center", padding: "48px" }}><IcoWarn size={28} /><p style={{ color: "#64748B", marginTop: 12, fontFamily: "'Lexend',sans-serif" }}>{victimError}</p><button style={S.retryBtn} onClick={fetchVictims}>Retry</button></td></tr>}
                   {!victimLoading && !victimError && victims.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", padding: "64px" }}><IcoUser size={40} color="#CBD5E1" /><p style={{ fontSize: 14, color: "var(--adm-text-muted)", marginTop: 12, fontFamily: "'Lexend',sans-serif" }}>No confirmed cases yet.</p></td></tr>}
-                  {!victimLoading && !victimError && sortedVictims.map(v => (
+                  {!victimLoading && !victimError && victims.map(v => (
                     <tr key={v.user_id} className="row-hover" onClick={() => openCases(v)}>
                       <td style={S.td}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -291,6 +340,8 @@ export default function Reports() {
                 </tbody>
               </table>
             </div>
+            <Pager page={victimPage} pages={victimMeta.pages} total={victimMeta.total}
+              perPage={PER_PAGE.victims} onPage={setVictimPage} noun="person" />
           </div>
         )}
 
@@ -344,6 +395,8 @@ export default function Reports() {
                   </tbody>
                 </table>
               </div>
+                <Pager page={casePage} pages={caseMeta.pages} total={caseMeta.total}
+                  perPage={PER_PAGE.cases} onPage={setCasePage} noun="case" />
             </div>
           </>
         )}
@@ -400,7 +453,10 @@ export default function Reports() {
                       </thead>
                       <tbody>
                         {(!caseDetail.reports || caseDetail.reports.length === 0) && <tr><td colSpan={7} style={{ textAlign: "center", padding: "48px" }}><IcoDoc size={36} /><p style={{ fontSize: 14, color: "var(--adm-text-muted)", marginTop: 10, fontFamily: "'Lexend',sans-serif" }}>No reports in this case.</p></td></tr>}
-                        {caseDetail.reports?.map((r, idx) => (
+                        {caseDetail.reports
+                          ?.map((r, idx) => [r, idx])
+                          .slice((reportPage - 1) * PER_PAGE.reports, reportPage * PER_PAGE.reports)
+                          .map(([r, idx]) => (
                           <tr key={r.id} className="row-hover" onClick={() => navigate(`/reports/${caseDetail.id}#report-${idx + 1}`)}>
                             <td style={S.td}><span style={{ fontSize: 12, fontWeight: 700, color: "var(--adm-text-2)", background: "var(--adm-border)", padding: "2px 8px", borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>Report {idx + 1}</span></td>
                             <td style={S.td}>{r.incident_type ? <span style={{ fontSize: 12.5, color: "#4A1259", background: "#F3E5F5", padding: "3px 9px", borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>{r.incident_type}</span> : <span style={{ color: "var(--adm-border-strong)" }}>-</span>}</td>
@@ -414,6 +470,9 @@ export default function Reports() {
                       </tbody>
                     </table>
                   </div>
+                  <Pager page={reportPage} pages={Math.max(1, Math.ceil((caseDetail.reports?.length || 0) / PER_PAGE.reports))}
+                    total={caseDetail.reports?.length || 0} perPage={PER_PAGE.reports}
+                    onPage={setReportPage} noun="report" />
                 </div>
               </>
             )}
@@ -495,7 +554,6 @@ const S = {
   toolbar: { display: "flex", alignItems: "center", gap: 12, padding: "16px 20px", borderBottom: "1px solid var(--adm-border)", flexWrap: "wrap" },
   searchWrap: { display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 220, maxWidth: 400, border: "1.5px solid var(--adm-border)", borderRadius: 4, padding: "9px 13px", backgroundColor: "var(--adm-muted)" },
   searchInput: { flex: 1, border: "none", outline: "none", fontSize: 13.5, color: "var(--adm-text)", backgroundColor: "transparent", fontFamily: "'Lexend',sans-serif" },
-  countLabel: { marginLeft: "auto", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" },
   table: { width: "100%", borderCollapse: "collapse", minWidth: 600 },
   thead: { backgroundColor: "var(--adm-muted)", borderBottom: "2px solid var(--adm-border)" },
   th: { padding: "11px 16px", fontSize: 11, fontWeight: 700, color: "var(--adm-text-muted)", textTransform: "uppercase", letterSpacing: "0.7px", whiteSpace: "nowrap", fontFamily: "'Lexend',sans-serif" },
