@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from models.case_activity import CaseActivity
 from database import get_db
 from models.case import Case
 from models.report import ReportStatus, Report
@@ -308,4 +309,77 @@ def get_dashboard_stats(
         "period_label":         period_label,
         "start":                start_dt.date().isoformat(),
         "end":                  end_dt.date().isoformat(),
+    }
+
+
+def _victim_name(user):
+    """Built here rather than imported from admin_cases: two routers importing
+    each other is a cycle waiting to happen for the sake of three joins."""
+    if not user:
+        return None
+    return " ".join(p for p in [user.first_name, user.last_name] if p) or None
+
+
+# ── GET /admin/stale-cases ───────────────────────────────────────────────────
+@router.get("/stale-cases")
+def stale_cases(
+    days: int = Query(7, ge=1, le=120),
+    db: Session = Depends(get_db),
+    current_admin: Admin = Depends(get_current_admin_full_access),
+):
+    """Open cases with no officer action for `days` days.
+
+    "No action" means no row in case_activities, which is the table that
+    records what officers actually did - not `updated_at`, which a victim
+    filing another report would bump without anyone at the desk having looked.
+    That distinction is the whole point: a case can look busy and still be
+    untouched.
+
+    Cases the barangay has finished with are excluded, and so are reports that
+    have not been confirmed into cases yet - those belong to the New Reports
+    tile, not here.
+    """
+    cutoff = datetime.utcnow() - timedelta(days=days)
+
+    rows = (
+        db.query(Case)
+        .filter(
+            Case.is_deleted == False,
+            Case.status.notin_([ReportStatus.submitted,
+                                ReportStatus.endorsed,
+                                ReportStatus.closed]),
+        )
+        .all()
+    )
+
+    out = []
+    for c in rows:
+        last = (
+            db.query(func.max(CaseActivity.created_at))
+            .filter(CaseActivity.case_id == c.id)
+            .scalar()
+        )
+        # Never acted on at all is measured from when the case was opened,
+        # which is the case this exists to catch.
+        since = last or c.created_at
+        if since is None or since > cutoff:
+            continue
+        status = c.status.value if c.status else None
+        out.append({
+            "id":            c.id,
+            "case_number":   c.case_number,
+            "victim_name":   _victim_name(c.user),
+            "status":        status,
+            "status_display": STATUS_DISPLAY.get(status, status),
+            "last_action_at": utc_to_ph_local(since).isoformat() if since else None,
+            "days_idle":     (datetime.utcnow() - since).days,
+            "never_acted":   last is None,
+        })
+
+    out.sort(key=lambda r: r["days_idle"], reverse=True)
+    return {
+        "days":        days,
+        "count":       len(out),
+        "never_acted": sum(1 for r in out if r["never_acted"]),
+        "cases":       out,
     }

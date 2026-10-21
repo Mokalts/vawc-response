@@ -502,6 +502,60 @@ const StackBar = ({ segments }) => {
     );
 };
 
+
+// ── Cases nobody has touched ─────────────────────────────────────────────────
+// The tiles above count cases by status, which cannot tell a case opened this
+// morning from one that has sat at Under Assessment for three weeks. This can,
+// because it measures the last OFFICER action rather than the last time the
+// row changed - a victim filing another report bumps the case without anybody
+// at the desk having looked at it.
+function StaleCases({ stale, onOpen }) {
+    const cases = stale?.cases || [];
+    if (!cases.length) {
+        return (
+            <div style={{ background: 'var(--adm-card)', border: '1px solid var(--adm-border)', borderRadius: 12, padding: '16px 18px', marginBottom: 18 }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--adm-text)', fontFamily: FF }}>Nothing is waiting</p>
+                <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--adm-text-muted)', fontFamily: FF }}>
+                    Every open case has been acted on in the last {stale?.days ?? 7} days.
+                </p>
+            </div>
+        );
+    }
+    return (
+        <div style={{ background: 'var(--adm-card)', border: '1px solid #FCD34D', borderRadius: 12, padding: '16px 18px', marginBottom: 18 }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: '#92400E', fontFamily: FF }}>
+                    Waiting on the desk ({cases.length})
+                </p>
+                <p style={{ margin: 0, fontSize: 11.5, color: '#92400E', fontFamily: FF }}>
+                    no officer action in {stale.days} days
+                    {stale.never_acted > 0 && ` - ${stale.never_acted} never acted on at all`}
+                </p>
+            </div>
+            {cases.slice(0, 8).map(c => (
+                <div key={c.id} className="row-hover" onClick={() => onOpen(c.id)}
+                    role="button" tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(c.id); } }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderTop: '1px solid var(--adm-border-soft, var(--adm-border))', cursor: 'pointer' }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: FF, minWidth: 108 }}>{c.case_number}</span>
+                    <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: 'var(--adm-text-muted)', fontFamily: FF, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {c.victim_name || '-'}
+                    </span>
+                    <span style={{ fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: FF, whiteSpace: 'nowrap' }}>{c.status_display}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: c.never_acted ? '#B91C1C' : '#92400E', fontFamily: FF, whiteSpace: 'nowrap', minWidth: 92, textAlign: 'right' }}>
+                        {c.never_acted ? 'never acted on' : `${c.days_idle} day${c.days_idle === 1 ? '' : 's'} idle`}
+                    </span>
+                </div>
+            ))}
+            {cases.length > 8 && (
+                <p style={{ margin: '8px 0 0', fontSize: 11.5, color: '#92400E', fontFamily: FF }}>
+                    and {cases.length - 8} more
+                </p>
+            )}
+        </div>
+    );
+}
+
 function MonitoringSection({ m, expiring }) {
     const Panel = ({ title, tag, children }) => (
         <div style={S.tableCard}>
@@ -571,6 +625,7 @@ export default function Dashboard() {
     const [stats, setStats] = useState(null);
     const [monitoring, setMonitoring] = useState(null);
     const [expiring, setExpiring] = useState([]);
+    const [stale, setStale] = useState({ cases: [], count: 0, never_acted: 0, days: 7 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [newCount, setNewCount] = useState(0);
@@ -589,15 +644,17 @@ export default function Dashboard() {
             const params = period === 'custom'
                 ? { period: 'custom', start: customStart, end: customEnd }
                 : { period };
-            const [sRes, uRes, mRes, eRes] = await Promise.all([
+            const [sRes, uRes, mRes, eRes, stRes] = await Promise.all([
                 api.get('/admin/dashboard', { params }),
                 api.get('/admin/cases/unread-count'),
                 api.get('/admin/monitoring').catch(() => ({ data: null })),
                 api.get('/admin/bpos/expiring').catch(() => ({ data: { expiring: [] } })),
+                api.get('/admin/stale-cases', { params: { days: 7 } }).catch(() => ({ data: { cases: [] } })),
             ]);
             setStats(sRes.data);
             setMonitoring(mRes.data);
             setExpiring(eRes.data.expiring || []);
+            setStale(stRes.data || { cases: [] });
             setNewCount(uRes.data.unread || 0);
             setBurstAlert(uRes.data.multi_alert || null);
         } catch {
@@ -789,6 +846,7 @@ export default function Dashboard() {
                     </div>
                 </div>
 
+                <StaleCases stale={stale} onOpen={(id) => navigate(`/reports?case=${id}`)} />
                 {monitoring && <MonitoringSection m={monitoring} expiring={expiring} />}
 
                 {/* ── Analytics ────────────────────────────────────────────── */}
