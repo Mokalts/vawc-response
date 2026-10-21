@@ -5,6 +5,12 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
+    # How long a session survives WITHOUT the app being open. The client
+    # silently refreshes on a timer while she is using it, so a short value
+    # costs an active user nothing; it only bounds the window in which a token
+    # sitting in storage on a closed phone still works. That window matters
+    # here more than in most apps: the person most likely to pick up her phone
+    # is the one she is reporting.
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     CLOUDINARY_CLOUD_NAME: str

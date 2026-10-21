@@ -11,6 +11,7 @@ from schemas.user import UserResponse, UserUpdate, PasswordChange
 from core.dependencies import get_current_user, get_user_for_id_submission
 from core.security import verify_password, hash_password
 from core.account_notice import notify_account_change
+from routers.auth import validate_password_strength
 from core.progressive_limiter import check_rate_limit, record_failure, record_success, login_keys
 from utils.cloudinary_helper import upload_image, destroy_image
 from utils.otp_helper import sms_enabled
@@ -81,8 +82,13 @@ def change_password(
 ):
     if not verify_password(payload.current_password, current_user.password_hash):
         raise HTTPException(status_code=400, detail="Current password is incorrect.")
-    if len(payload.new_password) < 6:
-        raise HTTPException(status_code=400, detail="New password must be at least 6 characters.")
+    # Registration, the reset link and every admin path all run this. This
+    # endpoint had its own six-character check instead, so a woman could sign
+    # up with an enforced strong password and then change it to "123456"
+    # through the one door that was not looking.
+    validate_password_strength(payload.new_password)
+    if payload.new_password == payload.current_password:
+        raise HTTPException(status_code=400, detail="New password must be different from the current one.")
     current_user.password_hash = hash_password(payload.new_password)
     log_user_activity(db, current_user.id, "password_changed")
     db.commit()
@@ -245,6 +251,7 @@ class NotificationPrefs(BaseModel):
     notify_sms:           Optional[bool] = None
     notify_case_updates:  Optional[bool] = None
     notify_desk_messages: Optional[bool] = None
+    notify_report_receipt: Optional[bool] = None
 
 
 def _prefs_payload(user: User) -> dict:
@@ -254,6 +261,7 @@ def _prefs_payload(user: User) -> dict:
         "notify_sms":           user.notify_sms,
         "notify_case_updates":  user.notify_case_updates,
         "notify_desk_messages": user.notify_desk_messages,
+        "notify_report_receipt": user.notify_report_receipt,
         # Whether the SERVER can send a text at all, which is a different
         # question from whether she wants one. The screen greys the SMS row
         # when this is false, so turning SMS_ENABLED on in the deployment is
