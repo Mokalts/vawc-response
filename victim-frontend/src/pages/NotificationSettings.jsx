@@ -29,7 +29,8 @@ const IcoMail  = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="no
 const IcoPhone = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="2.5" stroke="#64748B" strokeWidth="1.8"/><path d="M11 18.5h2" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoFile  = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M6 2h8l6 6v14H6z" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2v6h6" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoChat  = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.4 8.4 0 01-9 8.4 8.9 8.9 0 01-4-.9L3 21l1.9-4.9A8.4 8.4 0 0112 3a8.4 8.4 0 019 8.5z" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoBell  = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoReceipt = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 7h6M9 11h6" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/></svg>);
+const IcoBell  = (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const Spinner  = ({ c='#CC4B00', size=22 }) => (<div style={{ width:size, height:size, border:`2.5px solid ${c}30`, borderTopColor:c, borderRadius:'50%', animation:'spin 0.75s linear infinite' }} />);
 
 const Toggle = ({ on, disabled, onToggle }) => (
@@ -160,8 +161,20 @@ function NotificationSettings() {
                         <Row icon={<IcoChat />} label="Messages from the barangay"
                             desc="Including hearing notices"
                             on={!!prefs?.notify_desk_messages} disabled={off}
-                            onToggle={() => set('notify_desk_messages')} last />
+                            onToggle={() => set('notify_desk_messages')} />
+                        <Row icon={<IcoReceipt />} label="A copy of each report you file"
+                            desc="Your case number, emailed to you"
+                            on={!!prefs?.notify_report_receipt} disabled={off}
+                            onToggle={() => set('notify_report_receipt')} last />
                     </div>
+                    {/* Said plainly rather than left for her to work out. This
+                        is the one switch that is off until she turns it on,
+                        and the reason is worth her knowing before she does. */}
+                    <p style={S.groupNote}>
+                        The copy is off until you turn it on. It holds only your case number and
+                        the date, never what you reported - but it does arrive in your email, so
+                        turn it on only if that inbox is yours alone.
+                    </p>
                 </section>
 
                 {/* Listed, but with no switch. She should be able to see that

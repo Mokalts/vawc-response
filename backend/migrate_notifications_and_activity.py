@@ -48,6 +48,9 @@ NOTIFY_COLUMNS = {
     "notify_sms":           "false",
     "notify_case_updates":  "true",
     "notify_desk_messages": "true",
+    # The only one defaulting false: a receipt in her inbox is a risk if the
+    # person she is reporting reads her mail, so it is opt-in.
+    "notify_report_receipt": "false",
 }
 
 

@@ -330,6 +330,8 @@ def submit_report(
     db.commit()
     db.refresh(report)
 
+    _send_report_receipt(current_user, target_case.case_number)
+
     return {
         "merged":      merged,
         "case_number": target_case.case_number,
@@ -437,3 +439,60 @@ def delete_report(
     db.delete(report)
     db.commit()
     return {"detail": "Report deleted."}
+
+
+def wants_report_receipt(user) -> bool:
+    """Whether to email her a copy of a report she just filed.
+
+    Pulled out of the sender so the decision can be read and tested on its
+    own, without a thread or a mail server in the way. Defaults to False at
+    every lookup - unlike the other preferences, which default to True - so an
+    unmigrated database sends nothing rather than sending something she never
+    asked for.
+    """
+    if user is None:
+        return False
+    if not getattr(user, "notify_report_receipt", False):
+        return False
+    if not getattr(user, "notify_enabled", True):
+        return False
+    return bool(getattr(user, "notify_email", True))
+
+
+def _send_report_receipt(user, case_number: str):
+    """Email her a copy of the record, if she asked for one.
+
+    Every lookup defaults to False here rather than True: this is the one kind
+    of mail where the safe failure is not sending. Sent on a thread so a slow
+    mail server never holds up the submission, and swallowing its own errors
+    so a bounced receipt can never fail the report it describes.
+    """
+    try:
+        if not wants_report_receipt(user):
+            return
+        email = getattr(user, "email", None)
+        if not email:
+            return
+
+        import html as _html
+        import threading
+        from utils.otp_helper import send_html_email
+        from utils.email_templates import report_receipt_email
+        from core.timeutil import utc_to_ph_local
+
+        name = " ".join(p for p in [user.first_name, user.last_name] if p)
+        filed_on = utc_to_ph_local(datetime.utcnow()).strftime("%d %B %Y, %I:%M %p")
+
+        subject, body = report_receipt_email(
+            _html.escape(name), _html.escape(case_number), filed_on
+        )
+
+        def _go():
+            try:
+                send_html_email(email, subject, body)
+            except Exception as e:
+                print(f"[Email] report receipt failed: {e}")
+
+        threading.Thread(target=_go, daemon=True).start()
+    except Exception as e:
+        print(f"[Email] report receipt skipped: {e}")

@@ -167,6 +167,27 @@ def case_status_email(victim_name: str, case_number: str, status_display: str, d
     )
 
 
+def report_receipt_email(victim_name: str, case_number: str, filed_on: str):
+    """Sent when she files a report, only if she asked to be sent one.
+
+    Deliberately holds no detail of the incident: the case number, the date,
+    and nothing a person reading over her shoulder could learn from.
+    """
+    inner = (
+        _heading(
+            f"Hello, {victim_name}",
+            "The barangay has received your report. This is your copy of the record.",
+        )
+        + _panel([("Case number", case_number), ("Received", filed_on)])
+        + f"""        <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:{BODY};">Keep this case number. You can quote it when you follow up with the barangay, and you can see the full details any time by signing in to the app.</p>
+        <p style="margin:0;font-size:13.5px;line-height:1.6;color:{MUTED};">If you are in danger right now, do not wait for the barangay to act. Call 911, or the hotlines on the app home screen. They do not need an account.</p>"""
+    )
+    return (
+        f"Report received - case {case_number}",
+        _shell(f"The barangay has received your report, case {case_number}.", inner),
+    )
+
+
 def case_message_email(victim_name: str, case_number: str, message: str):
     """Sent when staff write a message to the person who reported."""
     inner = (

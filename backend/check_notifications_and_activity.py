@@ -26,7 +26,7 @@ engine = create_engine(url)
 IS_SQLITE = url.startswith("sqlite")
 
 NOTIFY = ["notify_enabled", "notify_email", "notify_sms",
-          "notify_case_updates", "notify_desk_messages"]
+          "notify_case_updates", "notify_desk_messages", "notify_report_receipt"]
 
 with engine.connect() as conn:
 
@@ -65,6 +65,10 @@ with engine.connect() as conn:
         print("   still receiving case mail    : %d  %s"
               % (opted, "(all of them)" if opted == total else "<-- SOME WOULD GO SILENT"))
         print("   opted into SMS               : %d  (expected 0)" % sms_on)
+        receipts = conn.execute(text(
+            "SELECT COUNT(*) FROM users WHERE is_deleted = false "
+            "AND notify_report_receipt")).scalar()
+        print("   opted into report receipts   : %d  (expected 0 - it is opt-in)" % receipts)
 
     # ── 3. The activity table ───────────────────────────────────────────────
     print()

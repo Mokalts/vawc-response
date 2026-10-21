@@ -173,3 +173,48 @@ def test_another_womans_activity_is_not_visible(client, db, as_user):
     db.commit()
     details = [e.get("detail") for e in client.get("/users/me/activity").json()["entries"]]
     assert "not hers" not in details
+
+
+# ── The report receipt, which is the one that defaults off ──────────────────
+
+def test_the_report_receipt_is_off_until_she_asks(client, db, as_user):
+    """Mail landing in her inbox is a risk if the person she is reporting
+    reads her mail, so this is the only preference that is opt-in."""
+    assert client.get("/users/me/notifications").json()["notify_report_receipt"] is False
+
+
+def test_she_can_turn_the_receipt_on(client, db, as_user):
+    body = client.patch("/users/me/notifications",
+                        json={"notify_report_receipt": True}).json()
+    assert body["notify_report_receipt"] is True
+
+
+def test_no_receipt_while_it_is_off(db):
+    from routers.cases import wants_report_receipt
+    assert wants_report_receipt(_user(db)) is False
+
+
+def test_a_receipt_once_she_turns_it_on(db):
+    from routers.cases import wants_report_receipt
+    assert wants_report_receipt(_user(db, notify_report_receipt=True)) is True
+
+
+def test_the_master_switch_also_silences_the_receipt(db):
+    from routers.cases import wants_report_receipt
+    assert wants_report_receipt(
+        _user(db, notify_report_receipt=True, notify_enabled=False)) is False
+    assert wants_report_receipt(
+        _user(db, email="b@example.com", phone_number="09171111111",
+              notify_report_receipt=True, notify_email=False)) is False
+
+
+def test_an_unmigrated_database_sends_no_receipt(db):
+    """The other preferences default to on when the column is missing; this
+    one defaults to off, because the safe failure here is not sending."""
+    from routers.cases import wants_report_receipt
+
+    class Bare:
+        pass
+
+    assert wants_report_receipt(Bare()) is False
+    assert wants_report_receipt(None) is False

@@ -63,6 +63,10 @@ class User(Base):
     notify_sms           = Column(Boolean, default=False, nullable=False)
     notify_case_updates  = Column(Boolean, default=True, nullable=False)
     notify_desk_messages = Column(Boolean, default=True, nullable=False)
+    # The only preference that defaults OFF. A receipt landing in her inbox is
+    # a risk if the person she is reporting reads her mail, so the app does not
+    # send one until she asks for it.
+    notify_report_receipt = Column(Boolean, default=False, nullable=False)
 
     is_deleted = Column(Boolean, default=False, nullable=False)
     deleted_at = Column(DateTime, nullable=True)
