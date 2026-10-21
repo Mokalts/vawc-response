@@ -14,12 +14,14 @@ if (!document.getElementById('vawc-nav-css')) {
         /* The escape control reads as neutral until touched, then as an exit.
            A permanently red item in the bar would advertise, to anyone glancing
            at the screen, that this is an abuse-reporting app. */
-        .vn-exit:hover { background-color:rgba(185,28,28,0.10); }
-        .vn-exit:hover .vn-label { color:#B91C1C; }
-        .vn-exit:hover svg { stroke:#B91C1C; }
         /* Four labels on a 320px phone leaves the last two nearly touching. */
         @media (max-width: 360px) { .vn-label { font-size:10px; } }
-    `;
+        @media (hover: hover) and (pointer: fine) {
+            .vn-exit:hover { background-color:rgba(185,28,28,0.10); }
+            .vn-exit:hover .vn-label { color:#B91C1C; }
+            .vn-exit:hover svg { stroke:#B91C1C; }
+        }
+        `;
     document.head.appendChild(s);
 }
 

@@ -20,13 +20,15 @@ if (!document.getElementById('vawc-victim-css')) {
         .vi-input { transition: border-color 0.15s, box-shadow 0.15s; }
         .vi-input:focus { border-color: #F47920 !important; background: var(--surface) !important; outline: none; box-shadow: 0 0 0 3px rgba(244,121,32,0.1) !important; }
         .vi-btn { transition: all 0.15s ease; }
-        .vi-btn:hover:not([disabled]) { background: #C45E10 !important; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(244,121,32,0.3) !important; }
-        .vi-link:hover { color: #C45E10 !important; }
         input[type="password"]::-ms-reveal { display: none; }
         input[type="password"]::-ms-clear { display: none; }
         input::-webkit-credentials-auto-fill-button { display: none !important; }
         input::-webkit-strong-password-auto-fill-button { display: none !important; }
-    `;
+        @media (hover: hover) and (pointer: fine) {
+            .vi-btn:hover:not([disabled]) { background: #C45E10 !important; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(244,121,32,0.3) !important; }
+            .vi-link:hover { color: #C45E10 !important; }
+        }
+        `;
     document.head.appendChild(s);
 }
 

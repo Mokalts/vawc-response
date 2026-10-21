@@ -15,8 +15,10 @@ if (!document.getElementById('vawc-terms-page-css')) {
     const s = document.createElement('style'); s.id='vawc-terms-page-css';
     s.textContent = `
         .vt-toc a { transition: background-color 0.15s ease, color 0.15s ease; }
-        .vt-toc a:hover { background: var(--surface-alt); color: var(--text); }
-    `;
+        @media (hover: hover) and (pointer: fine) {
+            .vt-toc a:hover { background: var(--surface-alt); color: var(--text); }
+        }
+        `;
     document.head.appendChild(s);
 }
 

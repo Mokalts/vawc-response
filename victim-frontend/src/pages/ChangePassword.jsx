@@ -17,8 +17,10 @@ if (!document.getElementById('vawc-cp-css')) {
         .vcp-input { transition: border-color 0.15s, box-shadow 0.15s; }
         .vcp-input:focus-within { border-color:#F47920 !important; box-shadow:0 0 0 3px rgba(244,121,32,0.1) !important; }
         .vcp-btn { transition: opacity 0.15s, transform 0.15s; }
-        .vcp-btn:hover:not([disabled]) { opacity:0.88; transform:translateY(-1px); }
-    `;
+        @media (hover: hover) and (pointer: fine) {
+            .vcp-btn:hover:not([disabled]) { opacity:0.88; transform:translateY(-1px); }
+        }
+        `;
     document.head.appendChild(s);
 }
 

@@ -16,9 +16,11 @@ if (!document.getElementById('vawc-editprofile-css')) {
         .ve-input { transition: border-color 0.15s, box-shadow 0.15s; }
         .ve-input:focus { border-color:#CC4B00 !important; outline:none; box-shadow:0 0 0 3px rgba(204,75,0,0.12) !important; }
         .ve-btn { transition: background-color 0.18s ease, transform 0.18s ease; }
-        .ve-btn:hover:not([disabled]) { transform:translateY(-1px); }
         .ve-btn:active:not([disabled]) { transform:translateY(0) scale(0.99); }
-        .ve-save:hover:not([disabled]) { background-color:#A83D00; }
+        @media (hover: hover) and (pointer: fine) {
+            .ve-btn:hover:not([disabled]) { transform:translateY(-1px); }
+            .ve-save:hover:not([disabled]) { background-color:#A83D00; }
+        }
     `;
     document.head.appendChild(s);
 }

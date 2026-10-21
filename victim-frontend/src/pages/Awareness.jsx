@@ -14,19 +14,13 @@ if (!document.getElementById('vawc-awareness-css')) {
         @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
         .va-tab { transition: all 0.18s ease; }
-        .va-tab:hover { opacity: 0.85; }
         .va-cta-btn { transition: all 0.15s ease; }
-        .va-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
         .va-back { transition: transform 0.12s ease; }
-        .va-back:hover { transform: translateX(-2px); }
         .va-card { transition: transform 0.18s ease, box-shadow 0.18s ease; }
-        .va-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important; }
         .tabs-scroll::-webkit-scrollbar { height: 6px; }
         .tabs-scroll::-webkit-scrollbar-track { background: #FFF3E0; border-radius: 9999px; }
         .tabs-scroll::-webkit-scrollbar-thumb { background: #FFCC99; border-radius: 9999px; }
-        .tabs-scroll::-webkit-scrollbar-thumb:hover { background: #F47920; }
         .va-nav-btn { transition: all 0.15s ease; }
-        .va-nav-btn:hover { filter: brightness(0.97); }
 
         /* Section change: the whole panel slides in from the side the reader is
            travelling toward, so forward and back feel directional rather than a
@@ -101,7 +95,15 @@ if (!document.getElementById('vawc-awareness-css')) {
                 height: 180px;
             }
         }
-    `;
+        @media (hover: hover) and (pointer: fine) {
+            .va-tab:hover { opacity: 0.85; }
+            .va-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
+            .va-back:hover { transform: translateX(-2px); }
+            .va-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important; }
+            .tabs-scroll::-webkit-scrollbar-thumb:hover { background: #F47920; }
+            .va-nav-btn:hover { filter: brightness(0.97); }
+        }
+        `;
     document.head.appendChild(s);
 }
 

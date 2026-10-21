@@ -11,7 +11,7 @@ if (!document.getElementById('vawc-font')) {
 }
 if (!document.getElementById('vawc-victim-css')) {
     const s = document.createElement('style'); s.id='vawc-victim-css';
-    s.textContent=`@keyframes spin{to{transform:rotate(360deg)}} @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}} .vi-input{transition:border-color 0.15s,box-shadow 0.15s;} .vi-input:focus{border-color:#F47920!important;background:var(--surface)!important;outline:none;box-shadow:0 0 0 3px rgba(244,121,32,0.1)!important;} .vi-otp{transition:all 0.15s;} .vi-otp:focus{border-color:#F47920!important;box-shadow:0 0 0 3px rgba(244,121,32,0.15)!important;outline:none;background:var(--surface)!important;} .vi-btn{transition:all 0.15s ease;} .vi-btn:hover:not([disabled]){background:#C45E10!important;transform:translateY(-1px);}`;
+    s.textContent=`@keyframes spin{to{transform:rotate(360deg)}} @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}} .vi-input{transition:border-color 0.15s,box-shadow 0.15s;} .vi-input:focus{border-color:#F47920!important;background:var(--surface)!important;outline:none;box-shadow:0 0 0 3px rgba(244,121,32,0.1)!important;} .vi-otp{transition:all 0.15s;} .vi-otp:focus{border-color:#F47920!important;box-shadow:0 0 0 3px rgba(244,121,32,0.15)!important;outline:none;background:var(--surface)!important;} .vi-btn{transition:all 0.15s ease;} @media (hover: hover) and (pointer: fine){.vi-btn:hover:not([disabled]){background:#C45E10!important;transform:translateY(-1px);}}`;
     document.head.appendChild(s);
 }
 

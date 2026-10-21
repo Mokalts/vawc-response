@@ -75,11 +75,13 @@ if (!document.getElementById('vawc-quickexit-css')) {
             cursor: pointer; box-shadow: var(--card-shadow);
             transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
         }
-        .vqe-btn:hover { background: #B91C1C; border-color: #B91C1C; color: #fff; transform: translateY(-1px); }
         .vqe-btn:active { transform: scale(0.97); }
         .vqe-hint { font-size: 10.5px; font-weight: 500; opacity: 0.75; }
         @media (max-width: 600px) { .vqe-hint { display: none; } }
-    `;
+        @media (hover: hover) and (pointer: fine) {
+            .vqe-btn:hover { background: #B91C1C; border-color: #B91C1C; color: #fff; transform: translateY(-1px); }
+        }
+        `;
     document.head.appendChild(s);
 }
 

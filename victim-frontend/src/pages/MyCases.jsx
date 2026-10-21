@@ -19,13 +19,15 @@ if (!document.getElementById('vawc-mycases-css')) {
         @keyframes shimmer{ 0%,100%{opacity:1} 50%{opacity:0.45} }
         @keyframes spin   { to{transform:rotate(360deg)} }
         .vmc-card { transition:transform 0.15s ease,box-shadow 0.15s ease; cursor:pointer; }
-        .vmc-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(244,121,32,0.12) !important; }
         .vmc-card:active { transform:scale(0.99); }
         .vmc-btn { transition:all 0.15s ease; }
-        .vmc-btn:hover:not([disabled]) { opacity:0.9; transform:translateY(-1px); }
-        .vmc-report-row:hover { background:var(--surface-alt) !important; }
         .vmc-report-row { transition:background 0.1s; }
-    `;
+        @media (hover: hover) and (pointer: fine) {
+            .vmc-card:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(244,121,32,0.12) !important; }
+            .vmc-btn:hover:not([disabled]) { opacity:0.9; transform:translateY(-1px); }
+            .vmc-report-row:hover { background:var(--surface-alt) !important; }
+        }
+        `;
     document.head.appendChild(s);
 }
 

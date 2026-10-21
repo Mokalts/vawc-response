@@ -18,20 +18,22 @@ if (!document.getElementById('vawc-sos-css')) {
         /* Darkens AND lifts, slightly. Colour alone was too quiet to read as a
            response, and this is the control that most needs to feel alive. It
            still does not glow: that was the costume, this is feedback. */
-        .sos-btn:hover  { background-color: #A81D1D; transform: translateY(-2px); box-shadow: 0 8px 18px rgba(168,29,29,0.28); }
         .sos-btn:active { background-color: #911919; transform: translateY(0) scale(0.99); }
         .sos-btn:focus-visible { outline: 3px solid rgba(198,36,36,0.35); outline-offset: 2px; }
         @media (prefers-reduced-motion: reduce) { .sos-btn { transition: none; } }
         /* Rows separate by whitespace; hover is a background wash, not a border. */
         .sos-row { transition: background 0.18s ease; }
-        .sos-row:hover { background: var(--surface-alt); }
         .sos-row:active { background: var(--surface-tint); }
-        .sos-row:hover .sos-call, .sos-row:focus-visible .sos-call { background: #DC2626; border-color: #DC2626; color: #fff; }
         .sos-overlay { animation: sosFadeIn 0.18s ease; }
         .sos-modal   { animation: sosSlideUp 0.22s ease; }
         .sos-close { transition: background 0.15s ease; }
-        .sos-close:hover { background: var(--surface-alt); }
-    `;
+        @media (hover: hover) and (pointer: fine) {
+            .sos-btn:hover  { background-color: #A81D1D; transform: translateY(-2px); box-shadow: 0 8px 18px rgba(168,29,29,0.28); }
+            .sos-row:hover { background: var(--surface-alt); }
+            .sos-row:hover .sos-call, .sos-row:focus-visible .sos-call { background: #DC2626; border-color: #DC2626; color: #fff; }
+            .sos-close:hover { background: var(--surface-alt); }
+        }
+        `;
     document.head.appendChild(s);
 }
 

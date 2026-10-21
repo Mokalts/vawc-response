@@ -23,11 +23,13 @@ if (!document.getElementById('vawc-terms-css')) {
         .terms-scroll::-webkit-scrollbar { width: 8px; }
         .terms-scroll::-webkit-scrollbar-track { background: var(--surface-tint); border-radius: 4px; }
         .terms-scroll::-webkit-scrollbar-thumb { background: #FFCC99; border-radius: 4px; }
-        .terms-scroll::-webkit-scrollbar-thumb:hover { background: #F47920; }
-        .terms-accept:not([disabled]):hover { background: #C45E10 !important; box-shadow: 0 4px 14px rgba(196,94,16,0.35) !important; transform: translateY(-1px); }
         .terms-accept:not([disabled]):active { transform: scale(0.98); }
-        .terms-decline:hover { background: var(--surface-tint) !important; border-color: #FFCC99 !important; }
-    `;
+        @media (hover: hover) and (pointer: fine) {
+            .terms-scroll::-webkit-scrollbar-thumb:hover { background: #F47920; }
+            .terms-accept:not([disabled]):hover { background: #C45E10 !important; box-shadow: 0 4px 14px rgba(196,94,16,0.35) !important; transform: translateY(-1px); }
+            .terms-decline:hover { background: var(--surface-tint) !important; border-color: #FFCC99 !important; }
+        }
+        `;
     document.head.appendChild(s);
 }
 

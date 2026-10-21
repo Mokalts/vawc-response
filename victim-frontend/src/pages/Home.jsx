@@ -40,17 +40,13 @@ if (!document.getElementById('vawc-home-css')) {
         }
         .vh-anim { animation: fadeUp 0.4s ease both; }
         .vh-card { transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease; }
-        .vh-card:hover { transform: translateY(-4px); box-shadow: 0 16px 34px rgba(204,75,0,0.18) !important; border-color: #FF7A00 !important; }
         .vh-card:active { transform: scale(0.985); }
         .vh-hero-btn { transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease; }
-        .vh-hero-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0,0,0,0.26) !important; background-color: #FFF3E0 !important; }
         .vh-hero-btn:active { transform: translateY(0) scale(0.98); }
         .vh-report-btn { transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease; }
-        .vh-report-btn:hover { background-color: #A83D00 !important; transform: translateY(-2px); box-shadow: 0 10px 22px rgba(204,75,0,0.3) !important; }
         .vh-report-btn:active { transform: translateY(0) scale(0.99); }
         /* Arrow nudges on hover: 3px of feedback, no layout shift. */
         .vh-report-arrow { transition: transform 0.18s ease; }
-        .vh-report-btn:hover .vh-report-arrow { transform: translateX(3px); }
         /* Soft highlight that drifts across the CTA so it catches the eye without
            blinking at the user. Stops entirely under reduced-motion. */
         .vh-report-glow { display: none;
@@ -65,7 +61,6 @@ if (!document.getElementById('vawc-home-css')) {
         }
         @media (prefers-reduced-motion: reduce) { .vh-report-glow { display: none; } }
         .vh-icon-btn { transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease; }
-        .vh-icon-btn:hover { background: var(--surface-tint) !important; border-color: #FF7A00 !important; transform: translateY(-1px); }
         .vh-icon-btn:active { transform: scale(0.95); }
         .bell-ring { animation: bellRing 0.6s ease; }
         .awareness-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
@@ -82,23 +77,17 @@ if (!document.getElementById('vawc-home-css')) {
         }
         /* Card hover: the glyph lifts slightly and the arrow slides */
         .vh-card-glyph { transition: transform 0.25s cubic-bezier(0.22,1,0.36,1); }
-        .vh-card:hover .vh-card-glyph { transform: translateY(-3px) scale(1.04); }
         .vh-card-arrow { transition: transform 0.2s ease; }
-        .vh-card:hover .vh-card-arrow { transform: translateX(3px); }
         /* Side widgets */
         @keyframes shimmerFade { 0%,100%{opacity:1} 50%{opacity:0.4} }
         .vh-widgets { display: flex; flex-direction: column; gap: 10px; }
         .vh-card-art { height: 118px; max-width: 82%; width: auto; display: block; }
         .vh-card-art, .vh-card-glyph { transition: transform 0.22s ease; }
-        .vh-card:hover .vh-card-art { transform: scale(1.03); }
         .vh-widget { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
-        .vh-widget:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-strong) !important; border-color: #FFCC99; }
         .vh-widget:active { transform: scale(0.99); }
         .vh-widget-arrow { transition: transform 0.18s ease; }
-        .vh-widget:hover .vh-widget-arrow { transform: translateX(3px); }
         /* "Learn more" pill on the awareness cards */
         .vh-learn { transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease; }
-        .vh-card:hover .vh-learn { background: #C45E10; border-color: #C45E10; color: #fff; }
 
         /* ── Layout: mobile = single column (unchanged); desktop = two-column ── */
         .vh-top  { display: flex; flex-direction: column; gap: 16px; }
@@ -112,7 +101,20 @@ if (!document.getElementById('vawc-home-css')) {
             /* Widgets fill the column beside the hero */
             .vh-widgets { flex: 1; justify-content: space-between; gap: 12px; }
         }
-    `;
+        @media (hover: hover) and (pointer: fine) {
+            .vh-card:hover { transform: translateY(-4px); box-shadow: 0 16px 34px rgba(204,75,0,0.18) !important; border-color: #FF7A00 !important; }
+            .vh-hero-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0,0,0,0.26) !important; background-color: #FFF3E0 !important; }
+            .vh-report-btn:hover { background-color: #A83D00 !important; transform: translateY(-2px); box-shadow: 0 10px 22px rgba(204,75,0,0.3) !important; }
+            .vh-report-btn:hover .vh-report-arrow { transform: translateX(3px); }
+            .vh-icon-btn:hover { background: var(--surface-tint) !important; border-color: #FF7A00 !important; transform: translateY(-1px); }
+            .vh-card:hover .vh-card-glyph { transform: translateY(-3px) scale(1.04); }
+            .vh-card:hover .vh-card-arrow { transform: translateX(3px); }
+            .vh-card:hover .vh-card-art { transform: scale(1.03); }
+            .vh-widget:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-strong) !important; border-color: #FFCC99; }
+            .vh-widget:hover .vh-widget-arrow { transform: translateX(3px); }
+            .vh-card:hover .vh-learn { background: #C45E10; border-color: #C45E10; color: #fff; }
+        }
+        `;
     document.head.appendChild(s);
 }
 

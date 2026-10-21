@@ -14,9 +14,11 @@ if (!document.getElementById('vawc-notif-css')) {
     s.textContent=`
         @keyframes spin { to{transform:rotate(360deg)} }
         .vn-row { transition: background-color 0.15s ease, opacity 0.2s ease; }
-        .vn-row[data-live="1"]:hover  { background-color: var(--surface-tint); }
         .vn-row[data-live="1"]:active { background-color: var(--border-soft); }
         .vn-row:focus-visible { outline:2px solid #CC4B00; outline-offset:-2px; }
+        @media (hover: hover) and (pointer: fine) {
+            .vn-row[data-live="1"]:hover { background-color: var(--surface-tint); }
+        }
     `;
     document.head.appendChild(s);
 }

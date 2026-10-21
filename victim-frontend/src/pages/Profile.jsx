@@ -15,18 +15,24 @@ if (!document.getElementById('vawc-profile-css')) {
     s.textContent=`
         @keyframes spin { to{transform:rotate(360deg)} }
         .vp-btn { transition: background-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease; }
-        .vp-btn:hover:not([disabled]) { background-color:#A83D00; transform:translateY(-1px); }
         .vp-btn:active:not([disabled]) { transform:translateY(0) scale(0.99); }
+        @media (hover: hover) and (pointer: fine) {
+            .vp-btn:hover:not([disabled]) { background-color:#A83D00; transform:translateY(-1px); }
+        }
         /* Rows are the whole screen now, so the press state has to read on a
-           phone where there is no hover at all. */
+           phone, where :active is the only state that ever applies. A phone
+           fires no pointer-leave, so an unguarded :hover stays lit after the
+           tap and the row looks selected. */
         .vp-row { transition: background-color 0.15s ease; }
-        .vp-row:hover  { background-color: var(--surface-tint); }
         .vp-row:active { background-color: var(--border-soft); }
         .vp-row:focus-visible { outline:2px solid #CC4B00; outline-offset:-2px; }
-        .vp-row-danger:hover  { background-color:#FFF1F2; }
-        :root[data-theme="dark"] .vp-row-danger:hover { background-color:#2E1517; }
         .vp-chev { transition: transform 0.15s ease; }
-        .vp-row:hover .vp-chev { transform: translateX(2px); }
+        @media (hover: hover) and (pointer: fine) {
+            .vp-row:hover  { background-color: var(--surface-tint); }
+            .vp-row-danger:hover  { background-color:#FFF1F2; }
+            :root[data-theme="dark"] .vp-row-danger:hover { background-color:#2E1517; }
+            .vp-row:hover .vp-chev { transform: translateX(2px); }
+        }
     `;
     document.head.appendChild(s);
 }

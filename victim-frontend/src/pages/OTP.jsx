@@ -20,13 +20,15 @@ if (!document.getElementById('vawc-victim-css')) {
       /* Darkens on hover rather than lifting. Buttons that rise off the page are
          the same costume as a gradient: decoration standing in for hierarchy. */
       .vi-btn{transition:background-color 0.15s ease;}
-      .vi-btn:hover:not([disabled]){background:#C45E10!important;}
       .vi-ghost{transition:background-color 0.15s ease, border-color 0.15s ease;}
-      .vi-ghost:hover:not([disabled]){background:var(--surface-tint)!important;border-color:#F0B27A!important;}
       .vi-link{transition:opacity 0.15s ease;}
-      .vi-link:hover{opacity:0.72;}
       @media (prefers-reduced-motion: reduce){ .vi-otp,.vi-btn,.vi-ghost,.vi-link{transition:none} }
-    `;
+      @media (hover: hover) and (pointer: fine) {
+          .vi-btn:hover:not([disabled]){background:#C45E10!important;}
+          .vi-ghost:hover:not([disabled]){background:var(--surface-tint)!important;border-color:#F0B27A!important;}
+          .vi-link:hover{opacity:0.72;}
+      }
+      `;
     document.head.appendChild(s);
 }
 

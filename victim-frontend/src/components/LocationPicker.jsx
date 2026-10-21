@@ -42,13 +42,15 @@ if (!document.getElementById('vawc-locpicker-css')) {
     s.textContent = `
         @keyframes lpSpin { to { transform: rotate(360deg); } }
         .lp-method { transition: all 0.15s ease; }
-        .lp-method:hover:not(:disabled) { border-color: #F47920 !important; background: var(--surface-tint) !important; }
         .lp-method:active:not(:disabled) { transform: scale(0.98); }
         .lp-search-input:focus { border-color: #F47920 !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.12) !important; outline: none; }
-        .lp-suggest:hover { background: var(--surface-tint) !important; }
         .vawc-marker { background: transparent !important; border: none !important; }
         .lp-map-wrap .leaflet-container { font-family: 'Lexend', sans-serif; }
-    `;
+        @media (hover: hover) and (pointer: fine) {
+            .lp-method:hover:not(:disabled) { border-color: #F47920 !important; background: var(--surface-tint) !important; }
+            .lp-suggest:hover { background: var(--surface-tint) !important; }
+        }
+        `;
     document.head.appendChild(s);
 }
 

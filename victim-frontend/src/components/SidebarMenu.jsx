@@ -8,10 +8,12 @@ if (!document.getElementById('vawc-sidebar-menu-css')) {
         @keyframes slideIn { from{transform:translateX(100%)} to{transform:translateX(0)} }
         @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
         .vsm-item { transition: background-color 0.12s ease, transform 0.12s ease; }
-        .vsm-item:hover { background-color: var(--surface-tint) !important; }
         .vsm-item:active { background-color: var(--surface-tint) !important; transform: scale(0.99); }
-        .vsm-logout:hover { filter: brightness(0.95); }
-    `;
+        @media (hover: hover) and (pointer: fine) {
+            .vsm-item:hover { background-color: var(--surface-tint) !important; }
+            .vsm-logout:hover { filter: brightness(0.95); }
+        }
+        `;
     document.head.appendChild(s);
 }
 
