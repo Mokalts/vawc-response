@@ -46,6 +46,24 @@ class User(Base):
     id_reviewed_by = Column(String, nullable=True)               # officer name, snapshotted
     id_reject_reason = Column(String, nullable=True)
 
+    # ── What she wants to be told about ──────────────────────────────────
+    # Only two kinds of mail are switchable. Sign-in codes, password resets and
+    # account-changed alerts are not represented here on purpose: a woman who
+    # could turn off her own sign-in code could lock herself out of the account
+    # she needs in an emergency, and one who could turn off the account-changed
+    # alert would lose the warning that someone else is in her account.
+    #
+    # Default on. Someone who never opens this screen keeps being told what is
+    # happening with her case, which is the behaviour the app had before these
+    # columns existed.
+    notify_enabled       = Column(Boolean, default=True, nullable=False)
+    notify_email         = Column(Boolean, default=True, nullable=False)
+    # Default off: the SMS gateway is not always running, and a channel that
+    # silently fails is worse than one she has to opt into.
+    notify_sms           = Column(Boolean, default=False, nullable=False)
+    notify_case_updates  = Column(Boolean, default=True, nullable=False)
+    notify_desk_messages = Column(Boolean, default=True, nullable=False)
+
     is_deleted = Column(Boolean, default=False, nullable=False)
     deleted_at = Column(DateTime, nullable=True)
 

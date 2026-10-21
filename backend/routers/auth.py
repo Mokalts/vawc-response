@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
+from models.user_activity import log_user_activity
 from models.otp import OTP
 from schemas.user import UserRegister, UserLogin, TokenResponse, UserResponse, RegisterResponse
 from schemas.otp import OTPRequest, OTPVerify
@@ -313,6 +314,10 @@ def login(payload: UserLogin, request: Request, db: Session = Depends(get_db)):
         )
 
     token = create_access_token({"sub": str(user.id)})
+    # Logged after every gate has passed, so the trail shows sessions she
+    # actually got, not passwords that were merely correct.
+    log_user_activity(db, user.id, "signed_in")
+    db.commit()
     return {"access_token": token, "token_type": "bearer", "user": user}
 
 
@@ -510,3 +515,24 @@ async def read_id_for_form(request: Request, file: UploadFile = File(...)):
         "suggestions": result.get("suggestions", {}),
         "scanned": result.get("text_found", False),
     }
+
+
+# ─── Sign out ─────────────────────────────────────────────────────────────────
+
+@router.post("/logout")
+def logout(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Record a sign-out.
+
+    Nothing is revoked here. The session is a bearer token the client drops,
+    and this endpoint exists so "Signed out" can appear in her activity beside
+    "Signed in" - a sign-in she does not recognise is far easier to spot when
+    the sign-outs around it are hers.
+
+    The client does not wait for this and does not care if it fails.
+    """
+    try:
+        log_user_activity(db, current_user.id, "signed_out")
+        db.commit()
+    except Exception:
+        db.rollback()
+    return {"message": "Signed out."}

@@ -11,6 +11,7 @@ from models import User, Report, OTP
 from models.case import Case
 from models.case_message import CaseMessage
 from models.case_activity import CaseActivity
+from models.user_activity import UserActivity  # noqa: F401
 from models.deletion_record import DeletionRecord
 from models.admin import Admin
 # New lawful-flow models — imported so create_all registers their tables.

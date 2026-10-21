@@ -269,6 +269,22 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
     return data
 
 
+def _wants(user, kind: str, channel: str = "notify_email") -> bool:
+    """Whether this woman still wants this kind of message on this channel.
+
+    Every lookup defaults to True, so a deployment whose database has not been
+    migrated yet keeps behaving exactly as it did before rather than going
+    silent on everybody.
+    """
+    if user is None:
+        return True
+    if not getattr(user, "notify_enabled", True):
+        return False
+    if not getattr(user, channel, True):
+        return False
+    return bool(getattr(user, kind, True))
+
+
 def _send_status_email(victim_email: str, victim_name: str, case_number: str, status: str, status_display: str):
     try:
         import html as _html
@@ -632,7 +648,7 @@ def update_case_status(
     status_disp  = STATUS_DISPLAY.get(new_status, new_status)
     case_number  = case.case_number
 
-    if victim_email and new_status != "submitted":
+    if victim_email and new_status != "submitted" and _wants(victim, "notify_case_updates"):
         t = threading.Thread(
             target=_send_status_email,
             args=(victim_email, victim_name, case_number, new_status, status_disp),
@@ -884,7 +900,13 @@ def send_case_message(
 
     sent = []
 
-    if payload.send_email and victim_email:
+    declined = []
+    if payload.send_email and victim_email and not _wants(victim, "notify_desk_messages"):
+        declined.append("email")
+    if payload.send_sms and victim_phone and not _wants(victim, "notify_desk_messages", "notify_sms"):
+        declined.append("SMS")
+
+    if payload.send_email and victim_email and _wants(victim, "notify_desk_messages"):
         threading.Thread(
             target=_send_message_email,
             args=(victim_email, _full_name(victim), case.case_number, msg),
@@ -892,12 +914,15 @@ def send_case_message(
         ).start()
         sent.append("email")
 
-    if payload.send_sms and victim_phone:
+    if payload.send_sms and victim_phone and _wants(victim, "notify_desk_messages", "notify_sms"):
         sms_text = f"VAWC-Response (Case {case.case_number}): {msg}"
         threading.Thread(target=send_sms, args=(victim_phone, sms_text), daemon=True).start()
         sent.append("SMS")
 
     channels = " and ".join(sent) if sent else "no channel (saved only)"
+    if declined:
+        channels += (" - she has turned off " + " and ".join(declined)
+                     + " for messages, so it is saved to the case but not sent")
     return {"message": f"Message saved and sent via {channels}.", "admin_message": msg}
 
 
@@ -1211,7 +1236,7 @@ def confirm_case(
 
     victim       = case.user
     victim_email = getattr(victim, "email", None)
-    if victim_email:
+    if victim_email and _wants(victim, "notify_case_updates"):
         threading.Thread(
             target=_send_status_email,
             args=(victim_email, _full_name(victim), case.case_number,

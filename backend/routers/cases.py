@@ -11,6 +11,7 @@ from database import get_db
 from models.case import Case, RelationshipToOffender
 from models.child import Child
 from models.report import Report, ReportStatus
+from models.user_activity import log_user_activity
 from models.user import User
 from core.dependencies import get_current_user
 from core.encryption import encrypt, encrypt_float, decrypt, decrypt_float
@@ -317,6 +318,9 @@ def submit_report(
         incident_date  = ph_local_to_utc(payload.incident_date),
     )
     db.add(report)
+    # The case number rather than anything she wrote: the activity screen is
+    # a trail, not a second copy of her testimony.
+    log_user_activity(db, current_user.id, "report_filed", target_case.case_number)
 
     # If merging, mark case as having a new update (admin notification)
     if merged:

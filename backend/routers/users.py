@@ -3,15 +3,22 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models.user import User
 from models.otp import OTP
+from models.case import Case
+from models.report import Report
+from models.case_activity import CaseActivity
+from models.user_activity import UserActivity, log_user_activity
 from schemas.user import UserResponse, UserUpdate, PasswordChange
 from core.dependencies import get_current_user, get_user_for_id_submission
 from core.security import verify_password, hash_password
 from core.account_notice import notify_account_change
 from core.progressive_limiter import check_rate_limit, record_failure, record_success, login_keys
 from utils.cloudinary_helper import upload_image, destroy_image
+from utils.otp_helper import sms_enabled
+from core.timeutil import utc_to_ph_local
 import uuid
 from datetime import datetime, timedelta
 from pydantic import BaseModel
+from typing import Optional
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -57,6 +64,11 @@ def update_my_profile(
 
     db.commit()
     db.refresh(current_user)
+    # Recorded only as the names of the fields that moved, never the values:
+    # the trail should say she changed her address, not what her address is.
+    if changed:
+        log_user_activity(db, current_user.id, "profile_updated", ", ".join(changed))
+        db.commit()
     notify_account_change(current_user, changed)
     return current_user
 
@@ -72,6 +84,7 @@ def change_password(
     if len(payload.new_password) < 6:
         raise HTTPException(status_code=400, detail="New password must be at least 6 characters.")
     current_user.password_hash = hash_password(payload.new_password)
+    log_user_activity(db, current_user.id, "password_changed")
     db.commit()
     notify_account_change(current_user, ["Password"])
     return {"message": "Password updated successfully."}
@@ -212,6 +225,7 @@ async def submit_id_document(
 
     current_user.id_document = public_id
     current_user.id_type = kind[:80]
+    log_user_activity(db, current_user.id, "id_submitted", kind)
     current_user.id_status = "pending"
     current_user.id_submitted_at = datetime.utcnow()
     current_user.id_reject_reason = None
@@ -222,3 +236,161 @@ async def submit_id_document(
         "id_status": "pending",
         "id_type": current_user.id_type,
     }
+
+
+# ── Notification preferences ─────────────────────────────────────────────────
+class NotificationPrefs(BaseModel):
+    notify_enabled:       Optional[bool] = None
+    notify_email:         Optional[bool] = None
+    notify_sms:           Optional[bool] = None
+    notify_case_updates:  Optional[bool] = None
+    notify_desk_messages: Optional[bool] = None
+
+
+def _prefs_payload(user: User) -> dict:
+    return {
+        "notify_enabled":       user.notify_enabled,
+        "notify_email":         user.notify_email,
+        "notify_sms":           user.notify_sms,
+        "notify_case_updates":  user.notify_case_updates,
+        "notify_desk_messages": user.notify_desk_messages,
+        # Whether the SERVER can send a text at all, which is a different
+        # question from whether she wants one. The screen greys the SMS row
+        # when this is false, so turning SMS_ENABLED on in the deployment is
+        # all it takes to make that row live.
+        "sms_available":        sms_enabled(),
+    }
+
+
+@router.get("/me/notifications")
+def get_notification_prefs(current_user: User = Depends(get_current_user)):
+    return _prefs_payload(current_user)
+
+
+@router.patch("/me/notifications")
+def update_notification_prefs(
+    payload: NotificationPrefs,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Only the switchable kinds live here.
+
+    Sign-in codes, password resets and account-changed alerts have no field on
+    this model on purpose, so no request body can turn them off.
+    """
+    data = payload.model_dump(exclude_unset=True)
+    for field, value in data.items():
+        if value is not None:
+            setattr(current_user, field, bool(value))
+    # Asking for texts the server cannot send would leave her believing she is
+    # covered by a channel that is switched off.
+    if current_user.notify_sms and not sms_enabled():
+        current_user.notify_sms = False
+    # Read before the commit rather than refreshing after it. commit() expires
+    # the instance, and the reload that follows needs the object to belong to
+    # this session - which is an assumption about where the caller got it from
+    # that this endpoint has no business making.
+    answer = _prefs_payload(current_user)
+    db.commit()
+    return answer
+
+
+# ── Activity ─────────────────────────────────────────────────────────────────
+# What an officer did to her case, phrased for her rather than for the audit
+# screen. Anything not in this map is skipped, so a new officer action cannot
+# start appearing on her phone just because someone added it to the admin side.
+_CASE_ACTION_TEXT = {
+    "status_changed":       "The barangay updated your case status",
+    "assistance_ended":     "The barangay closed your case",
+    "case_reopened":        "The barangay reopened your case",
+    "message_sent":         "The barangay sent you a message",
+    "respondent_corrected": "The barangay corrected the respondent details",
+}
+
+_OWN_ACTION_TEXT = {
+    "signed_in":         "Signed in",
+    "signed_out":        "Signed out",
+    "password_changed":  "Password changed",
+    "profile_updated":   "Profile updated",
+    "id_submitted":      "ID sent for checking",
+    "report_filed":      "You filed a report",
+    "account_recovered": "Account recovered",
+}
+
+
+@router.get("/me/activity")
+def my_activity(
+    limit: int = 60,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Her own trail, newest first.
+
+    Three sources merged: what she did (user_activities), what the barangay did
+    to her cases (case_activities), and the milestones that were already
+    implied by timestamps on her account before either table existed. That
+    third source is what stops this being empty for every woman who registered
+    before it shipped.
+    """
+    limit = max(1, min(limit, 200))
+    entries = []
+
+    def add(when, kind, text, detail=None):
+        if not when:
+            return
+        entries.append({
+            "at":     utc_to_ph_local(when).isoformat(),
+            "kind":   kind,
+            "text":   text,
+            "detail": detail,
+        })
+
+    for row in (db.query(UserActivity)
+                  .filter(UserActivity.user_id == current_user.id)
+                  .order_by(UserActivity.created_at.desc())
+                  .limit(limit).all()):
+        text = _OWN_ACTION_TEXT.get(row.action)
+        if text:
+            add(row.created_at, "you", text, row.detail)
+
+    case_ids = [c.id for c in db.query(Case).filter(
+        Case.user_id == current_user.id, Case.is_deleted == False).all()]
+    if case_ids:
+        numbers = {c.id: c.case_number for c in db.query(Case).filter(Case.id.in_(case_ids)).all()}
+        for row in (db.query(CaseActivity)
+                      .filter(CaseActivity.case_id.in_(case_ids))
+                      .order_by(CaseActivity.created_at.desc())
+                      .limit(limit).all()):
+            text = _CASE_ACTION_TEXT.get(row.action)
+            if text:
+                add(row.created_at, "barangay", text, numbers.get(row.case_id))
+
+    # ── Milestones already on record ────────────────────────────────────────
+    add(current_user.created_at, "you", "Account created")
+    add(current_user.id_submitted_at, "you", "ID sent for checking")
+    if current_user.id_reviewed_at:
+        add(current_user.id_reviewed_at, "barangay",
+            "Your ID was approved" if current_user.id_status == "approved"
+            else "Your ID was not accepted")
+    if case_ids:
+        for r in (db.query(Report)
+                    .filter(Report.case_id.in_(case_ids), Report.is_deleted == False)
+                    .order_by(Report.created_at.desc()).limit(limit).all()):
+            add(r.created_at, "you", "You filed a report")
+
+    # Two sources can describe one event - an ID submission is both a logged
+    # action and a timestamp on the account - so those collapse. Only those.
+    # Collapsing everything by minute would also swallow a second sign-in a
+    # moment after the first, which on a log whose point is spotting a sign-in
+    # she did not make is the one thing it must never hide.
+    DOUBLE_SOURCED = {"ID sent for checking", "You filed a report"}
+    seen, unique = set(), []
+    for e in sorted(entries, key=lambda e: e["at"], reverse=True):
+        if e["text"] in DOUBLE_SOURCED:
+            key = (e["at"][:16], e["text"], e.get("detail"))
+            if key in seen:
+                continue
+            seen.add(key)
+        unique.append(e)
+
+    return {"entries": unique[:limit], "count": len(unique[:limit])}
