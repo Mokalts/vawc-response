@@ -18,7 +18,7 @@ if (!document.getElementById('vawc-victim-css')) {
         @keyframes spin    { to { transform: rotate(360deg); } }
         @keyframes fadeUp  { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
         .vi-input { transition: border-color 0.15s, box-shadow 0.15s; }
-        .vi-input:focus { border-color: #F47920 !important; background: #fff !important; outline: none; box-shadow: 0 0 0 3px rgba(244,121,32,0.1) !important; }
+        .vi-input:focus { border-color: #F47920 !important; background: var(--surface) !important; outline: none; box-shadow: 0 0 0 3px rgba(244,121,32,0.1) !important; }
         .vi-btn { transition: all 0.15s ease; }
         .vi-btn:hover:not([disabled]) { background: #C45E10 !important; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(244,121,32,0.3) !important; }
         .vi-link:hover { color: #C45E10 !important; }
