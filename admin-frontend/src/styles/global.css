@@ -16,6 +16,8 @@
     /* The secondary accent, as a colour text can be drawn in. */
     --adm-violet: #7B2D8B;
     --adm-danger-text: #B91C1C;
+    /* Sits at or below the page, so a card filled with it reads as a well. */
+    --adm-sunken: #EFF2F7;
     /* The quiet explanatory banner at the top of a panel. */
     --adm-note-bg: #EFF6FF;
     --adm-note-border: #BFDBFE;
@@ -39,6 +41,7 @@
     /* Lifted: the light-mode violet reads at 2.32:1 on this page, which is
        not a legible label. This one measures 6.56:1. */
     --adm-violet: #C77DD6;
+    --adm-sunken: #12161B;
     /* Lifted the same way: #B91C1C reads at 2.64:1 here. This is 6.18:1. */
     --adm-danger-text: #F87171;
     --adm-note-bg: #16202E;
@@ -52,6 +55,13 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+/* The page transitions slide in from 36px to the right. Clipped here rather
+   than on the animated element, because <html> is the document's scroller
+   already and so does not disturb position: sticky anywhere below it. */
+html {
+    overflow-x: hidden;
 }
 
 body {

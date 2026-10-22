@@ -695,8 +695,10 @@ export default function Dashboard() {
     const canApply    = customStart && customEnd;
 
     // Exclude submitted (unconfirmed) cases from the dashboard table
-    // Recent cases: confirmed cases only, newest first, capped at 10.
+    // Recent cases: confirmed cases only, newest first, capped at 10, with
+    // five of them on screen: 5 rows at 45px, plus the 37px header row.
     const RECENT_LIMIT = 10;
+    const RECENT_VISIBLE_PX = 37 + 5 * 45;
     const reports = (stats?.recent_reports || [])
         .filter(r => r.status !== 'submitted')
         .slice(0, RECENT_LIMIT);
@@ -846,7 +848,7 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                <StaleCases stale={stale} onOpen={(id) => navigate(`/reports?case=${id}`)} />
+                <StaleCases stale={stale} onOpen={(id) => navigate(`/reports/${id}`)} />
                 {monitoring && <MonitoringSection m={monitoring} expiring={expiring} />}
 
                 {/* ── Analytics ────────────────────────────────────────────── */}
@@ -885,13 +887,13 @@ export default function Dashboard() {
                         </div>
                     </div>
 
-                    {/* Table */}
-                    <div style={{ overflowX: 'auto' }}>
+                    {/* Table. Five rows tall, scrolls to the full ten. */}
+                    <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: RECENT_VISIBLE_PX }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead>
-                                <tr style={{ backgroundColor: 'var(--adm-muted)', borderBottom: '2px solid var(--adm-border)' }}>
+                                <tr style={{ borderBottom: '2px solid var(--adm-border)' }}>
                                     {['Case No.', 'Victim Name', 'Respondent', 'Date Filed', 'Status'].map(h => (
-                                        <th key={h} style={{ padding: '10px 18px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.7px', whiteSpace: 'nowrap', fontFamily: "'Lexend',sans-serif" }}>
+                                        <th key={h} style={{ position: 'sticky', top: 0, zIndex: 1, backgroundColor: 'var(--adm-muted)', boxShadow: 'inset 0 -2px 0 var(--adm-border)', padding: '10px 18px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.7px', whiteSpace: 'nowrap', fontFamily: "'Lexend',sans-serif" }}>
                                             {h}
                                         </th>
                                     ))}

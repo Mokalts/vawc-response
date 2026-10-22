@@ -24,8 +24,11 @@ if (!document.getElementById('vawc-global-css')) {
         /* Page + tab transitions — horizontal slide-in */
         @keyframes pageSlide { from { opacity: 0; transform: translateX(36px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes tabSlide  { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
-        .page-enter { animation: pageSlide 0.34s cubic-bezier(0.22, 1, 0.36, 1); overflow-x: hidden; }
-        .tab-fade   { animation: tabSlide 0.28s cubic-bezier(0.22, 1, 0.36, 1); overflow-x: hidden; }
+        /* No overflow-x here: it would make these scroll containers, and a
+           sticky child sticks to its nearest scroll container rather than to
+           the window. <html> does the clipping instead. */
+        .page-enter { animation: pageSlide 0.34s cubic-bezier(0.22, 1, 0.36, 1); }
+        .tab-fade   { animation: tabSlide 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
         @media (prefers-reduced-motion: reduce) {
             .page-enter, .tab-fade { animation: none !important; }
         }

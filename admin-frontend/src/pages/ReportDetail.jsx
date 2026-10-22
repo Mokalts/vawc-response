@@ -93,12 +93,36 @@ const Spinner = ({ size = 14, color = "#fff" }) => (
   <span style={{ width: size, height: size, border: `2px solid rgba(255,255,255,0.3)`, borderTopColor: color, borderRadius: '50%', animation: "spin 0.7s linear infinite", display: "inline-block", flexShrink: 0 }} />
 );
 
-const Card = ({ title, icon, children, style = {}, headerRight }) => (
-  <div style={{ background: "var(--adm-card)", borderRadius: 0, border: "1px solid var(--adm-border)", overflow: "hidden", fontFamily: "'Lexend',sans-serif", boxShadow: "0 1px 3px rgba(15,23,42,0.05)", ...style }}>
+// What kind of card this is, shown as a bar down its left edge. Square corners
+// are the house style, so the bar does the job a corner radius would have done
+// - it draws the edge - and names the category while it is there.
+const CARD_TONE = {
+  act:    "#C45E10",  // something to do here
+  record: "#9B4DAB",  // the case itself
+  ref:    "#94A3B8",  // reference only
+};
+
+// Depth, for which card to look at first. The shadows carry it in light mode;
+// in dark mode shadow is nearly invisible, so the border and the sunken fill
+// do the work instead.
+const CARD_LEVEL = {
+  raised: { edge: "var(--adm-border-strong)", shadow: "0 1px 2px rgba(15,23,42,0.06), 0 8px 20px rgba(15,23,42,0.10)" },
+  flat:   { edge: "var(--adm-border)",        shadow: "0 1px 2px rgba(15,23,42,0.05), 0 2px 8px rgba(15,23,42,0.05)" },
+  sunken: { edge: "var(--adm-border)",        shadow: "none", bg: "var(--adm-sunken)" },
+};
+
+const Card = ({ title, icon, children, style = {}, headerRight, tone = "record", level = "flat" }) => {
+  const lv = CARD_LEVEL[level] || CARD_LEVEL.flat;
+  return (
+  // Sides are set one at a time, not with the border shorthand: a later
+  // borderColor would repaint the left edge too and the bar would vanish.
+  <div style={{ background: lv.bg || "var(--adm-card)", borderRadius: 0,
+                borderTop: `1px solid ${lv.edge}`, borderRight: `1px solid ${lv.edge}`,
+                borderBottom: `1px solid ${lv.edge}`, borderLeft: `3px solid ${CARD_TONE[tone] || CARD_TONE.record}`,
+                overflow: "hidden", fontFamily: "'Lexend',sans-serif", boxShadow: lv.shadow, ...style }}>
     {title && (
-      <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "var(--adm-muted)" }}>
+      <div style={{ padding: "14px 20px", borderBottom: `1px solid ${lv.edge}`, display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "var(--adm-muted)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 3, height: 16, borderRadius: 4, backgroundColor: "#9B4DAB" }} />
           {icon && <span style={{ display: "flex" }}>{icon}</span>}
           <h3 style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", textTransform: "uppercase", letterSpacing: "0.5px" }}>{title}</h3>
         </div>
@@ -107,7 +131,8 @@ const Card = ({ title, icon, children, style = {}, headerRight }) => (
     )}
     <div style={{ padding: 20 }}>{children}</div>
   </div>
-);
+  );
+};
 
 // One chip treatment for every submitted-date surface (report card header and the
 // Case Information row) so the same fact never appears in two different shapes.
@@ -543,7 +568,7 @@ const CaseActivityCard = ({ caseId }) => {
   }, [caseId]);
 
   return (
-    <Card title="Activity" icon={<IcoShield size={16} color="#9B4DAB" />}>
+    <Card title="Activity" tone="ref" level="sunken" icon={<IcoShield size={16} color="#94A3B8" />}>
       {rows === null && (
         <p style={{ margin: 0, fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
           Loading…
@@ -688,7 +713,7 @@ const CaseActions = ({ cas, refetch, showToast }) => {
   const daysLeft = (b) => b.expires_at ? Math.ceil((new Date(b.expires_at).getTime() - Date.now()) / 86400000) : null;
 
   return (
-    <Card title="Case Actions" icon={<IcoShield size={16} color="#9B4DAB" />}>
+    <Card title="Case Actions" tone="act" level="raised" icon={<IcoShield size={16} color="#C45E10" />}>
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
         {/* Confirm — only while the report is still unclaimed.
@@ -943,7 +968,7 @@ const PrintPanel = ({ cas }) => {
     { key: "endorsement", label: "1st Endorsement",  sub: "Referral to the Chief of Police, Iba MPS" },
   ];
   return (
-    <Card title="Print Documents" icon={<IcoPrint size={16} color="#475569" />}>
+    <Card title="Print Documents" tone="ref" icon={<IcoPrint size={16} color="#475569" />}>
       <p style={{ margin: "0 0 14px", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Auto-fill official barangay documents.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {docs.map(doc => (
@@ -1206,8 +1231,8 @@ export default function ReportDetail() {
         </div>
 
         {/* Two-column layout */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 16, alignItems: "start" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 20, alignItems: "stretch" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
             {/* ── Complainant Information ── */}
             <Card title="Complainant Information" icon={<IcoUser size={16} color="#9B4DAB" />}>
@@ -1446,7 +1471,7 @@ export default function ReportDetail() {
 
             {/* Deletion details - only when soft-deleted */}
             {cas.is_deleted && (
-              <Card title="Deletion Details" icon={<IcoTrash size={16} color="#C62828" />}>
+              <Card title="Deletion Details" tone="ref" level="sunken" icon={<IcoTrash size={16} color="#C62828" />}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "16px 24px" }}>
                   <InfoRow label="Deleted On" value={fmt(cas.deleted_at)} />
                   <InfoRow
@@ -1458,14 +1483,10 @@ export default function ReportDetail() {
                 </div>
               </Card>
             )}
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <CaseTimeline cas={cas} onUpdateStatus={() => setShowStatusModal(true)} />
             {!cas.is_deleted && <CaseActions cas={cas} refetch={fetchCase} showToast={showToast} />}
 
             {!cas.is_deleted && (
-              <Card title="Message to Victim" icon={<IcoClip size={16} color="#F47920" />}>
+              <Card title="Message to Victim" tone="act" icon={<IcoClip size={16} color="#F47920" />}>
                 <p style={{ margin: "0 0 10px", fontSize: 12.5, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
                   Send a note to the victim at any stage - e.g. an update, or the schedule and venue of the hearing. They are notified by email and in their portal.
                 </p>
@@ -1502,11 +1523,24 @@ export default function ReportDetail() {
                 </button>
               </Card>
             )}
-
-            <PrintPanel cas={cas} />
-
-            <CaseActivityCard caseId={id} />
           </div>
+
+          {/* The rail is shorter than the column beside it, so it sticks:
+              a short rail that scrolls away leaves the hole this page had.
+              The outer div is the stretched grid item, which is what gives
+              the inner one room to travel. */}
+          <div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 20, position: "sticky", top: 16 }}>
+              <CaseTimeline cas={cas} onUpdateStatus={() => setShowStatusModal(true)} />
+
+              <PrintPanel cas={cas} />
+            </div>
+          </div>
+        </div>
+
+        {/* The trail, not the work: last, and full width. */}
+        <div style={{ marginTop: 20 }}>
+          <CaseActivityCard caseId={id} />
         </div>
       </div>
 
