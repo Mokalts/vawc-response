@@ -218,3 +218,39 @@ def test_an_unmigrated_database_sends_no_receipt(db):
 
     assert wants_report_receipt(Bare()) is False
     assert wants_report_receipt(None) is False
+
+
+# ── The activity window ─────────────────────────────────────────────────────
+
+def test_activity_older_than_a_year_is_not_returned(client, db, as_user):
+    """Unbounded, the query grows forever and hands back a years-long record
+    of a domestic-abuse victim's sign-ins that serves nobody."""
+    from datetime import timedelta
+    old = datetime.utcnow() - timedelta(days=400)
+    recent = datetime.utcnow() - timedelta(days=5)
+    db.add(UserActivity(user_id=as_user.id, action="signed_in", detail="old", created_at=old))
+    db.add(UserActivity(user_id=as_user.id, action="signed_in", detail="recent", created_at=recent))
+    db.commit()
+
+    details = [e.get("detail") for e in client.get("/users/me/activity").json()["entries"]]
+    assert "recent" in details
+    assert "old" not in details
+
+
+def test_the_window_is_reported_so_the_screen_can_say_so(client, db, as_user):
+    assert client.get("/users/me/activity").json()["window_days"] == 365
+
+
+def test_an_account_older_than_the_window_still_shows_recent_activity(client, db, as_user):
+    """Account created is a milestone read off users.created_at. For an account
+    opened two years ago that entry falls outside the window, and the screen
+    must still not be blank."""
+    from datetime import timedelta
+    as_user.created_at = datetime.utcnow() - timedelta(days=800)
+    db.add(UserActivity(user_id=as_user.id, action="signed_in",
+                        created_at=datetime.utcnow() - timedelta(days=2)))
+    db.commit()
+
+    texts = [e["text"] for e in client.get("/users/me/activity").json()["entries"]]
+    assert "Signed in" in texts
+    assert "Account created" not in texts

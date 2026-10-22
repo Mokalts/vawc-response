@@ -326,6 +326,13 @@ _OWN_ACTION_TEXT = {
 }
 
 
+# A year, not forever. Two reasons, and the second is the real one: the query
+# merges three tables per request and would grow without bound, and a trail of
+# sign-ins stretching back years is a record about a domestic-abuse victim that
+# serves nobody - she is looking for last Tuesday, not 2026.
+ACTIVITY_WINDOW_DAYS = 365
+
+
 @router.get("/me/activity")
 def my_activity(
     limit: int = 60,
@@ -341,10 +348,11 @@ def my_activity(
     before it shipped.
     """
     limit = max(1, min(limit, 200))
+    cutoff = datetime.utcnow() - timedelta(days=ACTIVITY_WINDOW_DAYS)
     entries = []
 
     def add(when, kind, text, detail=None):
-        if not when:
+        if not when or when < cutoff:
             return
         entries.append({
             "at":     utc_to_ph_local(when).isoformat(),
@@ -354,7 +362,8 @@ def my_activity(
         })
 
     for row in (db.query(UserActivity)
-                  .filter(UserActivity.user_id == current_user.id)
+                  .filter(UserActivity.user_id == current_user.id,
+                          UserActivity.created_at >= cutoff)
                   .order_by(UserActivity.created_at.desc())
                   .limit(limit).all()):
         text = _OWN_ACTION_TEXT.get(row.action)
@@ -366,7 +375,8 @@ def my_activity(
     if case_ids:
         numbers = {c.id: c.case_number for c in db.query(Case).filter(Case.id.in_(case_ids)).all()}
         for row in (db.query(CaseActivity)
-                      .filter(CaseActivity.case_id.in_(case_ids))
+                      .filter(CaseActivity.case_id.in_(case_ids),
+                              CaseActivity.created_at >= cutoff)
                       .order_by(CaseActivity.created_at.desc())
                       .limit(limit).all()):
             text = _CASE_ACTION_TEXT.get(row.action)
@@ -401,4 +411,8 @@ def my_activity(
             seen.add(key)
         unique.append(e)
 
-    return {"entries": unique[:limit], "count": len(unique[:limit])}
+    return {
+        "entries": unique[:limit],
+        "count":   len(unique[:limit]),
+        "window_days": ACTIVITY_WINDOW_DAYS,
+    }

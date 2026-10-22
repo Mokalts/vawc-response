@@ -15,14 +15,24 @@ if (!document.getElementById('vawc-terms-page-css')) {
     const s = document.createElement('style'); s.id='vawc-terms-page-css';
     s.textContent = `
         .vt-toc a { transition: background-color 0.15s ease, color 0.15s ease; }
+        .vt-toc-go { transition: transform 0.15s ease; }
+        .vt-toc a:active { background: var(--border-soft); }
+        .vt-toc a:active .vt-toc-go { transform: translateX(2px); }
         @media (hover: hover) and (pointer: fine) {
             .vt-toc a:hover { background: var(--surface-alt); color: var(--text); }
+            .vt-toc a:hover .vt-toc-go { transform: translateX(2px); }
         }
         `;
     document.head.appendChild(s);
 }
 
 const LAST_UPDATED = '13 September 2026';
+
+const IcoGo = () => (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
 
 const IcoArrow = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -67,7 +77,10 @@ export default function Terms() {
                             <li key={s.id}>
                                 <a href={`#${s.id}`} onClick={(e) => jump(e, s.id)} style={S.tocLink}>
                                     <span style={S.tocNum} aria-hidden="true">{i + 1}</span>
-                                    <span>{s.title}</span>
+                                    <span style={{ flex: 1, minWidth: 0 }}>{s.title}</span>
+                                    <span className="vt-toc-go" style={S.tocGo} aria-hidden="true">
+                                        <IcoGo />
+                                    </span>
                                 </a>
                             </li>
                         ))}
@@ -109,6 +122,7 @@ const S = {
     tocLabel: { margin: '0 0 6px 6px', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: FF },
     tocList:  { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '2px 12px' },
     tocLink:  { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, padding: '4px 8px', borderRadius: 8, color: 'var(--text-body)', textDecoration: 'none', fontSize: 13.5, lineHeight: 1.35, fontFamily: FF },
+    tocGo:    { display: 'inline-flex', flexShrink: 0, color: 'var(--accent-text)', opacity: 0.75 },
     tocNum:   { width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: 'var(--surface-tint)', color: 'var(--accent-text)', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
 
     card:     { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 'clamp(20px, 5vw, 34px)', boxShadow: 'var(--card-shadow)' },

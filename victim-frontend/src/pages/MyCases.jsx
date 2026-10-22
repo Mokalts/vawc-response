@@ -455,6 +455,13 @@ function CaseDetailModal({ cas, onClose, onStatusRead }) {
     );
 }
 
+// Eight fills a phone screen without the pager becoming the main event, and
+// below five there is nothing worth sifting.
+const PER_PAGE = 8;
+const MIN_FOR_TOOLS = 5;
+
+const IcoSearch = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="var(--text-muted)" strokeWidth="1.9"/><path d="M20 20l-3.5-3.5" stroke="var(--text-muted)" strokeWidth="1.9" strokeLinecap="round"/></svg>);
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 function MyCases() {
     const navigate = useNavigate();
@@ -464,6 +471,9 @@ function MyCases() {
     const [selectedCase,  setSelectedCase]  = useState(null);
     const [caseDetail,    setCaseDetail]    = useState(null);
     const [detailLoading, setDetailLoading] = useState(false);
+    const [query,         setQuery]         = useState('');
+    const [onlyUnread,    setOnlyUnread]    = useState(false);
+    const [page,          setPage]          = useState(1);
 
     useEffect(()=>{
         // Wake the backend immediately (free tier sleeps after ~15 min idle, and
@@ -517,6 +527,21 @@ function MyCases() {
     const newCount     = cases.filter(c=>c.has_status_update).length;
     const totalReports = cases.reduce((a,c)=>a+(c.report_count||0),0);
 
+    // Case number, respondent and status. Not her statement: that is the one
+    // thing on this screen somebody reading over her shoulder must not be able
+    // to surface by typing a word into a box.
+    const q = query.trim().toLowerCase();
+    const visible = cases.filter(c => {
+        if (onlyUnread && !c.has_status_update) return false;
+        if (!q) return true;
+        return [c.case_number, c.offender_name, c.status_display]
+            .some(v => (v || '').toLowerCase().includes(q));
+    });
+
+    const pages    = Math.max(1, Math.ceil(visible.length / PER_PAGE));
+    const safePage = Math.min(page, pages);
+    const shown    = visible.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
+
     return (
         <div style={S.page}>
             <header style={S.topBar}>
@@ -542,6 +567,52 @@ function MyCases() {
 
                 {loading&&[1,2,3].map(i=><Skel key={i}/>)}
 
+                {/* Hidden until there is enough to sift through. On two cases
+                    a search box is one more thing between her and the case. */}
+                {!loading&&!error&&cases.length>=MIN_FOR_TOOLS&&(
+                    <div style={S.toolbar}>
+                        <div style={S.searchWrap}>
+                            <IcoSearch/>
+                            <input
+                                style={S.searchInput}
+                                value={query}
+                                onChange={e=>{ setQuery(e.target.value); setPage(1); }}
+                                placeholder="Search case number or name"
+                                aria-label="Maghanap ng kaso"
+                            />
+                            {query&&(
+                                <button onClick={()=>{ setQuery(''); setPage(1); }} style={S.clearBtn} aria-label="Burahin ang hinahanap">×</button>
+                            )}
+                        </div>
+                        <div style={S.segment} role="group" aria-label="Salain ang mga kaso">
+                            {[['all','All',cases.length],['unread','Updated',newCount]].map(([key,label,n])=>{
+                                const on = (key==='unread')===onlyUnread;
+                                return (
+                                    <button key={key}
+                                        onClick={()=>{ setOnlyUnread(key==='unread'); setPage(1); }}
+                                        aria-pressed={on}
+                                        style={{...S.segBtn, ...(on?S.segBtnOn:null)}}>
+                                        {label}{n>0?` (${n})`:''}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {!loading&&!error&&cases.length>0&&visible.length===0&&(
+                    <div style={S.empty}>
+                        <IcoFolder/>
+                        <p style={S.emptyTitle}>Nothing matches</p>
+                        <p style={S.emptyText}>
+                            {onlyUnread&&!q ? 'No case has a new update right now.' : 'Try a different word, or clear the search.'}
+                        </p>
+                        <button className="vmc-btn" style={S.emptyBtn} onClick={()=>{ setQuery(''); setOnlyUnread(false); setPage(1); }}>
+                            Show all cases
+                        </button>
+                    </div>
+                )}
+
                 {!loading&&!error&&cases.length===0&&(
                     <div style={S.empty}>
                         <IcoFolder/>
@@ -553,9 +624,19 @@ function MyCases() {
                     </div>
                 )}
 
-                {!loading&&cases.map(c=>(
+                {!loading&&shown.map(c=>(
                     <CaseCard key={c.id} cas={c} onClick={()=>openCase(c)}/>
                 ))}
+
+                {!loading&&pages>1&&(
+                    <div style={S.pager}>
+                        <button className="vmc-btn" style={{...S.pageBtn, opacity:safePage<=1?0.4:1}}
+                            disabled={safePage<=1} onClick={()=>setPage(safePage-1)}>Previous</button>
+                        <span style={S.pageLabel}>Page {safePage} of {pages}</span>
+                        <button className="vmc-btn" style={{...S.pageBtn, opacity:safePage>=pages?0.4:1}}
+                            disabled={safePage>=pages} onClick={()=>setPage(safePage+1)}>Next</button>
+                    </div>
+                )}
             </main>
 
             {selectedCase&&(
@@ -577,6 +658,16 @@ function MyCases() {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const S = {
+    toolbar:     { display:'flex',flexDirection:'column',gap:10,marginBottom:4 },
+    searchWrap:  { display:'flex',alignItems:'center',gap:8,backgroundColor:'var(--surface)',border:'1px solid var(--border)',borderRadius:10,padding:'0 12px',minHeight:44 },
+    searchInput: { flex:1,minWidth:0,border:'none',outline:'none',background:'transparent',fontSize:14.5,color:'var(--text)',fontFamily:"'Lexend',sans-serif",padding:'11px 0' },
+    clearBtn:    { border:'none',background:'transparent',color:'var(--text-muted)',fontSize:20,lineHeight:1,cursor:'pointer',padding:'0 2px',minWidth:28,minHeight:28 },
+    segment:     { display:'flex',gap:6 },
+    segBtn:      { flex:1,minHeight:40,borderRadius:9,border:'1px solid var(--border)',background:'var(--surface)',color:'var(--text-muted)',fontSize:13.5,fontWeight:600,cursor:'pointer',fontFamily:"'Lexend',sans-serif" },
+    segBtnOn:    { background:'#CC4B00',borderColor:'#CC4B00',color:'#fff' },
+    pager:       { display:'flex',alignItems:'center',justifyContent:'space-between',gap:10,paddingTop:4 },
+    pageBtn:     { minHeight:40,padding:'0 16px',borderRadius:9,border:'1.5px solid var(--border)',background:'var(--surface)',color:'var(--text)',fontSize:13.5,fontWeight:600,cursor:'pointer',fontFamily:"'Lexend',sans-serif" },
+    pageLabel:   { fontSize:12.5,color:'var(--text-muted)',fontFamily:"'Lexend',sans-serif",whiteSpace:'nowrap' },
     page:        { minHeight:'100vh',background:'var(--page-grad)',color:'var(--text)',display:'flex',flexDirection:'column',paddingBottom:80,fontFamily:"'Lexend',sans-serif" },
     backBtn:     { width:44,height:44,borderRadius:10,backgroundColor:'var(--surface-tint)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0 },
     topBar:      { display:'flex',justifyContent:'space-between',alignItems:'center',padding:'16px 20px',backgroundColor:'var(--surface)',borderBottom:'1px solid var(--border)',position:'sticky',top:0,zIndex:100,boxShadow:'0 1px 8px rgba(244,121,32,0.06)' },
