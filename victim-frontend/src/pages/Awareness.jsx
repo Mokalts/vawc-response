@@ -38,40 +38,43 @@ if (!document.getElementById('vawc-awareness-css')) {
            the content is not flush against it. Row gaps alone were not enough:
            between columns there was nothing at all, so four entries side by
            side read as one wide block. */
-        .va-grid { grid-template-columns: 1fr; row-gap: 28px; }
-        .va-topic { transition: opacity 0.2s ease; border: none; padding: 0;
-                    padding-top: 28px; border-top: 1px solid var(--border); }
+        /* Rules sit in the gap, drawn by a pseudo-element, rather than on the
+           card as a border. A left border plus padding made first-in-row
+           entries a different width from the rest, which is what distorted the
+           columns: every card is the same width now and nothing is inset. */
+        .va-grid { grid-template-columns: 1fr; row-gap: 0; }
+        .va-topic { position: relative; transition: opacity 0.2s ease; border: none;
+                    padding: 28px 0; border-top: 1px solid var(--border); }
         .va-topic:first-child { border-top: none; padding-top: 0; }
         .va-topic:active { opacity: 0.7; }
         .va-topic-art svg { width: 100%; height: 100%; max-height: 118px; object-fit: contain; }
         .va-topic-go { transition: transform 0.15s ease; }
-        @media (min-width: 620px) {
+        @media (min-width: 620px) and (max-width: 999px) {
             /* Two columns: lead spans both, then pairs. First in a row is the
-               1st, 2nd, 4th and 6th entry, and those carry no left rule. */
-            .va-grid { grid-template-columns: 1fr 1fr; column-gap: 0; row-gap: 32px; }
-            .va-topic { border-top: 1px solid var(--border); padding-top: 28px;
-                        border-left: 1px solid var(--border); padding-left: 26px; padding-right: 26px; }
-            .va-topic:nth-child(1) { border-top: none; padding-top: 0; }
-            .va-topic:nth-child(1),
-            .va-topic:nth-child(2),
-            .va-topic:nth-child(4),
-            .va-topic:nth-child(6) { border-left: none; padding-left: 0; }
+               1st, 2nd, 4th and 6th entry, and those get no rule to their left. */
+            .va-grid { grid-template-columns: 1fr 1fr; column-gap: 44px; }
+            .va-topic::before {
+                content: ''; position: absolute; top: 28px; bottom: 28px; left: -22px;
+                width: 1px; background: var(--border);
+            }
+            .va-topic:nth-child(1)::before,
+            .va-topic:nth-child(2)::before,
+            .va-topic:nth-child(4)::before,
+            .va-topic:nth-child(6)::before { display: none; }
             .va-topic-lead { grid-column: span 2; }
         }
         @media (min-width: 1000px) {
             /* Four columns: lead spans two, so row one is entries 1-3 and row
                two is 4-7. First in a row is the 1st and the 4th. */
-            .va-grid { grid-template-columns: repeat(4, 1fr); column-gap: 0; row-gap: 34px; }
-            .va-topic { padding-left: 28px; padding-right: 28px; }
+            .va-grid { grid-template-columns: repeat(4, 1fr); column-gap: 44px; }
             .va-topic:nth-child(-n+3) { border-top: none; padding-top: 0; }
             .va-topic:nth-child(n+4) { border-top: 1px solid var(--border); padding-top: 28px; }
-            .va-topic:nth-child(2),
-            .va-topic:nth-child(3),
-            .va-topic:nth-child(5),
-            .va-topic:nth-child(6),
-            .va-topic:nth-child(7) { border-left: 1px solid var(--border); }
-            .va-topic:nth-child(1),
-            .va-topic:nth-child(4) { border-left: none; padding-left: 0; }
+            .va-topic::before {
+                content: ''; position: absolute; top: 28px; bottom: 28px; left: -22px;
+                width: 1px; background: var(--border); display: block;
+            }
+            .va-topic:nth-child(1)::before,
+            .va-topic:nth-child(4)::before { display: none; }
             .va-topic-lead { grid-column: span 2; }
         }
         .va-tab { transition: all 0.18s ease; }
@@ -652,7 +655,7 @@ const S = {
     // entries plus the double-width first make eight, which fills four
     // columns and two columns exactly. auto-fill would land on three at some
     // widths, and eight into three leaves the hole this replaced.
-    grid:       { display: 'grid', gap: 0 },
+    grid:       { display: 'grid' },
     // No padding or border here on purpose. Those are the rules and insets
     // between entries, and they differ per breakpoint, so the stylesheet owns
     // them - an inline `padding: 0` would quietly win over every media query.
