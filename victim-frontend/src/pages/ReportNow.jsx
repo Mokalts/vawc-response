@@ -370,7 +370,7 @@ function ReportNow() {
                             ...rise(),
                             display:'flex', alignItems:'center', justifyContent:'space-between', gap:12,
                             backgroundColor:'var(--surface)', border:'1px solid var(--border)',
-                            borderLeft:'3px solid #F47920', borderRadius:10,
+                            borderRadius:10,
                             padding:'13px 16px', marginBottom:16,
                         }}>
                             <span style={{ fontSize:10.5, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.8px', color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>
@@ -842,7 +842,7 @@ function ReportNow() {
                             <p style={S.hint}>Check everything below. You cannot edit after submitting.</p>
 
                             {/* Lead block: who and when, the two facts the desk reads first */}
-                            <div style={{ ...S.reviewRow, borderLeft:'3px solid #F47920', padding:'15px 16px', marginBottom:10 }}>
+                            <div style={{ ...S.reviewRow, padding:'15px 16px', marginBottom:10 }}>
                                 <p style={S.reviewLabel}>Respondent</p>
                                 <p style={{ ...S.reviewVal, fontSize:18, fontWeight:700, lineHeight:1.35, marginBottom: incidentDate ? 10 : 0 }}>
                                     {offenderName || 'Not provided'}

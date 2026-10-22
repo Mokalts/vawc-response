@@ -262,7 +262,7 @@ const S = {
     spinner: { width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' },
 
     // Notice — neutral panel with a violet accent, matching the dashboard's insets
-    notice: { display: 'flex', gap: '9px', alignItems: 'flex-start', backgroundColor: 'var(--adm-input)', border: `1px solid ${COLORS.border}`, borderLeft: `3px solid ${COLORS.secondary}`, borderRadius: RADIUS.sm, padding: '11px 13px', marginBottom: '18px' },
+    notice: { display: 'flex', gap: '9px', alignItems: 'flex-start', backgroundColor: 'var(--adm-input)', border: `1px solid ${COLORS.border}`, borderRadius: RADIUS.sm, padding: '11px 13px', marginBottom: '18px' },
     noticeText: { fontSize: '12.5px', color: COLORS.textSecondary, lineHeight: '1.6', fontFamily: FF },
     footerText: { textAlign: 'center', fontSize: '10.5px', color: COLORS.textMuted, fontFamily: FF },
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AdminLayout } from "../components/Sidebar";
 import { confirmDialog } from "../components/ConfirmDialog";
@@ -17,10 +17,26 @@ const CSS = `
   .rd-status-opt:hover { border-color:currentColor !important; }
   .rd-map:hover { border-color:#9B4DAB !important; color:#7B2D8B !important; background:#F3E5F5 !important; }
   .rd-map { transition:all 0.15s ease !important; }
-  .msg-log-body::-webkit-scrollbar { width:7px; }
-  .msg-log-body::-webkit-scrollbar-track { background:#F5F0F7; border-radius:9999px; }
-  .msg-log-body::-webkit-scrollbar-thumb { background:#D9C2E0; border-radius:9999px; }
-  .msg-log-body::-webkit-scrollbar-thumb:hover { background:#9B4DAB; }
+  /* One scrollbar everywhere on this page: thin, square like everything
+     else, and in the theme's own greys so it reads in both themes. */
+  .rd-scroll { scrollbar-width: thin; scrollbar-color: var(--adm-border-strong) transparent; }
+  .rd-scroll::-webkit-scrollbar { width:8px; height:8px; }
+  .rd-scroll::-webkit-scrollbar-track { background:transparent; }
+  .rd-scroll::-webkit-scrollbar-thumb { background:var(--adm-border-strong); border-radius:2px; }
+  .rd-scroll::-webkit-scrollbar-thumb:hover { background:var(--adm-text-muted); }
+  .msg-log-body::-webkit-scrollbar { width:8px; }
+  .msg-log-body::-webkit-scrollbar-track { background:transparent; }
+  .msg-log-body::-webkit-scrollbar-thumb { background:var(--adm-border-strong); border-radius:2px; }
+  .msg-log-body::-webkit-scrollbar-thumb:hover { background:var(--adm-text-muted); }
+
+  /* Two panes rather than one page. The height is the window less the sticky
+     top bar and this page's own header; below that it falls back to the
+     ordinary page scroll, because two short panes are worse than one. */
+  .rd-panes { display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:stretch; }
+  @media (min-height: 700px) {
+    .rd-panes { height: calc(100vh - 150px); }
+    .rd-panes > div { overflow-y:auto; overflow-x:hidden; padding-right:10px; }
+  }
 `;
 
 // Lawful VAWC flow (RA 9262 / JMC 2010-2). No CFA, no Summons, no "resolved/settled".
@@ -93,32 +109,24 @@ const Spinner = ({ size = 14, color = "#fff" }) => (
   <span style={{ width: size, height: size, border: `2px solid rgba(255,255,255,0.3)`, borderTopColor: color, borderRadius: '50%', animation: "spin 0.7s linear infinite", display: "inline-block", flexShrink: 0 }} />
 );
 
-// What kind of card this is, shown as a bar down its left edge. Square corners
-// are the house style, so the bar does the job a corner radius would have done
-// - it draws the edge - and names the category while it is there.
-const CARD_TONE = {
-  act:    "#C45E10",  // something to do here
-  record: "#9B4DAB",  // the case itself
-  ref:    "#94A3B8",  // reference only
-};
-
 // Depth, for which card to look at first. The shadows carry it in light mode;
 // in dark mode shadow is nearly invisible, so the border and the sunken fill
 // do the work instead.
+//
+// No coloured bar down the side any more. That means the border is the only
+// thing drawing the edge, so it is --adm-border-strong rather than
+// --adm-border: against the page the lighter one is almost not there.
 const CARD_LEVEL = {
   raised: { edge: "var(--adm-border-strong)", shadow: "0 1px 2px rgba(15,23,42,0.06), 0 8px 20px rgba(15,23,42,0.10)" },
-  flat:   { edge: "var(--adm-border)",        shadow: "0 1px 2px rgba(15,23,42,0.05), 0 2px 8px rgba(15,23,42,0.05)" },
+  flat:   { edge: "var(--adm-border-strong)", shadow: "0 1px 2px rgba(15,23,42,0.05), 0 2px 8px rgba(15,23,42,0.05)" },
   sunken: { edge: "var(--adm-border)",        shadow: "none", bg: "var(--adm-sunken)" },
 };
 
-const Card = ({ title, icon, children, style = {}, headerRight, tone = "record", level = "flat" }) => {
+const Card = ({ title, icon, children, style = {}, headerRight, level = "flat" }) => {
   const lv = CARD_LEVEL[level] || CARD_LEVEL.flat;
   return (
-  // Sides are set one at a time, not with the border shorthand: a later
-  // borderColor would repaint the left edge too and the bar would vanish.
   <div style={{ background: lv.bg || "var(--adm-card)", borderRadius: 0,
-                borderTop: `1px solid ${lv.edge}`, borderRight: `1px solid ${lv.edge}`,
-                borderBottom: `1px solid ${lv.edge}`, borderLeft: `3px solid ${CARD_TONE[tone] || CARD_TONE.record}`,
+                border: `1px solid ${lv.edge}`,
                 overflow: "hidden", fontFamily: "'Lexend',sans-serif", boxShadow: lv.shadow, ...style }}>
     {title && (
       <div style={{ padding: "14px 20px", borderBottom: `1px solid ${lv.edge}`, display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "var(--adm-muted)" }}>
@@ -560,12 +568,24 @@ const TimelineRow = ({ label, detail, dot, color, bg, icon, isDone, isCurrent, i
 // How many lines before the card stops and offers the rest. A case collects
 // activity for as long as it is open, so printing all of it made this card
 // grow without limit at the foot of every report.
-const ACTIVITY_PREVIEW = 6;
+// Five rows on screen; the rest are a scroll away. Thirty is the hard ceiling
+// on what this card will hold at once - past that the window below is the
+// right way to narrow it, not a longer list.
+const ACTIVITY_ROW_PX  = 52;
+const ACTIVITY_VISIBLE = 5;
+const ACTIVITY_MAX     = 30;
+const ACTIVITY_WINDOWS = [
+  { days: 7,   label: "Last 7 days" },
+  { days: 30,  label: "Last 30 days" },
+  { days: 90,  label: "Last 90 days" },
+  { days: 365, label: "Last year" },
+  { days: 0,   label: "All time" },
+];
 
 const CaseActivityCard = ({ caseId }) => {
   const [rows, setRows]   = useState(null);   // null = still loading
   const [error, setError] = useState(false);
-  const [showAll, setShowAll] = useState(false);
+  const [days, setDays]   = useState(30);
 
   useEffect(() => {
     let alive = true;
@@ -575,8 +595,25 @@ const CaseActivityCard = ({ caseId }) => {
     return () => { alive = false; };
   }, [caseId]);
 
+  // Newest first is how the endpoint returns them, so the slice keeps the
+  // most recent thirty rather than the oldest.
+  const shown = useMemo(() => {
+    if (!rows) return [];
+    const cutoff = days ? Date.now() - days * 86400000 : null;
+    const within = cutoff
+      ? rows.filter(a => new Date(a.created_at).getTime() >= cutoff)
+      : rows;
+    return within.slice(0, ACTIVITY_MAX);
+  }, [rows, days]);
+
   return (
-    <Card title="Activity" tone="ref" level="sunken" icon={<IcoShield size={16} color="#94A3B8" />}>
+    <Card title="Activity" level="sunken" icon={<IcoShield size={16} color="#94A3B8" />}
+      headerRight={rows !== null && !error && rows.length > 0 && (
+        <select value={days} onChange={e => setDays(Number(e.target.value))} aria-label="How far back"
+          style={{ padding: "4px 8px", borderRadius: 4, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 11.5, fontFamily: "'Lexend',sans-serif" }}>
+          {ACTIVITY_WINDOWS.map(w => <option key={w.days} value={w.days}>{w.label}</option>)}
+        </select>
+      )}>
       {rows === null && (
         <p style={{ margin: 0, fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
           Loading…
@@ -595,10 +632,16 @@ const CaseActivityCard = ({ caseId }) => {
         </p>
       )}
 
-      {rows !== null && !error && rows.length > 0 && (
+      {rows !== null && !error && rows.length > 0 && shown.length === 0 && (
+        <p style={{ margin: 0, fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+          Nothing in this window. Try a longer one.
+        </p>
+      )}
+
+      {rows !== null && !error && shown.length > 0 && (
         <>
-        <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-          {(showAll ? rows : rows.slice(0, ACTIVITY_PREVIEW)).map(a => (
+        <ol className="rd-scroll" style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 12, maxHeight: ACTIVITY_VISIBLE * ACTIVITY_ROW_PX, overflowY: "auto", paddingRight: 8 }}>
+          {shown.map(a => (
             <li key={a.id} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
               <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: "50%", background: "#9B4DAB", flexShrink: 0, marginTop: 6 }} />
               <div style={{ minWidth: 0, flex: 1 }}>
@@ -612,12 +655,12 @@ const CaseActivityCard = ({ caseId }) => {
             </li>
           ))}
         </ol>
-        {rows.length > ACTIVITY_PREVIEW && (
-          <button type="button" onClick={() => setShowAll(v => !v)}
-            style={{ marginTop: 14, width: "100%", padding: "8px 0", borderRadius: 4, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
-            {showAll ? "Show fewer" : `Show all ${rows.length}`}
-          </button>
-        )}
+        {/* Said out loud. A list that silently stops at thirty reads as the
+            whole trail, and this one is the record of what the desk did. */}
+        <p style={{ margin: "10px 0 0", fontSize: 11, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", lineHeight: 1.5 }}>
+          Showing {shown.length} of {rows.length}
+          {shown.length === ACTIVITY_MAX ? ". Narrow the window to see earlier entries." : ""}
+        </p>
         </>
       )}
     </Card>
@@ -729,7 +772,7 @@ const CaseActions = ({ cas, refetch, showToast }) => {
   const daysLeft = (b) => b.expires_at ? Math.ceil((new Date(b.expires_at).getTime() - Date.now()) / 86400000) : null;
 
   return (
-    <Card title="Case Actions" tone="act" level="raised" icon={<IcoShield size={16} color="#C45E10" />}>
+    <Card title="Case Actions" level="raised" icon={<IcoShield size={16} color="#C45E10" />}>
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
         {/* Confirm — only while the report is still unclaimed.
@@ -986,7 +1029,7 @@ const PrintPanel = ({ cas }) => {
     { key: "endorsement", label: "1st Endorsement",  sub: "Referral to the Chief of Police, Iba MPS" },
   ];
   return (
-    <Card title="Print Documents" tone="ref" icon={<IcoPrint size={16} color="#475569" />}>
+    <Card title="Print Documents" icon={<IcoPrint size={16} color="#475569" />}>
       <p style={{ margin: "0 0 14px", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Auto-fill official barangay documents.</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {docs.map(doc => (
@@ -1249,8 +1292,9 @@ export default function ReportDetail() {
         </div>
 
         {/* Two-column layout */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 20, alignItems: "stretch" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        <div className="rd-panes">
+          <div className="rd-scroll">
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
             {/* ── Complainant Information ── */}
             <Card title="Complainant Information" icon={<IcoUser size={16} color="#9B4DAB" />}>
@@ -1397,7 +1441,7 @@ export default function ReportDetail() {
                         /* The complainant's own words are the most important content
                            on this page, so they get full-strength text, not the
                            secondary tone used for supporting copy. */
-                        ? <div style={{ background: "var(--adm-muted)", borderRadius: 4, padding: "14px 16px", fontSize: 13.5, color: "var(--adm-text)", lineHeight: 1.75, borderLeft: "3px solid #E1BEE7", whiteSpace: "pre-wrap", fontFamily: "'Lexend',sans-serif" }}>{r.statement}</div>
+                        ? <div style={{ background: "var(--adm-muted)", borderRadius: 4, padding: "14px 16px", fontSize: 13.5, color: "var(--adm-text)", lineHeight: 1.75, borderLeft: "3px solid var(--adm-border)", whiteSpace: "pre-wrap", fontFamily: "'Lexend',sans-serif" }}>{r.statement}</div>
                         : <div style={{ background: "var(--adm-muted)", borderRadius: 4, padding: "14px 16px", fontSize: 13, color: "var(--adm-text-muted)", fontStyle: "italic", borderLeft: "3px solid var(--adm-border)", fontFamily: "'Lexend',sans-serif" }}>No statement provided.</div>
                       }
                     </div>
@@ -1500,7 +1544,7 @@ export default function ReportDetail() {
 
             {/* Deletion details - only when soft-deleted */}
             {cas.is_deleted && (
-              <Card title="Deletion Details" tone="ref" level="sunken" icon={<IcoTrash size={16} color="#C62828" />}>
+              <Card title="Deletion Details" level="sunken" icon={<IcoTrash size={16} color="#C62828" />}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "16px 24px" }}>
                   <InfoRow label="Deleted On" value={fmt(cas.deleted_at)} />
                   <InfoRow
@@ -1519,7 +1563,7 @@ export default function ReportDetail() {
             )}
 
             {!cas.is_deleted && (
-              <Card title="Message to Victim" tone="act" icon={<IcoClip size={16} color="#F47920" />}>
+              <Card title="Message to Victim" icon={<IcoClip size={16} color="#F47920" />}>
                 <p style={{ margin: "0 0 10px", fontSize: 12.5, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
                   Send a note to the victim at any stage - e.g. an update, or the schedule and venue of the hearing. They are notified by email and in their portal.
                 </p>
@@ -1556,24 +1600,22 @@ export default function ReportDetail() {
                 </button>
               </Card>
             )}
+
+            {/* The trail, not the work: last in the column you read. */}
+            <CaseActivityCard caseId={id} />
+            </div>
           </div>
 
-          {/* The rail is shorter than the column beside it, so it sticks:
-              a short rail that scrolls away leaves the hole this page had.
-              The outer div is the stretched grid item, which is what gives
-              the inner one room to travel. */}
-          <div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 20, position: "sticky", top: 16 }}>
+          {/* The rail scrolls on its own, so it stays where it is while the
+              record moves beside it, and can still be scrolled when it is
+              taller than the window. */}
+          <div className="rd-scroll">
+            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               <CaseTimeline cas={cas} onUpdateStatus={() => setShowStatusModal(true)} />
 
               <PrintPanel cas={cas} />
             </div>
           </div>
-        </div>
-
-        {/* The trail, not the work: last, and full width. */}
-        <div style={{ marginTop: 20 }}>
-          <CaseActivityCard caseId={id} />
         </div>
       </div>
 
@@ -1605,9 +1647,8 @@ export default function ReportDetail() {
       {showMessageLogs && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(15,23,42,0.55)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={() => setShowMessageLogs(false)}>
           {/* Same shape as a card on the page behind it: square, one muted
-              header bar, a 3px tone edge. The gradients and 20px corners it
-              had were not used anywhere else in the portal. */}
-          <div style={{ background: "var(--adm-card)", borderRadius: 0, borderLeft: "3px solid #C45E10", width: "100%", maxWidth: 520, maxHeight: "85vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 64px rgba(15,23,42,0.3)", fontFamily: "'Lexend',sans-serif", overflow: "hidden", animation: "slideDown 0.22s ease" }} onClick={e => e.stopPropagation()}>
+              header bar, one border. */}
+          <div style={{ background: "var(--adm-card)", borderRadius: 0, border: "1px solid var(--adm-border-strong)", width: "100%", maxWidth: 520, maxHeight: "85vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 64px rgba(15,23,42,0.3)", fontFamily: "'Lexend',sans-serif", overflow: "hidden", animation: "slideDown 0.22s ease" }} onClick={e => e.stopPropagation()}>
 
             {/* Header */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 20px", borderBottom: "1px solid var(--adm-border)", background: "var(--adm-muted)" }}>

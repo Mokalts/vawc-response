@@ -186,7 +186,7 @@ const S = {
     dot:          { width: 6, height: 6, borderRadius: '50%', background: COLORS.primary, flexShrink: 0, marginTop: 9 },
     itemText:     { flex: 1, minWidth: 0 },
 
-    review:       { marginTop: 28, background: COLORS.bgMuted, border: `1px solid ${COLORS.border}`, borderLeft: `3px solid ${COLORS.secondary}`, borderRadius: RADIUS.sm, padding: '14px 16px' },
+    review:       { marginTop: 28, background: COLORS.bgMuted, border: `1px solid ${COLORS.border}`, borderRadius: RADIUS.sm, padding: '14px 16px' },
     reviewTitle:  { margin: '0 0 4px', fontSize: 10.5, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: COLORS.textMuted, fontFamily: FF },
     reviewText:   { margin: 0, fontSize: 13, lineHeight: 1.65, color: COLORS.textSecondary, maxWidth: '72ch', fontFamily: FF },
 };

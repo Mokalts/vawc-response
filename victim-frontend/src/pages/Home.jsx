@@ -454,7 +454,7 @@ const S = {
     // ── Side widgets. Three deliberately different shapes ──────────────────
     wBase:       { display: 'block', width: '100%', textAlign: 'left', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, cursor: 'pointer', fontFamily: FF, boxShadow: 'var(--card-shadow)' },
     // 1. Status strip: data leads, no icon, accent rule on the left edge
-    wStatus:     { display: 'block', width: '100%', textAlign: 'left', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderLeft: '3px solid #F47920', borderRadius: 14, cursor: 'pointer', fontFamily: FF, boxShadow: 'var(--card-shadow)', padding: '13px 16px' },
+    wStatus:     { display: 'block', width: '100%', textAlign: 'left', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 14, cursor: 'pointer', fontFamily: FF, boxShadow: 'var(--card-shadow)', padding: '13px 16px' },
     wLabel:      { display: 'block', fontSize: 9.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--text-muted)', fontFamily: FF },
     wStatusLine: { display: 'flex', alignItems: 'center', gap: 8, margin: '6px 0 0', fontSize: 15.5, fontWeight: 800, letterSpacing: '-0.2px', color: 'var(--text)', fontFamily: FF, lineHeight: 1.25 },
     wDot:        { width: 9, height: 9, borderRadius: '50%', flexShrink: 0 },

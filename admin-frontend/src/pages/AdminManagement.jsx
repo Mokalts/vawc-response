@@ -66,6 +66,11 @@ const CSS = `
   .adm-primary-btn { transition: all 0.15s ease !important; }
   .adm-primary-btn:hover { background: #A34D0D !important; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(196,94,16,0.3) !important; }
   .adm-accordion-chevron { transition: transform 0.2s ease; }
+  .adm-scroll { scrollbar-width: thin; scrollbar-color: var(--adm-border-strong) transparent; }
+  .adm-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+  .adm-scroll::-webkit-scrollbar-track { background: transparent; }
+  .adm-scroll::-webkit-scrollbar-thumb { background: var(--adm-border-strong); border-radius: 2px; }
+  .adm-scroll::-webkit-scrollbar-thumb:hover { background: var(--adm-text-muted); }
   @media (max-width: 1024px) {
     .adm-table-wrap { overflow-x: auto; }
     .adm-actions-cell { min-width: 180px; }
@@ -323,7 +328,8 @@ export default function AdminManagement() {
   const [historyLoading,   setHistoryLoading]   = useState(false);
   const [historyError,     setHistoryError]     = useState('');
   const [historyDays,      setHistoryDays]      = useState(30);
-  const [historyKind,      setHistoryKind]      = useState(''); // admin whose name is being edited
+  const [historyKind,      setHistoryKind]      = useState('');
+  const [historyPage,      setHistoryPage]      = useState(1);
   const [currentAdmin,     setCurrentAdmin]     = useState(null); // logged-in admin (for the super admin's own row)
   const [idPending,        setIdPending]        = useState([]);   // accounts waiting on an ID decision
   const [idBusy,           setIdBusy]           = useState(null); // id of the account being decided
@@ -388,6 +394,8 @@ export default function AdminManagement() {
       .finally(() => { if (alive) setHistoryLoading(false); });
     return () => { alive = false; };
   }, [tab, historyDays, historyKind, currentAdmin]);
+
+  useEffect(() => { setHistoryPage(1); }, [historyDays, historyKind]);
 
   // Helper: filter by current search across name/email/phone
   const filterByVictimSearch = (list) => {
@@ -1011,7 +1019,17 @@ export default function AdminManagement() {
         )}
 
         {/* ─── HISTORY tab ────────────────────────────────────────────── */}
-        {tab === "history" && currentAdmin?.is_super_admin && (
+        {tab === "history" && currentAdmin?.is_super_admin && (() => {
+          // Twenty to a page out of at most a hundred held. The cap is said
+          // out loud below, because a list that stops silently reads as the
+          // whole trail.
+          const HISTORY_PER_PAGE = 20;
+          const HISTORY_MAX      = 100;
+          const all     = (history?.entries || []).slice(0, HISTORY_MAX);
+          const pages   = Math.max(1, Math.ceil(all.length / HISTORY_PER_PAGE));
+          const page    = Math.min(historyPage, pages);
+          const pageRows = all.slice((page - 1) * HISTORY_PER_PAGE, page * HISTORY_PER_PAGE);
+          return (
           <div className="tab-fade" style={S.tableCard}>
             <div style={{ padding: "12px 16px", background: "var(--adm-note-bg)", borderBottom: "1px solid var(--adm-note-border)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
               <p style={{ margin: 0, fontSize: 12.5, color: "var(--adm-note-text)", fontFamily: "'Lexend',sans-serif", lineHeight: 1.5, flex: "1 1 260px" }}>
@@ -1041,12 +1059,14 @@ export default function AdminManagement() {
               </p>
             )}
 
-            <div className="adm-table-wrap" style={{ overflowX: "auto" }}>
+            {/* The page of twenty scrolls inside the card, so the filters
+                above it and the pager below stay on screen while you read. */}
+            <div className="adm-table-wrap adm-scroll" style={{ overflowX: "auto", overflowY: "auto", maxHeight: 520 }}>
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
                 <thead>
-                  <tr style={{ backgroundColor: "var(--adm-muted)", borderBottom: "1px solid var(--adm-border)" }}>
+                  <tr style={{ borderBottom: "1px solid var(--adm-border)" }}>
                     {["Action", "Officer", "Case or person", "Date & time"].map((h, i) => (
-                      <th key={i} style={{ ...S.th, textAlign: i === 3 ? "right" : "left" }}>{h}</th>
+                      <th key={i} style={{ ...S.th, position: "sticky", top: 0, zIndex: 1, backgroundColor: "var(--adm-muted)", boxShadow: "inset 0 -1px 0 var(--adm-border)", textAlign: i === 3 ? "right" : "left" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -1061,7 +1081,7 @@ export default function AdminManagement() {
                         ))}
                       </tr>
                     ))
-                  ) : !history || history.entries.length === 0 ? (
+                  ) : all.length === 0 ? (
                     <tr><td colSpan={4}>
                       <div style={{ textAlign: "center", padding: "44px 20px" }}>
                         <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>Nothing recorded</p>
@@ -1071,7 +1091,7 @@ export default function AdminManagement() {
                       </div>
                     </td></tr>
                   ) : (
-                    history.entries.map((e, i) => (
+                    pageRows.map((e, i) => (
                       <tr key={i} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
                         {/* Only a permanent deletion is coloured. It is the one
                             line here that cannot be undone, so it should catch
@@ -1100,14 +1120,25 @@ export default function AdminManagement() {
               </table>
             </div>
 
-            {!historyLoading && history && history.entries.length > 0 && (
+            {!historyLoading && all.length > 0 && (
               <>
-                {/* Said out loud, so a cut-off list is not read as the whole story. */}
-                {history.truncated && (
-                  <p style={{ margin: 0, padding: "12px 16px", fontSize: 12, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", textAlign: "center" }}>
-                    Showing the most recent {history.count}. Narrow the window or the kind to see the rest.
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", padding: "12px 16px", borderTop: "1px solid var(--adm-border)" }}>
+                  <p style={{ margin: 0, fontSize: 12, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                    {(page - 1) * HISTORY_PER_PAGE + 1}-{(page - 1) * HISTORY_PER_PAGE + pageRows.length} of {all.length}
+                    {(history?.truncated || (history?.entries || []).length > HISTORY_MAX)
+                      ? ". Narrow the window or the kind to see earlier entries."
+                      : ""}
                   </p>
-                )}
+                  {pages > 1 && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <ActionBtn label="Previous" onClick={() => setHistoryPage(p => Math.max(1, p - 1))} />
+                      <span style={{ fontSize: 12, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif", fontWeight: 600 }}>
+                        Page {page} of {pages}
+                      </span>
+                      <ActionBtn label="Next" onClick={() => setHistoryPage(p => Math.min(pages, p + 1))} />
+                    </div>
+                  )}
+                </div>
 
                 {/* The one gap in this log, stated rather than left to be found. */}
                 <p style={{ margin: 0, padding: "12px 16px", borderTop: "1px solid var(--adm-border)", fontSize: 11.5, lineHeight: 1.55, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
@@ -1116,7 +1147,8 @@ export default function AdminManagement() {
               </>
             )}
           </div>
-        )}
+          );
+        })()}
 
         {/* ─── MY ACCOUNT tab ─────────────────────────────────────────── */}
         {tab === "my-account" && currentAdmin && (

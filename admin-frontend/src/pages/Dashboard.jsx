@@ -513,7 +513,7 @@ function StaleCases({ stale, onOpen }) {
     const cases = stale?.cases || [];
     if (!cases.length) {
         return (
-            <div style={{ background: 'var(--adm-card)', border: '1px solid var(--adm-border)', borderRadius: 12, padding: '16px 18px', marginBottom: 18 }}>
+            <div style={{ background: 'var(--adm-card)', border: '1px solid var(--adm-border)', borderRadius: 4, padding: '16px 18px', marginBottom: 18 }}>
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--adm-text)', fontFamily: FF }}>Nothing is waiting</p>
                 <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--adm-text-muted)', fontFamily: FF }}>
                     Every open case has been acted on in the last {stale?.days ?? 7} days.
@@ -522,7 +522,7 @@ function StaleCases({ stale, onOpen }) {
         );
     }
     return (
-        <div style={{ background: 'var(--adm-card)', border: '1px solid #FCD34D', borderRadius: 12, padding: '16px 18px', marginBottom: 18 }}>
+        <div style={{ background: 'var(--adm-card)', border: '1px solid #FCD34D', borderRadius: 4, padding: '16px 18px', marginBottom: 18 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
                 <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: '#92400E', fontFamily: FF }}>
                     Waiting on the desk ({cases.length})
