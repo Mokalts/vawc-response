@@ -291,7 +291,7 @@ function Sidebar() {
                                     className="vawc-nav-btn"
                                     onClick={() => navigate(item.path)}
                                     title={showDashDot ? 'Please check new reports' : undefined}
-                                    style={{ ...S.navBtn, position: 'relative', zIndex: 1 }}
+                                    style={{ ...S.navBtn, position: 'relative', zIndex: 1, ...(subs.length > 0 ? { paddingRight: 8 } : null) }}
                                 >
                                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <NavIcon size={18} color={active ? '#FFFFFF' : '#E1BEE7'} />
@@ -300,7 +300,13 @@ function Sidebar() {
                                                 style={{ position: 'absolute', top: -4, right: -5, minWidth: 9, height: 9, borderRadius: '50%', background: '#EF4444', border: '2px solid #4A1259' }} />
                                         )}
                                     </div>
-                                    <span style={{ ...S.navLabel, color: active ? '#FFFFFF' : '#E1BEE7', fontWeight: active ? 700 : 500, transition: 'color 0.2s ease', flex: 1, textAlign: 'left' }}>
+                                    {/* One line, always. "Admin Management" in bold
+                                        Lexend needs 146px and the row left it 139,
+                                        so it wrapped to two lines - worse before the
+                                        webfont lands, since the fallback is wider
+                                        still. The chevron moved out of the flow
+                                        below, which gives the label 161px. */}
+                                    <span style={{ ...S.navLabel, color: active ? '#FFFFFF' : '#E1BEE7', fontWeight: active ? 700 : 500, transition: 'color 0.2s ease', flex: 1, minWidth: 0, textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: subs.length > 0 ? 18 : 0 }}>
                                         {item.label}
                                     </span>
                                     {subs.length > 0 && (
@@ -313,9 +319,10 @@ function Sidebar() {
                                             aria-expanded={expanded}
                                             onClick={(e) => { e.stopPropagation(); setExpanded(v => !v); }}
                                             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setExpanded(v => !v); } }}
-                                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                                     width: 22, height: 22, borderRadius: 6, cursor: 'pointer', flexShrink: 0,
-                                                     transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                                            style={{ position: 'absolute', right: 6, top: '50%',
+                                                     display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                                     width: 18, height: 18, borderRadius: 6, cursor: 'pointer',
+                                                     transform: expanded ? 'translateY(-50%) rotate(90deg)' : 'translateY(-50%) rotate(0deg)',
                                                      transition: 'transform 0.2s ease' }}>
                                             <IcoChevron size={14} color={active ? '#FFFFFF' : '#E1BEE7'} />
                                         </span>

@@ -1008,8 +1008,8 @@ export default function AdminManagement() {
         {/* ─── HISTORY tab ────────────────────────────────────────────── */}
         {tab === "history" && currentAdmin?.is_super_admin && (
           <div className="tab-fade" style={S.tableCard}>
-            <div style={{ padding: "12px 16px", background: "#EFF6FF", borderBottom: "1px solid #BFDBFE", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-              <p style={{ margin: 0, fontSize: 12.5, color: "#1E3A8A", fontFamily: "'Lexend',sans-serif", lineHeight: 1.5, flex: "1 1 260px" }}>
+            <div style={{ padding: "12px 16px", background: "var(--adm-note-bg)", borderBottom: "1px solid var(--adm-note-border)", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <p style={{ margin: 0, fontSize: 12.5, color: "var(--adm-note-text)", fontFamily: "'Lexend',sans-serif", lineHeight: 1.5, flex: "1 1 260px" }}>
                 Every recorded action, newest first. Read-only: nothing in this portal can edit or remove a line of it.
               </p>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1036,58 +1036,67 @@ export default function AdminManagement() {
               </p>
             )}
 
-            {historyLoading ? (
-              <div style={{ padding: "8px 0" }}>
-                {/* Not SkeletonRow: that renders a <tr>, and this list is not a
-                    table. A <tr> inside a <div> is invalid and React says so. */}
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} style={{ display: "flex", gap: 12, padding: "12px 16px", borderBottom: "1px solid var(--adm-border)" }}>
-                    <div style={{ width: 180, height: 20, borderRadius: 4, flexShrink: 0, background: "var(--adm-border)" }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ width: "45%", height: 12, borderRadius: 4, marginBottom: 6, background: "var(--adm-border)" }} />
-                      <div style={{ width: "70%", height: 10, borderRadius: 4, background: "var(--adm-border)" }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : !history || history.entries.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "44px 20px" }}>
-                <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>Nothing recorded</p>
-                <p style={{ margin: "5px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
-                  No actions in this window. Try a longer one.
-                </p>
-              </div>
-            ) : (
-              <>
-                <div style={{ display: "flex", flexDirection: "column" }}>
-                  {history.entries.map((e, i) => {
-                    const tone = e.kind === "deletion" ? "#B91C1C" : e.kind === "id_review" ? "#1D4ED8" : "#C45E10";
-                    const toneBg = e.kind === "deletion" ? "#FEF2F2" : e.kind === "id_review" ? "#EFF6FF" : "var(--adm-primary-bg)";
-                    return (
-                      <div key={i} style={{ display: "flex", gap: 12, padding: "12px 16px", borderBottom: "1px solid var(--adm-border)", alignItems: "flex-start" }}>
-                        {/* Fixed width, not sized by its own text. "Report
-                            confirmed" is half again as wide as "Status
-                            changed", so letting the badge size itself meant no
-                            two rows began in the same place. */}
-                        <span style={{ flexShrink: 0, width: 180, boxSizing: "border-box", marginTop: 1, padding: "3px 8px", borderRadius: 4, fontSize: 10.5, fontWeight: 700, color: tone, background: toneBg, border: `1px solid ${tone}33`, fontFamily: "'Lexend',sans-serif", textAlign: "center", lineHeight: 1.35 }}>
-                          {e.label}
-                        </span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ margin: 0, fontSize: 13, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", wordBreak: "break-word" }}>
-                            <strong>{e.by}</strong>{e.subject ? <> &middot; {e.subject}</> : null}
+            <div className="adm-table-wrap" style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
+                <thead>
+                  <tr style={{ backgroundColor: "var(--adm-muted)", borderBottom: "1px solid var(--adm-border)" }}>
+                    {["Action", "Officer", "Case or person", "Date & time"].map((h, i) => (
+                      <th key={i} style={{ ...S.th, textAlign: i === 3 ? "right" : "left" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {historyLoading ? (
+                    [1, 2, 3, 4].map(i => (
+                      <tr key={i} style={{ borderBottom: "1px solid var(--adm-border)" }}>
+                        {[150, 120, 100, 70].map((w, j) => (
+                          <td key={j} style={{ padding: "14px 16px" }}>
+                            <div style={{ height: 12, width: w, maxWidth: "100%", marginLeft: j === 3 ? "auto" : 0, borderRadius: 4, background: "var(--adm-border)" }} />
+                          </td>
+                        ))}
+                      </tr>
+                    ))
+                  ) : !history || history.entries.length === 0 ? (
+                    <tr><td colSpan={4}>
+                      <div style={{ textAlign: "center", padding: "44px 20px" }}>
+                        <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>Nothing recorded</p>
+                        <p style={{ margin: "5px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+                          No actions in this window. Try a longer one.
+                        </p>
+                      </div>
+                    </td></tr>
+                  ) : (
+                    history.entries.map((e, i) => (
+                      <tr key={i} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
+                        {/* Only a permanent deletion is coloured. It is the one
+                            line here that cannot be undone, so it should catch
+                            the eye while scrolling; tinting every row would
+                            mean none of them stands out. */}
+                        <td style={{ ...S.td, width: "34%" }}>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: e.kind === "deletion" ? "var(--adm-danger-text)" : "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>
+                            {e.label}
                           </p>
                           {e.detail && (
-                            <p style={{ margin: "2px 0 0", fontSize: 12, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", wordBreak: "break-word" }}>{e.detail}</p>
+                            <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", wordBreak: "break-word" }}>{e.detail}</p>
                           )}
-                        </div>
-                        <span style={{ flexShrink: 0, fontSize: 11.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", textAlign: "right" }}>
+                        </td>
+                        <td style={{ ...S.td, fontSize: 13, color: "var(--adm-text)" }}>{e.by}</td>
+                        {/* Not always a case number: an ID decision names the
+                            person it was about, which is why the header does
+                            not promise one. */}
+                        <td style={{ ...S.td, fontSize: 13, color: "var(--adm-text-2)", wordBreak: "break-word" }}>{e.subject || "-"}</td>
+                        <td style={{ ...S.td, textAlign: "right", fontSize: 11.5, color: "var(--adm-text-muted)", whiteSpace: "nowrap" }}>
                           {fmtDate(e.at)}<br />{fmtTime(e.at)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
 
+            {!historyLoading && history && history.entries.length > 0 && (
+              <>
                 {/* Said out loud, so a cut-off list is not read as the whole story. */}
                 {history.truncated && (
                   <p style={{ margin: 0, padding: "12px 16px", fontSize: 12, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", textAlign: "center" }}>
@@ -1156,9 +1165,9 @@ export default function AdminManagement() {
             for a picture too small to decide anything from. */}
         {tab === "id-review" && (
           <div className="tab-fade" style={S.tableCard}>
-            <div style={{ padding: "12px 16px", background: "#EFF6FF", borderBottom: "1px solid #BFDBFE", display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ padding: "12px 16px", background: "var(--adm-note-bg)", borderBottom: "1px solid var(--adm-note-border)", display: "flex", alignItems: "center", gap: 10 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#1D4ED8" strokeWidth="1.8" /><circle cx="9" cy="11" r="2" stroke="#1D4ED8" strokeWidth="1.8" /><path d="M14 10h4M14 14h4" stroke="#1D4ED8" strokeWidth="1.8" strokeLinecap="round" /></svg>
-              <p style={{ margin: 0, fontSize: 12.5, color: "#1E3A8A", fontFamily: "'Lexend',sans-serif", lineHeight: 1.5 }}>
+              <p style={{ margin: 0, fontSize: 12.5, color: "var(--adm-note-text)", fontFamily: "'Lexend',sans-serif", lineHeight: 1.5 }}>
                 Open an account to see the ID beside what she registered with. The photo is deleted the moment you decide, either way.
               </p>
             </div>
