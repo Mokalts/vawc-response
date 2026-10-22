@@ -2,6 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import BottomNavbar from '../components/BottomNavbar';
+import { ReactComponent as ArtSigns }     from '../assets/awareness/signs.svg';
+import { ReactComponent as ArtTodo }      from '../assets/awareness/todo.svg';
+import { ReactComponent as ArtWhere }     from '../assets/awareness/where.svg';
+import { ReactComponent as ArtOrders }    from '../assets/awareness/orders.svg';
+import { ReactComponent as ArtRights }    from '../assets/awareness/rights.svg';
+import { ReactComponent as ArtLaws }      from '../assets/awareness/laws.svg';
+import { ReactComponent as ArtPenalties } from '../assets/awareness/penalties.svg';
+
+// Keyed by section id. signs/todo/where are the same drawings as the three
+// Home cards, which link to exactly these topics - tapping through shows the
+// same picture, which reads as continuity rather than repetition.
+const TOPIC_ART = {
+    signs: ArtSigns, todo: ArtTodo, where: ArtWhere,
+    orders: ArtOrders, rights: ArtRights, laws: ArtLaws, penalties: ArtPenalties,
+};
 
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id = 'vawc-font'; l.rel = 'stylesheet';
@@ -13,8 +28,27 @@ if (!document.getElementById('vawc-awareness-css')) {
     s.textContent = `
         @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-        .va-topic { transition: transform 0.2s ease, box-shadow 0.2s ease; }
-        .va-topic:active { transform: scale(0.99); }
+        /* One column on a phone, two on a tablet, four on a desktop. Three is
+           skipped on purpose: eight slots do not divide by it, and the gap it
+           leaves at the end of the last row is the thing this layout is for. */
+        .va-grid { grid-template-columns: 1fr; }
+        .va-topic { transition: opacity 0.2s ease; padding-top: 26px; border-top: 1px solid var(--border); }
+        .va-topic:first-child { border-top: none; padding-top: 0; }
+        .va-topic:active { opacity: 0.7; }
+        .va-topic-art svg { width: 100%; height: 100%; max-height: 118px; object-fit: contain; }
+        .va-topic-go { transition: transform 0.15s ease; }
+        @media (min-width: 620px) {
+            .va-grid { grid-template-columns: 1fr 1fr; column-gap: 34px; }
+            /* Rules run between columns, not around each entry. */
+            .va-topic { border-top: 1px solid var(--border); padding-top: 26px; }
+            .va-topic:nth-child(-n+1) { border-top: none; padding-top: 0; }
+            .va-topic-lead { grid-column: span 2; }
+        }
+        @media (min-width: 1000px) {
+            .va-grid { grid-template-columns: repeat(4, 1fr); column-gap: 30px; }
+            .va-topic:nth-child(-n+3) { border-top: none; padding-top: 0; }
+            .va-topic-lead { grid-column: span 2; }
+        }
         .va-tab { transition: all 0.18s ease; }
         .va-cta-btn { transition: all 0.15s ease; }
         .va-back { transition: transform 0.12s ease; }
@@ -102,8 +136,8 @@ if (!document.getElementById('vawc-awareness-css')) {
             .va-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
             .va-back:hover { transform: translateX(-2px); }
             .va-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important; }
-            .va-topic:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,0,0,0.10) !important; }
-            .va-topic:hover .va-topic-go { transform: translateX(2px); }
+            .va-topic:hover .va-topic-go { transform: translateX(3px); }
+            .va-topic:hover .va-topic-art { filter: brightness(0.97); }
             .tabs-scroll::-webkit-scrollbar-thumb:hover { background: #F47920; }
             .va-nav-btn:hover { filter: brightness(0.97); }
         }
@@ -444,21 +478,28 @@ function Awareness() {
                         Everything here is public and needs no account. Read what you like,
                         and leave any time with Quick Exit.
                     </p>
-                    <div style={S.grid}>
-                        {SECTIONS.map(sec => {
-                            const c = CONTENT[sec.id];
+                    <div className="va-grid" style={S.grid}>
+                        {SECTIONS.map((sec, i) => {
+                            const c   = CONTENT[sec.id];
+                            const Art = TOPIC_ART[sec.id];
                             return (
-                                <button key={sec.id} className="va-topic" onClick={() => openTopic(sec.id)}
+                                <button key={sec.id}
+                                    className={`va-topic${i === 0 ? ' va-topic-lead' : ''}`}
+                                    onClick={() => openTopic(sec.id)}
                                     aria-label={`${sec.label}. ${sec.blurb}`} style={S.topicCard}>
-                                    <span style={{ ...S.topicArt, backgroundColor: c.bg, borderColor: c.border }}>
-                                        <img src={c.image} alt="" aria-hidden="true" loading="lazy" style={S.topicImg} />
+                                    {/* The topic's own colour at low alpha rather than its
+                                        fixed `bg` hex. Those are light-mode values, so on the
+                                        dark theme they painted a cream block behind artwork
+                                        that had correctly gone dark. Alpha adapts; a hex
+                                        cannot. */}
+                                    <span className="va-topic-art" style={{ ...S.topicArt, backgroundColor: `${c.color}1F` }}>
+                                        {Art && <Art aria-hidden="true" focusable="false" />}
                                     </span>
-                                    <span style={S.topicBody}>
-                                        <span style={{ ...S.topicTitle, color: c.color }}>{sec.label}</span>
-                                        <span style={S.topicBlurb}>{sec.blurb}</span>
-                                        <span style={{ ...S.topicGo, color: c.color }}>
-                                            Read <IcoGo />
-                                        </span>
+                                    <span style={S.topicKicker}>{c.law}</span>
+                                    <span style={S.topicTitle}>{sec.label}</span>
+                                    <span style={S.topicBlurb}>{sec.blurb}</span>
+                                    <span className="va-topic-go" style={{ ...S.topicGo, color: c.color }}>
+                                        Read <IcoGo />
                                     </span>
                                 </button>
                             );
@@ -620,14 +661,22 @@ const S = {
     // for a sentence under the title.
     gridWrap:   { padding: '16px 16px 24px', width: '100%', maxWidth: 1060, marginLeft: 'auto', marginRight: 'auto', boxSizing: 'border-box' },
     gridIntro:  { fontSize: 13, lineHeight: 1.65, color: 'var(--text-muted)', fontFamily: "'Lexend', sans-serif", margin: '0 0 14px' },
-    grid:       { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 },
-    topicCard:  { display: 'flex', flexDirection: 'column', textAlign: 'left', padding: 0, overflow: 'hidden', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, boxShadow: 'var(--card-shadow)', cursor: 'pointer', fontFamily: "'Lexend', sans-serif" },
-    topicArt:   { display: 'block', height: 116, borderBottom: '1px solid', overflow: 'hidden' },
-    topicImg:   { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
-    topicBody:  { display: 'flex', flexDirection: 'column', gap: 5, padding: '13px 15px 15px' },
-    topicTitle: { fontSize: 15.5, fontWeight: 700, lineHeight: 1.25 },
-    topicBlurb: { fontSize: 12.5, lineHeight: 1.55, color: 'var(--text-muted)' },
-    topicGo:    { display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12.5, fontWeight: 700, marginTop: 3 },
+    // The column count is set by hand rather than with auto-fill. Seven
+    // entries plus the double-width first make eight, which fills four
+    // columns and two columns exactly. auto-fill would land on three at some
+    // widths, and eight into three leaves the hole this replaced.
+    grid:       { display: 'grid', gap: 0 },
+    topicCard:  { display: 'flex', flexDirection: 'column', textAlign: 'left', alignItems: 'stretch',
+                  padding: '0 0 26px', background: 'none', border: 'none', cursor: 'pointer',
+                  fontFamily: "'Lexend', sans-serif" },
+    topicArt:   { display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  height: 150, borderRadius: 10, overflow: 'hidden', marginBottom: 14 },
+    topicKicker:{ fontSize: 10.5, fontWeight: 700, letterSpacing: '0.9px', textTransform: 'uppercase',
+                  color: 'var(--text-muted)', marginBottom: 7 },
+    topicTitle: { fontSize: 20, fontWeight: 800, lineHeight: 1.2, color: 'var(--text)', marginBottom: 7,
+                  letterSpacing: '-0.2px' },
+    topicBlurb: { fontSize: 13.5, lineHeight: 1.65, color: 'var(--text-body)', marginBottom: 12 },
+    topicGo:    { display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 700, marginTop: 'auto' },
 
     page:          { minHeight: '100vh', background: 'var(--page-grad)', display: 'flex', flexDirection: 'column', fontFamily: "'Lexend', sans-serif", color: 'var(--text)' },
     topBar:        { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: 'var(--topbar)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 },
