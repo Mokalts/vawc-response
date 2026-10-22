@@ -15,7 +15,8 @@ if (!document.getElementById('vawc-nav-css')) {
            A permanently red item in the bar would advertise, to anyone glancing
            at the screen, that this is an abuse-reporting app. */
         /* Four labels on a 320px phone leaves the last two nearly touching. */
-        @media (max-width: 360px) { .vn-label { font-size:10px; } }
+        @media (max-width: 420px) { .vn-label { font-size:10px; } }
+        @media (max-width: 360px) { .vn-label { font-size:9px; letter-spacing:-0.2px; } }
         @media (hover: hover) and (pointer: fine) {
             .vn-exit:hover { background-color:rgba(185,28,28,0.10); }
             .vn-exit:hover .vn-label { color:#B91C1C; }
@@ -36,6 +37,15 @@ const IcoPlus = ({ color }) => (
         <path d="M12 5V19M5 12H19" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
     </svg>
 );
+// Learn - an open book
+const IcoBook = ({ color }) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 6.6C10.4 5.3 8.4 4.7 5.6 4.7H3.4v12.6h2.2c2.8 0 4.8.6 6.4 1.9 1.6-1.3 3.6-1.9 6.4-1.9h2.2V4.7h-2.2c-2.8 0-4.8.6-6.4 1.9z"
+            stroke={color} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M12 6.6v12.6" stroke={color} strokeWidth="1.9" strokeLinecap="round" />
+    </svg>
+);
+
 const IcoDoc  = ({ color }) => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
         <path d="M6 2H14L20 8V22H6V2Z" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
@@ -66,6 +76,13 @@ function BottomNavbar({ active }) {
                 <span className="vn-label" style={{ color: color('home') }}>Home</span>
             </button>
 
+            {/* My Reports */}
+            <button data-tour="myreports" className={`vn-btn${pressed==='reports'?' pressed':''}`} onClick={() => go('reports', '/my-reports')}
+                aria-label="My Reports, subaybayan ang iyong kaso" aria-current={active === 'reports' ? 'page' : undefined}>
+                <IcoDoc color={color('reports')} />
+                <span className="vn-label" style={{ color: color('reports') }}>My Reports</span>
+            </button>
+
             {/* Report Now - center featured button (orange = primary report CTA) */}
             <button className={`vn-center${pressed==='report'?' pressed':''}`} onClick={() => go('report', '/report')}
                 aria-label="Report Now, magsumite ng report" aria-current={active === 'report' ? 'page' : undefined}>
@@ -80,11 +97,13 @@ function BottomNavbar({ active }) {
                 <span className="vn-label" style={{ color: active === 'report' ? 'var(--accent-text)' : 'var(--text-muted)' }}>Report Now</span>
             </button>
 
-            {/* My Reports */}
-            <button data-tour="myreports" className={`vn-btn${pressed==='reports'?' pressed':''}`} onClick={() => go('reports', '/my-reports')}
-                aria-label="My Reports, subaybayan ang iyong kaso" aria-current={active === 'reports' ? 'page' : undefined}>
-                <IcoDoc color={color('reports')} />
-                <span className="vn-label" style={{ color: color('reports') }}>My Reports</span>
+            {/* Learn - the awareness pages. Public, and reachable without an
+                account, which is the point: she can read what counts as abuse
+                and what a BPO is before deciding whether to report at all. */}
+            <button className={`vn-btn${pressed==='learn'?' pressed':''}`} onClick={() => go('learn', '/awareness')}
+                aria-label="Learn, alamin ang iyong mga karapatan" aria-current={active === 'learn' ? 'page' : undefined}>
+                <IcoBook color={color('learn')} />
+                <span className="vn-label" style={{ color: color('learn') }}>Learn</span>
             </button>
 
             {/* Quick Exit — last, so it is reachable by thumb without sitting

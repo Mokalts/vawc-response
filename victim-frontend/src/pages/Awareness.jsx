@@ -13,6 +13,8 @@ if (!document.getElementById('vawc-awareness-css')) {
     s.textContent = `
         @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
         @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        .va-topic { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .va-topic:active { transform: scale(0.99); }
         .va-tab { transition: all 0.18s ease; }
         .va-cta-btn { transition: all 0.15s ease; }
         .va-back { transition: transform 0.12s ease; }
@@ -100,6 +102,8 @@ if (!document.getElementById('vawc-awareness-css')) {
             .va-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
             .va-back:hover { transform: translateX(-2px); }
             .va-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important; }
+            .va-topic:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(0,0,0,0.10) !important; }
+            .va-topic:hover .va-topic-go { transform: translateX(2px); }
             .tabs-scroll::-webkit-scrollbar-thumb:hover { background: #F47920; }
             .va-nav-btn:hover { filter: brightness(0.97); }
         }
@@ -108,20 +112,28 @@ if (!document.getElementById('vawc-awareness-css')) {
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
+const IcoGo = () => (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
 const IcoBack   = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="#C45E10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoArrow  = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M13 6L19 12L13 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoFlag   = ({ c='#F47920' }) => (<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="4" y1="22" x2="4" y2="15" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoDot    = ({ c='#F47920' }) => (<span style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: c, display: 'inline-block', flexShrink: 0, marginTop: 6 }} />);
 
 // ─── Section definitions ──────────────────────────────────────────────────────
+// One line each, written to answer "is this the one I need?" rather than to
+// restate the title. The grid is the whole navigation now, so these carry it.
 const SECTIONS = [
-    { id: 'signs',    label: 'Is it Abuse?' },
-    { id: 'todo',     label: 'What to Do' },
-    { id: 'where',    label: 'Where to Go' },
-    { id: 'orders',   label: 'Protection Orders' },
-    { id: 'rights',   label: 'Your Rights' },
-    { id: 'laws',     label: 'Related Laws' },
-    { id: 'penalties',label: 'Penalties' },
+    { id: 'signs',    label: 'Is it Abuse?',       blurb: 'The four kinds of abuse the law names, and questions to ask yourself.' },
+    { id: 'todo',     label: 'What to Do',         blurb: 'The steps to take now, and what to bring when you report.' },
+    { id: 'where',    label: 'Where to Go',        blurb: 'The barangay, the police, the courts, and who helps with what.' },
+    { id: 'orders',   label: 'Protection Orders',  blurb: 'What a BPO is, who can issue one, and how long it lasts.' },
+    { id: 'rights',   label: 'Your Rights',        blurb: 'What you are entitled to, including leave from work and privacy.' },
+    { id: 'laws',     label: 'Related Laws',       blurb: 'The other laws that may cover what happened to you.' },
+    { id: 'penalties',label: 'Penalties',          blurb: 'What the law provides for each offence.' },
 ];
 
 // ─── Full content ─────────────────────────────────────────────────────────────
@@ -328,15 +340,28 @@ function Awareness() {
     const tabsRef  = useRef(null);
 
     const params = new URLSearchParams(location.search);
-    const [activeSection, setActiveSection] = useState(params.get('section') || 'signs');
+    // null = the topic grid. Arriving with no ?section lands on the menu
+    // rather than dropping her into the middle of the first article.
+    const initial = params.get('section');
+    const [activeSection, setActiveSection] = useState(CONTENT[initial] ? initial : null);
 
     useEffect(() => {
         const s = new URLSearchParams(location.search).get('section');
-        if (s && CONTENT[s]) setActiveSection(s);
+        setActiveSection(s && CONTENT[s] ? s : null);
     }, [location.search]);
 
-    const current    = CONTENT[activeSection];
-    const currentIdx = SECTIONS.findIndex(s => s.id === activeSection);
+    const openTopic = (id) => {
+        setDir('fwd');
+        setActiveSection(id);
+        navigate(`/awareness?section=${id}`);
+    };
+    const backToTopics = () => {
+        setActiveSection(null);
+        navigate('/awareness');
+    };
+
+    const current    = CONTENT[activeSection] || CONTENT.signs;
+    const currentIdx = Math.max(0, SECTIONS.findIndex(s => s.id === activeSection));
 
     // Slide direction: forward when moving to a later section, back otherwise.
     const [dir, setDir] = useState('fwd');
@@ -404,14 +429,46 @@ function Awareness() {
 
             {/* Top bar */}
             <header style={S.topBar}>
-                <button className="va-back" style={S.backBtn} onClick={() => navigate('/home')} aria-label="Bumalik sa Home">
+                <button className="va-back" style={S.backBtn}
+                    onClick={() => activeSection ? backToTopics() : navigate('/home')}
+                    aria-label={activeSection ? 'Bumalik sa mga paksa' : 'Bumalik sa Home'}>
                     <IcoBack />
                 </button>
-                <h1 style={S.title}>Awareness & Safety</h1>
+                <h1 style={S.title}>{activeSection ? current.title : 'Awareness & Safety'}</h1>
                 <ThemeToggle size={44} />
             </header>
 
-            {/* Tabs */}
+            {!activeSection && (
+                <main style={S.gridWrap}>
+                    <p style={S.gridIntro}>
+                        Everything here is public and needs no account. Read what you like,
+                        and leave any time with Quick Exit.
+                    </p>
+                    <div style={S.grid}>
+                        {SECTIONS.map(sec => {
+                            const c = CONTENT[sec.id];
+                            return (
+                                <button key={sec.id} className="va-topic" onClick={() => openTopic(sec.id)}
+                                    aria-label={`${sec.label}. ${sec.blurb}`} style={S.topicCard}>
+                                    <span style={{ ...S.topicArt, backgroundColor: c.bg, borderColor: c.border }}>
+                                        <img src={c.image} alt="" aria-hidden="true" loading="lazy" style={S.topicImg} />
+                                    </span>
+                                    <span style={S.topicBody}>
+                                        <span style={{ ...S.topicTitle, color: c.color }}>{sec.label}</span>
+                                        <span style={S.topicBlurb}>{sec.blurb}</span>
+                                        <span style={{ ...S.topicGo, color: c.color }}>
+                                            Read <IcoGo />
+                                        </span>
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </main>
+            )}
+
+            {/* Tabs - inside a topic only */}
+            {activeSection && (
             <div style={S.tabsWrapper}>
                 <div style={{ position: 'relative' }}>
                     <div className="tabs-scroll va-tabtrack" ref={tabsRef} style={S.tabs}>
@@ -443,9 +500,11 @@ function Awareness() {
                     <div style={S.tabsFadeRight} />
                 </div>
             </div>
+            )}
 
             {/* Content. Keyed on the section so React remounts it and the slide
                 animation replays on every tab change. */}
+            {activeSection && (
             <main key={activeSection} className={dir === 'fwd' ? 'va-slide-fwd' : 'va-slide-back'} style={S.content}>
 
                 {/* ── Hero: responsive image + text ── */}
@@ -549,13 +608,27 @@ function Awareness() {
                 </div>
 
             </main>
+            )}
 
-            <BottomNavbar />
+            <BottomNavbar active="learn" />
         </div>
     );
 }
 
 const S = {
+    // Two columns from 520px up; one below, where a 2-up card leaves no room
+    // for a sentence under the title.
+    gridWrap:   { padding: '16px 16px 24px', width: '100%', maxWidth: 1060, marginLeft: 'auto', marginRight: 'auto', boxSizing: 'border-box' },
+    gridIntro:  { fontSize: 13, lineHeight: 1.65, color: 'var(--text-muted)', fontFamily: "'Lexend', sans-serif", margin: '0 0 14px' },
+    grid:       { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 },
+    topicCard:  { display: 'flex', flexDirection: 'column', textAlign: 'left', padding: 0, overflow: 'hidden', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, boxShadow: 'var(--card-shadow)', cursor: 'pointer', fontFamily: "'Lexend', sans-serif" },
+    topicArt:   { display: 'block', height: 116, borderBottom: '1px solid', overflow: 'hidden' },
+    topicImg:   { width: '100%', height: '100%', objectFit: 'cover', display: 'block' },
+    topicBody:  { display: 'flex', flexDirection: 'column', gap: 5, padding: '13px 15px 15px' },
+    topicTitle: { fontSize: 15.5, fontWeight: 700, lineHeight: 1.25 },
+    topicBlurb: { fontSize: 12.5, lineHeight: 1.55, color: 'var(--text-muted)' },
+    topicGo:    { display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12.5, fontWeight: 700, marginTop: 3 },
+
     page:          { minHeight: '100vh', background: 'var(--page-grad)', display: 'flex', flexDirection: 'column', fontFamily: "'Lexend', sans-serif", color: 'var(--text)' },
     topBar:        { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: 'var(--topbar)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 },
     backBtn:       { width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--surface-tint)', border: '1px solid var(--border)', color: 'var(--accent-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
