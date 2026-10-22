@@ -48,13 +48,16 @@ if (!document.getElementById('vawc-awareness-css')) {
         .va-topic:first-child { border-top: none; padding-top: 0; }
         .va-topic:active { opacity: 0.7; }
         .va-topic-art svg { width: 100%; height: 100%; max-height: 118px; object-fit: contain; }
+        .va-topic-art[data-topic="laws"] svg     { max-height: 88px; }
+        .va-topic-art[data-topic="orders"] svg   { max-height: 100px; }
+        .va-topic-art[data-topic="rights"] svg   { max-height: 100px; }
         .va-topic-go { transition: transform 0.15s ease; }
         @media (min-width: 620px) and (max-width: 999px) {
             /* Two columns: lead spans both, then pairs. First in a row is the
                1st, 2nd, 4th and 6th entry, and those get no rule to their left. */
             .va-grid { grid-template-columns: 1fr 1fr; column-gap: 44px; }
             .va-topic::before {
-                content: ''; position: absolute; top: 28px; bottom: 28px; left: -22px;
+                content: ''; position: absolute; top: 0; bottom: 0; left: -22px;
                 width: 1px; background: var(--border);
             }
             .va-topic:nth-child(1)::before,
@@ -70,7 +73,7 @@ if (!document.getElementById('vawc-awareness-css')) {
             .va-topic:nth-child(-n+3) { border-top: none; padding-top: 0; }
             .va-topic:nth-child(n+4) { border-top: 1px solid var(--border); padding-top: 28px; }
             .va-topic::before {
-                content: ''; position: absolute; top: 28px; bottom: 28px; left: -22px;
+                content: ''; position: absolute; top: 0; bottom: 0; left: -22px;
                 width: 1px; background: var(--border); display: block;
             }
             .va-topic:nth-child(1)::before,
@@ -490,7 +493,7 @@ function Awareness() {
                                         dark theme they painted a cream block behind artwork
                                         that had correctly gone dark. Alpha adapts; a hex
                                         cannot. */}
-                                    <span className="va-topic-art" style={{ ...S.topicArt, backgroundColor: `${c.color}1F` }}>
+                                    <span className="va-topic-art" data-topic={sec.id} style={{ ...S.topicArt, backgroundColor: `${c.color}1F` }}>
                                         {Art && <Art aria-hidden="true" focusable="false" />}
                                     </span>
                                     <span style={S.topicKicker}>{c.law}</span>

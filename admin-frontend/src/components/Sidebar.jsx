@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { ADMIN_SECTIONS, defaultSection } from '../adminSections';
 import api from '../api/api';
 import { COLORS, TEXT, GLOBAL_CSS } from '../theme';
 import { ConfirmHost } from './ConfirmDialog';
@@ -94,7 +95,7 @@ const NAV = [
     { label: 'Monthly Report', path: '/monthly-report', icon: IcoMonthly, superOnly: false, section: 'Management' },
     // Victim accounts live here too, so every officer needs the page. The
     // Admins tab inside it is still Super Admin only.
-    { label: 'Admin Management', path: '/admin-management', icon: IcoAdmins, superOnly: false, section: 'Management' },
+    { label: 'Admin Management', path: '/admin-management', icon: IcoAdmins, superOnly: false, section: 'Management', expandable: true },
 ];
 
 // Remembers the last active nav path ACROSS sidebar remounts (module scope, not
@@ -129,6 +130,17 @@ function Sidebar() {
     // Sliding active-pill for the nav.
     const navBtnRefs = useRef({});
     const [pill, setPill] = useState({ top: 0, height: 0, animate: false, show: false });
+
+    // Which section the page is on, read from the URL so the sidebar and the
+    // page cannot disagree about it.
+    const activeSection = new URLSearchParams(location.search).get('section')
+        || defaultSection(isSuper);
+    // Open whenever Admin Management is the page being looked at, so arriving
+    // there shows what else is inside rather than hiding it behind a chevron.
+    const [expanded, setExpanded] = useState(location.pathname === '/admin-management');
+    useEffect(() => {
+        if (location.pathname === '/admin-management') setExpanded(true);
+    }, [location.pathname]);
     // The nav item that matches the current route (exact, or a detail sub-route like /reports/:id).
     const activePath = (NAV.find(n => location.pathname === n.path || location.pathname.startsWith(n.path + '/')) || {}).path;
 
@@ -267,6 +279,9 @@ function Sidebar() {
                         {group.items.map(item => {
                             const active = item.path === activePath;
                             const NavIcon = item.icon;
+                            const subs = item.expandable
+                                ? ADMIN_SECTIONS.filter(x => !x.superOnly || isSuper)
+                                : [];
                             // New-reports indicator lives on Dashboard (where reports are reviewed).
                             const showDashDot = item.path === '/dashboard' && unread > 0;
                             return (
@@ -285,12 +300,49 @@ function Sidebar() {
                                                 style={{ position: 'absolute', top: -4, right: -5, minWidth: 9, height: 9, borderRadius: '50%', background: '#EF4444', border: '2px solid #4A1259' }} />
                                         )}
                                     </div>
-                                    <span style={{ ...S.navLabel, color: active ? '#FFFFFF' : '#E1BEE7', fontWeight: active ? 700 : 500, transition: 'color 0.2s ease' }}>
+                                    <span style={{ ...S.navLabel, color: active ? '#FFFFFF' : '#E1BEE7', fontWeight: active ? 700 : 500, transition: 'color 0.2s ease', flex: 1, textAlign: 'left' }}>
                                         {item.label}
                                     </span>
+                                    {subs.length > 0 && (
+                                        /* A span, not a button: a button inside a button is
+                                           invalid and the inner one stops working in some
+                                           browsers. Role and key handling are set by hand. */
+                                        <span
+                                            role="button" tabIndex={0}
+                                            aria-label={expanded ? 'Itago ang mga seksyon' : 'Ipakita ang mga seksyon'}
+                                            aria-expanded={expanded}
+                                            onClick={(e) => { e.stopPropagation(); setExpanded(v => !v); }}
+                                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); setExpanded(v => !v); } }}
+                                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                                     width: 22, height: 22, borderRadius: 6, cursor: 'pointer', flexShrink: 0,
+                                                     transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                                                     transition: 'transform 0.2s ease' }}>
+                                            <IcoChevron size={14} color={active ? '#FFFFFF' : '#E1BEE7'} />
+                                        </span>
+                                    )}
                                 </button>
                             );
                         })}
+                        {group.items.some(i => i.expandable) && expanded && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, margin: '2px 0 6px' }}>
+                                {ADMIN_SECTIONS.filter(x => !x.superOnly || isSuper).map(sec => {
+                                    const on = activePath === '/admin-management' && activeSection === sec.key;
+                                    return (
+                                        <button key={sec.key} className="vawc-nav-btn"
+                                            onClick={() => navigate(`/admin-management?section=${sec.key}`)}
+                                            style={{ ...S.navBtn, position: 'relative', zIndex: 1,
+                                                     paddingLeft: 44, minHeight: 34,
+                                                     background: on ? 'rgba(244,121,32,0.16)' : 'transparent' }}>
+                                            <span style={{ ...S.navLabel, fontSize: 12.5,
+                                                           color: on ? '#FFFFFF' : '#D7B3DE',
+                                                           fontWeight: on ? 700 : 500 }}>
+                                                {sec.label}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 ))}
             </nav>

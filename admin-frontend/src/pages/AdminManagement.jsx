@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { AdminLayout } from "../components/Sidebar";
+import { ADMIN_SECTIONS, SECTION_ENTRY, SECTION_OF, defaultSection } from "../adminSections";
 import { confirmDialog } from "../components/ConfirmDialog";
 import api from "../api/api";
 import { toDate, mediaUrl } from '../utils/datetime';
@@ -283,34 +285,6 @@ const ActionBtn = ({ label, variant = "default", onClick }) => (
 );
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-// One entry per section. `entry` is the tab the section opens on, and
-// SECTION_OF maps every tab back to its section so the picker still shows the
-// right thing when a filter inside a section changes the tab.
-const SECTIONS = [
-  { key: "admins",   label: "Admin Management",    entry: "admins",   superOnly: true,
-    hint: "Officer accounts for this desk." },
-  { key: "victims",  label: "Victim Accounts",     entry: "victims",  superOnly: false,
-    hint: "Everyone who has registered, verified or not." },
-  { key: "id-review", label: "ID Review",          entry: "id-review", superOnly: false,
-    hint: "IDs waiting to be checked before a woman can file." },
-  { key: "contacts", label: "Contacts & Officials", entry: "contacts", superOnly: true,
-    hint: "The hotlines the app shows, and who holds each office." },
-  { key: "history",  label: "Log History",          entry: "history",  superOnly: true,
-    hint: "Who did what, and when." },
-  { key: "my-account", label: "My Account",         entry: "my-account", superOnly: false,
-    hint: "Your own password and details." },
-];
-
-const SECTION_ENTRY = Object.fromEntries(SECTIONS.map(x => [x.key, x.entry]));
-const SECTION_OF = {
-  admins: "admins",
-  victims: "victims", unverified: "victims", "deleted-victims": "victims",
-  "id-review": "id-review",
-  contacts: "contacts",
-  history: "history",
-  "my-account": "my-account",
-};
-
 export default function AdminManagement() {
   const [admins,        setAdmins]        = useState([]);
   const [deletedAdmins, setDeletedAdmins] = useState([]);
@@ -324,6 +298,7 @@ export default function AdminManagement() {
 
   // ── Victim management (super admin only) ───────────────────────────
   // Non-super admins have no Admins tab, so they start on Victims.
+  const location = useLocation();
   const [tab,             setTab]             = useState("admins"); // 'admins' | 'victims' | 'unverified' | 'deleted-victims'
   const [victims,         setVictims]         = useState([]);
   const [unverifiedUsers, setUnverifiedUsers] = useState([]);
@@ -508,6 +483,17 @@ export default function AdminManagement() {
 
   useEffect(() => { fetchAdmins(); }, [fetchAdmins]);
 
+  // ?section= decides the tab. Runs when the query changes and when the
+  // admin loads, because which sections exist depends on whether they are a
+  // super admin and that answer arrives a moment after the first render.
+  useEffect(() => {
+    const wanted = new URLSearchParams(location.search).get("section");
+    const isSuper = !!currentAdmin?.is_super_admin;
+    const known = ADMIN_SECTIONS.find(x => x.key === wanted && (!x.superOnly || isSuper));
+    const key = known ? known.key : defaultSection(isSuper);
+    setTab(prev => (SECTION_OF[prev] === key ? prev : SECTION_ENTRY[key]));
+  }, [location.search, currentAdmin]);
+
   useEffect(() => {
     api.get("/admin/auth/me").then(r => setCurrentAdmin(r.data)).catch(() => {});
   }, []);
@@ -626,26 +612,15 @@ export default function AdminManagement() {
           )}
         </div>
 
-        {/* Section picker.
-            A select rather than a row of tabs: seven wrapped onto two lines on
-            a laptop, and the victim lists are now one section with filters
-            inside it, so there is less to choose between and more room to say
-            what each one is. */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
-          <label style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
-            <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Section</span>
-            <select
-              value={SECTION_OF[tab] || "admins"}
-              onChange={(e) => { setTab(SECTION_ENTRY[e.target.value]); setSearch(""); }}
-              style={{ minWidth: 230, padding: "10px 12px", borderRadius: 9, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 13.5, fontWeight: 700, fontFamily: "'Lexend',sans-serif", cursor: "pointer" }}
-            >
-              {SECTIONS.filter(x => !x.superOnly || currentAdmin?.is_super_admin).map(x => (
-                <option key={x.key} value={x.key}>{x.label}</option>
-              ))}
-            </select>
-          </label>
-          <p style={{ margin: 0, fontSize: 12, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
-            {(SECTIONS.find(x => x.key === (SECTION_OF[tab] || "admins")) || {}).hint}
+        {/* Which section this is. The breadcrumb only ever says "Admin
+            Management", and the sidebar entry is easy to miss once you have
+            scrolled. */}
+        <div style={{ marginBottom: 16 }}>
+          <h2 style={{ margin: 0, fontSize: 17, fontWeight: 800, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>
+            {(ADMIN_SECTIONS.find(x => x.key === (SECTION_OF[tab] || "admins")) || {}).label}
+          </h2>
+          <p style={{ margin: "3px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+            {(ADMIN_SECTIONS.find(x => x.key === (SECTION_OF[tab] || "admins")) || {}).hint}
           </p>
         </div>
 
