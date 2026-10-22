@@ -752,6 +752,10 @@ export default function AdminManagement() {
 
         {/* Barangay Officials — super admin only, on the Admins tab */}
         {tab === "admins" && currentAdmin?.is_super_admin && !search && !showDeleted && (
+          <HotlinesPanel showToast={showToast} />
+        )}
+
+        {tab === "admins" && currentAdmin?.is_super_admin && !search && !showDeleted && (
           <OfficialsPanel showToast={showToast} />
         )}
 
@@ -1771,6 +1775,163 @@ const OFFICIAL_ROLES = [
   { id: "bsdo", label: "BSDO" },
   { id: "secretary", label: "Barangay Secretary" },
 ];
+
+// ── Emergency hotlines ───────────────────────────────────────────────────────
+// These used to be a constant in the victim app, so correcting one meant a code
+// change and two deploys. The desk is who finds out that a line has moved.
+//
+// The victim app keeps its own copy of this list in its bundle and falls back
+// to it if the request fails, so an outage here cannot leave a woman looking at
+// an empty hotline panel. The server also refuses to delete the last real one,
+// for the same reason.
+function HotlinesPanel({ showToast }) {
+  const BLANK = { label: "", display: "", dial: "", description: "", is_critical: false, is_test: false, is_active: true, sort_order: 100 };
+  const [rows, setRows]       = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editId, setEditId]   = useState(null);
+  const [draft, setDraft]     = useState(BLANK);
+  const [adding, setAdding]   = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try { const r = await api.get("/admin/hotlines"); setRows(r.data.hotlines || []); }
+    catch { /* ignore */ }
+    finally { setLoading(false); }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const startAdd = () => { setDraft(BLANK); setEditId(null); setAdding(true); };
+  const startEdit = (h) => {
+    setAdding(false);
+    setEditId(h.id);
+    setDraft({ ...BLANK, ...h, dial: h.dial || "", description: h.description || "" });
+  };
+  const cancel = () => { setAdding(false); setEditId(null); setDraft(BLANK); };
+
+  const save = async () => {
+    if (!draft.label.trim() || !draft.display.trim()) {
+      showToast("A hotline needs a name and a number to show.", false);
+      return;
+    }
+    const body = {
+      label: draft.label, display: draft.display,
+      dial: draft.dial.trim() || null,
+      description: draft.description.trim() || null,
+      is_critical: !!draft.is_critical, is_test: !!draft.is_test,
+      is_active: !!draft.is_active, sort_order: Number(draft.sort_order) || 100,
+    };
+    try {
+      if (adding) await api.post("/admin/hotlines", body);
+      else await api.patch(`/admin/hotlines/${editId}`, body);
+      showToast(adding ? "Hotline added." : "Hotline updated.");
+      cancel(); load();
+    } catch (e) { showToast(e.response?.data?.detail || "Failed to save.", false); }
+  };
+
+  const toggleActive = async (h) => {
+    try { await api.patch(`/admin/hotlines/${h.id}`, { is_active: !h.is_active }); load(); }
+    catch (e) { showToast(e.response?.data?.detail || "Failed.", false); }
+  };
+
+  const remove = async (h) => {
+    if (!window.confirm(`Remove "${h.label}" from the emergency panel?\n\nThis cannot be undone. If the line is only temporarily down, switch it off instead.`)) return;
+    try { await api.delete(`/admin/hotlines/${h.id}`); showToast("Hotline removed."); load(); }
+    catch (e) { showToast(e.response?.data?.detail || "Failed to remove.", false); }
+  };
+
+  const field = (k, placeholder, extra = {}) => (
+    <input value={draft[k]} onChange={(e) => setDraft({ ...draft, [k]: e.target.value })}
+      placeholder={placeholder} style={HS.input} {...extra} />
+  );
+
+  return (
+    <div style={HS.wrap}>
+      <div style={HS.head}>
+        <div>
+          <p style={HS.title}>Emergency hotlines</p>
+          <p style={HS.sub}>What the victim app shows under Hotlines. Changes appear immediately - no deploy needed.</p>
+        </div>
+        {!adding && editId === null && (
+          <button onClick={startAdd} style={HS.addBtn}>Add hotline</button>
+        )}
+      </div>
+
+      {(adding || editId !== null) && (
+        <div style={HS.form}>
+          <div style={HS.formGrid}>
+            {field("label", "Name, e.g. Iba Municipal Police Station")}
+            {field("display", "As shown, e.g. (047) 811-7319")}
+            {field("dial", "What a keypad dials, e.g. +63478117319")}
+            {field("sort_order", "Order", { type: "number" })}
+          </div>
+          {field("description", "Who answers, and when")}
+          <p style={HS.hint}>Leave the dial field empty for a number published with letters. It then shows as plain text instead of a call link, because a link that cannot dial is worse than none.</p>
+          <div style={HS.checks}>
+            {[["is_critical", "Show first, in red"], ["is_active", "Visible in the app"], ["is_test", "Test line, not a real service"]].map(([k, label]) => (
+              <label key={k} style={HS.check}>
+                <input type="checkbox" checked={!!draft[k]} onChange={(e) => setDraft({ ...draft, [k]: e.target.checked })} />
+                <span>{label}</span>
+              </label>
+            ))}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={save} style={HS.saveBtn}>{adding ? "Add" : "Save"}</button>
+            <button onClick={cancel} style={HS.cancelBtn}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {loading ? <p style={HS.sub}>Loading…</p> : rows.map(h => (
+        <div key={h.id} style={{ ...HS.row, opacity: h.is_active ? 1 : 0.55 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <p style={HS.rowNum}>
+              {h.display}
+              {h.is_critical && <span style={HS.tagCrit}>first</span>}
+              {h.is_test && <span style={HS.tagTest}>test</span>}
+              {!h.is_active && <span style={HS.tagOff}>hidden</span>}
+              {!h.dial && <span style={HS.tagOff}>not diallable</span>}
+            </p>
+            <p style={HS.rowLabel}>{h.label}</p>
+            {h.description && <p style={HS.rowDesc}>{h.description}</p>}
+          </div>
+          <div style={HS.rowActions}>
+            <button onClick={() => startEdit(h)} style={HS.linkBtn}>Edit</button>
+            <button onClick={() => toggleActive(h)} style={HS.linkBtn}>{h.is_active ? "Hide" : "Show"}</button>
+            <button onClick={() => remove(h)} style={{ ...HS.linkBtn, color: "#C62828" }}>Remove</button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const HFF = "'Lexend',sans-serif";
+
+const HS = {
+  wrap:      { background: "var(--adm-card)", border: "1px solid var(--adm-border)", borderRadius: 12, padding: "18px 20px", marginBottom: 18, fontFamily: HFF },
+  head:      { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 14 },
+  title:     { margin: 0, fontSize: 14.5, fontWeight: 800, color: "var(--adm-text)", fontFamily: HFF },
+  sub:       { margin: "3px 0 0", fontSize: 12, color: "var(--adm-text-muted)", fontFamily: HFF, lineHeight: 1.55 },
+  addBtn:    { padding: "8px 14px", borderRadius: 8, border: "none", background: "#CC4B00", color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: HFF, whiteSpace: "nowrap" },
+  form:      { display: "flex", flexDirection: "column", gap: 10, padding: 14, borderRadius: 10, background: "var(--adm-muted, var(--adm-card))", border: "1px solid var(--adm-border)", marginBottom: 14 },
+  formGrid:  { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 8 },
+  input:     { width: "100%", boxSizing: "border-box", padding: "9px 11px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 13, fontFamily: HFF },
+  hint:      { margin: 0, fontSize: 11.5, color: "var(--adm-text-muted)", lineHeight: 1.55, fontFamily: HFF },
+  checks:    { display: "flex", gap: 16, flexWrap: "wrap" },
+  check:     { display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "var(--adm-text)", fontFamily: HFF, cursor: "pointer" },
+  saveBtn:   { padding: "9px 18px", borderRadius: 8, border: "none", background: "#CC4B00", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: HFF },
+  cancelBtn: { padding: "9px 18px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "transparent", color: "var(--adm-text)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: HFF },
+  row:       { display: "flex", alignItems: "flex-start", gap: 12, padding: "11px 0", borderTop: "1px solid var(--adm-border)" },
+  rowNum:    { margin: 0, fontSize: 14, fontWeight: 800, color: "var(--adm-text)", fontFamily: HFF, display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" },
+  rowLabel:  { margin: "2px 0 0", fontSize: 12.5, color: "var(--adm-text)", fontFamily: HFF },
+  rowDesc:   { margin: "3px 0 0", fontSize: 11.5, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: HFF },
+  rowActions:{ display: "flex", gap: 10, flexShrink: 0 },
+  linkBtn:   { background: "none", border: "none", padding: "2px 0", fontSize: 12.5, fontWeight: 700, color: "var(--adm-primary, #CC4B00)", cursor: "pointer", fontFamily: HFF },
+  tagCrit:   { fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999, background: "#FFF1F2", color: "#B91C1C", textTransform: "uppercase", letterSpacing: "0.5px" },
+  tagTest:   { fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999, background: "#EEF2FF", color: "#4338CA", textTransform: "uppercase", letterSpacing: "0.5px" },
+  tagOff:    { fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 999, background: "var(--adm-muted, #F1F5F9)", color: "var(--adm-text-muted)", textTransform: "uppercase", letterSpacing: "0.5px" },
+};
+
 function OfficialsPanel({ showToast }) {
   const [officials, setOfficials] = useState([]);
   const [loading, setLoading] = useState(true);

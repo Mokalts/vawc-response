@@ -42,6 +42,13 @@ EXPECTED_PUBLIC = {
     ("GET", "/health/db"),
     ("GET", "/media/photo"),
     ("POST", "/users/recover"),
+    # The emergency numbers, deliberately readable with no session. They are
+    # the published contact details of public offices, so there is nothing
+    # here to protect - and a woman with no account, not signed in, must be
+    # able to reach them. A login between her and 911 is the failure this
+    # endpoint exists to avoid. Writing them still needs an officer.
+    ("GET", "/hotlines"),
+    ("GET", "/hotlines/"),
 }
 
 

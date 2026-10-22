@@ -12,6 +12,7 @@ from models.case import Case
 from models.case_message import CaseMessage
 from models.case_activity import CaseActivity
 from models.user_activity import UserActivity  # noqa: F401
+from models.hotline import Hotline  # noqa: F401
 from models.deletion_record import DeletionRecord
 from models.admin import Admin
 # New lawful-flow models — imported so create_all registers their tables.
@@ -140,6 +141,9 @@ async def _unhandled_exception_handler(request: Request, exc: Exception):
 
 app.include_router(admin_bpo.router)
 app.include_router(admin_endorsement.router)
+from routers import hotlines as _hotlines
+app.include_router(_hotlines.public_router)
+app.include_router(_hotlines.admin_router)
 app.include_router(admin_officials.router)
 app.include_router(admin_history.router)
 

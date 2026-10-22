@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
+import api from '../api';
 
 // ─── Font + scoped CSS ──────────────────────────────────────────────────────
 if (!document.getElementById('vawc-font')) {
@@ -52,7 +53,13 @@ const IcoCare   = ({ c }) => (<svg width="19" height="19" viewBox="0 0 24 24" fi
 // Test line: a lab flask, clearly not an official service
 const IcoFlask  = ({ c }) => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M9.5 3v6.2L4.6 17a2 2 0 001.7 3h11.4a2 2 0 001.7-3l-4.9-7.8V3" stroke={c} strokeWidth="1.8" strokeLinejoin="round" /><path d="M8.5 3h7M7.3 14h9.4" stroke={c} strokeWidth="1.8" strokeLinecap="round" /></svg>);
 
-// ─── Hotlines (edit values for production) ──────────────────────────────────
+// ─── Hotlines ───────────────────────────────────────────────────────────────
+// The list now lives in the database so the desk can correct a number without
+// a deploy. This copy stays in the bundle as the fallback, and that is not
+// belt-and-braces: it is the point. A woman opening this panel may be about to
+// close the page, may have no signal, may have no account. If the request for
+// the live list fails for any reason she still gets numbers, which is the one
+// thing this panel exists to do.
 const HOTLINES = [
     { label: 'PNP Emergency',                 dial: '911',           display: '911',           desc: 'Police response for Iba, Zambales and nationwide.',     icon: IcoBadge, critical: true },
     { label: 'Barangay Palanginan VAWC Desk', dial: '+639286673772', display: '0928 667 3772', desc: 'Ms. Maria Theresa M. De Leon, Admin Assistant.',        icon: IcoDesk },
@@ -72,8 +79,41 @@ const HOTLINES = [
 const ACCENT = '#DC2626';
 
 // ─── Component ──────────────────────────────────────────────────────────────
+const ICON_FOR = (h) => {
+    if (h.is_test) return IcoFlask;
+    const label = (h.label || '').toLowerCase();
+    if (label.includes('pnp') || label.includes('police')) return IcoBadge;
+    if (label.includes('dswd') || label.includes('social') || label.includes('1343')) return IcoCare;
+    return IcoDesk;
+};
+
 function SOSButton({ variant = 'block' }) {
     const [open, setOpen] = useState(false);
+    // Starts as the bundled list so the panel is never empty, even for the
+    // moment before the request lands.
+    const [hotlines, setHotlines] = useState(HOTLINES);
+
+    useEffect(() => {
+        let alive = true;
+        api.get('/hotlines')
+            .then(r => {
+                const live = r?.data?.hotlines;
+                // An empty list from the server is treated as a failure, not as
+                // an answer. Showing nothing is never the right outcome here.
+                if (!alive || !Array.isArray(live) || !live.length) return;
+                setHotlines(live.map(h => ({
+                    label:    h.label,
+                    dial:     h.dial || null,
+                    display:  h.display,
+                    desc:     h.description || '',
+                    critical: !!h.is_critical,
+                    test:     !!h.is_test,
+                    icon:     ICON_FOR(h),
+                })));
+            })
+            .catch(() => {});
+        return () => { alive = false; };
+    }, []);
     const modalRef = useRef(null);
     const lastFocusedRef = useRef(null);
 
@@ -150,7 +190,7 @@ function SOSButton({ variant = 'block' }) {
                         </div>
 
                         <div style={S.list}>
-                            {HOTLINES.map(h => {
+                            {hotlines.map(h => {
                                 const Ico = h.icon;
                                 const Tag = h.dial ? 'a' : 'div';
                                 return (
