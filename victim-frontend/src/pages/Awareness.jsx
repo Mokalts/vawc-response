@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
 import BottomNavbar from '../components/BottomNavbar';
@@ -31,21 +31,23 @@ if (!document.getElementById('vawc-awareness-css')) {
         /* One column on a phone, two on a tablet, four on a desktop. Three is
            skipped on purpose: eight slots do not divide by it, and the gap it
            leaves at the end of the last row is the thing this layout is for. */
-        .va-grid { grid-template-columns: 1fr; }
-        .va-topic { transition: opacity 0.2s ease; padding-top: 26px; border-top: 1px solid var(--border); }
+        /* A rule above every entry and real space around it. Without the gap
+           the rules met the ones beside them and read as one long line
+           through the page rather than as the top of each item. */
+        .va-grid { grid-template-columns: 1fr; row-gap: 30px; }
+        .va-topic { transition: opacity 0.2s ease; padding-top: 24px; border-top: 1px solid var(--border); }
         .va-topic:first-child { border-top: none; padding-top: 0; }
         .va-topic:active { opacity: 0.7; }
         .va-topic-art svg { width: 100%; height: 100%; max-height: 118px; object-fit: contain; }
         .va-topic-go { transition: transform 0.15s ease; }
         @media (min-width: 620px) {
-            .va-grid { grid-template-columns: 1fr 1fr; column-gap: 34px; }
-            /* Rules run between columns, not around each entry. */
-            .va-topic { border-top: 1px solid var(--border); padding-top: 26px; }
+            .va-grid { grid-template-columns: 1fr 1fr; column-gap: 32px; row-gap: 34px; }
+            .va-topic { border-top: 1px solid var(--border); padding-top: 24px; }
             .va-topic:nth-child(-n+1) { border-top: none; padding-top: 0; }
             .va-topic-lead { grid-column: span 2; }
         }
         @media (min-width: 1000px) {
-            .va-grid { grid-template-columns: repeat(4, 1fr); column-gap: 30px; }
+            .va-grid { grid-template-columns: repeat(4, 1fr); column-gap: 32px; row-gap: 38px; }
             .va-topic:nth-child(-n+3) { border-top: none; padding-top: 0; }
             .va-topic-lead { grid-column: span 2; }
         }
@@ -106,14 +108,17 @@ if (!document.getElementById('vawc-awareness-css')) {
         .va-hero-img {
             flex: 0 0 280px;
             width: 280px;
+            border-radius: 10px;
+            padding: 16px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .va-hero-img img {
+        .va-hero-img svg {
             width: 100%;
             height: auto;
-            aspect-ratio: 16/9;
-            object-fit: cover;
-            object-position: center;
-            border-radius: 4px;
+            max-height: 150px;
             display: block;
         }
 
@@ -126,9 +131,8 @@ if (!document.getElementById('vawc-awareness-css')) {
                 flex: none;
                 width: 100%;
             }
-            .va-hero-img img {
-                width: 100%;
-                height: 180px;
+            .va-hero-img svg {
+                max-height: 140px;
             }
         }
         @media (hover: hover) and (pointer: fine) {
@@ -371,7 +375,6 @@ function ContentCard({ item, color, bg, border }) {
 function Awareness() {
     const navigate = useNavigate();
     const location = useLocation();
-    const tabsRef  = useRef(null);
 
     const params = new URLSearchParams(location.search);
     // null = the topic grid. Arriving with no ?section lands on the menu
@@ -399,45 +402,14 @@ function Awareness() {
 
     // Slide direction: forward when moving to a later section, back otherwise.
     const [dir, setDir] = useState('fwd');
-    const [bar, setBar] = useState({ left: 0, top: 0, width: 0, height: 0 });
 
     const handleTab = (id) => {
         const nextIdx = SECTIONS.findIndex(s => s.id === id);
         setDir(nextIdx >= currentIdx ? 'fwd' : 'back');
         setActiveSection(id);
-        const el = document.getElementById(`va-tab-${id}`);
-        if (el && tabsRef.current) el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // Position the sliding indicator under the active tab. Recomputed on
-    // section change, on resize, and while the tab strip is scrolled, since the
-    // strip scrolls horizontally on narrow screens.
-    useEffect(() => {
-        const place = () => {
-            const el = document.getElementById(`va-tab-${activeSection}`);
-            const track = tabsRef.current;
-            if (!el || !track) return;
-            setBar({ left: el.offsetLeft, top: el.offsetTop, width: el.offsetWidth, height: el.offsetHeight });
-        };
-        place();
-        const t = setTimeout(place, 320);          // after the smooth scroll settles
-        const track = tabsRef.current;
-        // Lexend loads after first paint and the tabs reflow wider, so a pill
-        // measured too early ends up a few pixels short. Re-measure once the
-        // font is in, and whenever the strip itself resizes.
-        document.fonts?.ready?.then(place).catch(() => {});
-        const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(place) : null;
-        if (ro && track) ro.observe(track);
-        window.addEventListener('resize', place);
-        track?.addEventListener('scroll', place, { passive: true });
-        return () => {
-            clearTimeout(t);
-            ro?.disconnect();
-            window.removeEventListener('resize', place);
-            track?.removeEventListener('scroll', place);
-        };
-    }, [activeSection]);
 
     // Reveal content blocks on scroll. Re-runs per section so the freshly
     // mounted panel gets observed too.
@@ -508,40 +480,6 @@ function Awareness() {
                 </main>
             )}
 
-            {/* Tabs - inside a topic only */}
-            {activeSection && (
-            <div style={S.tabsWrapper}>
-                <div style={{ position: 'relative' }}>
-                    <div className="tabs-scroll va-tabtrack" ref={tabsRef} style={S.tabs}>
-                        <span className="va-tabpill" aria-hidden="true"
-                            style={{
-                                width: bar.width, height: bar.height,
-                                transform: `translate(${bar.left}px, ${bar.top}px)`,
-                                backgroundColor: current.color,
-                                opacity: bar.width ? 1 : 0,
-                            }} />
-                        {SECTIONS.map(sec => (
-                            <button id={`va-tab-${sec.id}`} key={sec.id} className="va-tab"
-                                aria-current={activeSection === sec.id ? 'true' : undefined}
-                                style={{
-                                    ...S.tab,
-                                    // Fill comes from the sliding pill behind, not from the
-                                    // button, so the colour travels instead of jumping.
-                                    backgroundColor: 'transparent',
-                                    color: activeSection === sec.id ? '#fff' : 'var(--accent-text)',
-                                    border: `1.5px solid ${activeSection === sec.id ? 'transparent' : 'var(--border)'}`,
-                                    fontWeight: activeSection === sec.id ? 700 : 500,
-                                    transition: 'color 0.2s ease, border-color 0.2s ease',
-                                }}
-                                onClick={() => handleTab(sec.id)}>
-                                {sec.label}
-                            </button>
-                        ))}
-                    </div>
-                    <div style={S.tabsFadeRight} />
-                </div>
-            </div>
-            )}
 
             {/* Content. Keyed on the section so React remounts it and the slide
                 animation replays on every tab change. */}
@@ -576,38 +514,52 @@ function Awareness() {
                         </p>
                     </div>
 
-                    {/* Image - right on PC, top on mobile */}
-                    <div className="va-hero-img">
-                        <img
-                            src={current.image}
-                            alt={current.imageAlt}
-                        />
+                    {/* Illustration - right on PC, top on mobile. Same drawing
+                        as the topic's entry on the index, so opening one does
+                        not swap the picture out from under her. */}
+                    <div className="va-hero-img" style={{ backgroundColor: `${current.color}1F` }}>
+                        {(() => {
+                            const Art = TOPIC_ART[activeSection];
+                            return Art ? <Art aria-hidden="true" focusable="false" /> : null;
+                        })()}
                     </div>
                 </div>
 
-                {/* Progress bar */}
-                <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                    {SECTIONS.map((sec, i) => (
-                        <div key={sec.id}
-                            role="button" tabIndex={0}
-                            aria-label={`Pumunta sa: ${sec.label}`}
-                            onClick={() => handleTab(sec.id)}
-                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleTab(sec.id); } }}
-                            style={{
-                                flex: 1, height: 3, borderRadius: 4, cursor: 'pointer',
-                                backgroundColor: i === currentIdx
-                                    ? current.color
-                                    : i < currentIdx
-                                        ? `${current.color}50`
-                                        : 'var(--border)',
-                                transition: 'background-color 0.2s ease',
-                            }}
-                        />
-                    ))}
-                </div>
-                <p style={{ fontSize: 11.5, color: 'var(--text-muted)', textAlign: 'right', margin: '-8px 0 0', fontFamily: "'Lexend', sans-serif" }}>
-                    {currentIdx + 1} of {SECTIONS.length}
-                </p>
+                {/* Section rail */}
+                <nav style={S.rail} aria-label="Mga paksa">
+                    <div style={S.railHead}>
+                        <span style={S.railCount}>
+                            <strong style={{ color: current.color, fontWeight: 800 }}>
+                                {String(currentIdx + 1).padStart(2, '0')}
+                            </strong>
+                            <span style={{ opacity: 0.5 }}> / {String(SECTIONS.length).padStart(2, '0')}</span>
+                        </span>
+                        <button onClick={backToTopics} style={S.railAll}>
+                            All topics <IcoGo />
+                        </button>
+                    </div>
+                    {/* The segments sit inside a 22px tall button so they can
+                        actually be hit; the visible bar stays 4px. */}
+                    <div style={S.railTrack}>
+                        {SECTIONS.map((sec, i) => (
+                            <button key={sec.id} onClick={() => handleTab(sec.id)}
+                                title={sec.label}
+                                aria-label={`Pumunta sa: ${sec.label}`}
+                                aria-current={i === currentIdx ? 'true' : undefined}
+                                style={S.railSeg}>
+                                <span style={{
+                                    display: 'block', height: i === currentIdx ? 4 : 3, borderRadius: 4,
+                                    backgroundColor: i === currentIdx
+                                        ? current.color
+                                        : i < currentIdx
+                                            ? `${current.color}55`
+                                            : 'var(--border)',
+                                    transition: 'background-color 0.2s ease, height 0.2s ease',
+                                }} />
+                            </button>
+                        ))}
+                    </div>
+                </nav>
 
                 {/* Cards */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -659,6 +611,18 @@ function Awareness() {
 const S = {
     // Two columns from 520px up; one below, where a 2-up card leaves no room
     // for a sentence under the title.
+    rail:       { display: 'flex', flexDirection: 'column', gap: 2 },
+    railHead:   { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12 },
+    railCount:  { fontSize: 12.5, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.6px',
+                  fontVariantNumeric: 'tabular-nums', fontFamily: "'Lexend', sans-serif" },
+    railAll:    { display: 'inline-flex', alignItems: 'center', gap: 5, background: 'none', border: 'none',
+                  padding: '4px 0', cursor: 'pointer', fontSize: 12.5, fontWeight: 700,
+                  color: 'var(--accent-text)', fontFamily: "'Lexend', sans-serif" },
+    railTrack:  { display: 'flex', gap: 5, alignItems: 'center' },
+    // 32 rather than the 22 it looked like it needed: the visible bar is 4px,
+    // but the thing a thumb has to find is the button around it.
+    railSeg:    { flex: 1, minWidth: 0, height: 32, padding: 0, background: 'none', border: 'none',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center' },
     gridWrap:   { padding: '16px 16px 24px', width: '100%', maxWidth: 1060, marginLeft: 'auto', marginRight: 'auto', boxSizing: 'border-box' },
     gridIntro:  { fontSize: 13, lineHeight: 1.65, color: 'var(--text-muted)', fontFamily: "'Lexend', sans-serif", margin: '0 0 14px' },
     // The column count is set by hand rather than with auto-fill. Seven
@@ -667,7 +631,7 @@ const S = {
     // widths, and eight into three leaves the hole this replaced.
     grid:       { display: 'grid', gap: 0 },
     topicCard:  { display: 'flex', flexDirection: 'column', textAlign: 'left', alignItems: 'stretch',
-                  padding: '0 0 26px', background: 'none', border: 'none', cursor: 'pointer',
+                  padding: 0, background: 'none', border: 'none', cursor: 'pointer',
                   fontFamily: "'Lexend', sans-serif" },
     topicArt:   { display: 'flex', alignItems: 'center', justifyContent: 'center',
                   height: 150, borderRadius: 10, overflow: 'hidden', marginBottom: 14 },

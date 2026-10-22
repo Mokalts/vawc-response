@@ -121,7 +121,6 @@ if (!document.getElementById('vawc-home-css')) {
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
 const IcoMenu   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#C45E10" strokeWidth="2" strokeLinecap="round" /></svg>);
 const IcoArrow  = ({ c = '#fff' }) => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M13 6L19 12L13 18" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>);
-const IcoFile   = ({ c = '#fff' }) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke={c} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6" stroke={c} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 14.5l2 2 4-4.5" stroke={c} strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 // ── Monochrome glyphs ────────────────────────────────────────────────────────
 // Every icon draws with `currentColor`, so it inherits the theme's text colour
 // and reads as black-on-light / white-on-dark with no per-icon palette. The
@@ -410,19 +409,6 @@ function Home() {
                             </div>
                         </div>
                     ))}
-                </div>
-
-                {/* Bottom report CTA */}
-                <div>
-                    <button className="vh-report-btn vh-reveal" style={S.reportBtn} onClick={() => navigate('/report')}>
-                        <span className="vh-report-glow" aria-hidden="true" />
-                        <span style={S.reportLabel}>
-                            <IcoFile />
-                            Report an Incident
-                            <span className="vh-report-arrow" style={{ display: 'inline-flex' }}><IcoArrow c="#fff" /></span>
-                        </span>
-                    </button>
-                    <p style={S.reportCaption}>Takes a few minutes. Confidential under Republic Act 9262.</p>
                 </div>
 
             </main>
