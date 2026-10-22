@@ -96,6 +96,19 @@ if (!document.getElementById('vawc-awareness-css')) {
         @keyframes vaSlideBack { from{opacity:0;transform:translateX(-26px)} to{opacity:1;transform:translateX(0)} }
         .va-slide-fwd  { animation: vaSlideFwd  0.34s cubic-bezier(0.22,1,0.36,1) both; }
         .va-slide-back { animation: vaSlideBack 0.34s cubic-bezier(0.22,1,0.36,1) both; }
+        /* Pressing Learn used to land on a finished page. The grid comes in
+           now, and the topics follow it a beat apart, so the tap has a
+           visible result. */
+        @keyframes vaEnter { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+        .va-enter { animation: vaEnter 0.34s cubic-bezier(0.22,1,0.36,1) both; }
+        .va-enter .va-topic { animation: vaEnter 0.42s cubic-bezier(0.22,1,0.36,1) both; }
+        .va-enter .va-topic:nth-child(1) { animation-delay:0.05s }
+        .va-enter .va-topic:nth-child(2) { animation-delay:0.10s }
+        .va-enter .va-topic:nth-child(3) { animation-delay:0.15s }
+        .va-enter .va-topic:nth-child(4) { animation-delay:0.20s }
+        .va-enter .va-topic:nth-child(5) { animation-delay:0.25s }
+        .va-enter .va-topic:nth-child(6) { animation-delay:0.30s }
+        .va-enter .va-topic:nth-child(7) { animation-delay:0.35s }
 
         /* The active pill itself slides between tabs, rather than a separate
            underline sitting beneath an already-filled tab. */
@@ -114,6 +127,7 @@ if (!document.getElementById('vawc-awareness-css')) {
 
         @media (prefers-reduced-motion: reduce) {
             .va-slide-fwd, .va-slide-back { animation: none !important; }
+            .va-enter, .va-enter .va-topic { animation: none !important; }
             .va-reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
             .va-tabpill { transition: none !important; }
         }
@@ -169,6 +183,12 @@ if (!document.getElementById('vawc-awareness-css')) {
             .va-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; }
             .va-back:hover { transform: translateX(-2px); }
             .va-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important; }
+        .va-pager { transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease; }
+        .va-pager-arrow { display: inline-block; transition: transform 0.15s ease; }
+        .va-pager:hover { border-color: var(--accent-text); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+        .va-pager:hover .va-pager-arrow { transform: translateX(-3px); }
+        .va-pager-next:hover .va-pager-arrow { transform: translateX(3px); }
+        .va-pager:active { transform: translateY(0); }
             .va-topic:hover .va-topic-go { transform: translateX(3px); }
             .va-topic:hover .va-topic-art { filter: brightness(0.97); }
             .tabs-scroll::-webkit-scrollbar-thumb:hover { background: #F47920; }
@@ -359,9 +379,11 @@ const CONTENT = {
 // ─── Card Component ───────────────────────────────────────────────────────────
 function ContentCard({ item, color, bg, border }) {
     if (item.highlight) {
+        // No bar down the side and no warm tint: the flag and the fill being
+        // a shade off the ordinary card are enough to mark it.
         return (
             <div className="va-card va-reveal" style={{
-                backgroundColor: 'var(--surface-tint)',
+                backgroundColor: 'var(--surface-alt)',
                 border: '1px solid var(--border)',
                 borderRadius: 14,
                 padding: '20px',
@@ -369,8 +391,7 @@ function ContentCard({ item, color, bg, border }) {
                 position: 'relative',
                 overflow: 'hidden',
             }}>
-                <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, backgroundColor: color }} />
-                <div style={{ paddingLeft: 12 }}>
+                <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
                         <IcoFlag c={color} />
                         <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', margin: 0, fontFamily: "'Lexend', sans-serif" }}>{item.heading}</p>
@@ -474,7 +495,7 @@ function Awareness() {
             </header>
 
             {!activeSection && (
-                <main style={S.gridWrap}>
+                <main className="va-enter" style={S.gridWrap}>
                     <p style={S.gridIntro}>
                         Everything here is public and needs no account. Read what you like,
                         and leave any time with Quick Exit.
@@ -599,20 +620,24 @@ function Awareness() {
                     ))}
                 </div>
 
-                {/* Navigation */}
-                <div style={{ display: 'flex', gap: 10, marginTop: 4, alignItems: 'center' }}>
+                {/* Two halves of one pager. The small word says the direction
+                    and the large one says the destination, so you know what you
+                    are moving to rather than only that you are moving. */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 4 }}>
                     {currentIdx > 0 ? (
-                        <button className="va-nav-btn" style={S.navBtn} onClick={() => handleTab(SECTIONS[currentIdx - 1].id)}>
-                            ← {SECTIONS[currentIdx - 1].label}
+                        <button className="va-pager" style={{ ...S.pager, textAlign: 'left' }}
+                            onClick={() => handleTab(SECTIONS[currentIdx - 1].id)}>
+                            <span style={S.pagerKicker}><span className="va-pager-arrow">←</span> Previous</span>
+                            <span style={S.pagerLabel}>{SECTIONS[currentIdx - 1].label}</span>
                         </button>
                     ) : <div />}
-                    {currentIdx < SECTIONS.length - 1 && (
-                        <button className="va-nav-btn"
-                            style={{ ...S.navBtn, color: 'var(--accent-text)', borderColor: current.color, marginLeft: 'auto' }}
+                    {currentIdx < SECTIONS.length - 1 ? (
+                        <button className="va-pager va-pager-next" style={{ ...S.pager, textAlign: 'right', alignItems: 'flex-end' }}
                             onClick={() => handleTab(SECTIONS[currentIdx + 1].id)}>
-                            {SECTIONS[currentIdx + 1].label} →
+                            <span style={S.pagerKicker}>Next <span className="va-pager-arrow">→</span></span>
+                            <span style={S.pagerLabel}>{SECTIONS[currentIdx + 1].label}</span>
                         </button>
-                    )}
+                    ) : <div />}
                 </div>
 
                 {/* CTA */}
@@ -685,6 +710,9 @@ const S = {
     // 92 keeps the last card clear of the floating bottom bar.
     content:       { padding: '20px', display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 92, maxWidth: 840, width: '100%', marginLeft: 'auto', marginRight: 'auto' },
     navBtn:        { padding: '10px 16px', borderRadius: 12, border: '1px solid var(--border)', backgroundColor: 'var(--surface)', color: 'var(--accent-text)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend', sans-serif" },
+    pager:         { display: 'flex', flexDirection: 'column', gap: 4, padding: '13px 16px', borderRadius: 14, border: '1px solid var(--border)', backgroundColor: 'var(--surface)', cursor: 'pointer', fontFamily: "'Lexend', sans-serif", minWidth: 0 },
+    pagerKicker:   { fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 6 },
+    pagerLabel:    { fontSize: 14.5, fontWeight: 700, color: 'var(--accent-text)', lineHeight: 1.3, overflowWrap: 'break-word' },
 };
 
 export default Awareness;

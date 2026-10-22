@@ -20,6 +20,11 @@ if (!document.getElementById('dash-css')) {
         }
         .dash-row { cursor:pointer; }
         .dash-row:hover td { background:var(--adm-muted) !important; }
+        .stale-row { transition:background-color 0.15s ease; }
+        .stale-row:hover { background:var(--adm-muted); }
+        .stale-row:hover .stale-chevron { transform:translateX(3px); opacity:1; }
+        .stale-chevron { opacity:0.45; transition:transform 0.15s ease, opacity 0.15s ease; }
+        @media (prefers-reduced-motion: reduce) { .stale-row, .stale-chevron { transition:none; } }
         .dash-row td { transition:background 0.1s; }
         .period-btn { transition:all 0.15s ease; }
         .period-btn:hover:not(.p-active) { color:#475569 !important; }
@@ -522,33 +527,38 @@ function StaleCases({ stale, onOpen }) {
         );
     }
     return (
-        <div style={{ background: 'var(--adm-card)', border: '1px solid #FCD34D', borderRadius: 4, padding: '16px 18px', marginBottom: 18 }}>
+        <div style={{ background: 'var(--adm-card)', border: '1px solid var(--adm-border)', borderRadius: 4, padding: '16px 18px', marginBottom: 18 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: '#92400E', fontFamily: FF }}>
+                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: 'var(--adm-text)', fontFamily: FF }}>
                     Waiting on the desk ({cases.length})
                 </p>
-                <p style={{ margin: 0, fontSize: 11.5, color: '#92400E', fontFamily: FF }}>
+                <p style={{ margin: 0, fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: FF }}>
                     no officer action in {stale.days} days
                     {stale.never_acted > 0 && ` - ${stale.never_acted} never acted on at all`}
                 </p>
             </div>
+            {/* row-hover is defined on the Reports page, not this one, so
+                these rows had no hover at all until this class. */}
             {cases.slice(0, 8).map(c => (
-                <div key={c.id} className="row-hover" onClick={() => onOpen(c.id)}
+                <div key={c.id} className="stale-row" onClick={() => onOpen(c.id)}
                     role="button" tabIndex={0}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(c.id); } }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderTop: '1px solid var(--adm-border-soft, var(--adm-border))', cursor: 'pointer' }}>
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 8px', margin: '0 -8px', borderTop: '1px solid var(--adm-border-soft, var(--adm-border))', cursor: 'pointer' }}>
                     <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: FF, minWidth: 108 }}>{c.case_number}</span>
                     <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: 'var(--adm-text-muted)', fontFamily: FF, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {c.victim_name || '-'}
                     </span>
                     <span style={{ fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: FF, whiteSpace: 'nowrap' }}>{c.status_display}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 700, color: c.never_acted ? '#B91C1C' : '#92400E', fontFamily: FF, whiteSpace: 'nowrap', minWidth: 92, textAlign: 'right' }}>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: c.never_acted ? '#B91C1C' : 'var(--adm-text-2)', fontFamily: FF, whiteSpace: 'nowrap', minWidth: 92, textAlign: 'right' }}>
                         {c.never_acted ? 'never acted on' : `${c.days_idle} day${c.days_idle === 1 ? '' : 's'} idle`}
                     </span>
+                    <svg className="stale-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                        <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
                 </div>
             ))}
             {cases.length > 8 && (
-                <p style={{ margin: '8px 0 0', fontSize: 11.5, color: '#92400E', fontFamily: FF }}>
+                <p style={{ margin: '8px 0 0', fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: FF }}>
                     and {cases.length - 8} more
                 </p>
             )}
