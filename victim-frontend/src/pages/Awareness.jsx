@@ -34,21 +34,44 @@ if (!document.getElementById('vawc-awareness-css')) {
         /* A rule above every entry and real space around it. Without the gap
            the rules met the ones beside them and read as one long line
            through the page rather than as the top of each item. */
-        .va-grid { grid-template-columns: 1fr; row-gap: 30px; }
-        .va-topic { transition: opacity 0.2s ease; padding-top: 24px; border-top: 1px solid var(--border); }
+        /* A rule on every edge where one entry meets another, and padding so
+           the content is not flush against it. Row gaps alone were not enough:
+           between columns there was nothing at all, so four entries side by
+           side read as one wide block. */
+        .va-grid { grid-template-columns: 1fr; row-gap: 28px; }
+        .va-topic { transition: opacity 0.2s ease; border: none; padding: 0;
+                    padding-top: 28px; border-top: 1px solid var(--border); }
         .va-topic:first-child { border-top: none; padding-top: 0; }
         .va-topic:active { opacity: 0.7; }
         .va-topic-art svg { width: 100%; height: 100%; max-height: 118px; object-fit: contain; }
         .va-topic-go { transition: transform 0.15s ease; }
         @media (min-width: 620px) {
-            .va-grid { grid-template-columns: 1fr 1fr; column-gap: 32px; row-gap: 34px; }
-            .va-topic { border-top: 1px solid var(--border); padding-top: 24px; }
-            .va-topic:nth-child(-n+1) { border-top: none; padding-top: 0; }
+            /* Two columns: lead spans both, then pairs. First in a row is the
+               1st, 2nd, 4th and 6th entry, and those carry no left rule. */
+            .va-grid { grid-template-columns: 1fr 1fr; column-gap: 0; row-gap: 32px; }
+            .va-topic { border-top: 1px solid var(--border); padding-top: 28px;
+                        border-left: 1px solid var(--border); padding-left: 26px; padding-right: 26px; }
+            .va-topic:nth-child(1) { border-top: none; padding-top: 0; }
+            .va-topic:nth-child(1),
+            .va-topic:nth-child(2),
+            .va-topic:nth-child(4),
+            .va-topic:nth-child(6) { border-left: none; padding-left: 0; }
             .va-topic-lead { grid-column: span 2; }
         }
         @media (min-width: 1000px) {
-            .va-grid { grid-template-columns: repeat(4, 1fr); column-gap: 32px; row-gap: 38px; }
+            /* Four columns: lead spans two, so row one is entries 1-3 and row
+               two is 4-7. First in a row is the 1st and the 4th. */
+            .va-grid { grid-template-columns: repeat(4, 1fr); column-gap: 0; row-gap: 34px; }
+            .va-topic { padding-left: 28px; padding-right: 28px; }
             .va-topic:nth-child(-n+3) { border-top: none; padding-top: 0; }
+            .va-topic:nth-child(n+4) { border-top: 1px solid var(--border); padding-top: 28px; }
+            .va-topic:nth-child(2),
+            .va-topic:nth-child(3),
+            .va-topic:nth-child(5),
+            .va-topic:nth-child(6),
+            .va-topic:nth-child(7) { border-left: 1px solid var(--border); }
+            .va-topic:nth-child(1),
+            .va-topic:nth-child(4) { border-left: none; padding-left: 0; }
             .va-topic-lead { grid-column: span 2; }
         }
         .va-tab { transition: all 0.18s ease; }
@@ -630,8 +653,11 @@ const S = {
     // columns and two columns exactly. auto-fill would land on three at some
     // widths, and eight into three leaves the hole this replaced.
     grid:       { display: 'grid', gap: 0 },
+    // No padding or border here on purpose. Those are the rules and insets
+    // between entries, and they differ per breakpoint, so the stylesheet owns
+    // them - an inline `padding: 0` would quietly win over every media query.
     topicCard:  { display: 'flex', flexDirection: 'column', textAlign: 'left', alignItems: 'stretch',
-                  padding: 0, background: 'none', border: 'none', cursor: 'pointer',
+                  background: 'none', cursor: 'pointer',
                   fontFamily: "'Lexend', sans-serif" },
     topicArt:   { display: 'flex', alignItems: 'center', justifyContent: 'center',
                   height: 150, borderRadius: 10, overflow: 'hidden', marginBottom: 14 },
