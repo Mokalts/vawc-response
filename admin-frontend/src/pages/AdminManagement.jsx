@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { AdminLayout } from "../components/Sidebar";
 import { ADMIN_SECTIONS, SECTION_ENTRY, SECTION_OF, defaultSection } from "../adminSections";
@@ -296,6 +296,11 @@ export default function AdminManagement() {
   const [confirm,       setConfirm]       = useState(null);
   const [search,        setSearch]        = useState("");
 
+  // Measured, not guessed: the underline slides to whichever filter is on,
+  // and the labels differ in width.
+  const tabRefs = useRef({});
+  const [tabInd, setTabInd] = useState({ left: 0, width: 0 });
+
   // ── Victim management (super admin only) ───────────────────────────
   // Non-super admins have no Admins tab, so they start on Victims.
   const location = useLocation();
@@ -494,6 +499,16 @@ export default function AdminManagement() {
     setTab(prev => (SECTION_OF[prev] === key ? prev : SECTION_ENTRY[key]));
   }, [location.search, currentAdmin]);
 
+  // Slide the active-filter underline. Skipped while another section is open:
+  // the buttons are unmounted then and a detached node measures as zero.
+  useEffect(() => {
+    if (!["victims", "unverified", "deleted-victims"].includes(tab)) return;
+    const move = () => { const el = tabRefs.current[tab]; if (el) setTabInd({ left: el.offsetLeft, width: el.offsetWidth }); };
+    move();
+    window.addEventListener("resize", move);
+    return () => window.removeEventListener("resize", move);
+  }, [tab, victims.length, unverifiedUsers.length, deletedVictims.length]);
+
   useEffect(() => {
     api.get("/admin/auth/me").then(r => setCurrentAdmin(r.data)).catch(() => {});
   }, []);
@@ -627,30 +642,35 @@ export default function AdminManagement() {
         {/* The three victim lists are one section, split by a filter rather
             than by navigation: it is the same people either way. */}
         {["victims", "unverified", "deleted-victims"].includes(tab) && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+          <div style={{ position: "relative", display: "flex", gap: 4, marginBottom: 14, borderBottom: "1.5px solid var(--adm-border)", flexWrap: "wrap" }}>
             {[
-              { key: "victims",         label: "Verified",  count: victims.length },
+              { key: "victims",         label: "Verified",   count: victims.length },
               { key: "unverified",      label: "Unverified", count: unverifiedUsers.length },
               { key: "deleted-victims", label: "Deleted",    count: deletedVictims.length },
             ].map(f => {
               const on = tab === f.key;
               return (
-                <button key={f.key} onClick={() => { setTab(f.key); setSearch(""); }}
+                <button key={f.key} ref={el => { tabRefs.current[f.key] = el; }}
+                  onClick={() => { setTab(f.key); setSearch(""); }}
                   style={{
-                    padding: "8px 14px", borderRadius: 6, cursor: "pointer",
-                    border: `1.5px solid ${on ? "#7B2D8B" : "var(--adm-border)"}`,
-                    background: on ? "#7B2D8B" : "var(--adm-card)",
-                    color: on ? "#fff" : "var(--adm-text-muted)",
-                    fontSize: 12.5, fontWeight: 700, fontFamily: "'Lexend',sans-serif",
-                    display: "inline-flex", alignItems: "center", gap: 7,
+                    padding: "10px 16px", border: "none", background: "transparent",
+                    color: on ? "var(--adm-violet)" : "var(--adm-text-2)",
+                    fontSize: 13.5, fontWeight: on ? 700 : 600,
+                    cursor: "pointer", fontFamily: "'Lexend',sans-serif",
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    transition: "color 0.2s ease",
                   }}>
                   {f.label}
-                  <span style={{ minWidth: 18, padding: "0 6px", height: 18, borderRadius: 4, background: on ? "rgba(255,255,255,0.22)" : "var(--adm-border)", color: on ? "#fff" : "#475569", fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                    {f.count > 99 ? "99+" : f.count}
-                  </span>
+                  {f.count > 0 && (
+                    <span style={{ minWidth: 18, padding: "0 6px", height: 18, borderRadius: 4, background: on ? "var(--adm-violet)" : "var(--adm-border)", color: on ? "var(--adm-card)" : "var(--adm-text-2)", fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background 0.2s ease, color 0.2s ease" }}>
+                      {f.count > 99 ? "99+" : f.count}
+                    </span>
+                  )}
                 </button>
               );
             })}
+            {/* Sits on the border, not above it, so the line reads as one bar. */}
+            <div style={{ position: "absolute", bottom: -1.5, height: 2.5, borderRadius: 3, background: "var(--adm-violet)", left: tabInd.left, width: tabInd.width, transition: "left 0.3s cubic-bezier(0.22,1,0.36,1), width 0.3s cubic-bezier(0.22,1,0.36,1)" }} />
           </div>
         )}
 
