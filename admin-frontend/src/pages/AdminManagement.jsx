@@ -637,7 +637,7 @@ export default function AdminManagement() {
               return (
                 <button key={f.key} onClick={() => { setTab(f.key); setSearch(""); }}
                   style={{
-                    padding: "8px 14px", borderRadius: 999, cursor: "pointer",
+                    padding: "8px 14px", borderRadius: 6, cursor: "pointer",
                     border: `1.5px solid ${on ? "#7B2D8B" : "var(--adm-border)"}`,
                     background: on ? "#7B2D8B" : "var(--adm-card)",
                     color: on ? "#fff" : "var(--adm-text-muted)",
@@ -645,7 +645,7 @@ export default function AdminManagement() {
                     display: "inline-flex", alignItems: "center", gap: 7,
                   }}>
                   {f.label}
-                  <span style={{ minWidth: 18, padding: "0 6px", height: 18, borderRadius: 9, background: on ? "rgba(255,255,255,0.22)" : "var(--adm-border)", color: on ? "#fff" : "#475569", fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ minWidth: 18, padding: "0 6px", height: 18, borderRadius: 4, background: on ? "rgba(255,255,255,0.22)" : "var(--adm-border)", color: on ? "#fff" : "#475569", fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                     {f.count > 99 ? "99+" : f.count}
                   </span>
                 </button>
@@ -1022,7 +1022,7 @@ export default function AdminManagement() {
                     table. A <tr> inside a <div> is invalid and React says so. */}
                 {[1, 2, 3, 4].map(i => (
                   <div key={i} style={{ display: "flex", gap: 12, padding: "12px 16px", borderBottom: "1px solid var(--adm-border)" }}>
-                    <div style={{ width: 120, height: 20, borderRadius: 9999, flexShrink: 0, background: "var(--adm-border)" }} />
+                    <div style={{ width: 180, height: 20, borderRadius: 4, flexShrink: 0, background: "var(--adm-border)" }} />
                     <div style={{ flex: 1 }}>
                       <div style={{ width: "45%", height: 12, borderRadius: 4, marginBottom: 6, background: "var(--adm-border)" }} />
                       <div style={{ width: "70%", height: 10, borderRadius: 4, background: "var(--adm-border)" }} />
@@ -1045,7 +1045,11 @@ export default function AdminManagement() {
                     const toneBg = e.kind === "deletion" ? "#FEF2F2" : e.kind === "id_review" ? "#EFF6FF" : "var(--adm-primary-bg)";
                     return (
                       <div key={i} style={{ display: "flex", gap: 12, padding: "12px 16px", borderBottom: "1px solid var(--adm-border)", alignItems: "flex-start" }}>
-                        <span style={{ flexShrink: 0, marginTop: 2, padding: "2px 9px", borderRadius: 9999, fontSize: 11, fontWeight: 700, color: tone, background: toneBg, border: `1px solid ${tone}33`, fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap" }}>
+                        {/* Fixed width, not sized by its own text. "Report
+                            confirmed" is half again as wide as "Status
+                            changed", so letting the badge size itself meant no
+                            two rows began in the same place. */}
+                        <span style={{ flexShrink: 0, width: 180, boxSizing: "border-box", marginTop: 1, padding: "3px 8px", borderRadius: 4, fontSize: 10.5, fontWeight: 700, color: tone, background: toneBg, border: `1px solid ${tone}33`, fontFamily: "'Lexend',sans-serif", textAlign: "center", lineHeight: 1.35 }}>
                           {e.label}
                         </span>
                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -1159,10 +1163,9 @@ export default function AdminManagement() {
                         {u.id_type || "ID type not given"} · sent {fmtDate(u.id_submitted_at)}
                       </p>
                     </div>
-                    <button className="rd-btn" onClick={() => { setIdReview(u); setIdReject(''); }}
-                      style={{ flexShrink: 0, padding: "9px 16px", borderRadius: 9, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
-                      Check ID
-                    </button>
+                    <span style={{ flexShrink: 0 }}>
+                      <ActionBtn label="Check ID" onClick={() => { setIdReview(u); setIdReject(''); }} />
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1258,7 +1261,7 @@ export default function AdminManagement() {
 
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 14, flexWrap: "wrap" }}>
                   <button className="rd-btn" disabled={!!idBusy} onClick={() => { setIdReview(null); setIdReject(''); }}
-                    style={{ padding: "10px 18px", borderRadius: 9, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 13.5, fontWeight: 600, cursor: idBusy ? "not-allowed" : "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                    style={{ padding: "10px 18px", borderRadius: 6, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 13.5, fontWeight: 600, cursor: idBusy ? "not-allowed" : "pointer", fontFamily: "'Lexend',sans-serif" }}>
                     Decide later
                   </button>
                   {/* Rejecting without a reason is refused by the server, so the
@@ -1266,11 +1269,11 @@ export default function AdminManagement() {
                   <button className="rd-btn" disabled={!!idBusy || !idReject.trim()}
                     onClick={() => decideId(idReview, false, idReject.trim())}
                     title={idReject.trim() ? "" : "Give a reason first"}
-                    style={{ padding: "10px 18px", borderRadius: 9, border: "1.5px solid #FECACA", background: "transparent", color: "#B91C1C", fontSize: 13.5, fontWeight: 700, cursor: (idBusy || !idReject.trim()) ? "not-allowed" : "pointer", opacity: (idBusy || !idReject.trim()) ? 0.5 : 1, fontFamily: "'Lexend',sans-serif" }}>
+                    style={{ padding: "10px 18px", borderRadius: 6, border: "1.5px solid #FECACA", background: "transparent", color: "#B91C1C", fontSize: 13.5, fontWeight: 700, cursor: (idBusy || !idReject.trim()) ? "not-allowed" : "pointer", opacity: (idBusy || !idReject.trim()) ? 0.5 : 1, fontFamily: "'Lexend',sans-serif" }}>
                     Not accepted
                   </button>
                   <button className="rd-btn" disabled={!!idBusy} onClick={() => decideId(idReview, true)}
-                    style={{ padding: "10px 20px", borderRadius: 9, border: "none", background: "#059669", color: "#fff", fontSize: 13.5, fontWeight: 700, cursor: idBusy ? "not-allowed" : "pointer", opacity: idBusy ? 0.6 : 1, fontFamily: "'Lexend',sans-serif" }}>
+                    style={{ padding: "10px 20px", borderRadius: 6, border: "none", background: "#059669", color: "#fff", fontSize: 13.5, fontWeight: 700, cursor: idBusy ? "not-allowed" : "pointer", opacity: idBusy ? 0.6 : 1, fontFamily: "'Lexend',sans-serif" }}>
                     {idBusy ? "Saving…" : "Approve"}
                   </button>
                 </div>
@@ -1889,10 +1892,10 @@ function HotlinesPanel({ showToast }) {
                     {h.is_critical && <span style={{ ...HL.tag, background: "#FFF1F2", color: "#B91C1C" }}>First</span>}
                     {h.is_test && <span style={{ ...HL.tag, background: "#EEF2FF", color: "#4338CA" }}>Test</span>}
                     {!h.dial && <span style={{ ...HL.tag, background: "var(--adm-border)", color: "var(--adm-text-muted)" }}>Not diallable</span>}
-                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 9999, background: h.is_active ? "#ECFDF5" : "var(--adm-border)", color: h.is_active ? "#059669" : "#94A3B8" }}>{h.is_active ? "Shown" : "Hidden"}</span>
-                    <button style={S2.btnGhost} onClick={() => startEdit(h)}>Edit</button>
-                    <button style={S2.btnGhost} onClick={() => toggle(h)}>{h.is_active ? "Hide" : "Show"}</button>
-                    <button style={{ ...S2.btnGhost, color: "#B91C1C", borderColor: "#FECACA" }} onClick={() => remove(h)}>Remove</button>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 8px", borderRadius: 4, background: h.is_active ? "#ECFDF5" : "var(--adm-border)", color: h.is_active ? "#059669" : "#94A3B8" }}>{h.is_active ? "Shown" : "Hidden"}</span>
+                    <ActionBtn label="Edit" onClick={() => startEdit(h)} />
+                    <ActionBtn label={h.is_active ? "Hide" : "Show"} onClick={() => toggle(h)} />
+                    <ActionBtn label="Remove" variant="danger" onClick={() => remove(h)} />
                   </>
                 )}
               </div>
@@ -1915,7 +1918,7 @@ function HotlinesPanel({ showToast }) {
 
 const HL = {
   check: { display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap", cursor: "pointer" },
-  tag:   { fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 9999, fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap" },
+  tag:   { fontSize: 10.5, fontWeight: 700, padding: "3px 8px", borderRadius: 4, fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap" },
 };
 
 function OfficialsPanel({ showToast }) {
@@ -1983,10 +1986,10 @@ function OfficialsPanel({ showToast }) {
                       <button style={S2.btnPrimary} onClick={() => saveName(o)}>Save</button>
                       <button style={S2.btnGhost} onClick={() => setEditId(null)}>Cancel</button></>
                   : <><span style={{ flex: 1, fontSize: 13.5, fontWeight: 600, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>{o.full_name}</span>
-                      <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 9999, background: o.is_active ? "#ECFDF5" : "var(--adm-border)", color: o.is_active ? "#059669" : "#94A3B8" }}>{o.is_active ? "Active" : "Inactive"}</span>
-                      <button style={S2.btnGhost} onClick={() => { setEditId(o.id); setEditName(o.full_name); }}>Edit</button>
-                      <button style={S2.btnGhost} onClick={() => toggle(o)}>{o.is_active ? "Deactivate" : "Activate"}</button>
-                      <button style={{ ...S2.btnGhost, color: "#B91C1C", borderColor: "#FECACA" }} onClick={() => remove(o)}>Remove</button></>}
+                      <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 8px", borderRadius: 4, background: o.is_active ? "#ECFDF5" : "var(--adm-border)", color: o.is_active ? "#059669" : "#94A3B8" }}>{o.is_active ? "Active" : "Inactive"}</span>
+                      <ActionBtn label="Edit" onClick={() => { setEditId(o.id); setEditName(o.full_name); }} />
+                      <ActionBtn label={o.is_active ? "Deactivate" : "Activate"} onClick={() => toggle(o)} />
+                      <ActionBtn label="Remove" variant="danger" onClick={() => remove(o)} /></>}
               </div>
             ))}
             {officials.length === 0 && <p style={{ fontSize: 13, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>No officials yet. Add them below.</p>}
@@ -2013,8 +2016,8 @@ const FormField = ({ label, children }) => (
 
 const S2 = {
   input:      { width: "100%", boxSizing: "border-box", padding: "9px 12px", borderRadius: 8, border: "1.5px solid var(--adm-border)", fontSize: 13.5, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", outline: "none", marginBottom: 8 },
-  btnGhost:   { padding: "9px 16px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
-  btnPrimary: { padding: "9px 18px", borderRadius: 8, border: "none", background: "#C45E10", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
+  btnGhost:   { padding: "9px 16px", borderRadius: 6, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
+  btnPrimary: { padding: "9px 18px", borderRadius: 6, border: "none", background: "#C45E10", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
