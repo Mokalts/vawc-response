@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { AdminLayout } from "../components/Sidebar";
 import { confirmDialog } from "../components/ConfirmDialog";
 import api from "../api/api";
@@ -283,6 +283,34 @@ const ActionBtn = ({ label, variant = "default", onClick }) => (
 );
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
+// One entry per section. `entry` is the tab the section opens on, and
+// SECTION_OF maps every tab back to its section so the picker still shows the
+// right thing when a filter inside a section changes the tab.
+const SECTIONS = [
+  { key: "admins",   label: "Admin Management",    entry: "admins",   superOnly: true,
+    hint: "Officer accounts for this desk." },
+  { key: "victims",  label: "Victim Accounts",     entry: "victims",  superOnly: false,
+    hint: "Everyone who has registered, verified or not." },
+  { key: "id-review", label: "ID Review",          entry: "id-review", superOnly: false,
+    hint: "IDs waiting to be checked before a woman can file." },
+  { key: "contacts", label: "Contacts & Officials", entry: "contacts", superOnly: true,
+    hint: "The hotlines the app shows, and who holds each office." },
+  { key: "history",  label: "Log History",          entry: "history",  superOnly: true,
+    hint: "Who did what, and when." },
+  { key: "my-account", label: "My Account",         entry: "my-account", superOnly: false,
+    hint: "Your own password and details." },
+];
+
+const SECTION_ENTRY = Object.fromEntries(SECTIONS.map(x => [x.key, x.entry]));
+const SECTION_OF = {
+  admins: "admins",
+  victims: "victims", unverified: "victims", "deleted-victims": "victims",
+  "id-review": "id-review",
+  contacts: "contacts",
+  history: "history",
+  "my-account": "my-account",
+};
+
 export default function AdminManagement() {
   const [admins,        setAdmins]        = useState([]);
   const [deletedAdmins, setDeletedAdmins] = useState([]);
@@ -297,8 +325,6 @@ export default function AdminManagement() {
   // ── Victim management (super admin only) ───────────────────────────
   // Non-super admins have no Admins tab, so they start on Victims.
   const [tab,             setTab]             = useState("admins"); // 'admins' | 'victims' | 'unverified' | 'deleted-victims'
-  const tabRefs = useRef({});
-  const [tabInd, setTabInd] = useState({ left: 0, width: 0 });
   const [victims,         setVictims]         = useState([]);
   const [unverifiedUsers, setUnverifiedUsers] = useState([]);
   const [deletedVictims,  setDeletedVictims]  = useState([]);
@@ -482,14 +508,6 @@ export default function AdminManagement() {
 
   useEffect(() => { fetchAdmins(); }, [fetchAdmins]);
 
-  // Slide the active-tab underline to the selected tab.
-  useEffect(() => {
-    const move = () => { const el = tabRefs.current[tab]; if (el) setTabInd({ left: el.offsetLeft, width: el.offsetWidth }); };
-    move();
-    window.addEventListener("resize", move);
-    return () => window.removeEventListener("resize", move);
-  }, [tab, admins.length, victims.length, unverifiedUsers.length, deletedVictims.length]);
-
   useEffect(() => {
     api.get("/admin/auth/me").then(r => setCurrentAdmin(r.data)).catch(() => {});
   }, []);
@@ -608,47 +626,62 @@ export default function AdminManagement() {
           )}
         </div>
 
-        {/* Tab bar */}
-        <div style={{ position: "relative", display: "flex", gap: 4, marginBottom: 14, borderBottom: "1.5px solid var(--adm-border)", flexWrap: "wrap" }}>
-          {[
-            // Creating and removing admin accounts stays with the Super Admin.
-            ...(currentAdmin?.is_super_admin ? [{ key: "admins", label: "Admins", count: admins.length }] : []),
-            ...(currentAdmin?.is_super_admin ? [] : [{ key: "my-account", label: "My Account" }]),
-            // Super Admin only. The log says who did what: shown to everyone it
-            // becomes a way to watch colleagues, shown to the person answerable
-            // for the desk it is accountability.
-            ...(currentAdmin?.is_super_admin ? [{ key: "history", label: "History" }] : []),
-            { key: "victims",         label: "Victims",            count: victims.length },
-            { key: "unverified",      label: "Unverified",         count: unverifiedUsers.length },
-            { key: "deleted-victims", label: "Deleted Victims",    count: deletedVictims.length },
-            { key: "id-review",       label: "ID Review",          count: idPending.length },
-          ].map(t => {
-            const active = tab === t.key;
-            return (
-              <button key={t.key} ref={el => { tabRefs.current[t.key] = el; }} onClick={() => { setTab(t.key); setSearch(""); }}
-                style={{
-                  padding: "10px 16px",
-                  border: "none",
-                  background: "transparent",
-                  color: active ? "#7B2D8B" : "#64748B",
-                  fontSize: 13.5, fontWeight: active ? 700 : 600,
-                  cursor: "pointer", fontFamily: "'Lexend',sans-serif",
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  transition: "color 0.2s ease",
-                }}>
-                {t.label}
-                {t.count > 0 && (
-                  <span style={{ minWidth: 18, padding: "0 6px", height: 18, borderRadius: 9, background: active ? "#7B2D8B" : "var(--adm-border)", color: active ? "#fff" : "#475569", fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "background 0.2s ease, color 0.2s ease" }}>
-                    {t.count > 99 ? "99+" : t.count}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-          <div style={{ position: "absolute", bottom: -1.5, height: 2.5, borderRadius: 3, background: "#7B2D8B", left: tabInd.left, width: tabInd.width, transition: "left 0.3s cubic-bezier(0.22,1,0.36,1), width 0.3s cubic-bezier(0.22,1,0.36,1)" }} />
+        {/* Section picker.
+            A select rather than a row of tabs: seven wrapped onto two lines on
+            a laptop, and the victim lists are now one section with filters
+            inside it, so there is less to choose between and more room to say
+            what each one is. */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
+          <label style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
+            <span style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Section</span>
+            <select
+              value={SECTION_OF[tab] || "admins"}
+              onChange={(e) => { setTab(SECTION_ENTRY[e.target.value]); setSearch(""); }}
+              style={{ minWidth: 230, padding: "10px 12px", borderRadius: 9, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 13.5, fontWeight: 700, fontFamily: "'Lexend',sans-serif", cursor: "pointer" }}
+            >
+              {SECTIONS.filter(x => !x.superOnly || currentAdmin?.is_super_admin).map(x => (
+                <option key={x.key} value={x.key}>{x.label}</option>
+              ))}
+            </select>
+          </label>
+          <p style={{ margin: 0, fontSize: 12, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+            {(SECTIONS.find(x => x.key === (SECTION_OF[tab] || "admins")) || {}).hint}
+          </p>
         </div>
 
-        {/* Search + toolbar */}
+        {/* The three victim lists are one section, split by a filter rather
+            than by navigation: it is the same people either way. */}
+        {["victims", "unverified", "deleted-victims"].includes(tab) && (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+            {[
+              { key: "victims",         label: "Verified",  count: victims.length },
+              { key: "unverified",      label: "Unverified", count: unverifiedUsers.length },
+              { key: "deleted-victims", label: "Deleted",    count: deletedVictims.length },
+            ].map(f => {
+              const on = tab === f.key;
+              return (
+                <button key={f.key} onClick={() => { setTab(f.key); setSearch(""); }}
+                  style={{
+                    padding: "8px 14px", borderRadius: 999, cursor: "pointer",
+                    border: `1.5px solid ${on ? "#7B2D8B" : "var(--adm-border)"}`,
+                    background: on ? "#7B2D8B" : "var(--adm-card)",
+                    color: on ? "#fff" : "var(--adm-text-muted)",
+                    fontSize: 12.5, fontWeight: 700, fontFamily: "'Lexend',sans-serif",
+                    display: "inline-flex", alignItems: "center", gap: 7,
+                  }}>
+                  {f.label}
+                  <span style={{ minWidth: 18, padding: "0 6px", height: 18, borderRadius: 9, background: on ? "rgba(255,255,255,0.22)" : "var(--adm-border)", color: on ? "#fff" : "#475569", fontSize: 10.5, fontWeight: 700, display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                    {f.count > 99 ? "99+" : f.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Search + toolbar. Hidden on the sections it cannot search: a box
+            that returns nothing however you fill it is worse than no box. */}
+        {!["contacts", "history", "my-account"].includes(tab) && (
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
           <div style={{ position: "relative", flex: 1, minWidth: 240 }}>
             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
@@ -694,6 +727,7 @@ export default function AdminManagement() {
             )}
           </button>}
         </div>
+        )}
 
         {/* Recently Deleted panel - admins tab only */}
         {tab === "admins" && showDeleted && (
@@ -751,12 +785,11 @@ export default function AdminManagement() {
         )}
 
         {/* Barangay Officials — super admin only, on the Admins tab */}
-        {tab === "admins" && currentAdmin?.is_super_admin && !search && !showDeleted && (
-          <HotlinesPanel showToast={showToast} />
-        )}
-
-        {tab === "admins" && currentAdmin?.is_super_admin && !search && !showDeleted && (
-          <OfficialsPanel showToast={showToast} />
+        {tab === "contacts" && currentAdmin?.is_super_admin && (
+          <>
+            <HotlinesPanel showToast={showToast} />
+            <OfficialsPanel showToast={showToast} />
+          </>
         )}
 
         {/* Active Admins Table - only on Admins tab */}
