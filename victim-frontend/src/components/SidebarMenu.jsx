@@ -135,7 +135,7 @@ const S = {
     drawer:    { position:'fixed', top:0, right:0, width:288, height:'100vh', backgroundColor:'var(--surface)', boxShadow:'-8px 0 32px rgba(15,23,42,0.18)', zIndex:300, display:'flex', flexDirection:'column', transition:'transform 0.25s ease', fontFamily:"'Lexend', sans-serif", borderLeft:'1px solid var(--border)' },
     header:    { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'24px 20px 20px' },
     avatarWrap:{ display:'flex', alignItems:'center', gap:12 },
-    avatar:    { width:44, height:44, borderRadius: '50%', background:'linear-gradient(135deg,#FFE4CC,#F47920)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:700, color:'#fff', flexShrink:0, fontFamily:"'Lexend', sans-serif" },
+    avatar:    { width:44, height:44, borderRadius: '50%', background:'#F47920', display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:700, color:'#fff', flexShrink:0, fontFamily:"'Lexend', sans-serif" },
     name:      { fontSize:15, fontWeight:700, color:'var(--text)', margin:'0 0 2px', fontFamily:"'Lexend', sans-serif" },
     sub:       { fontSize:12, color:'var(--text-muted)', margin:0, fontFamily:"'Lexend', sans-serif" },
     closeBtn:  { width:44, height:44, borderRadius: 10, backgroundColor:'var(--surface-alt)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0 },

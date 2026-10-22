@@ -490,11 +490,11 @@ const S = {
     burstClose: { flexShrink: 0, width: 22, height: 22, lineHeight: '20px', borderRadius: 6, border: 'none', background: 'transparent', color: 'rgba(255,255,255,0.7)', fontSize: 16, cursor: 'pointer', fontFamily: NAVFONT },
 
     adminCard: { display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px' },
-    avatar: { width: 34, height: 34, borderRadius: '50%', background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font },
-    avatarSuper: { width: 34, height: 34, borderRadius: '50%', background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondaryDark})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font, boxShadow: '0 0 0 2px rgba(244,121,32,0.25)' },
+    avatar: { width: 34, height: 34, borderRadius: '50%', background: COLORS.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font },
+    avatarSuper: { width: 34, height: 34, borderRadius: '50%', background: COLORS.secondary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font, boxShadow: '0 0 0 2px rgba(244,121,32,0.25)' },
     adminName: { fontSize: 13, fontWeight: 600, color: '#E2E8F0', fontFamily: TEXT.font, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
     rolePill: { display: 'inline-flex', alignItems: 'center', marginTop: 3, fontSize: 10, fontWeight: 700, color: '#E1BEE7', backgroundColor: 'rgba(123,45,139,0.12)', padding: '2px 8px', borderRadius: 9999, fontFamily: TEXT.font, letterSpacing: '0.3px' },
-    rolePillSuper: { display: 'inline-flex', alignItems: 'center', marginTop: 3, fontSize: 10, fontWeight: 800, color: '#fff', background: `linear-gradient(135deg, ${COLORS.secondary}, ${COLORS.secondaryDark})`, padding: '3px 9px', borderRadius: 9999, fontFamily: TEXT.font, letterSpacing: '0.4px', textTransform: 'uppercase', boxShadow: '0 1px 3px rgba(196,94,16,0.3)' },
+    rolePillSuper: { display: 'inline-flex', alignItems: 'center', marginTop: 3, fontSize: 10, fontWeight: 800, color: '#fff', background: COLORS.secondary, padding: '3px 9px', borderRadius: 9999, fontFamily: TEXT.font, letterSpacing: '0.4px', textTransform: 'uppercase', boxShadow: '0 1px 3px rgba(196,94,16,0.3)' },
 
     nav: { flex: 1, padding: '10px 12px 0', position: 'relative' },
     navGroup: { marginBottom: 14 },
@@ -514,7 +514,7 @@ const S = {
     breadcrumb: { display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 },
     breadCrumb: { fontSize: 11.5, color: '#94A3B8', fontFamily: TEXT.font },
     topDate: { fontSize: 12, color: COLORS.textMuted, fontFamily: TEXT.font },
-    topAvatar: { width: 32, height: 32, borderRadius: '50%', background: `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryLight})`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: TEXT.font, flexShrink: 0 },
+    topAvatar: { width: 32, height: 32, borderRadius: '50%', background: COLORS.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: TEXT.font, flexShrink: 0 },
 
     // Content
     content: { marginLeft: 252, flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh' },

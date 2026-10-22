@@ -360,7 +360,7 @@ const S = {
     eyeBtn: { padding: '0 13px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', flexShrink: 0 },
     errorBox: { display: 'flex', alignItems: 'center', gap: 8, backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 12, padding: '10px 13px', marginBottom: 16 },
     forgot: { fontSize: 13.5, color: '#B45309', cursor: 'pointer', fontWeight: 600, fontFamily: "'Lexend', sans-serif", transition: 'color 0.12s', background: 'none', border: 'none', padding: 0 },
-    submitBtn: { width: '100%', padding: 14, background: 'linear-gradient(135deg, #F47920 0%, #E8641C 100%)', color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: "'Lexend', sans-serif", boxShadow: '0 8px 20px rgba(196,94,16,0.28)' },
+    submitBtn: { width: '100%', padding: 14, background: '#C45E10', color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: "'Lexend', sans-serif", boxShadow: '0 8px 20px rgba(196,94,16,0.28)' },
     waitNote: { margin: '9px 2px 0', fontSize: 12, lineHeight: 1.55, color: 'var(--text-muted)', textAlign: 'center', fontFamily: "'Lexend', sans-serif" },
     divider: { height: 1, backgroundColor: 'var(--border-soft)', margin: '20px 0' },
     bottomText: { textAlign: 'center', fontSize: 14, color: 'var(--text-muted)', margin: 0, fontFamily: "'Lexend', sans-serif" },

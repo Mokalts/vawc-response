@@ -172,7 +172,7 @@ const S = {
     header: {
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '18px 20px',
-        background: 'linear-gradient(135deg, #F47920 0%, #C45E10 100%)',
+        background: '#C45E10',
     },
     headerIcon: {
         width: 42, height: 42, borderRadius: 10,
@@ -184,7 +184,7 @@ const S = {
     headerSub:   { margin: '2px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.85)', fontFamily: "'Lexend', sans-serif" },
 
     progressTrack: { width: '100%', height: 4, background: 'var(--surface-tint)' },
-    progressFill:  { height: '100%', background: 'linear-gradient(90deg, #F47920 0%, #FB923C 100%)', transition: 'width 0.15s ease' },
+    progressFill:  { height: '100%', background: '#F47920', transition: 'width 0.15s ease' },
 
     scroll: {
         flex: 1, overflowY: 'auto',

@@ -616,7 +616,7 @@ function Awareness() {
                 </div>
 
                 {/* CTA */}
-                <div style={{ background: 'linear-gradient(135deg, #C45E10 0%, #F47920 100%)', borderRadius: 4, padding: '22px', marginTop: 8 }}>
+                <div style={{ background: '#C45E10', borderRadius: 4, padding: '22px', marginTop: 8 }}>
                     <p style={{ fontSize: 18, fontWeight: 800, color: '#fff', margin: '0 0 6px', fontFamily: "'Lexend', sans-serif" }}>Ready to take action?</p>
                     <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, margin: '0 0 16px', fontFamily: "'Lexend', sans-serif" }}>
                         File a report confidentially through VAWC-Response. Your report is encrypted and reviewed by barangay officials.
@@ -652,7 +652,7 @@ const S = {
     // but the thing a thumb has to find is the button around it.
     railSeg:    { flex: 1, minWidth: 0, height: 32, padding: 0, background: 'none', border: 'none',
                   cursor: 'pointer', display: 'flex', alignItems: 'center' },
-    gridWrap:   { padding: '16px 16px 24px', width: '100%', maxWidth: 1060, marginLeft: 'auto', marginRight: 'auto', boxSizing: 'border-box' },
+    gridWrap:   { padding: '16px 16px 100px', width: '100%', maxWidth: 1060, marginLeft: 'auto', marginRight: 'auto', boxSizing: 'border-box' },
     gridIntro:  { fontSize: 13, lineHeight: 1.65, color: 'var(--text-muted)', fontFamily: "'Lexend', sans-serif", margin: '0 0 14px' },
     // The column count is set by hand rather than with auto-fill. Seven
     // entries plus the double-width first make eight, which fills four

@@ -52,6 +52,7 @@ ACTIVITY_LABELS = {
     "respondent_corrected": "Respondent name corrected",
     "respondent_details_updated": "Respondent details updated",
     "report_confirmed":     "Report confirmed",
+    "incident_type_set":    "Incident type recorded",
 }
 
 
@@ -833,7 +834,18 @@ def update_incident_type(
         raise HTTPException(status_code=404, detail="Report not found.")
     if payload.incident_type not in VALID_INCIDENT_TYPES:
         raise HTTPException(status_code=400, detail="Invalid incident type.")
+
+    # Recorded with both ends, because the question the trail gets asked is
+    # not "what is it now" - the case already says that - but "who changed it
+    # from what, and when".
+    was = report.incident_type
     report.incident_type = payload.incident_type
+    if was != payload.incident_type:
+        detail = "%s to %s" % (
+            (was or "not classified").capitalize(),
+            payload.incident_type.capitalize(),
+        )
+        log_activity(db, case_id, current_admin, "incident_type_set", detail)
     db.commit()
     return {"message": "Incident type updated.", "incident_type": report.incident_type}
 

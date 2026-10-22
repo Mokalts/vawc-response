@@ -969,7 +969,7 @@ const S = {
     dateInput: { padding: '8px 10px', borderRadius: 4, border: '1.5px solid var(--adm-border)', fontSize: 13, color: 'var(--adm-text)', fontFamily: FF, outline: 'none' },
 
     statCard: { backgroundColor: 'var(--adm-card)', borderRadius: 4, padding: '18px 20px', border: '1px solid var(--adm-border)', boxShadow: '0 1px 3px rgba(15,23,42,0.05)', display: 'flex', flexDirection: 'column', gap: 12 },
-    newCard: { borderRadius: 4, padding: '18px 20px', border: '2px solid #F47920', background: 'linear-gradient(135deg,#F47920,#C45E10)', boxShadow: '0 4px 14px rgba(196,94,16,0.24)', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'pointer' },
+    newCard: { borderRadius: 4, padding: '18px 20px', border: '2px solid #F47920', background: '#C45E10', boxShadow: '0 4px 14px rgba(196,94,16,0.24)', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'pointer' },
     statNum: { margin: '0 0 2px', fontSize: 26, fontWeight: 800, color: 'var(--adm-text)', fontFamily: FF, letterSpacing: '-0.5px' },
     statLabel: { margin: 0, fontSize: 12.5, fontWeight: 500, color: '#64748B', fontFamily: FF },
     statMeta: { display: 'flex', alignItems: 'center', gap: 5, paddingTop: 10, borderTop: '1px solid var(--adm-border)' },

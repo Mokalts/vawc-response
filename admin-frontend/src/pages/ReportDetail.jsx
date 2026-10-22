@@ -153,7 +153,9 @@ const DateChip = ({ prefix, children, wrap }) => (
 
 const InfoRow = ({ label, value, mono, muted, highlight, action }) => (
   <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-    <span style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
+    {/* Wraps rather than squeezes: in the last column the label and the Edit
+        button ran to the card's edge with nothing between them. */}
+    <span style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", rowGap: 3, paddingRight: 6, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
       {label}{action}
     </span>
     {highlight ? (
@@ -555,9 +557,15 @@ const TimelineRow = ({ label, detail, dot, color, bg, icon, isDone, isCurrent, i
 //
 // Names are the snapshot stored at the time of the action, so an officer who
 // has since left the barangay still appears against what they did.
+// How many lines before the card stops and offers the rest. A case collects
+// activity for as long as it is open, so printing all of it made this card
+// grow without limit at the foot of every report.
+const ACTIVITY_PREVIEW = 6;
+
 const CaseActivityCard = ({ caseId }) => {
   const [rows, setRows]   = useState(null);   // null = still loading
   const [error, setError] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -588,8 +596,9 @@ const CaseActivityCard = ({ caseId }) => {
       )}
 
       {rows !== null && !error && rows.length > 0 && (
+        <>
         <ol style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-          {rows.map(a => (
+          {(showAll ? rows : rows.slice(0, ACTIVITY_PREVIEW)).map(a => (
             <li key={a.id} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
               <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: "50%", background: "#9B4DAB", flexShrink: 0, marginTop: 6 }} />
               <div style={{ minWidth: 0, flex: 1 }}>
@@ -603,6 +612,13 @@ const CaseActivityCard = ({ caseId }) => {
             </li>
           ))}
         </ol>
+        {rows.length > ACTIVITY_PREVIEW && (
+          <button type="button" onClick={() => setShowAll(v => !v)}
+            style={{ marginTop: 14, width: "100%", padding: "8px 0", borderRadius: 4, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+            {showAll ? "Show fewer" : `Show all ${rows.length}`}
+          </button>
+        )}
+        </>
       )}
     </Card>
   );
@@ -810,7 +826,7 @@ const CaseActions = ({ cas, refetch, showToast }) => {
             </div>
           )}
           {!activeBpo && !cas.is_deleted && (
-            <div style={{ padding: "10px", borderRadius: 8, border: "1px dashed var(--adm-border)" }}>
+            <div style={{ padding: "10px", borderRadius: 4, border: "1px dashed var(--adm-border)" }}>
               <p style={{ margin: "0 0 6px", fontSize: 11.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Reliefs (BPO form a, b, c):</p>
               {[["physical", "Stop acts of physical harm"], ["threats", "Stop threats of harm"], ["stayaway", "Stay away (100m)"]].map(([k, t]) => (
                 <label key={k} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12.5, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", marginBottom: 4 }}>
@@ -881,7 +897,7 @@ const CaseActions = ({ cas, refetch, showToast }) => {
             </div>
           ))}
           {!cas.is_deleted && (
-            <div style={{ padding: "10px", borderRadius: 8, border: "1px dashed var(--adm-border)", marginTop: 4 }}>
+            <div style={{ padding: "10px", borderRadius: 4, border: "1px dashed var(--adm-border)", marginTop: 4 }}>
               <select style={{ ...inp, marginBottom: 6 }} value={endo.to_office} onChange={e => setEndo(x => ({ ...x, to_office: e.target.value }))}>
                 {ENDORSE_OFFICES.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
               </select>
@@ -901,6 +917,7 @@ const CaseActions = ({ cas, refetch, showToast }) => {
         {cas.status !== "closed" && !cas.is_deleted && (
           <div>
             <span style={lbl}>End Barangay Assistance (with reason)</span>
+            <div style={{ padding: "10px", borderRadius: 4, border: "1px dashed var(--adm-border)" }}>
             <select style={{ ...inp, marginBottom: 6 }} value={close.reason} onChange={e => setClose(x => ({ ...x, reason: e.target.value }))}>
               <option value="">Select a reason…</option>
               {CLOSURE_REASONS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
@@ -913,6 +930,7 @@ const CaseActions = ({ cas, refetch, showToast }) => {
             <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
               This ends the barangay's assistance only. It does not close or dismiss the case, which only a court can do, and it is never marked "resolved" or "settled".
             </p>
+            </div>
           </div>
         )}
         {cas.closure_reason && (
@@ -1272,37 +1290,46 @@ export default function ReportDetail() {
               </div>
             </Card>
 
-            {/* Reports / Testimonies - quick-nav tabs */}
-            {reports.length > 0 && (
+            {/* Quick nav. The statements are not the only thing worth jumping
+                to - Case Information and Case Actions are further down the
+                same column, and they are where an officer is heading. */}
+            {(() => {
+              const jumps = [
+                ...reports.map((r, idx) => ({ key: r.id, id: `report-${reportNo(idx)}`, label: `Report ${reportNo(idx)}` })),
+                { key: "info", id: "case-information", label: "Case Information" },
+                ...(cas.is_deleted ? [] : [{ key: "actions", id: "case-actions", label: "Case Actions" }]),
+              ];
+              return (
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", background: "var(--adm-card)", border: "1px solid var(--adm-border)", padding: "10px 14px", borderRadius: 4, boxShadow: "0 1px 3px rgba(15,23,42,0.05)" }}>
                 <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", marginRight: 4 }}>
                   Jump to:
                 </span>
-                {reports.map((r, idx) => (
+                {jumps.map(j => (
                   <button
-                    key={r.id}
+                    key={j.key}
                     type="button"
-                    onClick={() => document.getElementById(`report-${reportNo(idx)}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    onClick={() => document.getElementById(j.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
                     style={{
                       padding: "6px 12px",
-                      borderRadius: 9999,
-                      border: "1.5px solid #E1BEE7",
-                      background: "#F3E5F5",
-                      color: "#4A1259",
+                      borderRadius: 4,
+                      border: "1px solid var(--adm-border)",
+                      background: "var(--adm-card)",
+                      color: "var(--adm-text-2)",
                       fontSize: 12.5,
-                      fontWeight: 700,
+                      fontWeight: 600,
                       cursor: "pointer",
                       fontFamily: "'Lexend',sans-serif",
-                      transition: "all 0.12s ease",
+                      transition: "border-color 0.12s ease, color 0.12s ease",
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = "#9B4DAB"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#9B4DAB"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = "#F3E5F5"; e.currentTarget.style.color = "#4A1259"; e.currentTarget.style.borderColor = "#E1BEE7"; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--adm-border-strong)"; e.currentTarget.style.color = "var(--adm-text)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--adm-border)"; e.currentTarget.style.color = "var(--adm-text-2)"; }}
                   >
-                    Report {reportNo(idx)}
+                    {j.label}
                   </button>
                 ))}
               </div>
-            )}
+              );
+            })()}
 
             {reports.map((r, idx) => (
               <div key={r.id} id={`report-${reportNo(idx)}`} style={{ scrollMarginTop: 80 }}>
@@ -1399,6 +1426,7 @@ export default function ReportDetail() {
               </div>
             ))}
 
+            <div id="case-information" style={{ scrollMarginTop: 80 }}>
             <Card title="Case Information" icon={<IcoClip size={16} color="#9B4DAB" />}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "16px 24px" }}>
                 <InfoRow label="Case Number" value={cas.case_number} mono />
@@ -1468,6 +1496,7 @@ export default function ReportDetail() {
                 )}
               </div>
             </Card>
+            </div>
 
             {/* Deletion details - only when soft-deleted */}
             {cas.is_deleted && (
@@ -1483,7 +1512,11 @@ export default function ReportDetail() {
                 </div>
               </Card>
             )}
-            {!cas.is_deleted && <CaseActions cas={cas} refetch={fetchCase} showToast={showToast} />}
+            {!cas.is_deleted && (
+              <div id="case-actions" style={{ scrollMarginTop: 80 }}>
+                <CaseActions cas={cas} refetch={fetchCase} showToast={showToast} />
+              </div>
+            )}
 
             {!cas.is_deleted && (
               <Card title="Message to Victim" tone="act" icon={<IcoClip size={16} color="#F47920" />}>
@@ -1571,20 +1604,21 @@ export default function ReportDetail() {
 
       {showMessageLogs && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1000, background: "rgba(15,23,42,0.55)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={() => setShowMessageLogs(false)}>
-          <div style={{ background: "var(--adm-card)", borderRadius: 20, width: "100%", maxWidth: 500, maxHeight: "85vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 64px rgba(15,23,42,0.3)", fontFamily: "'Lexend',sans-serif", overflow: "hidden", animation: "slideDown 0.22s ease" }} onClick={e => e.stopPropagation()}>
+          {/* Same shape as a card on the page behind it: square, one muted
+              header bar, a 3px tone edge. The gradients and 20px corners it
+              had were not used anywhere else in the portal. */}
+          <div style={{ background: "var(--adm-card)", borderRadius: 0, borderLeft: "3px solid #C45E10", width: "100%", maxWidth: 520, maxHeight: "85vh", display: "flex", flexDirection: "column", boxShadow: "0 24px 64px rgba(15,23,42,0.3)", fontFamily: "'Lexend',sans-serif", overflow: "hidden", animation: "slideDown 0.22s ease" }} onClick={e => e.stopPropagation()}>
 
             {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "18px 22px", borderBottom: "1px solid var(--adm-border)", background: "linear-gradient(135deg, #FBF3FC 0%, #F3E5F5 100%)" }}>
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg, #9B4DAB, #4A1259)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 4px 12px rgba(74,18,89,0.28)" }}>
-                <IcoClip size={18} color="#fff" />
-              </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 20px", borderBottom: "1px solid var(--adm-border)", background: "var(--adm-muted)" }}>
+              <IcoClip size={16} color="#C45E10" />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#4A1259", letterSpacing: "-0.2px" }}>Message Logs</p>
-                <p style={{ margin: "1px 0 0", fontSize: 12, color: "#9B4DAB", fontWeight: 500 }}>
+                <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--adm-text)", textTransform: "uppercase", letterSpacing: "0.5px" }}>Message Logs</p>
+                <p style={{ margin: "2px 0 0", fontSize: 11.5, color: "var(--adm-text-muted)", fontWeight: 500 }}>
                   {(cas.messages || []).length} message{(cas.messages || []).length !== 1 ? "s" : ""} sent to the victim
                 </p>
               </div>
-              <button onClick={() => setShowMessageLogs(false)} style={{ width: 32, height: 32, borderRadius: 10, background: "rgba(255,255,255,0.7)", border: "1px solid #E1BEE7", cursor: "pointer", color: "#7B2D8B", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <button onClick={() => setShowMessageLogs(false)} style={{ width: 28, height: 28, borderRadius: 4, background: "var(--adm-card)", border: "1px solid var(--adm-border)", cursor: "pointer", color: "var(--adm-text-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <svg width="16" height="16" fill="none" viewBox="0 0 20 20"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" /></svg>
               </button>
             </div>
@@ -1600,11 +1634,11 @@ export default function ReportDetail() {
                 const isTmp = String(m.id).startsWith("tmp-");
                 const isLatest = i === 0;
                 return (
-                  <div key={m.id} style={{ background: "var(--adm-card)", border: "1px solid #EEE6F1", borderRadius: 12, padding: "12px 14px" }}>
+                  <div key={m.id} style={{ background: "var(--adm-card)", border: "1px solid var(--adm-border)", borderRadius: 4, padding: "12px 14px" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 7 }}>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
                         <span style={{ fontSize: 11, color: "var(--adm-text-muted)", fontWeight: 500 }}>{fmt(m.created_at)}</span>
-                        {isLatest && <span style={{ fontSize: 9, fontWeight: 800, color: "#C45E10", background: "#FFF3E0", padding: "2px 7px", borderRadius: 9999, textTransform: "uppercase", letterSpacing: "0.05em" }}>Latest</span>}
+                        {isLatest && <span style={{ fontSize: 9, fontWeight: 800, color: "#C45E10", background: "var(--adm-primary-bg)", padding: "2px 7px", borderRadius: 4, textTransform: "uppercase", letterSpacing: "0.05em" }}>Latest</span>}
                       </span>
                       <button onClick={() => handleDeleteLogMessage(m.id)} disabled={deletingMsgId === m.id || isTmp}
                         title={isTmp ? "Reload the page to delete a just-sent message" : "Delete this message"}
@@ -1615,12 +1649,12 @@ export default function ReportDetail() {
                     <p style={{ margin: "0 0 9px", fontSize: 13.5, color: "var(--adm-text)", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>{m.message}</p>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                       {m.sent_email && (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#065F46", background: "#ECFDF5", border: "1px solid #A7F3D0", padding: "2px 8px", borderRadius: 9999 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#065F46", background: "#ECFDF5", border: "1px solid #A7F3D0", padding: "2px 8px", borderRadius: 4 }}>
                           <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#10B981" }} /> Email
                         </span>
                       )}
                       {m.sent_sms && (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#C45E10", background: "#FFF3E0", border: "1px solid #FFCC99", padding: "2px 8px", borderRadius: 9999 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#C45E10", background: "#FFF3E0", border: "1px solid #FFCC99", padding: "2px 8px", borderRadius: 4 }}>
                           <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#F47920" }} /> SMS
                         </span>
                       )}

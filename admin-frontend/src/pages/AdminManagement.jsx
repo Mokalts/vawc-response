@@ -808,7 +808,7 @@ export default function AdminManagement() {
                 {currentAdmin?.is_super_admin && !search && (
                   <tr className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)", background: "var(--adm-muted)" }}>
                     <td style={{ padding: "12px 16px", width: 52 }}>
-                      <div style={{ ...S.avatar, background: "linear-gradient(135deg,#FFCC99,#C45E10)", color: "#fff" }}>{initials(currentAdmin)}</div>
+                      <div style={{ ...S.avatar, background: "#C45E10", color: "#fff" }}>{initials(currentAdmin)}</div>
                     </td>
                     <td style={S.td}>
                       <p style={S.adminName}>{[currentAdmin.first_name, currentAdmin.middle_name, currentAdmin.last_name].filter(Boolean).join(" ")}
@@ -858,7 +858,7 @@ export default function AdminManagement() {
                   visibleAdmins.map((a) => (
                     <tr key={a.id} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
                       <td style={{ padding: "12px 16px", width: 52 }}>
-                        <div style={{ ...S.avatar, background: a.is_active ? "linear-gradient(135deg,#E1BEE7,#7B2D8B)" : "var(--adm-border)", color: a.is_active ? "#fff" : "#94A3B8" }}>
+                        <div style={{ ...S.avatar, background: a.is_active ? "#7B2D8B" : "var(--adm-border)", color: a.is_active ? "#fff" : "#94A3B8" }}>
                           {initials(a)}
                         </div>
                       </td>
@@ -923,7 +923,7 @@ export default function AdminManagement() {
                     visibleVictims.map(u => (
                       <tr key={u.id} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
                         <td style={{ padding: "12px 16px", width: 52 }}>
-                          <div style={{ ...S.avatar, background: "linear-gradient(135deg,#FFE4CC,#F47920)", color: "#fff" }}>
+                          <div style={{ ...S.avatar, background: "#F47920", color: "#fff" }}>
                             {initials(u)}
                           </div>
                         </td>

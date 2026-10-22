@@ -244,7 +244,7 @@ const S = {
     backBtn:      { width:44, height:44, borderRadius:10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
     title:        { fontSize:17, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },
     content:      { padding:'20px 18px', display:'flex', flexDirection:'column', gap:16, width:'100%', maxWidth:620, marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' },
-    avatar:       { width:72, height:72, borderRadius:'50%', background:'linear-gradient(135deg,var(--border),#F47920)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, fontWeight:800, color:'#fff', fontFamily:"'Lexend', sans-serif" },
+    avatar:       { width:72, height:72, borderRadius:'50%', background:'#F47920', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, fontWeight:800, color:'#fff', fontFamily:"'Lexend', sans-serif" },
     card:         { backgroundColor:'var(--surface)', borderRadius:12, overflow:'hidden', border:'1px solid var(--border)', boxShadow:'var(--card-shadow)' },
     section:      { padding:'16px 18px', display:'flex', flexDirection:'column', gap:14 },
     sectionTitle: { fontSize:10.5, fontWeight:700, color:'var(--accent-text)', textTransform:'uppercase', letterSpacing:'0.7px', fontFamily:"'Lexend', sans-serif" },

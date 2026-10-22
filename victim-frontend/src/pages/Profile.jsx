@@ -249,7 +249,7 @@ const S = {
     content:       { padding:'20px 18px', display:'flex', flexDirection:'column', gap:16, width:'100%', maxWidth:620, marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' },
 
     identity:      { display:'flex', alignItems:'center', gap:14, padding:'4px 2px' },
-    avatar:        { width:64, height:64, flexShrink:0, borderRadius:'50%', background:'linear-gradient(135deg,var(--border),#F47920)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:21, fontWeight:800, color:'#fff', fontFamily:"'Lexend', sans-serif" },
+    avatar:        { width:64, height:64, flexShrink:0, borderRadius:'50%', background:'#F47920', display:'flex', alignItems:'center', justifyContent:'center', fontSize:21, fontWeight:800, color:'#fff', fontFamily:"'Lexend', sans-serif" },
     identityName:  { fontSize:17, fontWeight:700, color:'var(--text)', fontFamily:"'Lexend', sans-serif", overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' },
     identityEmail: { fontSize:13, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif", marginTop:2, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' },
     minorPill:     { display:'inline-block', backgroundColor:'#FEF3C7', border:'1px solid #FCD34D', borderRadius:999, padding:'3px 10px', fontSize:11.5, fontWeight:600, color:'#92400E', fontFamily:"'Lexend', sans-serif", marginTop:6 },
