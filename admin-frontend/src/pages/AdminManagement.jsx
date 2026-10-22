@@ -74,6 +74,11 @@ const CSS = `
     .adm-header { flex-direction: column !important; align-items: flex-start !important; }
     .adm-table-wrap table { min-width: 640px; }
   }
+  /* Hotline editor. The name needs about twice the room of a phone number,
+     so the columns are not equal. */
+  .hl-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; align-items: start; }
+  @media (max-width: 900px) { .hl-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .hl-grid { grid-template-columns: 1fr; } }
 `;
 
 // ─── Input Field ──────────────────────────────────────────────────────────────
@@ -1871,28 +1876,41 @@ function HotlinesPanel({ showToast }) {
     catch (e) { showToast(e.response?.data?.detail || "Failed to remove.", false); }
   };
 
-  const field = (k, placeholder) => (
-    <input style={{ ...S2.input, marginBottom: 0, flex: 1, minWidth: 150 }} value={draft[k]} placeholder={placeholder}
-      onChange={(e) => setDraft({ ...draft, [k]: e.target.value })} />
+  // Label above, example inside, hint below. The example is the fastest way to
+  // say what shape of thing belongs in a box, and it disappears the moment
+  // there is something to read instead.
+  const field = (k, label, placeholder, hint) => (
+    <label style={HL.field}>
+      <span style={HL.fieldLabel}>{label}</span>
+      <input style={{ ...S2.input, marginBottom: 0 }} value={draft[k]} placeholder={placeholder}
+        onChange={(e) => setDraft({ ...draft, [k]: e.target.value })} />
+      <span style={HL.fieldHint}>{hint}</span>
+    </label>
   );
 
   const editor = (isAdd) => (
-    <>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", flex: 1, minWidth: 240 }}>
-        {field("label", isAdd ? "Name, e.g. Iba Municipal Police Station" : "Name")}
-        {field("display", isAdd ? "As shown, e.g. (047) 811-7319" : "As shown")}
-        {field("dial", "What a keypad dials")}
-        {field("description", "Who answers, and when")}
+    <div style={{ flex: "1 1 100%", minWidth: 0 }}>
+      <div className="hl-grid" style={{ marginBottom: 12 }}>
+        {field("label", "Name", "Iba Municipal Police Station", "What the panel calls this line.")}
+        {field("display", "Number as shown", "(047) 811-7319", "Exactly as it is printed or posted.")}
+        {field("dial", "Number to dial", "+63478117319", "Digits only. Empty if it cannot be dialled.")}
       </div>
-      <label style={HL.check}>
-        <input type="checkbox" checked={!!draft.is_critical} onChange={e => setDraft({ ...draft, is_critical: e.target.checked })} /> Show first
-      </label>
-      <label style={HL.check}>
-        <input type="checkbox" checked={!!draft.is_test} onChange={e => setDraft({ ...draft, is_test: e.target.checked })} /> Test line
-      </label>
-      <button style={S2.btnPrimary} onClick={save}>{isAdd ? "Add" : "Save"}</button>
-      <button style={S2.btnGhost} onClick={cancel}>Cancel</button>
-    </>
+      <div style={{ marginBottom: 14 }}>
+        {field("description", "Note", "Desk officer on duty, 24/7", "Who answers, and when. Leave empty if the name already says it.")}
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <label style={HL.check}>
+          <input type="checkbox" checked={!!draft.is_critical} onChange={e => setDraft({ ...draft, is_critical: e.target.checked })} /> Show first
+        </label>
+        <label style={HL.check}>
+          <input type="checkbox" checked={!!draft.is_test} onChange={e => setDraft({ ...draft, is_test: e.target.checked })} /> Test line
+        </label>
+        <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
+          <button style={S2.btnGhost} onClick={cancel}>Cancel</button>
+          <button style={S2.btnPrimary} onClick={save}>{isAdd ? "Add" : "Save"}</button>
+        </div>
+      </div>
+    </div>
   );
 
   return (
@@ -1906,7 +1924,7 @@ function HotlinesPanel({ showToast }) {
         {loading ? <p style={{ fontSize: 13, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Loading...</p> : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {rows.map(h => (
-              <div key={h.id} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", padding: "8px 10px", borderRadius: 8, border: "1px solid var(--adm-border)" }}>
+              <div key={h.id} style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", padding: editId === h.id ? "14px 14px 16px" : "8px 10px", borderRadius: 8, border: "1px solid var(--adm-border)", background: editId === h.id ? "var(--adm-muted)" : "transparent" }}>
                 {editId === h.id ? editor(false) : (
                   <>
                     {/* Only the text dims when a line is hidden. Dimming the
@@ -1946,6 +1964,9 @@ function HotlinesPanel({ showToast }) {
 }
 
 const HL = {
+  field:      { display: "flex", flexDirection: "column", gap: 4, minWidth: 0 },
+  fieldLabel: { fontSize: 11, fontWeight: 700, color: "var(--adm-text-2)", textTransform: "uppercase", letterSpacing: "0.5px", fontFamily: "'Lexend',sans-serif" },
+  fieldHint:  { fontSize: 11, color: "var(--adm-text-muted)", lineHeight: 1.4, fontFamily: "'Lexend',sans-serif" },
   check: { display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap", cursor: "pointer" },
   tag:   { fontSize: 10.5, fontWeight: 700, padding: "3px 8px", borderRadius: 4, fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap" },
 };
@@ -2044,7 +2065,9 @@ const FormField = ({ label, children }) => (
 );
 
 const S2 = {
-  input:      { width: "100%", boxSizing: "border-box", padding: "9px 12px", borderRadius: 8, border: "1.5px solid var(--adm-border)", fontSize: 13.5, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", outline: "none", marginBottom: 8 },
+  // Without a background this fell back to the browser's white, under
+  // --adm-text, which in dark mode is near-white typing on near-white fill.
+  input:      { width: "100%", boxSizing: "border-box", padding: "9px 12px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-input)", fontSize: 13.5, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", outline: "none", marginBottom: 8 },
   btnGhost:   { padding: "9px 16px", borderRadius: 6, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
   btnPrimary: { padding: "9px 18px", borderRadius: 6, border: "none", background: "#C45E10", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
 };
