@@ -89,6 +89,23 @@ def list_all(db: Session = Depends(get_db),
     return {"hotlines": [_out(h) for h in rows]}
 
 
+def _derive_dial(display: str) -> Optional[str]:
+    """What a keypad should send for a number written for the eye.
+
+    Keeps digits and a leading +, drops spaces, dashes and brackets. Returns
+    None when the number contains a letter, because a tel: link built from
+    1800-188-PNP-107 dials 1800188107, which is somebody else.
+    """
+    if not display:
+        return None
+    if any(c.isalpha() for c in display):
+        return None
+    digits = "".join(c for c in display if c.isdigit())
+    if not digits:
+        return None
+    return ("+" + digits) if display.lstrip().startswith("+") else digits
+
+
 @admin_router.post("", status_code=201)
 @admin_router.post("/", status_code=201)
 def create(payload: HotlineIn, db: Session = Depends(get_db),
@@ -101,7 +118,7 @@ def create(payload: HotlineIn, db: Session = Depends(get_db),
     h = Hotline(
         label=label,
         display=display,
-        dial=_clean(payload.dial),
+        dial=_derive_dial(display),
         description=_clean(payload.description),
         is_critical=payload.is_critical,
         is_test=payload.is_test,
@@ -122,13 +139,17 @@ def update(hotline_id: int, payload: HotlinePatch, db: Session = Depends(get_db)
         raise HTTPException(status_code=404, detail="Hotline not found.")
 
     data = payload.model_dump(exclude_unset=True)
-    for field in ("label", "display", "dial", "description"):
+    for field in ("label", "display", "description"):
         if field in data:
             value = _clean(data[field])
             if field in ("label", "display") and not value:
                 raise HTTPException(status_code=422,
                                     detail="A hotline needs a name and a number to show.")
             setattr(h, field, value)
+    # Derived, never taken from the client: one rule, wherever the edit came
+    # from. `dial` in the payload is ignored.
+    if "display" in data:
+        h.dial = _derive_dial(h.display)
     for field in ("is_critical", "is_test", "is_active", "sort_order"):
         if field in data and data[field] is not None:
             setattr(h, field, data[field])

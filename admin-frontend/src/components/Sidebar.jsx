@@ -13,6 +13,17 @@ if (!document.getElementById('vawc-global-css')) {
     s.textContent = GLOBAL_CSS + `
         .vawc-nav-btn { transition: transform 0.16s ease, background 0.15s ease; border-radius: 10px; }
         .vawc-nav-btn:hover { background: var(--adm-muted) !important; transform: translateX(4px); }
+        /* Starts as a dot under the first letter and runs out to the width of
+           the word. The radius is what makes the first frame read as a dot. */
+        @keyframes navUnderline { from { width: 3px; } to { width: 100%; } }
+        .vawc-nav-underline {
+            position: absolute; left: 0; bottom: -5px; height: 2px;
+            border-radius: 2px; background: currentColor;
+            animation: navUnderline 0.34s cubic-bezier(0.22,1,0.36,1) both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .vawc-nav-underline { animation: none; width: 100%; }
+        }
         .vawc-logout:hover { background: var(--adm-muted) !important; }
         .vawc-logout { transition: background 0.15s ease; }
         @keyframes burstPulse {
@@ -260,7 +271,6 @@ function Sidebar() {
                     position: 'absolute', left: 12, right: 12,
                     top: pill.top, height: pill.height,
                     borderRadius: 10, background: 'var(--adm-border)',
-                    boxShadow: 'inset 3px 0 0 #AD530F',
                     opacity: pill.show ? 1 : 0, zIndex: 0, pointerEvents: 'none',
                     transition: pill.animate
                         ? 'top 0.34s cubic-bezier(0.22,1,0.36,1), height 0.34s cubic-bezier(0.22,1,0.36,1), opacity 0.2s ease'
@@ -287,7 +297,7 @@ function Sidebar() {
                                     style={{ ...S.navBtn, position: 'relative', zIndex: 1, ...(subs.length > 0 ? { paddingRight: 8 } : null) }}
                                 >
                                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <NavIcon size={18} color={active ? '#AD530F' : 'var(--adm-text-muted)'} />
+                                        <NavIcon size={18} color={active ? 'var(--adm-text)' : 'var(--adm-text-muted)'} />
                                         {showDashDot && (
                                             <span className="burst-dot" title="Please check new reports"
                                                 style={{ position: 'absolute', top: -4, right: -5, minWidth: 9, height: 9, borderRadius: '50%', background: '#EF4444', border: '2px solid var(--adm-card)' }} />
@@ -299,8 +309,14 @@ function Sidebar() {
                                         webfont lands, since the fallback is wider
                                         still. The chevron moved out of the flow
                                         below, which gives the label 161px. */}
-                                    <span style={{ ...S.navLabel, color: active ? 'var(--adm-text)' : 'var(--adm-text-2)', fontWeight: active ? 700 : 500, transition: 'color 0.2s ease', flex: 1, minWidth: 0, textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: subs.length > 0 ? 18 : 0 }}>
-                                        {item.label}
+                                    {/* The outer span owns the row; the inner one
+                                        shrink-wraps the word, which is what the
+                                        underline measures itself against. */}
+                                    <span style={{ flex: 1, minWidth: 0, textAlign: 'left', paddingRight: subs.length > 0 ? 18 : 0 }}>
+                                        <span style={{ ...S.navLabel, position: 'relative', display: 'inline-block', whiteSpace: 'nowrap', color: active ? 'var(--adm-text)' : 'var(--adm-text-2)', fontWeight: active ? 700 : 500, transition: 'color 0.2s ease' }}>
+                                            {item.label}
+                                            {active && <i className="vawc-nav-underline" aria-hidden="true" />}
+                                        </span>
                                     </span>
                                     {subs.length > 0 && (
                                         /* A span, not a button: a button inside a button is
@@ -317,21 +333,24 @@ function Sidebar() {
                                                      width: 18, height: 18, borderRadius: 6, cursor: 'pointer',
                                                      transform: expanded ? 'translateY(-50%) rotate(90deg)' : 'translateY(-50%) rotate(0deg)',
                                                      transition: 'transform 0.2s ease' }}>
-                                            <IcoChevron size={14} color={active ? '#AD530F' : 'var(--adm-text-muted)'} />
+                                            <IcoChevron size={14} color={active ? 'var(--adm-text)' : 'var(--adm-text-muted)'} />
                                         </span>
                                     )}
                                 </button>
                             );
                         })}
+                        {/* The rule lines up under the parent's icon, so the
+                            sections read as hanging off it rather than as five
+                            more items in the menu. */}
                         {group.items.some(i => i.expandable) && expanded && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, margin: '2px 0 6px' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, margin: '2px 0 6px', marginLeft: 22, paddingLeft: 12, borderLeft: '1px solid var(--adm-border)' }}>
                                 {ADMIN_SECTIONS.filter(x => !x.superOnly || isSuper).map(sec => {
                                     const on = activePath === '/admin-management' && activeSection === sec.key;
                                     return (
                                         <button key={sec.key} className="vawc-nav-btn"
                                             onClick={() => navigate(`/admin-management?section=${sec.key}`)}
                                             style={{ ...S.navBtn, position: 'relative', zIndex: 1,
-                                                     paddingLeft: 44, minHeight: 34,
+                                                     paddingLeft: 10, paddingRight: 10, minHeight: 32, marginBottom: 0,
                                                      background: on ? 'var(--adm-border)' : 'transparent' }}>
                                             <span style={{ ...S.navLabel, fontSize: 12.5,
                                                            color: on ? 'var(--adm-text)' : 'var(--adm-text-2)',
@@ -489,7 +508,6 @@ const S = {
     navSection: { fontSize: 10, fontWeight: 700, color: 'var(--adm-text-muted)', letterSpacing: '1.5px', textTransform: 'uppercase', padding: '4px 12px 8px', margin: 0, fontFamily: NAVFONT },
     navBtn: { position: 'relative', display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', marginBottom: 3, textAlign: 'left' },
     navBtnActive: { backgroundColor: 'rgba(244,121,32,0.18)' },
-    navActiveBar: { position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: '0 3px 3px 0', backgroundColor: '#AD530F' },
     navLabel: { fontSize: 14, fontFamily: NAVFONT, letterSpacing: '0.2px' },
     badge: { marginLeft: 'auto', minWidth: 18, height: 18, borderRadius: 9, background: COLORS.primary, color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px', fontFamily: TEXT.font },
 

@@ -81,7 +81,7 @@ const CSS = `
   }
   /* Hotline editor. The name needs about twice the room of a phone number,
      so the columns are not equal. */
-  .hl-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; align-items: start; }
+  .hl-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; align-items: start; }
   @media (max-width: 900px) { .hl-grid { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 560px) { .hl-grid { grid-template-columns: 1fr; } }
 `;
@@ -330,6 +330,7 @@ export default function AdminManagement() {
   const [historyDays,      setHistoryDays]      = useState(30);
   const [historyKind,      setHistoryKind]      = useState('');
   const [historyPage,      setHistoryPage]      = useState(1);
+  const [victimSort,       setVictimSort]       = useState("recent");
   const [currentAdmin,     setCurrentAdmin]     = useState(null); // logged-in admin (for the super admin's own row)
   const [idPending,        setIdPending]        = useState([]);   // accounts waiting on an ID decision
   const [idBusy,           setIdBusy]           = useState(null); // id of the account being decided
@@ -398,13 +399,33 @@ export default function AdminManagement() {
   useEffect(() => { setHistoryPage(1); }, [historyDays, historyKind]);
 
   // Helper: filter by current search across name/email/phone
+  // Sorted by surname, which is how a name is looked up on a desk, falling
+  // back to the first name when two people share one.
+  const victimName = (u) => [u.last_name, u.first_name, u.middle_name]
+    .filter(Boolean).join(" ").toLowerCase();
+
+  const VICTIM_SORTS = [
+    { key: "recent",  label: "Newest first" },
+    { key: "oldest",  label: "Oldest first" },
+    { key: "az",      label: "Name A to Z" },
+    { key: "za",      label: "Name Z to A" },
+  ];
+
   const filterByVictimSearch = (list) => {
     const q = search.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter(u => {
+    const found = !q ? list : list.filter(u => {
       const hay = [u.first_name, u.middle_name, u.last_name, u.email, u.phone_number, u.address]
         .filter(Boolean).join(" ").toLowerCase();
       return hay.includes(q);
+    });
+    // On a copy: `found` is the fetched array itself when nothing is typed,
+    // and sorting in place would reorder the state behind React's back.
+    const when = (u) => new Date(u.created_at || 0).getTime();
+    return [...found].sort((a, b) => {
+      if (victimSort === "az")     return victimName(a).localeCompare(victimName(b));
+      if (victimSort === "za")     return victimName(b).localeCompare(victimName(a));
+      if (victimSort === "oldest") return when(a) - when(b);
+      return when(b) - when(a);
     });
   };
 
@@ -691,7 +712,18 @@ export default function AdminManagement() {
             that returns nothing however you fill it is worse than no box. */}
         {!["contacts", "history", "my-account"].includes(tab) && (
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
-          <div style={{ position: "relative", flex: 1, minWidth: 240 }}>
+          {/* Search narrows the list; this orders what is left. Only on the
+              victim tabs, which are the long ones. */}
+          {["victims", "unverified", "deleted-victims"].includes(tab) && (
+            <label style={{ display: "inline-flex", alignItems: "center", gap: 7, order: 2, fontSize: 12, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap" }}>
+              Sort by
+              <select value={victimSort} onChange={e => setVictimSort(e.target.value)} aria-label="Sort victim accounts"
+                style={{ padding: "9px 10px", borderRadius: 4, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 12.5, fontFamily: "'Lexend',sans-serif" }}>
+                {VICTIM_SORTS.map(o => <option key={o.key} value={o.key}>{o.label}</option>)}
+              </select>
+            </label>
+          )}
+          <div style={{ position: "relative", flex: 1, minWidth: 240, order: 1 }}>
             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
               <circle cx="9" cy="9" r="6" stroke="#94A3B8" strokeWidth="1.8" />
               <path d="M13.5 13.5L17 17" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round" />
@@ -1913,8 +1945,7 @@ function HotlinesPanel({ showToast }) {
     <div style={{ flex: "1 1 100%", minWidth: 0 }}>
       <div className="hl-grid" style={{ marginBottom: 12 }}>
         {field("label", "Name", "Iba Municipal Police Station", "What the panel calls this line.")}
-        {field("display", "Number as shown", "(047) 811-7319", "Exactly as it is printed or posted.")}
-        {field("dial", "Number to dial", "+63478117319", "Digits only. Empty if it cannot be dialled.")}
+        {field("display", "Number", "(047) 811-7319", "Type it as it is printed. The app works out what to dial.")}
       </div>
       <div style={{ marginBottom: 14 }}>
         {field("description", "Note", "Desk officer on duty, 24/7", "Who answers, and when. Leave empty if the name already says it.")}
@@ -1975,7 +2006,7 @@ function HotlinesPanel({ showToast }) {
               {adding ? editor(true) : <button style={S2.btnPrimary} onClick={startAdd}>Add hotline</button>}
             </div>
             <p style={{ margin: "8px 0 0", fontSize: 11, color: "var(--adm-text-muted)", lineHeight: 1.55, fontFamily: "'Lexend',sans-serif" }}>
-              Leave the dial field empty for a number published with letters. It then shows as plain text instead of a call link, because a link that cannot dial is worse than none.
+              A number published with letters, like 1800-188-PNP-107, shows as plain text rather than a call link, because a link that dials the wrong person is worse than none.
             </p>
           </div>
         )}
