@@ -50,8 +50,8 @@ export default function ThemeToggle({ size = 44 }) {
             title={isDark ? 'Light mode' : 'Dark mode'}
             style={{
                 width: size, height: size, borderRadius: 14,
-                background: 'transparent', border: '1px solid var(--border-soft)',
-                color: 'var(--text-body)', display: 'flex', alignItems: 'center',
+                background: 'transparent', border: 'none',
+                color: 'var(--text)', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', cursor: 'pointer', flexShrink: 0,
             }}
         >

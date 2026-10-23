@@ -60,8 +60,8 @@ if (!document.getElementById('vawc-home-css')) {
             88%, 100% { transform: translateX(420%); }
         }
         @media (prefers-reduced-motion: reduce) { .vh-report-glow { display: none; } }
-        .vh-icon-btn { transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease; }
-        .vh-icon-btn:active { transform: scale(0.95); }
+        .vh-icon-btn { transition: transform 0.18s cubic-bezier(0.22,1,0.36,1), opacity 0.18s ease; }
+        .vh-icon-btn:active { transform: scale(1.04); opacity: 0.7; }
         .bell-ring { animation: bellRing 0.6s ease; }
         .awareness-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
         @media (max-width: 600px) { .awareness-grid { grid-template-columns: 1fr; } }
@@ -117,7 +117,7 @@ if (!document.getElementById('vawc-home-css')) {
             .vh-hero-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0,0,0,0.26) !important; background-color: #FFF3E0 !important; }
             .vh-report-btn:hover { background-color: #A83D00 !important; transform: translateY(-2px); box-shadow: 0 10px 22px rgba(204,75,0,0.3) !important; }
             .vh-report-btn:hover .vh-report-arrow { transform: translateX(3px); }
-            .vh-icon-btn:hover { background: var(--surface-alt) !important; border-color: var(--border) !important; transform: translateY(-1px); }
+            .vh-icon-btn:hover { transform: scale(1.14); }
             .vh-card:hover .vh-card-glyph { transform: translateY(-3px) scale(1.04); }
             .vh-card:hover .vh-card-arrow { transform: translateX(3px); }
             .vh-card:hover .vh-card-art { transform: scale(1.03); }
@@ -130,7 +130,7 @@ if (!document.getElementById('vawc-home-css')) {
 }
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
-const IcoMenu   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#AD530F" strokeWidth="2" strokeLinecap="round" /></svg>);
+const IcoMenu   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>);
 const IcoArrow  = ({ c = '#fff' }) => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M13 6L19 12L13 18" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 // ── Monochrome glyphs ────────────────────────────────────────────────────────
 // Every icon draws with `currentColor`, so it inherits the theme's text colour
@@ -295,7 +295,7 @@ function Home() {
                         aria-label={notifCount > 0 ? `Mga abiso: ${notifCount} update sa iyong kaso` : 'Mga abiso: walang bagong update'}
                         title={notifCount > 0 ? `${notifCount} case update${notifCount > 1 ? 's' : ''}` : 'No new updates'}>
                         <span className={bellRinging ? 'bell-ring' : ''} style={{ display: 'flex' }}>
-                            <IcoBell c={notifCount > 0 ? '#F47920' : '#64748B'} size={20} />
+                            <IcoBell c="currentColor" size={20} />
                         </span>
                         {notifCount > 0 && <span style={S.notifBadge}>{notifCount > 9 ? '9+' : notifCount}</span>}
                     </button>
@@ -497,8 +497,8 @@ const S = {
     // sign-in and admin sidebar logos.
     logoImg:     { width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scale(1.16) translateY(1%)', transformOrigin: 'center' },
     appName:     { fontSize: 17, fontWeight: 700, color: 'var(--accent-text)', fontFamily: FF, letterSpacing: '-0.3px' },
-    menuBtn:     { width: 44, height: 44, borderRadius: 14, backgroundColor: 'transparent', border: '1px solid var(--border-soft)', color: 'var(--text-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
-    notifBtn:    { position: 'relative', width: 44, height: 44, borderRadius: 14, backgroundColor: 'transparent', border: '1px solid var(--border-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
+    menuBtn:     { width: 44, height: 44, borderRadius: 14, backgroundColor: 'transparent', border: 'none', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
+    notifBtn:    { position: 'relative', width: 44, height: 44, borderRadius: 14, backgroundColor: 'transparent', border: 'none', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
     notifBadge:  { position: 'absolute', top: -4, right: -4, minWidth: 16, height: 16, borderRadius: 9999, backgroundColor: '#F47920', color: '#fff', fontSize: 9.5, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', border: '2px solid var(--surface)', fontFamily: FF },
 
     notifBanner:    { display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, padding: '14px 16px', cursor: 'pointer', boxShadow: 'var(--card-shadow)' },
