@@ -1246,7 +1246,15 @@ export default function ReportDetail() {
   const victimName = cas.victim_name || [victim.first_name, victim.middle_name, victim.last_name].filter(Boolean).join(" ") || "-";
 
   return (
-    <AdminLayout breadcrumbs={[{ label: "Case Records", onClick: () => navigate("/reports") }, victimName, cas.case_number, "Reports"]}>
+    <AdminLayout breadcrumbs={[
+      { label: "Case Records", onClick: () => navigate("/reports") },
+      // The case number is this page, so it stays plain: a crumb that
+      // reloads what you are already looking at is worse than one that
+      // does nothing.
+      { label: victimName, onClick: victim.id ? () => navigate(`/reports?victim=${victim.id}`) : undefined },
+      cas.case_number,
+      "Reports",
+    ]}>
       <style>{CSS}</style>
       <div style={{ maxWidth: 1200, fontFamily: "'Lexend',sans-serif" }}>
 

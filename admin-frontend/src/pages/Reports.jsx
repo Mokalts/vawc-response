@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { AdminLayout } from "../components/Sidebar";
 import { confirmDialog } from "../components/ConfirmDialog";
 import api from "../api/api";
@@ -127,6 +127,7 @@ function StatusBadge({ rawStatus, displayLabel }) {
 
 export default function Reports() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [view, setView] = useState("victims");
   const [selectedVictim, setSelectedVictim] = useState(null);
   const [selectedCase, setSelectedCase] = useState(null);
@@ -224,6 +225,18 @@ export default function Reports() {
   }, [view, selectedVictim, fetchCases]);
 
   const openCases = (v) => { setSelectedVictim(v); setCasePage(1); setView("cases"); };
+
+  // ?victim=<user_id> opens that person's cases. Without it the selection
+  // lived only in component state, so a breadcrumb on another page had no
+  // address to send anyone back to. Runs once the list is in: the param names
+  // a row, and the row has to exist before it can be opened.
+  const victimParam = new URLSearchParams(location.search).get("victim");
+  useEffect(() => {
+    if (!victimParam || !victims.length) return;
+    const match = victims.find(v => String(v.user_id) === String(victimParam));
+    if (match) openCases(match);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [victimParam, victims]);
   const openDetail = (c) => { setSelectedCase(c); setReportPage(1); setView("reports"); fetchCaseDetail(c.id); };
 
   const handleRecover = async (id) => {

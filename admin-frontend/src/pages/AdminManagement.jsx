@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AdminLayout } from "../components/Sidebar";
 import { ADMIN_SECTIONS, SECTION_ENTRY, SECTION_OF, defaultSection } from "../adminSections";
 import { confirmDialog } from "../components/ConfirmDialog";
@@ -314,6 +314,7 @@ export default function AdminManagement() {
   // ── Victim management (super admin only) ───────────────────────────
   // Non-super admins have no Admins tab, so they start on Victims.
   const location = useLocation();
+  const navigate = useNavigate();
   const [tab,             setTab]             = useState("admins"); // 'admins' | 'victims' | 'unverified' | 'deleted-victims'
   const [victims,         setVictims]         = useState([]);
   const [unverifiedUsers, setUnverifiedUsers] = useState([]);
@@ -331,6 +332,7 @@ export default function AdminManagement() {
   const [historyKind,      setHistoryKind]      = useState('');
   const [historyPage,      setHistoryPage]      = useState(1);
   const [victimSort,       setVictimSort]       = useState("recent");
+  const [idSort,           setIdSort]           = useState("recent");
   const [currentAdmin,     setCurrentAdmin]     = useState(null); // logged-in admin (for the super admin's own row)
   const [idPending,        setIdPending]        = useState([]);   // accounts waiting on an ID decision
   const [idBusy,           setIdBusy]           = useState(null); // id of the account being decided
@@ -428,6 +430,22 @@ export default function AdminManagement() {
       return when(b) - when(a);
     });
   };
+
+  const visibleIdPending = (() => {
+    const q = search.trim().toLowerCase();
+    const found = !q ? idPending : idPending.filter(u => {
+      const hay = [u.first_name, u.middle_name, u.last_name, u.full_name, u.email, u.id_type]
+        .filter(Boolean).join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+    const when = (u) => new Date(u.id_submitted_at || u.created_at || 0).getTime();
+    return [...found].sort((a, b) => {
+      if (idSort === "az")     return victimName(a).localeCompare(victimName(b));
+      if (idSort === "za")     return victimName(b).localeCompare(victimName(a));
+      if (idSort === "oldest") return when(a) - when(b);
+      return when(b) - when(a);
+    });
+  })();
 
   const visibleVictims         = filterByVictimSearch(victims);
   const visibleUnverified      = filterByVictimSearch(unverifiedUsers);
@@ -630,7 +648,12 @@ export default function AdminManagement() {
   };
 
   return (
-    <AdminLayout title="Admin Management" breadcrumbs={["Admin Management"]}>
+    <AdminLayout title="Admin Management" breadcrumbs={[
+      { label: "Admin Management", onClick: () => navigate(`/admin-management?section=${defaultSection(!!currentAdmin?.is_super_admin)}`) },
+      ...(SECTION_OF[tab] && SECTION_OF[tab] !== defaultSection(!!currentAdmin?.is_super_admin)
+        ? [(ADMIN_SECTIONS.find(x => x.key === SECTION_OF[tab]) || {}).label]
+        : []),
+    ]}>
       <style>{CSS}</style>
 
       <div style={S.wrap}>
@@ -714,10 +737,12 @@ export default function AdminManagement() {
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
           {/* Search narrows the list; this orders what is left. Only on the
               victim tabs, which are the long ones. */}
-          {["victims", "unverified", "deleted-victims"].includes(tab) && (
+          {["victims", "unverified", "deleted-victims", "id-review"].includes(tab) && (
             <label style={{ display: "inline-flex", alignItems: "center", gap: 7, order: 2, fontSize: 12, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", whiteSpace: "nowrap" }}>
               Sort by
-              <select value={victimSort} onChange={e => setVictimSort(e.target.value)} aria-label="Sort victim accounts"
+              <select value={tab === "id-review" ? idSort : victimSort}
+                onChange={e => (tab === "id-review" ? setIdSort : setVictimSort)(e.target.value)}
+                aria-label={tab === "id-review" ? "Sort the ID queue" : "Sort victim accounts"}
                 style={{ padding: "9px 10px", borderRadius: 4, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 12.5, fontFamily: "'Lexend',sans-serif" }}>
                 {VICTIM_SORTS.map(o => <option key={o.key} value={o.key}>{o.label}</option>)}
               </select>
@@ -1233,7 +1258,9 @@ export default function AdminManagement() {
               </p>
             </div>
 
-            {idPending.length === 0 ? (
+            {/* Ordered on when the ID arrived, not when the account was
+                made: this is a queue, and the queue is by arrival. */}
+            {visibleIdPending.length === 0 ? (
               <div style={{ textAlign: "center", padding: "44px 20px" }}>
                 <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>Nothing waiting</p>
                 <p style={{ margin: "5px 0 0", fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>
@@ -1242,7 +1269,7 @@ export default function AdminManagement() {
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column" }}>
-                {idPending.map(u => (
+                {visibleIdPending.map(u => (
                   <div key={u.id} className="adm-row" style={{ display: "flex", alignItems: "center", gap: 14, padding: "13px 16px", borderBottom: "1px solid var(--adm-border)" }}>
                     <div style={{ ...S.avatar, background: "var(--adm-muted)", color: "var(--adm-text-muted)", flexShrink: 0 }}>{initials(u)}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
