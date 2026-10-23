@@ -252,14 +252,14 @@ const CreateAdminModal = ({ onClose, onCreated }) => {
 };
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
-const SkeletonRow = () => (
+// `cols` was being passed and ignored, so every skeleton drew seven cells
+// whatever the table had. The first bar is wide because the first column is
+// now a name rather than an avatar.
+const SkeletonRow = ({ cols = 7 }) => (
   <tr style={{ borderBottom: "1px solid var(--adm-border)" }}>
-    {[44, 160, 110, 90, 80, 80, 130].map((w, i) => (
+    {[180, 140, 110, 90, 80, 80, 130].slice(0, cols).map((w, i) => (
       <td key={i} style={{ padding: "14px 16px" }}>
-        {i === 0
-          ? <div style={{ width: 38, height: 38, borderRadius: 4, background: "var(--adm-border)" }} />
-          : <div style={{ height: 12, width: w, borderRadius: 4, background: "linear-gradient(90deg,var(--adm-border) 25%,var(--adm-border) 50%,var(--adm-border) 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
-        }
+        <div style={{ height: 12, width: w, borderRadius: 4, background: "var(--adm-border)" }} />
       </td>
     ))}
   </tr>
@@ -912,15 +912,15 @@ export default function AdminManagement() {
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
                 <thead>
                   <tr style={{ backgroundColor: "var(--adm-muted)", borderBottom: "1px solid var(--adm-border)" }}>
-                    {["", "Full Name & Email", "Phone", "Address", "Minor", "Actions"].map((h, i) => (
-                      <th key={i} style={{ ...S.th, textAlign: i === 5 ? "right" : "left" }}>{h}</th>
+                    {["Full Name & Email", "Phone", "Address", "Minor", "Actions"].map((h, i) => (
+                      <th key={i} style={{ ...S.th, textAlign: i === 4 ? "right" : "left" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {victimsLoading ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={6} />)
+                  {victimsLoading ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={5} />)
                   : visibleVictims.length === 0 ? (
-                    <tr><td colSpan={6}>
+                    <tr><td colSpan={5}>
                       <div style={S.emptyState}>
                         <div style={S.emptyIcon}><IconUserSolid size={22} color="#94A3B8" /></div>
                         <p style={S.emptyTitle}>{search ? "No matches" : "No verified victims yet"}</p>
@@ -930,11 +930,6 @@ export default function AdminManagement() {
                   ) : (
                     visibleVictims.map(u => (
                       <tr key={u.id} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
-                        <td style={{ padding: "12px 16px", width: 52 }}>
-                          <div style={{ ...S.avatar, background: "#F47920", color: "#fff" }}>
-                            {initials(u)}
-                          </div>
-                        </td>
                         <td style={S.td}>
                           <p style={S.adminName}>{[u.first_name, u.middle_name, u.last_name].filter(Boolean).join(" ")}</p>
                           <p style={S.adminEmail}>{u.email}</p>
@@ -971,15 +966,15 @@ export default function AdminManagement() {
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
                 <thead>
                   <tr style={{ backgroundColor: "var(--adm-muted)", borderBottom: "1px solid var(--adm-border)" }}>
-                    {["", "Name & Email", "Phone", "Signed Up", "Actions"].map((h, i) => (
-                      <th key={i} style={{ ...S.th, textAlign: i === 4 ? "right" : "left" }}>{h}</th>
+                    {["Name & Email", "Phone", "Signed Up", "Actions"].map((h, i) => (
+                      <th key={i} style={{ ...S.th, textAlign: i === 3 ? "right" : "left" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {victimsLoading ? Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} cols={5} />)
+                  {victimsLoading ? Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} cols={4} />)
                   : visibleUnverified.length === 0 ? (
-                    <tr><td colSpan={5}>
+                    <tr><td colSpan={4}>
                       <div style={S.emptyState}>
                         <div style={S.emptyIcon}><IconUserSolid size={22} color="#94A3B8" /></div>
                         <p style={S.emptyTitle}>{search ? "No matches" : "No unverified accounts"}</p>
@@ -991,9 +986,6 @@ export default function AdminManagement() {
                       const ageDays = u.created_at ? Math.floor((Date.now() - new Date(u.created_at).getTime()) / 86400000) : 0;
                       return (
                         <tr key={u.id} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
-                          <td style={{ padding: "12px 16px", width: 52 }}>
-                            <div style={{ ...S.avatar, background: "var(--adm-border)", color: "var(--adm-text-muted)" }}>{initials(u)}</div>
-                          </td>
                           <td style={S.td}>
                             <p style={S.adminName}>{[u.first_name, u.middle_name, u.last_name].filter(Boolean).join(" ")}</p>
                             <p style={S.adminEmail}>{u.email}</p>
@@ -1362,15 +1354,15 @@ export default function AdminManagement() {
               <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 720 }}>
                 <thead>
                   <tr style={{ backgroundColor: "var(--adm-muted)", borderBottom: "1px solid var(--adm-border)" }}>
-                    {["", "Name & Email", "Phone", "Deleted", "Recovery", "Actions"].map((h, i) => (
-                      <th key={i} style={{ ...S.th, textAlign: i === 5 ? "right" : "left" }}>{h}</th>
+                    {["Name & Email", "Phone", "Deleted", "Recovery", "Actions"].map((h, i) => (
+                      <th key={i} style={{ ...S.th, textAlign: i === 4 ? "right" : "left" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {victimsLoading ? Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} cols={6} />)
+                  {victimsLoading ? Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} cols={5} />)
                   : visibleDeletedVictims.length === 0 ? (
-                    <tr><td colSpan={6}>
+                    <tr><td colSpan={5}>
                       <div style={S.emptyState}>
                         <div style={S.emptyIcon}><IconUserSolid size={22} color="#94A3B8" /></div>
                         <p style={S.emptyTitle}>{search ? "No matches" : "No archived victim accounts"}</p>
@@ -1386,9 +1378,6 @@ export default function AdminManagement() {
                       const expired = !!u.recovery_expired;
                       return (
                         <tr key={u.id} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
-                          <td style={{ padding: "12px 16px", width: 52 }}>
-                            <div style={{ ...S.avatar, background: "var(--adm-border)", color: "var(--adm-text-muted)" }}>{initials(u)}</div>
-                          </td>
                           <td style={S.td}>
                             <p style={S.adminName}>{[u.first_name, u.middle_name, u.last_name].filter(Boolean).join(" ")}</p>
                             <p style={S.adminEmail}>{u.email}</p>
