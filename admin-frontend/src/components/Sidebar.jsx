@@ -12,8 +12,8 @@ if (!document.getElementById('vawc-global-css')) {
     s.id = 'vawc-global-css';
     s.textContent = GLOBAL_CSS + `
         .vawc-nav-btn { transition: transform 0.16s ease, background 0.15s ease; border-radius: 10px; }
-        .vawc-nav-btn:hover { background: rgba(255,255,255,0.06) !important; transform: translateX(4px); }
-        .vawc-logout:hover { background: rgba(123,45,139,0.08) !important; }
+        .vawc-nav-btn:hover { background: var(--adm-muted) !important; transform: translateX(4px); }
+        .vawc-logout:hover { background: var(--adm-muted) !important; }
         .vawc-logout { transition: background 0.15s ease; }
         @keyframes burstPulse {
             0%, 100% { box-shadow: 0 0 0 0 rgba(244,121,32,0.65); }
@@ -122,7 +122,6 @@ function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
     const admin = getAdmin();
-    const role = admin.position || '';
     const isSuper = !!admin.is_super_admin;
     const [unread, setUnread] = useState(0);
     const [burstDismissedAt, setBurstDismissedAt] = useState(() => {
@@ -216,18 +215,9 @@ function Sidebar() {
 
             {/* Admin card */}
             <div style={S.adminCard}>
-                <div style={isSuper ? S.avatarSuper : S.avatar}>{initials}</div>
+                <div style={S.avatar}>{initials}</div>
                 <div style={{ overflow: 'hidden', flex: 1 }}>
                     <div style={S.adminName}>{admin.first_name} {admin.last_name}</div>
-                    <div style={isSuper ? S.rolePillSuper : S.rolePill}>
-                        {isSuper && (
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" style={{ marginRight: 4 }}>
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M9 12l2 2 4-4" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        )}
-                        {role}
-                    </div>
                 </div>
             </div>
 
@@ -269,15 +259,15 @@ function Sidebar() {
                 <div style={{
                     position: 'absolute', left: 12, right: 12,
                     top: pill.top, height: pill.height,
-                    borderRadius: 10, background: 'rgba(244,121,32,0.18)',
-                    boxShadow: `inset 3px 0 0 ${COLORS.primary}`,
+                    borderRadius: 10, background: 'var(--adm-primary-bg)',
+                    boxShadow: 'inset 3px 0 0 #AD530F',
                     opacity: pill.show ? 1 : 0, zIndex: 0, pointerEvents: 'none',
                     transition: pill.animate
                         ? 'top 0.34s cubic-bezier(0.22,1,0.36,1), height 0.34s cubic-bezier(0.22,1,0.36,1), opacity 0.2s ease'
                         : 'opacity 0.2s ease',
                 }} />
-                {groupNav(isSuper).map(group => (
-                    <div key={group.name} style={S.navGroup}>
+                {groupNav(isSuper).map((group, gi) => (
+                    <div key={group.name} style={{ ...S.navGroup, ...(gi > 0 ? S.navGroupSplit : null) }}>
                         <p style={S.navSection}>{group.name}</p>
                         {group.items.map(item => {
                             const active = item.path === activePath;
@@ -297,10 +287,10 @@ function Sidebar() {
                                     style={{ ...S.navBtn, position: 'relative', zIndex: 1, ...(subs.length > 0 ? { paddingRight: 8 } : null) }}
                                 >
                                     <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <NavIcon size={18} color={active ? '#FFFFFF' : '#E1BEE7'} />
+                                        <NavIcon size={18} color={active ? '#AD530F' : 'var(--adm-text-muted)'} />
                                         {showDashDot && (
                                             <span className="burst-dot" title="Please check new reports"
-                                                style={{ position: 'absolute', top: -4, right: -5, minWidth: 9, height: 9, borderRadius: '50%', background: '#EF4444', border: '2px solid #4A1259' }} />
+                                                style={{ position: 'absolute', top: -4, right: -5, minWidth: 9, height: 9, borderRadius: '50%', background: '#EF4444', border: '2px solid var(--adm-card)' }} />
                                         )}
                                     </div>
                                     {/* One line, always. "Admin Management" in bold
@@ -309,7 +299,7 @@ function Sidebar() {
                                         webfont lands, since the fallback is wider
                                         still. The chevron moved out of the flow
                                         below, which gives the label 161px. */}
-                                    <span style={{ ...S.navLabel, color: active ? '#FFFFFF' : '#E1BEE7', fontWeight: active ? 700 : 500, transition: 'color 0.2s ease', flex: 1, minWidth: 0, textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: subs.length > 0 ? 18 : 0 }}>
+                                    <span style={{ ...S.navLabel, color: active ? 'var(--adm-text)' : 'var(--adm-text-2)', fontWeight: active ? 700 : 500, transition: 'color 0.2s ease', flex: 1, minWidth: 0, textAlign: 'left', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: subs.length > 0 ? 18 : 0 }}>
                                         {item.label}
                                     </span>
                                     {subs.length > 0 && (
@@ -327,7 +317,7 @@ function Sidebar() {
                                                      width: 18, height: 18, borderRadius: 6, cursor: 'pointer',
                                                      transform: expanded ? 'translateY(-50%) rotate(90deg)' : 'translateY(-50%) rotate(0deg)',
                                                      transition: 'transform 0.2s ease' }}>
-                                            <IcoChevron size={14} color={active ? '#FFFFFF' : '#E1BEE7'} />
+                                            <IcoChevron size={14} color={active ? '#AD530F' : 'var(--adm-text-muted)'} />
                                         </span>
                                     )}
                                 </button>
@@ -342,9 +332,9 @@ function Sidebar() {
                                             onClick={() => navigate(`/admin-management?section=${sec.key}`)}
                                             style={{ ...S.navBtn, position: 'relative', zIndex: 1,
                                                      paddingLeft: 44, minHeight: 34,
-                                                     background: on ? 'rgba(244,121,32,0.16)' : 'transparent' }}>
+                                                     background: on ? 'var(--adm-primary-bg)' : 'transparent' }}>
                                             <span style={{ ...S.navLabel, fontSize: 12.5,
-                                                           color: on ? '#FFFFFF' : '#D7B3DE',
+                                                           color: on ? 'var(--adm-text)' : 'var(--adm-text-2)',
                                                            fontWeight: on ? 700 : 500 }}>
                                                 {sec.label}
                                             </span>
@@ -359,10 +349,10 @@ function Sidebar() {
 
             {/* Footer. Terms sits here rather than in NAV above: it is a reference
                 document, not one of the four things an officer comes here to do. */}
-            <div style={{ padding: '12px', borderTop: '1px solid #5C1F6E', marginTop: 'auto' }}>
+            <div style={{ padding: '12px', borderTop: '1px solid var(--adm-border)', marginTop: 'auto' }}>
                 <button className="vawc-logout" onClick={() => navigate('/terms')} style={S.logoutBtn}>
-                    <IcoShieldNav size={16} color="#D9BCE2" />
-                    <span style={{ ...S.logoutLabel, color: '#D9BCE2', fontWeight: 500 }}>Terms &amp; Data Handling</span>
+                    <IcoShieldNav size={16} color="var(--adm-text-muted)" />
+                    <span style={{ ...S.logoutLabel, fontWeight: 500 }}>Terms &amp; Data Handling</span>
                 </button>
                 <button className="vawc-logout" onClick={handleLogout} style={S.logoutBtn}>
                     <IcoLogout size={16} color="#FFCC99" />
@@ -468,45 +458,43 @@ export function AdminLayout({ children, breadcrumbs }) {
 const S = {
     layout: { display: 'flex', minHeight: '100vh', backgroundColor: COLORS.bgPage, fontFamily: TEXT.font },
 
-    // Sidebar — brand violet
-    sidebar: { width: 252, flexShrink: 0, position: 'fixed', top: 0, left: 0, height: '100vh', backgroundColor: '#4A1259', display: 'flex', flexDirection: 'column', zIndex: 100, overflowY: 'auto', borderRight: '1px solid #5C1F6E' },
-    topAccent: { height: 3, backgroundColor: COLORS.primary, flexShrink: 0 },
+    // Sidebar — the same surface as a card, so the whole portal is one colour
+    sidebar: { width: 252, flexShrink: 0, position: 'fixed', top: 0, left: 0, height: '100vh', backgroundColor: 'var(--adm-card)', display: 'flex', flexDirection: 'column', zIndex: 100, overflowY: 'auto', borderRight: '1px solid var(--adm-border)' },
+    topAccent: { display: 'none' },
 
     logoArea: { display: 'flex', alignItems: 'center', gap: 12, padding: '20px 20px 18px' },
     logoIconWrap: { width: 64, height: 64, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', padding: 0, boxSizing: 'border-box', background: '#fff', border: '2px solid #FFCC99' },
     // The seal PNG has white padding baked around the artwork, so a plain fit
     // leaves it small and sitting low inside the ring. Matches the login logo.
     logoImg: { width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scale(1.16) translateY(1%)', transformOrigin: 'center', imageRendering: '-webkit-optimize-contrast' },
-    logoTitle: { fontSize: 14, fontWeight: 700, color: '#FFFFFF', fontFamily: NAVFONT, letterSpacing: '0.3px' },
-    logoSub: { fontSize: 9.5, color: '#E1BEE7', textTransform: 'uppercase', letterSpacing: '0.8px', marginTop: 2, fontFamily: TEXT.font },
+    logoTitle: { fontSize: 14, fontWeight: 700, color: 'var(--adm-text)', fontFamily: NAVFONT, letterSpacing: '0.3px' },
+    logoSub: { fontSize: 9.5, color: 'var(--adm-text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', marginTop: 2, fontFamily: TEXT.font },
 
-    divider: { height: 1, backgroundColor: '#5C1F6E', margin: '0 16px' },
+    divider: { height: 1, backgroundColor: 'var(--adm-border)', margin: '0 16px' },
     // Sits on the dark sidebar, so the surface and text are set explicitly
     // rather than inherited from the admin theme tokens.
-    burst:      { margin: '0 16px 12px', padding: '10px 12px', borderRadius: 10, background: 'rgba(244,121,32,0.16)', border: '1px solid rgba(244,121,32,0.45)' },
-    burstDot:   { width: 7, height: 7, borderRadius: '50%', background: '#F47920', flexShrink: 0, marginTop: 6 },
-    burstTitle: { margin: 0, fontSize: 12.5, fontWeight: 700, color: '#fff', fontFamily: NAVFONT, lineHeight: 1.35 },
-    burstText:  { margin: '2px 0 0', fontSize: 11.5, color: 'rgba(255,255,255,0.75)', fontFamily: NAVFONT, lineHeight: 1.45 },
-    burstClose: { flexShrink: 0, width: 22, height: 22, lineHeight: '20px', borderRadius: 6, border: 'none', background: 'transparent', color: 'rgba(255,255,255,0.7)', fontSize: 16, cursor: 'pointer', fontFamily: NAVFONT },
+    burst:      { margin: '0 16px 12px', padding: '10px 12px', borderRadius: 4, background: 'var(--adm-primary-bg)', border: '1px solid var(--adm-border)' },
+    burstDot:   { width: 7, height: 7, borderRadius: '50%', background: '#AD530F', flexShrink: 0, marginTop: 6 },
+    burstTitle: { margin: 0, fontSize: 12.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: NAVFONT, lineHeight: 1.35 },
+    burstText:  { margin: '2px 0 0', fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: NAVFONT, lineHeight: 1.45 },
+    burstClose: { flexShrink: 0, width: 22, height: 22, lineHeight: '20px', borderRadius: 4, border: 'none', background: 'transparent', color: 'var(--adm-text-muted)', fontSize: 16, cursor: 'pointer', fontFamily: NAVFONT },
 
     adminCard: { display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px' },
-    avatar: { width: 34, height: 34, borderRadius: '50%', background: COLORS.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font },
-    avatarSuper: { width: 34, height: 34, borderRadius: '50%', background: COLORS.secondary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font, boxShadow: '0 0 0 2px rgba(244,121,32,0.25)' },
-    adminName: { fontSize: 13, fontWeight: 600, color: '#E2E8F0', fontFamily: TEXT.font, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-    rolePill: { display: 'inline-flex', alignItems: 'center', marginTop: 3, fontSize: 10, fontWeight: 700, color: '#E1BEE7', backgroundColor: 'rgba(123,45,139,0.12)', padding: '2px 8px', borderRadius: 9999, fontFamily: TEXT.font, letterSpacing: '0.3px' },
-    rolePillSuper: { display: 'inline-flex', alignItems: 'center', marginTop: 3, fontSize: 10, fontWeight: 800, color: '#fff', background: COLORS.secondary, padding: '3px 9px', borderRadius: 9999, fontFamily: TEXT.font, letterSpacing: '0.4px', textTransform: 'uppercase', boxShadow: '0 1px 3px rgba(196,94,16,0.3)' },
-
+    // One avatar for everyone now that the role is not shown beside it.
+    avatar: { width: 34, height: 34, borderRadius: '50%', background: '#AD530F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font },
+    adminName: { fontSize: 13, fontWeight: 600, color: 'var(--adm-text)', fontFamily: TEXT.font, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
     nav: { flex: 1, padding: '10px 12px 0', position: 'relative' },
     navGroup: { marginBottom: 14 },
-    navSection: { fontSize: 10, fontWeight: 600, color: '#C4A6D1', letterSpacing: '1.5px', textTransform: 'uppercase', padding: '4px 12px 8px', margin: 0, fontFamily: NAVFONT },
+    navGroupSplit: { borderTop: '1px solid var(--adm-border)', paddingTop: 12, marginTop: 4 },
+    navSection: { fontSize: 10, fontWeight: 700, color: 'var(--adm-text-muted)', letterSpacing: '1.5px', textTransform: 'uppercase', padding: '4px 12px 8px', margin: 0, fontFamily: NAVFONT },
     navBtn: { position: 'relative', display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '10px 12px', borderRadius: 10, border: 'none', backgroundColor: 'transparent', cursor: 'pointer', marginBottom: 3, textAlign: 'left' },
     navBtnActive: { backgroundColor: 'rgba(244,121,32,0.18)' },
-    navActiveBar: { position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: '0 3px 3px 0', backgroundColor: COLORS.primary },
+    navActiveBar: { position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', width: 3, height: 20, borderRadius: '0 3px 3px 0', backgroundColor: '#AD530F' },
     navLabel: { fontSize: 14, fontFamily: NAVFONT, letterSpacing: '0.2px' },
     badge: { marginLeft: 'auto', minWidth: 18, height: 18, borderRadius: 9, background: COLORS.primary, color: '#fff', fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px', fontFamily: TEXT.font },
 
     logoutBtn: { display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '9px 10px', borderRadius: 8, border: 'none', backgroundColor: 'transparent', cursor: 'pointer' },
-    logoutLabel: { fontSize: 13.5, fontWeight: 600, color: '#FFCC99', fontFamily: TEXT.font },
+    logoutLabel: { fontSize: 13.5, fontWeight: 600, color: 'var(--adm-text-2)', fontFamily: TEXT.font },
 
     // Top bar
     topBar: { height: 62, backgroundColor: COLORS.bgCard, borderBottom: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', position: 'sticky', top: 0, zIndex: 50, boxShadow: 'var(--adm-card-shadow)' },

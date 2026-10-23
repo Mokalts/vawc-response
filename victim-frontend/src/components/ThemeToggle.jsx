@@ -49,9 +49,9 @@ export default function ThemeToggle({ size = 44 }) {
             aria-label={isDark ? 'Lumipat sa light mode' : 'Lumipat sa dark mode'}
             title={isDark ? 'Light mode' : 'Dark mode'}
             style={{
-                width: size, height: size, borderRadius: 12,
-                background: 'var(--surface-tint)', border: '1px solid var(--border)',
-                color: 'var(--accent-text)', display: 'flex', alignItems: 'center',
+                width: size, height: size, borderRadius: 14,
+                background: 'transparent', border: '1px solid var(--border-soft)',
+                color: 'var(--text-body)', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', cursor: 'pointer', flexShrink: 0,
             }}
         >

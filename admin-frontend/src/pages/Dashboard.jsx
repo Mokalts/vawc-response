@@ -20,6 +20,11 @@ if (!document.getElementById('dash-css')) {
         }
         .dash-row { cursor:pointer; }
         .dash-row:hover td { background:var(--adm-muted) !important; }
+        .stale-scroll { scrollbar-width: thin; scrollbar-color: var(--adm-border-strong) transparent; }
+        .stale-scroll::-webkit-scrollbar { width:8px; }
+        .stale-scroll::-webkit-scrollbar-track { background:transparent; }
+        .stale-scroll::-webkit-scrollbar-thumb { background:var(--adm-border-strong); border-radius:2px; }
+        .stale-scroll::-webkit-scrollbar-thumb:hover { background:var(--adm-text-muted); }
         .stale-row { transition:background-color 0.15s ease; }
         .stale-row:hover { background:var(--adm-muted); }
         .stale-row:hover .stale-chevron { transform:translateX(3px); opacity:1; }
@@ -514,8 +519,24 @@ const StackBar = ({ segments }) => {
 // because it measures the last OFFICER action rather than the last time the
 // row changed - a victim filing another report bumps the case without anybody
 // at the desk having looked at it.
+// Five to a page. The panel sits above the tiles on the dashboard, so it
+// cannot grow with the backlog without pushing everything else off the first
+// screen; the pager keeps its height fixed however long the list is.
+const STALE_PER_PAGE = 5;
+
+const staleBtn = (disabled) => ({
+    padding: '4px 11px', borderRadius: 4, border: '1px solid var(--adm-border)',
+    background: 'var(--adm-card)', color: disabled ? 'var(--adm-text-muted)' : 'var(--adm-text-2)',
+    fontSize: 11.5, fontWeight: 600, fontFamily: FF,
+    cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? 0.55 : 1,
+});
+
 function StaleCases({ stale, onOpen }) {
     const cases = stale?.cases || [];
+    const [page, setPage] = useState(1);
+    const pages = Math.max(1, Math.ceil(cases.length / STALE_PER_PAGE));
+    const current = Math.min(page, pages);
+    const pageRows = cases.slice((current - 1) * STALE_PER_PAGE, current * STALE_PER_PAGE);
     if (!cases.length) {
         return (
             <div style={{ background: 'var(--adm-card)', border: '1px solid var(--adm-border)', borderRadius: 4, padding: '16px 18px', marginBottom: 18 }}>
@@ -539,7 +560,8 @@ function StaleCases({ stale, onOpen }) {
             </div>
             {/* row-hover is defined on the Reports page, not this one, so
                 these rows had no hover at all until this class. */}
-            {cases.slice(0, 8).map(c => (
+            <div className="stale-scroll" style={{ maxHeight: 220, overflowY: 'auto', overflowX: 'hidden' }}>
+            {pageRows.map(c => (
                 <div key={c.id} className="stale-row" onClick={() => onOpen(c.id)}
                     role="button" tabIndex={0}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(c.id); } }}
@@ -557,11 +579,19 @@ function StaleCases({ stale, onOpen }) {
                     </svg>
                 </div>
             ))}
-            {cases.length > 8 && (
-                <p style={{ margin: '8px 0 0', fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: FF }}>
-                    and {cases.length - 8} more
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--adm-border)' }}>
+                <p style={{ margin: 0, fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: FF }}>
+                    {(current - 1) * STALE_PER_PAGE + 1}-{(current - 1) * STALE_PER_PAGE + pageRows.length} of {cases.length}
                 </p>
-            )}
+                {pages > 1 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={current === 1} style={staleBtn(current === 1)}>Previous</button>
+                        <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--adm-text-2)', fontFamily: FF }}>Page {current} of {pages}</span>
+                        <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={current === pages} style={staleBtn(current === pages)}>Next</button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

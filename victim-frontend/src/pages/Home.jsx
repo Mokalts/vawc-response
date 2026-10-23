@@ -67,28 +67,15 @@ if (!document.getElementById('vawc-home-css')) {
         @media (max-width: 600px) { .awareness-grid { grid-template-columns: 1fr; } }
         @media (min-width: 720px) { .vh-about { grid-template-columns: 300px 1fr !important; gap: 24px !important; padding: 22px !important; } }
 
-        /* The three stages. Stacked with the line running down beside the
-           numbers; side by side with it running across them once there is
-           room. Either way the line is what says they are in order. */
-        .vh-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 14px; }
-        .vh-step { display: flex; gap: 12px; align-items: flex-start; min-width: 0; }
-        .vh-step-rail { position: relative; display: flex; flex-direction: column; align-items: center; align-self: stretch; flex-shrink: 0; }
-        .vh-step-no { width: 26px; height: 26px; border-radius: 13px; flex-shrink: 0;
-                      background: var(--surface-alt); border: 1.5px solid var(--border);
-                      color: var(--accent-text); font-size: 12px; font-weight: 800;
-                      display: inline-flex; align-items: center; justify-content: center;
+        /* Three stages as a plain numbered list, running down. The number is
+           set in the body colour rather than dressed up: it is there to count
+           them, not to be looked at. */
+        .vh-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
+        .vh-step { display: flex; gap: 9px; align-items: baseline; min-width: 0; }
+        .vh-step-no { flex-shrink: 0; min-width: 14px; color: var(--text); font-size: 13px;
+                      font-weight: 700; font-variant-numeric: tabular-nums;
                       font-family: 'Lexend', sans-serif; }
-        .vh-step-line { flex: 1; width: 2px; min-height: 10px; margin-top: 4px; margin-bottom: -14px; background: var(--border); border-radius: 1px; }
-        .vh-step-body { min-width: 0; padding-bottom: 2px; }
-
-        @media (min-width: 560px) {
-            .vh-steps { grid-template-columns: repeat(3, 1fr); gap: 0 14px; }
-            .vh-step { flex-direction: column; gap: 8px; }
-            .vh-step-rail { flex-direction: row; align-items: center; align-self: auto; width: 100%; }
-            /* Bridges the 14px grid gap so the line reaches the next number. */
-            .vh-step-line { width: auto; height: 2px; min-height: 0; margin-top: 0; margin-bottom: 0; margin-left: 8px; margin-right: -14px; }
-            .vh-step-body { padding-bottom: 0; }
-        }
+        .vh-step-body { min-width: 0; }
         @media (min-width: 601px) and (max-width: 900px) { .awareness-grid { grid-template-columns: 1fr 1fr; } }
 
         /* Scroll reveal. Elements start shifted and fade in when they enter the
@@ -130,7 +117,7 @@ if (!document.getElementById('vawc-home-css')) {
             .vh-hero-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0,0,0,0.26) !important; background-color: #FFF3E0 !important; }
             .vh-report-btn:hover { background-color: #A83D00 !important; transform: translateY(-2px); box-shadow: 0 10px 22px rgba(204,75,0,0.3) !important; }
             .vh-report-btn:hover .vh-report-arrow { transform: translateX(3px); }
-            .vh-icon-btn:hover { background: var(--surface-tint) !important; border-color: #FF7A00 !important; transform: translateY(-1px); }
+            .vh-icon-btn:hover { background: var(--surface-alt) !important; border-color: var(--border) !important; transform: translateY(-1px); }
             .vh-card:hover .vh-card-glyph { transform: translateY(-3px) scale(1.04); }
             .vh-card:hover .vh-card-arrow { transform: translateX(3px); }
             .vh-card:hover .vh-card-art { transform: scale(1.03); }
@@ -440,13 +427,10 @@ function Home() {
                             {[
                                 ['1', 'You file', 'In your own words, with photos if you have them.'],
                                 ['2', 'The desk reviews', 'An officer confirms it and records what they do.'],
-                                ['3', 'You are helped', 'A protection order, an endorsement, or a referral.'],
-                            ].map(([n, t, d], i, all) => (
+                                ['3', 'The barangay acts', 'A protection order, an endorsement, or a referral.'],
+                            ].map(([n, t, d]) => (
                                 <li key={n} className="vh-step">
-                                    <span className="vh-step-rail">
-                                        <span className="vh-step-no">{n}</span>
-                                        {i < all.length - 1 && <span className="vh-step-line" aria-hidden="true" />}
-                                    </span>
+                                    <span className="vh-step-no">{n}.</span>
                                     <span className="vh-step-body">
                                         <span style={S.aboutStepTitle}>{t}</span>
                                         <span style={S.aboutStepText}>{d}</span>
@@ -513,8 +497,8 @@ const S = {
     // sign-in and admin sidebar logos.
     logoImg:     { width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scale(1.16) translateY(1%)', transformOrigin: 'center' },
     appName:     { fontSize: 17, fontWeight: 700, color: 'var(--accent-text)', fontFamily: FF, letterSpacing: '-0.3px' },
-    menuBtn:     { width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--surface-tint)', border: '1px solid var(--border)', color: 'var(--accent-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
-    notifBtn:    { position: 'relative', width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--surface)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
+    menuBtn:     { width: 44, height: 44, borderRadius: 14, backgroundColor: 'transparent', border: '1px solid var(--border-soft)', color: 'var(--text-body)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
+    notifBtn:    { position: 'relative', width: 44, height: 44, borderRadius: 14, backgroundColor: 'transparent', border: '1px solid var(--border-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
     notifBadge:  { position: 'absolute', top: -4, right: -4, minWidth: 16, height: 16, borderRadius: 9999, backgroundColor: '#F47920', color: '#fff', fontSize: 9.5, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', border: '2px solid var(--surface)', fontFamily: FF },
 
     notifBanner:    { display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 18, padding: '14px 16px', cursor: 'pointer', boxShadow: 'var(--card-shadow)' },
