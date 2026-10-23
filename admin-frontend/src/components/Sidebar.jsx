@@ -259,7 +259,7 @@ function Sidebar() {
                 <div style={{
                     position: 'absolute', left: 12, right: 12,
                     top: pill.top, height: pill.height,
-                    borderRadius: 10, background: 'var(--adm-primary-bg)',
+                    borderRadius: 10, background: 'var(--adm-border)',
                     boxShadow: 'inset 3px 0 0 #AD530F',
                     opacity: pill.show ? 1 : 0, zIndex: 0, pointerEvents: 'none',
                     transition: pill.animate
@@ -332,7 +332,7 @@ function Sidebar() {
                                             onClick={() => navigate(`/admin-management?section=${sec.key}`)}
                                             style={{ ...S.navBtn, position: 'relative', zIndex: 1,
                                                      paddingLeft: 44, minHeight: 34,
-                                                     background: on ? 'var(--adm-primary-bg)' : 'transparent' }}>
+                                                     background: on ? 'var(--adm-border)' : 'transparent' }}>
                                             <span style={{ ...S.navLabel, fontSize: 12.5,
                                                            color: on ? 'var(--adm-text)' : 'var(--adm-text-2)',
                                                            fontWeight: on ? 700 : 500 }}>
