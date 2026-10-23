@@ -66,6 +66,29 @@ if (!document.getElementById('vawc-home-css')) {
         .awareness-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
         @media (max-width: 600px) { .awareness-grid { grid-template-columns: 1fr; } }
         @media (min-width: 720px) { .vh-about { grid-template-columns: 300px 1fr !important; gap: 24px !important; padding: 22px !important; } }
+
+        /* The three stages. Stacked with the line running down beside the
+           numbers; side by side with it running across them once there is
+           room. Either way the line is what says they are in order. */
+        .vh-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 14px; }
+        .vh-step { display: flex; gap: 12px; align-items: flex-start; min-width: 0; }
+        .vh-step-rail { position: relative; display: flex; flex-direction: column; align-items: center; align-self: stretch; flex-shrink: 0; }
+        .vh-step-no { width: 26px; height: 26px; border-radius: 13px; flex-shrink: 0;
+                      background: var(--surface-alt); border: 1.5px solid var(--border);
+                      color: var(--accent-text); font-size: 12px; font-weight: 800;
+                      display: inline-flex; align-items: center; justify-content: center;
+                      font-family: 'Lexend', sans-serif; }
+        .vh-step-line { flex: 1; width: 2px; min-height: 10px; margin-top: 4px; margin-bottom: -14px; background: var(--border); border-radius: 1px; }
+        .vh-step-body { min-width: 0; padding-bottom: 2px; }
+
+        @media (min-width: 560px) {
+            .vh-steps { grid-template-columns: repeat(3, 1fr); gap: 0 14px; }
+            .vh-step { flex-direction: column; gap: 8px; }
+            .vh-step-rail { flex-direction: row; align-items: center; align-self: auto; width: 100%; }
+            /* Bridges the 14px grid gap so the line reaches the next number. */
+            .vh-step-line { width: auto; height: 2px; min-height: 0; margin-top: 0; margin-bottom: 0; margin-left: 8px; margin-right: -14px; }
+            .vh-step-body { padding-bottom: 0; }
+        }
         @media (min-width: 601px) and (max-width: 900px) { .awareness-grid { grid-template-columns: 1fr 1fr; } }
 
         /* Scroll reveal. Elements start shifted and fade in when they enter the
@@ -413,15 +436,18 @@ function Home() {
                             You file a report here instead of queuing at the hall, and the VAWC desk officer receives it
                             directly. Your report is encrypted, and only the officers handling your case can open it.
                         </p>
-                        <ol style={S.aboutSteps}>
+                        <ol className="vh-steps">
                             {[
                                 ['1', 'You file', 'In your own words, with photos if you have them.'],
                                 ['2', 'The desk reviews', 'An officer confirms it and records what they do.'],
                                 ['3', 'You are helped', 'A protection order, an endorsement, or a referral.'],
-                            ].map(([n, t, d]) => (
-                                <li key={n} style={S.aboutStep}>
-                                    <span style={S.aboutStepNo}>{n}</span>
-                                    <span style={{ minWidth: 0 }}>
+                            ].map(([n, t, d], i, all) => (
+                                <li key={n} className="vh-step">
+                                    <span className="vh-step-rail">
+                                        <span className="vh-step-no">{n}</span>
+                                        {i < all.length - 1 && <span className="vh-step-line" aria-hidden="true" />}
+                                    </span>
+                                    <span className="vh-step-body">
                                         <span style={S.aboutStepTitle}>{t}</span>
                                         <span style={S.aboutStepText}>{d}</span>
                                     </span>
@@ -533,9 +559,6 @@ const S = {
     aboutKicker: { display: 'block', fontSize: 10.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6, fontFamily: FF },
     aboutTitle:  { fontSize: 21, fontWeight: 800, color: 'var(--text)', margin: '0 0 8px', fontFamily: FF, letterSpacing: '-0.5px', lineHeight: 1.2 },
     aboutText:   { fontSize: 13.5, lineHeight: 1.75, color: 'var(--text-body)', margin: '0 0 14px', fontFamily: FF },
-    aboutSteps:  { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 },
-    aboutStep:   { display: 'flex', gap: 10, alignItems: 'flex-start' },
-    aboutStepNo: { flexShrink: 0, width: 22, height: 22, borderRadius: 11, backgroundColor: 'var(--surface-alt)', border: '1px solid var(--border)', color: 'var(--accent-text)', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontFamily: FF },
     aboutStepTitle: { display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text)', fontFamily: FF, lineHeight: 1.35 },
     aboutStepText:  { display: 'block', fontSize: 12.5, color: 'var(--text-muted)', fontFamily: FF, lineHeight: 1.5, marginTop: 1 },
     sectionHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingTop: 10, paddingBottom: 12, marginBottom: 2, borderBottom: '1px solid var(--border)' },
