@@ -92,7 +92,7 @@ if (!document.getElementById('vawc-home-css')) {
         /* Side widgets */
         @keyframes shimmerFade { 0%,100%{opacity:1} 50%{opacity:0.4} }
         .vh-widgets { display: flex; flex-direction: column; gap: 10px; }
-        .vh-card-art { height: 118px; max-width: 82%; width: auto; display: block; }
+        .vh-card-art { height: 100px; max-width: 72%; width: auto; display: block; margin-top: 20px; }
         .vh-card-art, .vh-card-glyph { transition: transform 0.22s ease; }
         .vh-widget { transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
         .vh-widget:active { transform: scale(0.99); }
