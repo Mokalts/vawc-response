@@ -18,7 +18,7 @@ if (!document.getElementById('vawc-global-css')) {
         @keyframes navUnderline { from { width: 3px; } to { width: 100%; } }
         .vawc-nav-underline {
             position: absolute; left: 0; bottom: -5px; height: 2px;
-            border-radius: 2px; background: currentColor;
+            border-radius: 2px; background: currentColor; opacity: 0.38;
             animation: navUnderline 0.34s cubic-bezier(0.22,1,0.36,1) both;
         }
         @media (prefers-reduced-motion: reduce) {
