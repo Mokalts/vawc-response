@@ -65,6 +65,7 @@ if (!document.getElementById('vawc-home-css')) {
         .bell-ring { animation: bellRing 0.6s ease; }
         .awareness-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
         @media (max-width: 600px) { .awareness-grid { grid-template-columns: 1fr; } }
+        @media (min-width: 720px) { .vh-about { grid-template-columns: 300px 1fr !important; gap: 24px !important; padding: 22px !important; } }
         @media (min-width: 601px) and (max-width: 900px) { .awareness-grid { grid-template-columns: 1fr 1fr; } }
 
         /* Scroll reveal. Elements start shifted and fade in when they enter the
@@ -112,14 +113,14 @@ if (!document.getElementById('vawc-home-css')) {
             .vh-card:hover .vh-card-art { transform: scale(1.03); }
             .vh-widget:hover { transform: translateY(-2px); box-shadow: var(--card-shadow-strong) !important; border-color: #FFCC99; }
             .vh-widget:hover .vh-widget-arrow { transform: translateX(3px); }
-            .vh-card:hover .vh-learn { background: #C45E10; border-color: #C45E10; color: #fff; }
+            .vh-card:hover .vh-learn { background: #AD530F; border-color: #AD530F; color: #fff; }
         }
         `;
     document.head.appendChild(s);
 }
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
-const IcoMenu   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#C45E10" strokeWidth="2" strokeLinecap="round" /></svg>);
+const IcoMenu   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="#AD530F" strokeWidth="2" strokeLinecap="round" /></svg>);
 const IcoArrow  = ({ c = '#fff' }) => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M13 6L19 12L13 18" stroke={c} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 // ── Monochrome glyphs ────────────────────────────────────────────────────────
 // Every icon draws with `currentColor`, so it inherits the theme's text colour
@@ -136,6 +137,31 @@ const Svg = ({ size = 22, children }) => (
 const IcoAlert  = ({ size }) => (<Svg size={size}><circle cx="10.5" cy="10.5" r="7" /><path d="M20.5 20.5l-5-5" /><path d="M10.5 7.4v3.6M10.5 13.7h.01" /></Svg>);
 // Your Remedies — a checklist of actions she can take
 const IcoDoc    = ({ size }) => (<Svg size={size}><path d="M10.5 6.8h9.5M10.5 12h9.5M10.5 17.2h9.5" /><path d="M3.6 6.6l1.5 1.5 2.6-2.8M3.6 11.8l1.5 1.5 2.6-2.8M3.6 17l1.5 1.5 2.6-2.8" /></Svg>);
+// What the app does, drawn rather than listed: a report leaving a phone,
+// under the shield that is the barangay holding it. Authored here so the home
+// page does not reuse the illustration style of the awareness pages.
+const ArtAbout = (props) => (
+    <svg viewBox="0 0 220 150" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+        {/* phone */}
+        <rect x="63" y="22" width="94" height="112" rx="10" fill="var(--surface)" stroke="var(--text)" strokeWidth="3" />
+        <rect x="74" y="36" width="72" height="8" rx="4" fill="#FFD9B3" />
+        <rect x="74" y="52" width="54" height="6" rx="3" fill="var(--border-soft)" />
+        <rect x="74" y="64" width="62" height="6" rx="3" fill="var(--border-soft)" />
+        <rect x="74" y="76" width="40" height="6" rx="3" fill="var(--border-soft)" />
+        {/* the send action */}
+        <rect x="74" y="96" width="72" height="22" rx="6" fill="#AD530F" />
+        <path d="M100 107h20m0 0-5-5m5 5-5 5" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+        {/* shield over the phone: the desk holding what she sent */}
+        <path d="M156 14l24 9v22c0 15-10 27-24 32-14-5-24-17-24-32V23l24-9z" fill="#FFF3E0" stroke="#AD530F" strokeWidth="3" strokeLinejoin="round" />
+        <path d="M147 44l7 7 14-14" stroke="#AD530F" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
+        {/* the three stages, as a track */}
+        <path d="M30 140h160" stroke="var(--border)" strokeWidth="3" strokeLinecap="round" />
+        <circle cx="40" cy="140" r="7" fill="#AD530F" />
+        <circle cx="110" cy="140" r="7" fill="#AD530F" />
+        <circle cx="180" cy="140" r="7" fill="var(--border)" stroke="#AD530F" strokeWidth="3" />
+    </svg>
+);
+
 // Seek Support — a place that holds care
 const IcoHands  = ({ size }) => (<Svg size={size}><path d="M12 21.5s7-5.4 7-10.3A7 7 0 105 11.2c0 4.9 7 10.3 7 10.3z" /><path d="M14.2 9.5a1.75 1.75 0 00-2.2.35 1.75 1.75 0 00-2.2-.35 1.75 1.75 0 00-.3 2.4L12 14.6l2.5-2.7a1.75 1.75 0 00-.3-2.4z" /></Svg>);
 const IcoBell   = ({ c = '#F47920', size = 18 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>);
@@ -375,6 +401,36 @@ function Home() {
                     </div>
                 </div>
 
+                {/* What this app is. Above Legal Awareness on purpose: what
+                    the app does, before what the law says. */}
+                <div className="vh-about vh-reveal" style={S.aboutCard}>
+                    <div style={S.aboutArt}><ArtAbout aria-hidden="true" focusable="false" style={{ width: '100%', height: 'auto', display: 'block' }} /></div>
+                    <div style={S.aboutBody}>
+                        <span style={S.aboutKicker}>Barangay Palanginan</span>
+                        <h2 style={S.aboutTitle}>What is VAWC-Response?</h2>
+                        <p style={S.aboutText}>
+                            It is the barangay's own desk for violence against women and their children, as a phone app.
+                            You file a report here instead of queuing at the hall, and the VAWC desk officer receives it
+                            directly. Your report is encrypted, and only the officers handling your case can open it.
+                        </p>
+                        <ol style={S.aboutSteps}>
+                            {[
+                                ['1', 'You file', 'In your own words, with photos if you have them.'],
+                                ['2', 'The desk reviews', 'An officer confirms it and records what they do.'],
+                                ['3', 'You are helped', 'A protection order, an endorsement, or a referral.'],
+                            ].map(([n, t, d]) => (
+                                <li key={n} style={S.aboutStep}>
+                                    <span style={S.aboutStepNo}>{n}</span>
+                                    <span style={{ minWidth: 0 }}>
+                                        <span style={S.aboutStepTitle}>{t}</span>
+                                        <span style={S.aboutStepText}>{d}</span>
+                                    </span>
+                                </li>
+                            ))}
+                        </ol>
+                    </div>
+                </div>
+
                 {/* Awareness section */}
                 <div className="vh-sectionhead vh-reveal" style={S.sectionHead}>
                     <div>
@@ -387,7 +443,7 @@ function Home() {
 
                 <div className="awareness-grid">
                     {awarenessItems.map((item, i) => (
-                        <div key={item.section} className="vh-card vh-reveal" style={{ ...S.awareCard, transitionDelay: `${i * 70}ms` }}
+                        <div key={item.section} className="vh-card vh-reveal" style={S.awareCard}
                             role="button" tabIndex={0}
                             aria-label={`${item.title}: ${item.desc}`}
                             onClick={() => navigate(`/awareness?section=${item.section}`)}
@@ -471,6 +527,17 @@ const S = {
     // Highlighted with weight, size and a rule rather than colour: the heading
     // steps up to 22/800, the caption gets a marker bar and its own line, and a
     // hairline runs under the pair to separate the section from the hero above.
+    aboutCard:   { display: 'grid', gridTemplateColumns: '1fr', gap: 18, alignItems: 'center', backgroundColor: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-card)', boxShadow: 'var(--card-shadow)', padding: 18, marginTop: 18 },
+    aboutArt:    { backgroundColor: 'var(--surface-alt)', borderRadius: 14, padding: '18px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    aboutBody:   { minWidth: 0 },
+    aboutKicker: { display: 'block', fontSize: 10.5, fontWeight: 800, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6, fontFamily: FF },
+    aboutTitle:  { fontSize: 21, fontWeight: 800, color: 'var(--text)', margin: '0 0 8px', fontFamily: FF, letterSpacing: '-0.5px', lineHeight: 1.2 },
+    aboutText:   { fontSize: 13.5, lineHeight: 1.75, color: 'var(--text-body)', margin: '0 0 14px', fontFamily: FF },
+    aboutSteps:  { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 10 },
+    aboutStep:   { display: 'flex', gap: 10, alignItems: 'flex-start' },
+    aboutStepNo: { flexShrink: 0, width: 22, height: 22, borderRadius: 11, backgroundColor: 'var(--surface-alt)', border: '1px solid var(--border)', color: 'var(--accent-text)', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontFamily: FF },
+    aboutStepTitle: { display: 'block', fontSize: 13, fontWeight: 700, color: 'var(--text)', fontFamily: FF, lineHeight: 1.35 },
+    aboutStepText:  { display: 'block', fontSize: 12.5, color: 'var(--text-muted)', fontFamily: FF, lineHeight: 1.5, marginTop: 1 },
     sectionHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingTop: 10, paddingBottom: 12, marginBottom: 2, borderBottom: '1px solid var(--border)' },
     sectionLabel:{ fontSize: 22, fontWeight: 800, color: 'var(--text)', margin: '0 0 5px', fontFamily: FF, letterSpacing: '-0.6px', lineHeight: 1.15 },
     sectionSub:  { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 500, color: 'var(--text-body)', margin: 0, fontFamily: FF },

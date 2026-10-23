@@ -79,15 +79,15 @@ const ABUSE_OPTS = [
 ];
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
-const IcoArrow  = ({ dir='left', c='#C45E10' }) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d={dir==='left'?"M15 18l-6-6 6-6":"M9 18l6-6-6-6"} stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoArrow  = ({ dir='left', c='#AD530F' }) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d={dir==='left'?"M15 18l-6-6 6-6":"M9 18l6-6-6-6"} stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoCheck  = ({ c='#059669', size=16 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke={c} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoCamera = ({ c='#fff' }) => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="13" r="4" stroke={c} strokeWidth="1.8"/></svg>);
 const IcoImage  = ({ c='#F47920' }) => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke={c} strokeWidth="1.8"/><circle cx="8.5" cy="8.5" r="1.5" stroke={c} strokeWidth="1.8"/><path d="M21 15l-5-5L5 21" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoPin    = ({ c='#fff', size=19 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="10" r="3" stroke={c} strokeWidth="1.8"/></svg>);
 const IcoX      = ({ c='#EF4444' }) => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke={c} strokeWidth="2.4" strokeLinecap="round"/></svg>);
 const IcoInfo   = ({ c='#0A5A42' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke={c} strokeWidth="1.8"/><path d="M12 8v4M12 16h.01" stroke={c} strokeWidth="2" strokeLinecap="round"/></svg>);
-const IcoCal    = ({ c='#C45E10', size=13 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke={c} strokeWidth="1.9"/><path d="M16 2v4M8 2v4M3 10h18" stroke={c} strokeWidth="1.9" strokeLinecap="round"/></svg>);
-const IcoShield = ({ c='#C45E10' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoCal    = ({ c='#AD530F', size=13 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke={c} strokeWidth="1.9"/><path d="M16 2v4M8 2v4M3 10h18" stroke={c} strokeWidth="1.9" strokeLinecap="round"/></svg>);
+const IcoShield = ({ c='#AD530F' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoEdit   = ({ c='#F47920' }) => (<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const Spinner   = ({ c='#fff', size=18 }) => (<div style={{ width:size, height:size, border:`2.5px solid ${c}40`, borderTopColor:c, borderRadius: '50%', animation:'spin 0.7s linear infinite' }} />);
 
@@ -530,7 +530,7 @@ function ReportNow() {
                             <div style={{ width:26, height:26, borderRadius: 8, backgroundColor: done?'#059669':current?'#F47920':'var(--border)', display:'flex', alignItems:'center', justifyContent:'center', transition:'background-color 0.2s' }}>
                                 {done ? <IcoCheck c="#fff" size={13} /> : <span style={{ fontSize:11, fontWeight:700, color: current?'#fff':'#64748B', fontFamily:"'Lexend', sans-serif" }}>{s.id}</span>}
                             </div>
-                            <p style={{ fontSize:10.5, fontWeight: current?700:600, color: done?'#047857':current?'#C45E10':'#64748B', marginTop:3, fontFamily:"'Lexend', sans-serif", whiteSpace:'nowrap' }}>{s.short}</p>
+                            <p style={{ fontSize:10.5, fontWeight: current?700:600, color: done?'#047857':current?'#AD530F':'#64748B', marginTop:3, fontFamily:"'Lexend', sans-serif", whiteSpace:'nowrap' }}>{s.short}</p>
                         </div>
                         {i < STEPS.length-1 && (
                             <div style={{ flex:1, height:2, backgroundColor: step>s.id?'#059669':'var(--border)', margin:'0 4px', marginBottom:14, transition:'background-color 0.3s' }} />
@@ -667,7 +667,7 @@ function ReportNow() {
                                 <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
                                     {ABUSE_OPTS.map(o => (
                                         <label key={o.id} style={{ display:'flex', alignItems:'center', gap:10, fontSize:14, color:'var(--text-body)', fontFamily:"'Lexend', sans-serif", cursor:'pointer' }}>
-                                            <input type="checkbox" checked={abuseTypes.includes(o.id)} onChange={() => toggleAbuse(o.id)} style={{ width:18, height:18, accentColor:'#C45E10' }} />
+                                            <input type="checkbox" checked={abuseTypes.includes(o.id)} onChange={() => toggleAbuse(o.id)} style={{ width:18, height:18, accentColor:'#AD530F' }} />
                                             {o.label}
                                         </label>
                                     ))}
@@ -696,7 +696,7 @@ function ReportNow() {
                                             </select>
                                         </div>
                                         <label style={{ display:'flex', alignItems:'center', gap:8, fontSize:13.5, color:'var(--text-body)', fontFamily:"'Lexend', sans-serif" }}>
-                                            <input type="checkbox" checked={!!c.under_her_care} onChange={e => setChild(i, 'under_her_care', e.target.checked)} style={{ width:17, height:17, accentColor:'#C45E10' }} />
+                                            <input type="checkbox" checked={!!c.under_her_care} onChange={e => setChild(i, 'under_her_care', e.target.checked)} style={{ width:17, height:17, accentColor:'#AD530F' }} />
                                             Under my care / Nasa aking pangangalaga
                                         </label>
                                         <button type="button" onClick={() => removeChild(i)} style={{ alignSelf:'flex-start', background:'none', border:'none', color:'#BE123C', fontSize:13, fontWeight:600, cursor:'pointer', fontFamily:"'Lexend', sans-serif" }}>Remove</button>
@@ -921,7 +921,7 @@ function ReportNow() {
                 <div style={{ display:'flex', gap:12 }}>
                     {step > 1 && (
                         <button className="vrn-btn-hover" style={S.prevBtn} onClick={() => setStep(step-1)}>
-                            <IcoArrow dir="left" c="#C45E10" /> Previous
+                            <IcoArrow dir="left" c="#AD530F" /> Previous
                         </button>
                     )}
                     {step < STEPS.length ? (
@@ -973,7 +973,7 @@ const S = {
     reviewVal:    { fontSize:14, color:'var(--text)', lineHeight:1.65, fontFamily:"'Lexend', sans-serif", wordBreak:'break-word' },
     prevBtn:      { flex:1, padding:'13px', backgroundColor:'transparent', color:'var(--accent-text)', fontSize:15, fontWeight:600, border:'2px solid var(--border)', borderRadius: 4, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:"'Lexend', sans-serif" },
     nextBtn:      { flex:1, padding:'13px', backgroundColor:'#CC4B00', color:'#fff', fontSize:15, fontWeight:600, border:'none', borderRadius: 4, display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 8px rgba(244,121,32,0.3)' },
-    submitBtn:    { flex:1, padding:'13px', backgroundColor:'#C45E10', color:'#fff', fontSize:15, fontWeight:700, border:'none', borderRadius: 8, cursor:'pointer', fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 10px rgba(244,121,32,0.3)' },
+    submitBtn:    { flex:1, padding:'13px', backgroundColor:'#AD530F', color:'#fff', fontSize:15, fontWeight:700, border:'none', borderRadius: 8, cursor:'pointer', fontFamily:"'Lexend', sans-serif", boxShadow:'0 2px 10px rgba(244,121,32,0.3)' },
 };
 
 export default ReportNow;

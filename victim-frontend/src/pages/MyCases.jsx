@@ -36,7 +36,7 @@ const IcoFolder = ({ c='#CBD5E1', size=48 }) => (<svg width={size} height={size}
 const IcoDoc    = ({ c='#CBD5E1', size=36 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoX      = ({ c='#64748B', size=16 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke={c} strokeWidth="2" strokeLinecap="round"/></svg>);
 const IcoArrow  = () => (<svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#F47920" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoBack   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 18l-6-6 6-6" stroke="#C45E10" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoBack   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 18l-6-6 6-6" stroke="#AD530F" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoBell   = ({ c='#F47920' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoCal    = ({ c='#64748B', size=13 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke={c} strokeWidth="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoPin    = ({ c='#64748B', size=13 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="10" r="3" stroke={c} strokeWidth="1.8"/></svg>);
@@ -50,7 +50,7 @@ const STATUS_MAP = {
     under_assessment:      { label:'Under Assessment',        bg:'#ECFEFF', color:'#0E7490', dot:'#06B6D4' },
     awaiting_onsite_visit: { label:'Awaiting Onsite Visit',   bg:'#FFFBEB', color:'#92400E', dot:'#F59E0B' },
     bpo_applied:           { label:'BPO Applied',             bg:'#FFF8F0', color:'#AD530F', dot:'#FFB066' },
-    bpo_issued:            { label:'BPO Issued',              bg:'#FFF3E0', color:'#C45E10', dot:'#F47920' },
+    bpo_issued:            { label:'BPO Issued',              bg:'#FFF3E0', color:'#AD530F', dot:'#F47920' },
     bpo_served:            { label:'BPO Served',              bg:'#FFFBEB', color:'#92400E', dot:'#D97706' },
     endorsed:              { label:'Endorsed',                bg:'var(--surface-tint)', color:'var(--accent-text)', dot:'#F47920' },
     closed:                { label:'Assistance Ended',                  bg:'#F1F5F9', color:'#475569', dot:'#64748B' },
@@ -369,14 +369,14 @@ function CaseDetailModal({ cas, onClose, onStatusRead }) {
                     {cas.messages && cas.messages.length > 0 && (
                         <div style={{backgroundColor:'#FFF3E0',borderRadius:12,padding:'14px 15px',border:'1.5px solid #FFD9B3'}}>
                             <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:10}}>
-                                <IcoBell c="#C45E10"/>
+                                <IcoBell c="#AD530F"/>
                                 <p style={{margin:0,fontSize:13.5,fontWeight:800,color:'#8A3C08',fontFamily:"'Lexend',sans-serif"}}>Messages from the Barangay ({cas.messages.length})</p>
                             </div>
                             <div style={{display:'flex',flexDirection:'column',gap:10}}>
                                 {cas.messages.map(m => (
                                     <div key={m.id} style={{backgroundColor:'var(--surface)',borderRadius:8,padding:'10px 12px',border:'1px solid #FFD9B3'}}>
                                         <p style={{margin:0,fontSize:13.5,color:'#8A3C08',lineHeight:1.6,whiteSpace:'pre-line',fontFamily:"'Lexend',sans-serif"}}>{m.message}</p>
-                                        <p style={{margin:'6px 0 0',fontSize:11,color:'#C45E10',fontFamily:"'Lexend',sans-serif"}}>{fmtDate(m.created_at)}</p>
+                                        <p style={{margin:'6px 0 0',fontSize:11,color:'#AD530F',fontFamily:"'Lexend',sans-serif"}}>{fmtDate(m.created_at)}</p>
                                     </div>
                                 ))}
                             </div>
@@ -397,7 +397,7 @@ function CaseDetailModal({ cas, onClose, onStatusRead }) {
                     {cas.status === 'awaiting_onsite_visit' && (
                         <div style={{backgroundColor:'var(--surface-tint)',borderRadius: 12,padding:'15px 16px',border:'1.5px solid #F47920'}}>
                             <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-                                <IcoPin c="#C45E10" size={17}/>
+                                <IcoPin c="#AD530F" size={17}/>
                                 <p style={{margin:0,fontSize:13.5,fontWeight:800,color:'var(--accent-text)',fontFamily:"'Lexend',sans-serif"}}>
                                     Action Needed: Visit the VAWC Office
                                 </p>

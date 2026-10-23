@@ -11,13 +11,13 @@ if (!document.getElementById('vawc-font')) {
 }
 if (!document.getElementById('vawc-victim-css')) {
     const s = document.createElement('style'); s.id='vawc-victim-css';
-    s.textContent=`@keyframes spin{to{transform:rotate(360deg)}} @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}} .vi-input{transition:border-color 0.15s,box-shadow 0.15s;} .vi-input:focus{border-color:#F47920!important;background:var(--surface)!important;outline:none;box-shadow:0 0 0 3px rgba(244,121,32,0.1)!important;} .vi-otp{transition:all 0.15s;} .vi-otp:focus{border-color:#F47920!important;box-shadow:0 0 0 3px rgba(244,121,32,0.15)!important;outline:none;background:var(--surface)!important;} .vi-btn{transition:all 0.15s ease;} @media (hover: hover) and (pointer: fine){.vi-btn:hover:not([disabled]){background:#C45E10!important;transform:translateY(-1px);}}`;
+    s.textContent=`@keyframes spin{to{transform:rotate(360deg)}} @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}} .vi-input{transition:border-color 0.15s,box-shadow 0.15s;} .vi-input:focus{border-color:#F47920!important;background:var(--surface)!important;outline:none;box-shadow:0 0 0 3px rgba(244,121,32,0.1)!important;} .vi-otp{transition:all 0.15s;} .vi-otp:focus{border-color:#F47920!important;box-shadow:0 0 0 3px rgba(244,121,32,0.15)!important;outline:none;background:var(--surface)!important;} .vi-btn{transition:all 0.15s ease;} @media (hover: hover) and (pointer: fine){.vi-btn:hover:not([disabled]){background:#AD530F!important;transform:translateY(-1px);}}`;
     document.head.appendChild(s);
 }
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const IcoShield    = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#F47920" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoBack      = ({ c='#C45E10' }) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoBack      = ({ c='#AD530F' }) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoEyeOpen   = () => (<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="3" stroke="#64748B" strokeWidth="1.8"/></svg>);
 const IcoEyeClosed = () => (<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoWarn      = ({ c='#BE123C' }) => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke={c} strokeWidth="1.8" strokeLinecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke={c} strokeWidth="2.4" strokeLinecap="round"/></svg>);
@@ -36,7 +36,7 @@ const Steps = ({ current }) => (
                             : <span style={{fontSize:12,fontWeight:700,color:n===current?'#fff':'#64748B',fontFamily:"'Lexend', sans-serif"}}>{n}</span>
                         }
                     </div>
-                    <span style={{fontSize:10.5,fontWeight:700,color:n===current?'#C45E10':n<current?'#047857':'#64748B',fontFamily:"'Lexend', sans-serif",whiteSpace:'nowrap'}}>
+                    <span style={{fontSize:10.5,fontWeight:700,color:n===current?'#AD530F':n<current?'#047857':'#64748B',fontFamily:"'Lexend', sans-serif",whiteSpace:'nowrap'}}>
                         {['Send Code','Verify','Reset'][i]}
                     </span>
                 </div>

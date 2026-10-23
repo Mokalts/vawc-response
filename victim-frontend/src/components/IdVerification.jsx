@@ -89,7 +89,7 @@ const IdVerification = ({ profile, onUpdated }) => {
                         <button
                             onClick={submit}
                             disabled={busy || !file || !idType.trim()}
-                            style={{ padding:'11px 0', borderRadius:8, border:'none', background:(busy || !file || !idType.trim()) ? 'var(--border)' : '#C45E10', color:(busy || !file || !idType.trim()) ? 'var(--text-muted)' : '#fff', fontSize:14, fontWeight:700, cursor:(busy || !file || !idType.trim()) ? 'not-allowed' : 'pointer', fontFamily:"'Lexend', sans-serif" }}>
+                            style={{ padding:'11px 0', borderRadius:8, border:'none', background:(busy || !file || !idType.trim()) ? 'var(--border)' : '#AD530F', color:(busy || !file || !idType.trim()) ? 'var(--text-muted)' : '#fff', fontSize:14, fontWeight:700, cursor:(busy || !file || !idType.trim()) ? 'not-allowed' : 'pointer', fontFamily:"'Lexend', sans-serif" }}>
                             {busy ? 'Sending…' : 'Send ID for checking'}
                         </button>
                     </>
@@ -146,7 +146,7 @@ export function IdUpload({ token, onSent }) {
                 style={{ fontSize:13, fontFamily:"'Lexend', sans-serif", color:'var(--text-body)' }} />
             {err && <p style={{ margin:0, fontSize:12.5, color:'#B91C1C', fontFamily:"'Lexend', sans-serif" }}>{err}</p>}
             <button onClick={submit} disabled={!ready}
-                style={{ padding:'11px 0', borderRadius:8, border:'none', background: ready ? '#C45E10' : 'var(--border)', color: ready ? '#fff' : 'var(--text-muted)', fontSize:14, fontWeight:700, cursor: ready ? 'pointer' : 'not-allowed', fontFamily:"'Lexend', sans-serif" }}>
+                style={{ padding:'11px 0', borderRadius:8, border:'none', background: ready ? '#AD530F' : 'var(--border)', color: ready ? '#fff' : 'var(--text-muted)', fontSize:14, fontWeight:700, cursor: ready ? 'pointer' : 'not-allowed', fontFamily:"'Lexend', sans-serif" }}>
                 {busy ? 'Sending…' : 'Send ID'}
             </button>
         </div>

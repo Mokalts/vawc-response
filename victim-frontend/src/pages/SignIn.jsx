@@ -25,8 +25,8 @@ if (!document.getElementById('vawc-victim-css')) {
         input::-webkit-credentials-auto-fill-button { display: none !important; }
         input::-webkit-strong-password-auto-fill-button { display: none !important; }
         @media (hover: hover) and (pointer: fine) {
-            .vi-btn:hover:not([disabled]) { background: #C45E10 !important; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(244,121,32,0.3) !important; }
-            .vi-link:hover { color: #C45E10 !important; }
+            .vi-btn:hover:not([disabled]) { background: #AD530F !important; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(244,121,32,0.3) !important; }
+            .vi-link:hover { color: #AD530F !important; }
         }
         `;
     document.head.appendChild(s);
@@ -360,7 +360,7 @@ const S = {
     eyeBtn: { padding: '0 13px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', flexShrink: 0 },
     errorBox: { display: 'flex', alignItems: 'center', gap: 8, backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 12, padding: '10px 13px', marginBottom: 16 },
     forgot: { fontSize: 13.5, color: '#B45309', cursor: 'pointer', fontWeight: 600, fontFamily: "'Lexend', sans-serif", transition: 'color 0.12s', background: 'none', border: 'none', padding: 0 },
-    submitBtn: { width: '100%', padding: 14, background: '#C45E10', color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: "'Lexend', sans-serif", boxShadow: '0 8px 20px rgba(196,94,16,0.28)' },
+    submitBtn: { width: '100%', padding: 14, background: '#AD530F', color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', borderRadius: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: "'Lexend', sans-serif", boxShadow: '0 8px 20px rgba(196,94,16,0.28)' },
     waitNote: { margin: '9px 2px 0', fontSize: 12, lineHeight: 1.55, color: 'var(--text-muted)', textAlign: 'center', fontFamily: "'Lexend', sans-serif" },
     divider: { height: 1, backgroundColor: 'var(--border-soft)', margin: '20px 0' },
     bottomText: { textAlign: 'center', fontSize: 14, color: 'var(--text-muted)', margin: 0, fontFamily: "'Lexend', sans-serif" },

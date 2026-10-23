@@ -24,7 +24,7 @@ if (!document.getElementById('vawc-victim-css')) {
       .vi-link{transition:opacity 0.15s ease;}
       @media (prefers-reduced-motion: reduce){ .vi-otp,.vi-btn,.vi-ghost,.vi-link{transition:none} }
       @media (hover: hover) and (pointer: fine) {
-          .vi-btn:hover:not([disabled]){background:#C45E10!important;}
+          .vi-btn:hover:not([disabled]){background:#AD530F!important;}
           .vi-ghost:hover:not([disabled]){background:var(--surface-tint)!important;border-color:#F0B27A!important;}
           .vi-link:hover{opacity:0.72;}
       }

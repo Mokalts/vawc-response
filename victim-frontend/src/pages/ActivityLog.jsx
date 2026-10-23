@@ -15,8 +15,8 @@ if (!document.getElementById('vawc-activity-css')) {
     document.head.appendChild(s);
 }
 
-const IcoArrow = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#C45E10" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoYou   = () => (<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#C45E10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="7" r="4" stroke="#C45E10" strokeWidth="2"/></svg>);
+const IcoArrow = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#AD530F" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoYou   = () => (<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#AD530F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="7" r="4" stroke="#AD530F" strokeWidth="2"/></svg>);
 const IcoDesk  = () => (<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 21h18M5 21V8l7-5 7 5v13M10 21v-6h4v6" stroke="#0F766E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoEmpty = () => (<svg width="30" height="30" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--text-muted)" strokeWidth="1.6"/><path d="M12 7v5l3 2" stroke="var(--text-muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const Spinner  = ({ c='#CC4B00', size=22 }) => (<div style={{ width:size, height:size, border:`2.5px solid ${c}30`, borderTopColor:c, borderRadius:'50%', animation:'spin 0.75s linear infinite' }} />);

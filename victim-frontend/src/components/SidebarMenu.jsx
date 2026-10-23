@@ -100,7 +100,7 @@ function SidebarMenu({ isOpen, onClose }) {
                                 onClick={() => (item.action ? item.action() : go(item.path))}
                                 style={{ ...S.navItem, backgroundColor: active ? 'var(--surface-tint)' : 'transparent' }}>
                                 <div style={{ ...S.navIcon, backgroundColor: active ? 'var(--surface-tint)' : 'var(--surface-alt)' }}>
-                                    {React.cloneElement(item.icon, { c: active ? '#C45E10' : '#F47920' })}
+                                    {React.cloneElement(item.icon, { c: active ? '#AD530F' : '#F47920' })}
                                 </div>
                                 <span style={{ ...S.navLabel, color: active ? 'var(--accent-text)' : 'var(--text)', fontWeight: active ? 700 : 600 }}>
                                     {item.label}

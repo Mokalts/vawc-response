@@ -20,7 +20,7 @@ if (!document.getElementById('vawc-ve-css')) {
 
 const IcoCheck  = ({ c='#059669', size=36 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoX      = ({ c='#BE123C', size=36 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke={c} strokeWidth="1.8"/><path d="M15 9l-6 6M9 9l6 6" stroke={c} strokeWidth="2" strokeLinecap="round"/></svg>);
-const IcoShield = ({ c='#C45E10', size=36 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoShield = ({ c='#AD530F', size=36 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const Spinner   = () => (<div style={{ width:40, height:40, border:'3.5px solid var(--border)', borderTopColor:'#F47920', borderRadius: '50%', animation:'spin 0.8s linear infinite', margin:'0 auto' }} />);
 
 const STATES = {
@@ -30,7 +30,7 @@ const STATES = {
         iconBorder: 'var(--border)',
         title: 'Verifying your account…',
         sub: 'Please wait a moment while we confirm your email address.',
-        titleColor: '#C45E10',
+        titleColor: '#AD530F',
     },
     success: {
         icon: <IcoCheck />,
@@ -46,7 +46,7 @@ const STATES = {
         iconBorder: 'var(--border)',
         title: 'Already Verified',
         sub: 'Your account is already verified. You can sign in now.',
-        titleColor: '#C45E10',
+        titleColor: '#AD530F',
     },
     error: {
         icon: <IcoX />,

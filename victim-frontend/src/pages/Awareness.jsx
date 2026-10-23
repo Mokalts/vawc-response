@@ -205,7 +205,7 @@ const IcoGo = () => (
     </svg>
 );
 
-const IcoBack   = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="#C45E10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoBack   = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="#AD530F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoArrow  = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M13 6L19 12L13 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoFlag   = ({ c='#F47920' }) => (<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="4" y1="22" x2="4" y2="15" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoDot    = ({ c='#F47920' }) => (<span style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: c, display: 'inline-block', flexShrink: 0, marginTop: 6 }} />);
@@ -228,7 +228,7 @@ const CONTENT = {
     signs: {
         title: 'Recognizing Abuse under RA 9262',
         law: 'Republic Act 9262',
-        color: '#C45E10',
+        color: '#AD530F',
         bg: '#FFF3E0',
         border: '#FFE4CC',
         // Place image at: victim-frontend/public/images/awareness/hero-signs.jpg
@@ -248,7 +248,7 @@ const CONTENT = {
     todo: {
         title: 'What to Do When You Experience Abuse',
         law: 'Practical Safety Guide',
-        color: '#C45E10',
+        color: '#AD530F',
         bg: '#FFF3E0',
         border: '#FFE4CC',
         // Place image at: victim-frontend/public/images/awareness/hero-todo.jpg
@@ -291,7 +291,7 @@ const CONTENT = {
     orders: {
         title: 'Protection Orders under RA 9262',
         law: 'Section 8-14, RA 9262',
-        color: '#C45E10',
+        color: '#AD530F',
         bg: '#FFF3E0',
         border: '#FFCC99',
         // Place image at: victim-frontend/public/images/awareness/hero-orders.jpg
@@ -311,7 +311,7 @@ const CONTENT = {
     rights: {
         title: 'Your Rights under RA 9262',
         law: 'Republic Act 9262 - Key Provisions',
-        color: '#C45E10',
+        color: '#AD530F',
         bg: '#FFF3E0',
         border: '#FFCC99',
         // Place image at: victim-frontend/public/images/awareness/hero-rights.jpg
@@ -641,13 +641,13 @@ function Awareness() {
                 </div>
 
                 {/* CTA */}
-                <div style={{ background: '#C45E10', borderRadius: 4, padding: '22px', marginTop: 8 }}>
+                <div style={{ background: '#AD530F', borderRadius: 4, padding: '22px', marginTop: 8 }}>
                     <p style={{ fontSize: 18, fontWeight: 800, color: '#fff', margin: '0 0 6px', fontFamily: "'Lexend', sans-serif" }}>Ready to take action?</p>
                     <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 1.6, margin: '0 0 16px', fontFamily: "'Lexend', sans-serif" }}>
                         File a report confidentially through VAWC-Response. Your report is encrypted and reviewed by barangay officials.
                     </p>
                     <button className="va-cta-btn"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 20px', backgroundColor: '#fff', color: '#C45E10', fontSize: 14, fontWeight: 700, border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: "'Lexend', sans-serif" }}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 20px', backgroundColor: '#fff', color: '#AD530F', fontSize: 14, fontWeight: 700, border: 'none', borderRadius: 8, cursor: 'pointer', fontFamily: "'Lexend', sans-serif" }}
                         onClick={() => navigate('/report')}>
                         <span>Report Now</span>
                         <IcoArrow />

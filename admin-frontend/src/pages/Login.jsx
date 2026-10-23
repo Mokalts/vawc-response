@@ -233,7 +233,7 @@ const S = {
 
     // Form card
     formCard: { position: 'relative', overflow: 'hidden', backgroundColor: COLORS.bgCard, borderRadius: RADIUS.lg, padding: '34px 30px 28px', width: '100%', maxWidth: '420px', boxShadow: 'var(--adm-card-shadow)', border: `1px solid ${COLORS.border}` },
-    cardAccent: { position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: COLORS.primary },
+    cardAccent: { display: 'none' },
     formHeader: { textAlign: 'center', marginBottom: '26px' },
     logoWrap: { width: '104px', height: '104px', borderRadius: '50%', backgroundColor: '#fff', margin: '0 auto 16px', border: `3px solid ${COLORS.primaryBorder}`, boxShadow: '0 6px 20px rgba(244,121,32,0.18)', overflow: 'hidden', padding: 0, boxSizing: 'border-box' },
     // The seal PNG carries white padding around the artwork, so a plain fit
@@ -257,7 +257,7 @@ const S = {
     errorText: { fontSize: '13px', color: '#BE123C', fontFamily: FF },
 
     // Submit — orange primary
-    submitBtn: { width: '100%', minHeight: 46, padding: '13px', background: COLORS.primary, color: '#fff', fontSize: '15px', fontWeight: '700', border: 'none', borderRadius: RADIUS.md, cursor: 'pointer', marginTop: 4, marginBottom: '18px', fontFamily: FF, boxShadow: '0 6px 16px rgba(196,94,16,0.24)' },
+    submitBtn: { width: '100%', minHeight: 46, padding: '13px', background: '#AD530F', color: '#fff', fontSize: '15px', fontWeight: '700', border: 'none', borderRadius: RADIUS.md, cursor: 'pointer', marginTop: 4, marginBottom: '18px', fontFamily: FF, boxShadow: '0 6px 16px rgba(196,94,16,0.24)' },
     loadingRow: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' },
     spinner: { width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' },
 

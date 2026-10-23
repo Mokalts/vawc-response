@@ -29,7 +29,7 @@ const CSS = `
   /* Was a hard-coded #EEF1F6, which on the dark theme lit the whole row
      near-white. The token is a shade off the surface in either theme. */
   .row-hover:hover td  { background:var(--adm-muted) !important; cursor:pointer; }
-  .row-hover:hover td:first-child { box-shadow: inset 3px 0 0 #CC4B00; }
+  .row-hover:hover td:first-child { box-shadow: inset 3px 0 0 var(--adm-border-strong); }
   .row-hover td        { transition:background 0.15s ease; }
   /* The chevron leans toward the thing it opens. Only on a real pointer:
      there is no hover on a touch screen, and a permanent nudge is just a

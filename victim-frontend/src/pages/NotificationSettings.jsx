@@ -23,14 +23,14 @@ if (!document.getElementById('vawc-notif-css')) {
     document.head.appendChild(s);
 }
 
-const IcoArrow = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#C45E10" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoArrow = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#AD530F" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoLock  = () => (<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#64748B" strokeWidth="1.8"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoMail  = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2" stroke="#64748B" strokeWidth="1.8"/><path d="M2 7l10 6 10-6" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoPhone = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="2.5" stroke="#64748B" strokeWidth="1.8"/><path d="M11 18.5h2" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoFile  = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M6 2h8l6 6v14H6z" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M14 2v6h6" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoChat  = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.4 8.4 0 01-9 8.4 8.9 8.9 0 01-4-.9L3 21l1.9-4.9A8.4 8.4 0 0112 3a8.4 8.4 0 019 8.5z" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoReceipt = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2V2z" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 7h6M9 11h6" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/></svg>);
-const IcoBell  = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoBell  = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="#AD530F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const Spinner  = ({ c='#CC4B00', size=22 }) => (<div style={{ width:size, height:size, border:`2.5px solid ${c}30`, borderTopColor:c, borderRadius:'50%', animation:'spin 0.75s linear infinite' }} />);
 
 const Toggle = ({ on, disabled, onToggle }) => (

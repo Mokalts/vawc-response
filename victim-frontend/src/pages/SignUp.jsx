@@ -21,8 +21,8 @@ if (!document.getElementById('vawc-victim-css')) {
         .minor-toggle { transition: all 0.15s; }
         .guardian-section { animation: slideDown 0.2s ease; }
         @media (hover: hover) and (pointer: fine) {
-            .vi-btn:hover:not([disabled]) { background: #C45E10 !important; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(244,121,32,0.3) !important; }
-            .vi-link:hover { color: #C45E10 !important; }
+            .vi-btn:hover:not([disabled]) { background: #AD530F !important; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(244,121,32,0.3) !important; }
+            .vi-link:hover { color: #AD530F !important; }
             .minor-toggle:hover { border-color: #F47920 !important; }
         }
         `;
@@ -55,10 +55,10 @@ const GUARDIAN_RELATIONSHIPS = [
 const IcoShield    = () => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="#F47920" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoEyeOpen   = () => (<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round"/><circle cx="12" cy="12" r="3" stroke="#94A3B8" strokeWidth="1.8"/></svg>);
 const IcoEyeClosed = () => (<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round"/><line x1="1" y1="1" x2="23" y2="23" stroke="#94A3B8" strokeWidth="1.8" strokeLinecap="round"/></svg>);
-const IcoHome      = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3L21 9.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoPhone     = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoLock      = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#C45E10" strokeWidth="1.8"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/></svg>);
-const IcoGuardian  = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="7" r="4" stroke="#C45E10" strokeWidth="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoHome      = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 9.5L12 3L21 9.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke="#AD530F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoPhone     = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.18 2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" stroke="#AD530F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoLock      = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#AD530F" strokeWidth="1.8"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#AD530F" strokeWidth="1.8" strokeLinecap="round"/></svg>);
+const IcoGuardian  = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#AD530F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="7" r="4" stroke="#AD530F" strokeWidth="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#AD530F" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoCheck     = ({ pass }) => pass
     ? (<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#059669" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>)
     : (<svg width="10" height="10" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#CBD5E1" strokeWidth="2"/></svg>);
@@ -335,9 +335,9 @@ function SignUp() {
                     this that wastes her time. */}
                 <div style={{ display:'flex', gap:10, alignItems:'flex-start', backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', borderRadius:10, padding:'12px 14px', marginBottom:18 }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink:0, marginTop:1 }}>
-                        <rect x="3" y="5" width="18" height="14" rx="2" stroke="#C45E10" strokeWidth="1.8"/>
-                        <circle cx="9" cy="11" r="2" stroke="#C45E10" strokeWidth="1.8"/>
-                        <path d="M14 10h4M14 14h4" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/>
+                        <rect x="3" y="5" width="18" height="14" rx="2" stroke="#AD530F" strokeWidth="1.8"/>
+                        <circle cx="9" cy="11" r="2" stroke="#AD530F" strokeWidth="1.8"/>
+                        <path d="M14 10h4M14 14h4" stroke="#AD530F" strokeWidth="1.8" strokeLinecap="round"/>
                     </svg>
                     <p style={{ margin:0, fontSize:12.5, lineHeight:1.6, color:'var(--text-body)', fontFamily:"'Lexend', sans-serif" }}>
                         Start with a photo of any ID. We will fill in whatever we can read from it, for you to
@@ -358,7 +358,7 @@ function SignUp() {
                 </p>
 
                 {/* Your ID */}
-                <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#C45E10" strokeWidth="1.8"/><circle cx="9" cy="11" r="2" stroke="#C45E10" strokeWidth="1.8"/><path d="M14 10h4M14 14h4" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Your ID" />
+                <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#AD530F" strokeWidth="1.8"/><circle cx="9" cy="11" r="2" stroke="#AD530F" strokeWidth="1.8"/><path d="M14 10h4M14 14h4" stroke="#AD530F" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Your ID" />
 
                 <Field label="What ID is this?" htmlFor="id_type">
                     <input
@@ -396,7 +396,7 @@ function SignUp() {
                 </Field>
 
                 {/* Personal Info */}
-                <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#C45E10" strokeWidth="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#C45E10" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Personal Information" />
+                <SectionHeader icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="#AD530F" strokeWidth="1.8"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#AD530F" strokeWidth="1.8" strokeLinecap="round"/></svg>} title="Personal Information" />
 
                 <div style={ROW}>
                     <Field label="First Name" htmlFor="first_name" style={CELL}><Input name="first_name" placeholder="First name" value={form.first_name} onChange={handleChange} /></Field>
@@ -424,7 +424,7 @@ function SignUp() {
                         {isMinor && <svg width="10" height="10" fill="none" viewBox="0 0 20 20"><path d="M4 10l5 5 7-8" stroke="#fff" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/></svg>}
                     </div>
                     <div>
-                        <p style={{ margin:0, fontSize:13.5, fontWeight:600, color: isMinor ? '#C45E10' : '#475569', fontFamily:"'Lexend', sans-serif" }}>The victim is a minor (below 18)</p>
+                        <p style={{ margin:0, fontSize:13.5, fontWeight:600, color: isMinor ? '#AD530F' : '#475569', fontFamily:"'Lexend', sans-serif" }}>The victim is a minor (below 18)</p>
                         <p style={{ margin:'2px 0 0', fontSize:11.5, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif" }}>Guardian information will be required</p>
                     </div>
                 </button>

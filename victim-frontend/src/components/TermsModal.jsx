@@ -26,7 +26,7 @@ if (!document.getElementById('vawc-terms-css')) {
         .terms-accept:not([disabled]):active { transform: scale(0.98); }
         @media (hover: hover) and (pointer: fine) {
             .terms-scroll::-webkit-scrollbar-thumb:hover { background: #F47920; }
-            .terms-accept:not([disabled]):hover { background: #C45E10 !important; box-shadow: 0 4px 14px rgba(196,94,16,0.35) !important; transform: translateY(-1px); }
+            .terms-accept:not([disabled]):hover { background: #AD530F !important; box-shadow: 0 4px 14px rgba(196,94,16,0.35) !important; transform: translateY(-1px); }
             .terms-decline:hover { background: var(--surface-tint) !important; border-color: #FFCC99 !important; }
         }
         `;
@@ -172,7 +172,7 @@ const S = {
     header: {
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '18px 20px',
-        background: '#C45E10',
+        background: '#AD530F',
     },
     headerIcon: {
         width: 42, height: 42, borderRadius: 10,
