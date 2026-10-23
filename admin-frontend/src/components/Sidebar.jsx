@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ADMIN_SECTIONS, defaultSection } from '../adminSections';
 import api from '../api/api';
@@ -23,6 +23,19 @@ if (!document.getElementById('vawc-global-css')) {
         }
         @media (prefers-reduced-motion: reduce) {
             .vawc-nav-underline { animation: none; width: 100%; }
+        }
+        /* The sections drop in, and arrive a beat apart, so pressing the
+           chevron has a visible result. */
+        @keyframes navDrop { from { opacity: 0; transform: translateY(-7px); } to { opacity: 1; transform: translateY(0); } }
+        .vawc-nav-sub > * { animation: navDrop 0.24s cubic-bezier(0.22,1,0.36,1) both; }
+        .vawc-nav-sub > *:nth-child(1) { animation-delay: 0.02s }
+        .vawc-nav-sub > *:nth-child(2) { animation-delay: 0.05s }
+        .vawc-nav-sub > *:nth-child(3) { animation-delay: 0.08s }
+        .vawc-nav-sub > *:nth-child(4) { animation-delay: 0.11s }
+        .vawc-nav-sub > *:nth-child(5) { animation-delay: 0.14s }
+        .vawc-nav-sub > *:nth-child(6) { animation-delay: 0.17s }
+        @media (prefers-reduced-motion: reduce) {
+            .vawc-nav-sub > * { animation: none; }
         }
         .vawc-logout:hover { background: var(--adm-muted) !important; }
         .vawc-logout { transition: background 0.15s ease; }
@@ -112,11 +125,6 @@ const NAV = [
     { label: 'Admin Management', path: '/admin-management', icon: IcoAdmins, superOnly: false, section: 'Management', expandable: true },
 ];
 
-// Remembers the last active nav path ACROSS sidebar remounts (module scope, not
-// component state), so the active pill can slide from the old item to the new one
-// even though each page mounts its own sidebar.
-let _lastNavPath = null;
-
 // Group the visible nav items into their sections, preserving order.
 const groupNav = (isSuper) => {
     const out = [];
@@ -140,10 +148,6 @@ function Sidebar() {
     });
     const [burstAlert, setBurstAlert] = useState(null); // { active, newest_at, ... } | null
 
-    // Sliding active-pill for the nav.
-    const navBtnRefs = useRef({});
-    const [pill, setPill] = useState({ top: 0, height: 0, animate: false, show: false });
-
     // Which section the page is on, read from the URL so the sidebar and the
     // page cannot disagree about it.
     const activeSection = new URLSearchParams(location.search).get('section')
@@ -156,24 +160,6 @@ function Sidebar() {
     }, [location.pathname]);
     // The nav item that matches the current route (exact, or a detail sub-route like /reports/:id).
     const activePath = (NAV.find(n => location.pathname === n.path || location.pathname.startsWith(n.path + '/')) || {}).path;
-
-    useLayoutEffect(() => {
-        const curEl = activePath ? navBtnRefs.current[activePath] : null;
-        if (!curEl) { setPill(p => ({ ...p, show: false })); _lastNavPath = activePath || _lastNavPath; return; }
-        const target = { top: curEl.offsetTop, height: curEl.offsetHeight };
-        const prevEl = (_lastNavPath && _lastNavPath !== activePath) ? navBtnRefs.current[_lastNavPath] : null;
-        if (prevEl) {
-            // Start at the previous item (no transition), then slide to the current one.
-            setPill({ top: prevEl.offsetTop, height: prevEl.offsetHeight, animate: false, show: true });
-            requestAnimationFrame(() => requestAnimationFrame(() =>
-                setPill({ ...target, animate: true, show: true })
-            ));
-        } else {
-            setPill({ ...target, animate: false, show: true });
-        }
-        _lastNavPath = activePath;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activePath, isSuper]);
 
     useEffect(() => {
         const fetch = () => {
@@ -266,16 +252,6 @@ function Sidebar() {
 
             {/* Nav */}
             <nav style={S.nav}>
-                {/* Sliding active pill (behind the buttons) */}
-                <div style={{
-                    position: 'absolute', left: 12, right: 12,
-                    top: pill.top, height: pill.height,
-                    borderRadius: 10, background: 'var(--adm-border)',
-                    opacity: pill.show ? 1 : 0, zIndex: 0, pointerEvents: 'none',
-                    transition: pill.animate
-                        ? 'top 0.34s cubic-bezier(0.22,1,0.36,1), height 0.34s cubic-bezier(0.22,1,0.36,1), opacity 0.2s ease'
-                        : 'opacity 0.2s ease',
-                }} />
                 {groupNav(isSuper).map((group, gi) => (
                     <div key={group.name} style={{ ...S.navGroup, ...(gi > 0 ? S.navGroupSplit : null) }}>
                         <p style={S.navSection}>{group.name}</p>
@@ -290,7 +266,6 @@ function Sidebar() {
                             return (
                                 <button
                                     key={item.path}
-                                    ref={el => { navBtnRefs.current[item.path] = el; }}
                                     className="vawc-nav-btn"
                                     onClick={() => navigate(item.path)}
                                     title={showDashDot ? 'Please check new reports' : undefined}
@@ -343,7 +318,7 @@ function Sidebar() {
                             sections read as hanging off it rather than as five
                             more items in the menu. */}
                         {group.items.some(i => i.expandable) && expanded && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, margin: '2px 0 6px', marginLeft: 22, paddingLeft: 12, borderLeft: '1px solid var(--adm-border)' }}>
+                            <div className="vawc-nav-sub" style={{ display: 'flex', flexDirection: 'column', gap: 1, margin: '8px 0 10px', marginLeft: 22, paddingLeft: 12, borderLeft: '1px solid var(--adm-border)' }}>
                                 {ADMIN_SECTIONS.filter(x => !x.superOnly || isSuper).map(sec => {
                                     const on = activePath === '/admin-management' && activeSection === sec.key;
                                     return (
@@ -351,11 +326,12 @@ function Sidebar() {
                                             onClick={() => navigate(`/admin-management?section=${sec.key}`)}
                                             style={{ ...S.navBtn, position: 'relative', zIndex: 1,
                                                      paddingLeft: 10, paddingRight: 10, minHeight: 32, marginBottom: 0,
-                                                     background: on ? 'var(--adm-border)' : 'transparent' }}>
-                                            <span style={{ ...S.navLabel, fontSize: 12.5,
+                                                     background: 'transparent' }}>
+                                            <span style={{ ...S.navLabel, fontSize: 12.5, position: 'relative', display: 'inline-block', whiteSpace: 'nowrap',
                                                            color: on ? 'var(--adm-text)' : 'var(--adm-text-2)',
                                                            fontWeight: on ? 700 : 500 }}>
                                                 {sec.label}
+                                                {on && <i className="vawc-nav-underline" aria-hidden="true" />}
                                             </span>
                                         </button>
                                     );
