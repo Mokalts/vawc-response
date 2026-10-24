@@ -239,10 +239,19 @@ button:not(:disabled):active,
   transform: scale(0.985);
 }
 
-/* While the theme flips, nothing animates. Without this every element with a
-   hover transition also transitions its new theme colour, so the page changes
-   in waves rather than at once. */
+/* The theme crossfade. Left to themselves the elements each transition their
+   new colour on whatever timing their hover rule happens to use, which is why
+   the page used to change in waves. For the length of the fade every element
+   is given the same duration and the same easing, so they cross over as one
+   page rather than forty. Only colour is listed: nothing should move. */
 :root.theme-flip, :root.theme-flip *, :root.theme-flip *::before, :root.theme-flip *::after {
-    transition: none !important;
-    animation-duration: 0s !important;
+    transition: background-color 300ms ease, background-image 300ms ease,
+                border-color 300ms ease, color 300ms ease,
+                fill 300ms ease, stroke 300ms ease,
+                box-shadow 300ms ease, outline-color 300ms ease !important;
+}
+@media (prefers-reduced-motion: reduce) {
+    :root.theme-flip, :root.theme-flip *, :root.theme-flip *::before, :root.theme-flip *::after {
+        transition: none !important;
+    }
 }

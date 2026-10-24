@@ -37,9 +37,10 @@ const CSS = `
   @media (min-height: 700px) {
     /* --rd-top is the panes' own distance from the top of the window, set
        from the element after layout; the fallback only matters for the first
-       paint. The 18px is the breathing room under the panes. */
-    .rd-panes { height: calc(100vh - var(--rd-top, 178px) - 18px); }
-    .rd-panes > div { overflow-y:auto; overflow-x:hidden; padding-right:10px; }
+       paint. No gap underneath: the pane runs to the bottom edge, so what you
+       scroll to is the actual end of the record. */
+    .rd-panes { height: calc(100vh - var(--rd-top, 178px)); }
+    .rd-panes > div { overflow-y:auto; overflow-x:hidden; padding-right:10px; padding-bottom:18px; }
   }
 `;
 

@@ -35,18 +35,18 @@ export default function ThemeToggle({ size = 36 }) {
 
     const toggle = () => {
         const next = getTheme() === 'dark' ? 'light' : 'dark';
-        // Suppress every transition for the frame the tokens change in,
-        // or each element animates to its new colour on its own timetable.
+        // Put every element on one duration and one easing, let the layout
+        // settle with the OLD colours still showing, then change the tokens:
+        // the whole page crosses over together instead of in waves.
         const root = document.documentElement;
         root.classList.add('theme-flip');
+        void root.offsetWidth;          // apply the shared timing first
         root.setAttribute('data-theme', next);
-        void root.offsetWidth;          // lay out while transitions are off
-        // The timer is the release that always runs; the frame callbacks only
-        // get there sooner. rAF does not fire in a background tab, and a
-        // suppression left on would kill every animation in the app.
-        const lift = () => root.classList.remove('theme-flip');
-        requestAnimationFrame(() => requestAnimationFrame(lift));
-        setTimeout(lift, 120);
+        // A timer, not requestAnimationFrame: rAF does not fire in a
+        // background tab, and the class left on would hold every element to
+        // the crossfade timing instead of its own.
+        clearTimeout(window.__themeFade);
+        window.__themeFade = setTimeout(() => root.classList.remove('theme-flip'), 360);
         try { localStorage.setItem('vawc_admin_theme', next); } catch {}
         setTheme(next);
         window.dispatchEvent(new Event('vawc:admin-theme'));
