@@ -35,7 +35,18 @@ export default function ThemeToggle({ size = 36 }) {
 
     const toggle = () => {
         const next = getTheme() === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
+        // Suppress every transition for the frame the tokens change in,
+        // or each element animates to its new colour on its own timetable.
+        const root = document.documentElement;
+        root.classList.add('theme-flip');
+        root.setAttribute('data-theme', next);
+        void root.offsetWidth;          // lay out while transitions are off
+        // The timer is the release that always runs; the frame callbacks only
+        // get there sooner. rAF does not fire in a background tab, and a
+        // suppression left on would kill every animation in the app.
+        const lift = () => root.classList.remove('theme-flip');
+        requestAnimationFrame(() => requestAnimationFrame(lift));
+        setTimeout(lift, 120);
         try { localStorage.setItem('vawc_admin_theme', next); } catch {}
         setTheme(next);
         window.dispatchEvent(new Event('vawc:admin-theme'));

@@ -18,6 +18,14 @@ const TOPIC_ART = {
     orders: ArtOrders, rights: ArtRights, laws: ArtLaws, penalties: ArtPenalties,
 };
 
+// Five of the seven topics share one orange, so five of the seven art tiles
+// were the same wash. Same hue, different strength: a ladder reads as a
+// choice where five near-identical tiles read as an accident. `where`, `laws`
+// and `penalties` have a colour of their own already, so they sit mid-ladder.
+const ART_TINT = {
+    signs: '38', todo: '20', where: '26', orders: '2C', rights: '14', laws: '26', penalties: '26',
+};
+
 if (!document.getElementById('vawc-font')) {
     const l = document.createElement('link'); l.id = 'vawc-font'; l.rel = 'stylesheet';
     l.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap';
@@ -514,7 +522,7 @@ function Awareness() {
                                         dark theme they painted a cream block behind artwork
                                         that had correctly gone dark. Alpha adapts; a hex
                                         cannot. */}
-                                    <span className="va-topic-art" data-topic={sec.id} style={{ ...S.topicArt, backgroundColor: `${c.color}1F` }}>
+                                    <span className="va-topic-art" data-topic={sec.id} style={{ ...S.topicArt, backgroundColor: `${c.color}${ART_TINT[sec.id] || '26'}` }}>
                                         {Art && <Art aria-hidden="true" focusable="false" />}
                                     </span>
                                     <span style={S.topicKicker}>{c.law}</span>

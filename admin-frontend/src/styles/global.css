@@ -41,6 +41,10 @@
     --adm-fill-danger: #DC2626;
     --adm-fill-danger-2: #C62828;
     --adm-fill-slate: #475569;
+    /* A solid that is simply dark in light mode and simply light in dark
+       mode: for actions that should carry no hue at all. */
+    --adm-fill-neutral: #1E293B;
+    --adm-fill-neutral-tx: #FFFFFF;
     --adm-violet-bg: #F3E5F5;
     --adm-violet-border: #E1BEE7;
     /* The quiet explanatory banner at the top of a panel. */
@@ -86,6 +90,8 @@
     --adm-fill-danger: #BC4646;
     --adm-fill-danger-2: #AA4444;
     --adm-fill-slate: #4D5663;
+    --adm-fill-neutral: #DCE3EB;
+    --adm-fill-neutral-tx: #11151A;
     --adm-violet-bg: #2A1E30;
     --adm-violet-border: #46304E;
     /* Same reasoning: #B91C1C reads 2.64:1 here, and #F87171 was vivid enough
@@ -152,4 +158,12 @@ select:-webkit-autofill {
   -webkit-text-fill-color: var(--adm-text) !important;
   caret-color: var(--adm-text);
   transition: background-color 600000s 0s ease-in-out;
+}
+
+/* While the theme flips, nothing animates. Without this every element with a
+   hover transition also transitions its new theme colour, so the page changes
+   in waves rather than at once. */
+:root.theme-flip, :root.theme-flip *, :root.theme-flip *::before, :root.theme-flip *::after {
+    transition: none !important;
+    animation-duration: 0s !important;
 }

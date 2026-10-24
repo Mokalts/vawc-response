@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AdminLayout } from "../components/Sidebar";
 import { confirmDialog } from "../components/ConfirmDialog";
@@ -29,10 +29,18 @@ const CSS = `
   .msg-log-body::-webkit-scrollbar-thumb { background:var(--adm-border-strong); border-radius:2px; }
   .msg-log-body::-webkit-scrollbar-thumb:hover { background:var(--adm-text-muted); }
 
-  /* One page scroll. The panes each had their own, which meant two
-     scrollbars and a rail that travelled with you; with the back button out
-     of the page body there is nothing left that needed pinning. */
-  .rd-panes { display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:start; }
+  /* Two panes rather than one page: the record scrolls beside a rail that
+     stays put. The height is the window less the top bar and this page's
+     header; on a short window it falls back to the ordinary page scroll,
+     because two cramped panes are worse than one long page. */
+  .rd-panes { display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:stretch; }
+  @media (min-height: 700px) {
+    /* --rd-top is the panes' own distance from the top of the window, set
+       from the element after layout; the fallback only matters for the first
+       paint. The 18px is the breathing room under the panes. */
+    .rd-panes { height: calc(100vh - var(--rd-top, 178px) - 18px); }
+    .rd-panes > div { overflow-y:auto; overflow-x:hidden; padding-right:10px; }
+  }
 `;
 
 // Lawful VAWC flow (RA 9262 / JMC 2010-2). No CFA, no Summons, no "resolved/settled".
@@ -1067,6 +1075,27 @@ export default function ReportDetail() {
   const [error, setError] = useState(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [statusSaving, setStatusSaving] = useState(false);
+  // The panes fill from wherever they start to the bottom of the window.
+  // Measured rather than assumed, because the header above them has changed
+  // size twice already and a constant goes stale each time.
+  const panesRef = useRef(null);
+  useLayoutEffect(() => {
+    let last = null;
+    const measure = () => {
+      const el = panesRef.current;
+      if (!el) return;
+      // Viewport-relative, which is what `100vh - top` wants; the panes do
+      // not let the page scroll when this applies.
+      const top = Math.round(el.getBoundingClientRect().top);
+      if (top === last) return;        // this runs after every render
+      last = top;
+      el.style.setProperty("--rd-top", top + "px");
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  });
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRecover, setShowRecover] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
@@ -1299,8 +1328,8 @@ export default function ReportDetail() {
         </div>
 
         {/* Two-column layout */}
-        <div className="rd-panes">
-          <div>
+        <div className="rd-panes" ref={panesRef}>
+          <div className="rd-scroll">
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
             {/* Quick nav. The statements are not the only thing worth jumping
@@ -1421,14 +1450,14 @@ export default function ReportDetail() {
                       <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                         <select value={incidentTypes[r.id] || ""} onChange={e => setIncidentTypes(p => ({ ...p, [r.id]: e.target.value }))}
                           style={{ flex: 1, padding: "8px 12px", borderRadius: 8, border: "1.5px solid var(--adm-border)", fontSize: 13.5, color: "var(--adm-text)", background: "var(--adm-muted)", outline: "none", fontFamily: "'Lexend',sans-serif" }}
-                          onFocus={e => { e.target.style.borderColor = "#9B4DAB"; e.target.style.background = "#fff"; }}
+                          onFocus={e => { e.target.style.borderColor = "var(--adm-text-2)"; e.target.style.background = "var(--adm-card)"; }}
                           onBlur={e => { e.target.style.borderColor = "var(--adm-border)"; e.target.style.background = "var(--adm-muted)"; }}>
                           <option value="">- Not classified -</option>
                           {INCIDENT_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
                         </select>
                         <button onClick={() => handleIncidentTypeSave(r.id)}
                           disabled={incidentTypes[r.id] === (r.incident_type || "")}
-                          style={{ padding: "8px 14px", borderRadius: 4, border: "none", background: incidentTypes[r.id] === (r.incident_type || "") ? "var(--adm-border)" : "#9B4DAB", color: incidentTypes[r.id] === (r.incident_type || "") ? "#94A3B8" : "#fff", fontSize: 13, fontWeight: 600, cursor: incidentTypes[r.id] === (r.incident_type || "") ? "not-allowed" : "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                          style={{ padding: "8px 14px", borderRadius: 4, border: "none", background: incidentTypes[r.id] === (r.incident_type || "") ? "var(--adm-border)" : "var(--adm-fill-neutral)", color: incidentTypes[r.id] === (r.incident_type || "") ? "#94A3B8" : "var(--adm-fill-neutral-tx)", fontSize: 13, fontWeight: 600, cursor: incidentTypes[r.id] === (r.incident_type || "") ? "not-allowed" : "pointer", fontFamily: "'Lexend',sans-serif" }}>
                           Save
                         </button>
                       </div>
@@ -1622,7 +1651,7 @@ export default function ReportDetail() {
             </div>
           </div>
 
-          <div>
+          <div className="rd-scroll">
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               <CaseTimeline cas={cas} onUpdateStatus={() => setShowStatusModal(true)} />
 

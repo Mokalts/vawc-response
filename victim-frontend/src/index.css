@@ -106,16 +106,20 @@
   --acc-purple:  #C084FC;  --tint-purple: #2E1A38;
   --acc-orange:  #FF9A4D;  --tint-orange: #33251A;
 
-  --ill-paper:      #231F1A;
-  --ill-paper-tint: #2B2620;
-  --ill-frame:      #5C5248;
+  /* A drawing needs to sit ON the card, not in it. The old paper was
+     #231F1A against a #221B17 card: 1.04:1, which is not a step, so the
+     artwork read as a smudge. Paper is now 1.53:1 above the card and the
+     linework 3.4:1 above the paper. The accent orange is unchanged. */
+  --ill-paper:      #433A32;
+  --ill-paper-tint: #4D433A;
+  --ill-frame:      #9A8C7F;
   --ill-accent:     #FF8A3D;
   --ill-on-accent:  #1A1512;
-  --ill-badge:      #4B4654;
+  --ill-badge:      #6E6678;
   --ill-on-badge:   #F2EFEA;
-  --ill-muted:      #3B342D;
-  --ill-map:        #2E2822;
-  --ill-street:     #231F1A;
+  --ill-muted:      #5A5148;
+  --ill-map:        #4E453C;
+  --ill-street:     #433A32;
 
   --bg-warn:    #2C2410;  --bd-warn:    #544418;  --tx-warn:    #FCD34D;
   --bg-success: #0F241C;  --bd-success: #1F4A3A;  --tx-success: #6EE7B7;
@@ -233,4 +237,12 @@ select:-webkit-autofill {
 button:not(:disabled):active,
 [role="button"]:not([aria-disabled="true"]):active {
   transform: scale(0.985);
+}
+
+/* While the theme flips, nothing animates. Without this every element with a
+   hover transition also transitions its new theme colour, so the page changes
+   in waves rather than at once. */
+:root.theme-flip, :root.theme-flip *, :root.theme-flip *::before, :root.theme-flip *::after {
+    transition: none !important;
+    animation-duration: 0s !important;
 }

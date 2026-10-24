@@ -187,7 +187,7 @@ function ReportBriefPanel({ report, onClose, onConfirm, isConfirmed, isConfirmin
         <div style={{ borderTop: '1px solid var(--adm-border)', paddingTop: 12, marginTop: 4, animation: 'slideRight 0.15s ease' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--adm-violet)', background: 'var(--adm-violet-bg)', padding: '2px 7px', borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>{report.case_number}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--adm-text)', fontFamily: 'monospace', letterSpacing: '0.02em' }}>{report.case_number}</span>
                     <StatusBadge rawStatus={report.status} displayLabel={report.status_display} />
                 </div>
                 <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--adm-text-muted)', padding: 2, display: 'flex' }}><IcoX size={13} /></button>
@@ -967,7 +967,7 @@ export default function Dashboard() {
                                 {!loading && reports.map(r => (
                                     <tr key={r.id} className="dash-row" onClick={() => navigate(`/reports/${r.id}`)}>
                                         <td style={S.td}>
-                                            <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 700, color: 'var(--adm-violet)', background: 'var(--adm-violet-bg)', fontFamily: 'monospace', border: '1px solid var(--adm-violet-border)' }}>
+                                            <span style={{ display: 'inline-block', fontSize: 12.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: 'monospace', letterSpacing: '0.02em' }}>
                                                 {r.case_number || `#${String(r.id).padStart(5, '0')}`}
                                             </span>
                                         </td>

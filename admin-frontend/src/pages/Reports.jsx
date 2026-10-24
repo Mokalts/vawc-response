@@ -371,14 +371,14 @@ export default function Reports() {
             {/* Victim profile */}
             <div style={{ ...S.card, padding: "20px 24px", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 4, background: "var(--adm-violet-bg)", border: "2px solid var(--adm-violet-border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><IcoUser size={24} color="var(--adm-violet)" /></div>
+                <div style={{ width: 48, height: 48, borderRadius: 4, background: "var(--adm-muted)", border: "1px solid var(--adm-border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><IcoUser size={24} color="var(--adm-text-muted)" /></div>
                 <div style={{ flex: 1 }}>
-                  <h2 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 800, color: "var(--adm-violet)", fontFamily: "'Lexend',sans-serif" }}>{selectedVictim.full_name}</h2>
+                  <h2 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 800, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>{selectedVictim.full_name}</h2>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 20px" }}>
-                    {[["Email", selectedVictim.email], ["Phone", selectedVictim.phone_number]].map(([l, v]) => v && <span key={l} style={{ fontSize: 12.5, color: "#64748B", fontFamily: "'Lexend',sans-serif" }}><strong style={{ color: "var(--adm-violet)" }}>{l}:</strong> {v}</span>)}
+                    {[["Email", selectedVictim.email], ["Phone", selectedVictim.phone_number]].map(([l, v]) => v && <span key={l} style={{ fontSize: 12.5, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}><strong style={{ color: "var(--adm-text)" }}>{l}:</strong> {v}</span>)}
                   </div>
                 </div>
-                <span style={{ padding: "6px 14px", borderRadius: 4, background: "var(--adm-violet-bg)", color: "var(--adm-violet)", fontSize: 13, fontWeight: 700, fontFamily: "'Lexend',sans-serif" }}>{selectedVictim.case_count} {selectedVictim.case_count === 1 ? "Case" : "Cases"}</span>
+                <span style={{ color: "var(--adm-text)", fontSize: 13, fontWeight: 700, fontFamily: "'Lexend',sans-serif", flexShrink: 0 }}>{selectedVictim.case_count} {selectedVictim.case_count === 1 ? "Case" : "Cases"}</span>
               </div>
             </div>
             <div style={S.card}>
@@ -400,7 +400,7 @@ export default function Reports() {
                     {!caseLoading && !caseError && cases.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", padding: "48px" }}><IcoDoc size={36} /><p style={{ fontSize: 14, color: "var(--adm-text-muted)", marginTop: 10, fontFamily: "'Lexend',sans-serif" }}>No confirmed cases.</p></td></tr>}
                     {!caseLoading && !caseError && cases.map(c => (
                       <tr key={c.id} className="row-hover" onClick={() => openDetail(c)}>
-                        <td style={S.td}><span style={{ fontSize: 12, fontWeight: 700, color: "var(--adm-violet)", background: "var(--adm-violet-bg)", padding: "3px 8px", borderRadius: 4, fontFamily: "monospace", border: "1px solid var(--adm-violet-border)" }}>{c.case_number}</span></td>
+                        <td style={S.td}><span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "monospace", letterSpacing: "0.02em" }}>{c.case_number}</span></td>
                         <td style={{ ...S.td, fontWeight: 600, color: "var(--adm-text)" }}>{c.offender_name}</td>
                         <td style={{ ...S.td, textAlign: "center" }}><span style={{ fontSize: 13, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>{c.report_count} {c.report_count === 1 ? "report" : "reports"}</span></td>
                         <td style={{ ...S.td, textAlign: "center" }}><StatusBadge rawStatus={c.status} displayLabel={c.status_display} /></td>
