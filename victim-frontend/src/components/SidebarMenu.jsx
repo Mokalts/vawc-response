@@ -23,7 +23,18 @@ const IcoLogout   = ({ c='#F47920' }) => (<svg width="18" height="18" viewBox="0
 const IcoChevron  = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke="#CBD5E1" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoGuide    = ({ c='#F47920' }) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 6.5A5.5 5.5 0 008 5H3v13h5a4 4 0 014 2 4 4 0 014-2h5V5h-5a5.5 5.5 0 00-4 1.5z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 6.5V20" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoShieldMenu = ({ c='#F47920' }) => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 12l2 2 4-4" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
-const IcoX        = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/></svg>);
+const IcoX        = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>);
+
+// The stock portrait, drawn rather than spelt out of a name. Initials on a
+// coloured disc read as a brand mark for the person; this reads as "no photo
+// set", which is what it means.
+const IcoPortrait = () => (
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" aria-hidden="true">
+        <circle cx="22" cy="22" r="22" fill="var(--surface-alt)" />
+        <circle cx="22" cy="17" r="7" fill="var(--text-muted)" />
+        <path d="M8.5 39a13.5 13.5 0 0127 0z" fill="var(--text-muted)" />
+    </svg>
+);
 
 function SidebarMenu({ isOpen, onClose }) {
     const navigate  = useNavigate();
@@ -31,7 +42,6 @@ function SidebarMenu({ isOpen, onClose }) {
 
     // Read user from localStorage
     const user = (() => { try { return JSON.parse(localStorage.getItem('user')||'{}'); } catch { return {}; } })();
-    const initials = [user.first_name, user.last_name].filter(Boolean).map(n=>n[0]).join('').toUpperCase() || '?';
     const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || 'My Account';
 
     // Esc closes the drawer.
@@ -80,13 +90,13 @@ function SidebarMenu({ isOpen, onClose }) {
                 {/* Header */}
                 <div style={S.header}>
                     <div style={S.avatarWrap}>
-                        <div style={S.avatar}>{initials}</div>
+                        <IcoPortrait />
                         <div>
                             <p style={S.name}>{fullName}</p>
                             <p style={S.sub}>VAWC-Response</p>
                         </div>
                     </div>
-                    <button style={S.closeBtn} onClick={onClose} aria-label="Isara ang menu"><IcoX /></button>
+                    <button className="vh-icon-btn" style={S.closeBtn} onClick={onClose} aria-label="Isara ang menu"><IcoX /></button>
                 </div>
 
                 <div style={S.divider} />
@@ -135,10 +145,11 @@ const S = {
     drawer:    { position:'fixed', top:0, right:0, width:288, height:'100vh', backgroundColor:'var(--surface)', boxShadow:'-8px 0 32px rgba(15,23,42,0.18)', zIndex:300, display:'flex', flexDirection:'column', transition:'transform 0.25s ease', fontFamily:"'Lexend', sans-serif", borderLeft:'1px solid var(--border)' },
     header:    { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'24px 20px 20px' },
     avatarWrap:{ display:'flex', alignItems:'center', gap:12 },
-    avatar:    { width:44, height:44, borderRadius: '50%', background:'#F47920', display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, fontWeight:700, color:'#fff', flexShrink:0, fontFamily:"'Lexend', sans-serif" },
     name:      { fontSize:15, fontWeight:700, color:'var(--text)', margin:'0 0 2px', fontFamily:"'Lexend', sans-serif" },
     sub:       { fontSize:12, color:'var(--text-muted)', margin:0, fontFamily:"'Lexend', sans-serif" },
-    closeBtn:  { width:44, height:44, borderRadius: 10, backgroundColor:'var(--surface-alt)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0 },
+    // Same as the hamburger and the bell it was opened from: no box, the
+    // icon answers the touch by growing.
+    closeBtn:  { width:44, height:44, borderRadius: 14, backgroundColor:'transparent', border:'none', color:'var(--text)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0 },
     divider:   { height:1, backgroundColor:'var(--border-soft)', margin:'0 20px' },
     nav:       { display:'flex', flexDirection:'column', padding:'12px 12px', flex:1 },
     navItem:   { display:'flex', alignItems:'center', gap:12, padding:'11px 12px', borderRadius: 10, border:'none', cursor:'pointer', width:'100%', textAlign:'left', transition:'background-color 0.12s' },

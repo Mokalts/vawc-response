@@ -218,6 +218,10 @@ function FaceVerify() {
         animRef.current = requestAnimationFrame(detect);
     }, [drawFramed]);
 
+    const stopLiveDetection = useCallback(() => {
+        if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null; }
+    }, []);
+
     // ── Load models + camera ──────────────────────────────────────────────────
     useEffect(() => {
         const load = async () => {
@@ -511,12 +515,15 @@ function FaceVerify() {
         try {
             await api.post('/admin/auth/emergency-verify', { code });
             localStorage.setItem('face_verified', 'true');
+            stopLiveDetection();
             if (videoRef.current?.srcObject) videoRef.current.srcObject.getTracks().forEach(t => t.stop());
             navigate('/dashboard');
         } catch (err) {
             const msg = err.response?.data?.detail;
             setEmergencyError(typeof msg === 'string' ? msg : 'Emergency access failed.');
             setEmergencyBusy(false);
+            // Back to the camera: they are staying on this page.
+            startLiveDetection();
         }
     };
 
@@ -716,7 +723,11 @@ function FaceVerify() {
                     What remains is emergency access, which needs a code that is
                     only set in the environment around a demonstration. With no
                     code set, the server refuses this outright. */}
-                <button type="button" style={S.emergencyLink} onClick={() => { setEmergencyError(''); setEmergencyCode(''); setEmergencyOpen(true); }}>
+                {/* Everything stops first. The camera keeps running so the
+                    page is still live if they cancel, but the detection pass
+                    does not, because that is what was eating the main thread
+                    while they typed. */}
+                <button type="button" style={S.emergencyLink} onClick={() => { stopLiveDetection(); stopLivenessLoop(); stopSettleLoop(); setEmergencyError(''); setEmergencyCode(''); setEmergencyOpen(true); }}>
                     Camera not working? Emergency access
                 </button>
             </div>
@@ -747,7 +758,7 @@ function FaceVerify() {
                                 {emergencyBusy && <span style={S.spinner} />}
                                 {emergencyBusy ? 'Checking…' : 'Continue'}
                             </button>
-                            <button className="fv-btn fv-ghost" style={S.secondaryBtn} onClick={() => setEmergencyOpen(false)} disabled={emergencyBusy}>
+                            <button className="fv-btn fv-ghost" style={S.secondaryBtn} onClick={() => { setEmergencyOpen(false); startLiveDetection(); }} disabled={emergencyBusy}>
                                 Cancel
                             </button>
                         </div>
