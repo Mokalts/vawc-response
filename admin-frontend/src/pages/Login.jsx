@@ -253,7 +253,7 @@ const S = {
     errorText: { fontSize: '13px', color: '#BE123C', fontFamily: FF },
 
     // Submit — orange primary
-    submitBtn: { width: '100%', minHeight: 46, padding: '13px', background: '#AD530F', color: '#fff', fontSize: '15px', fontWeight: '700', border: 'none', borderRadius: RADIUS.md, cursor: 'pointer', marginTop: 4, marginBottom: '18px', fontFamily: FF, boxShadow: '0 6px 16px rgba(196,94,16,0.24)' },
+    submitBtn: { width: '100%', minHeight: 46, padding: '13px', background: 'var(--adm-fill-primary)', color: '#fff', fontSize: '15px', fontWeight: '700', border: 'none', borderRadius: RADIUS.md, cursor: 'pointer', marginTop: 4, marginBottom: '18px', fontFamily: FF, boxShadow: '0 6px 16px rgba(196,94,16,0.24)' },
     loadingRow: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' },
     spinner: { width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' },
 

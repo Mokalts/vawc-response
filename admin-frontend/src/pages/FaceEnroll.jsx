@@ -394,7 +394,7 @@ const S = {
 
     progressWrap:  { marginBottom: '12px' },
     progressTrack: { height: '6px', backgroundColor: 'var(--adm-border)', borderRadius: 4, overflow: 'hidden', marginBottom: '6px' },
-    progressFill:  { height: '100%', backgroundColor: '#C45E10', borderRadius: 4, transition: 'width 0.3s ease' },
+    progressFill:  { height: '100%', backgroundColor: 'var(--adm-fill-primary-2)', borderRadius: 4, transition: 'width 0.3s ease' },
     progressRow:   { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
     progressLabel: { fontSize: '12px', color: 'var(--adm-text-2)', fontFamily: "'Lexend', sans-serif" },
     progressPct:   { fontSize: '12px', fontWeight: '700', color: '#C45E10', fontFamily: "'Lexend', sans-serif" },
@@ -404,7 +404,7 @@ const S = {
     errorBox:      { display: 'flex', alignItems: 'flex-start', gap: '8px', backgroundColor: '#FFF1F2', border: '1px solid #FECDD3', borderRadius: 8, padding: '10px 13px', marginBottom: '14px' },
     errorText:     { fontSize: '12.5px', color: '#BE123C', lineHeight: '1.5', fontFamily: "'Lexend', sans-serif" },
 
-    primaryBtn:    { width: '100%', padding: '13px', backgroundColor: '#C45E10', color: '#fff', fontSize: '14.5px', fontWeight: '600', border: 'none', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(123,45,139,0.25)', marginBottom: '16px', fontFamily: "'Lexend', sans-serif" },
+    primaryBtn:    { width: '100%', padding: '13px', backgroundColor: 'var(--adm-fill-primary-2)', color: '#fff', fontSize: '14.5px', fontWeight: '600', border: 'none', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(123,45,139,0.25)', marginBottom: '16px', fontFamily: "'Lexend', sans-serif" },
     spinner:       { width: '14px', height: '14px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 },
 
     footerNote:    { textAlign: 'center', fontSize: '11.5px', color: 'var(--adm-text-muted)', lineHeight: '1.6', fontFamily: "'Lexend', sans-serif" },

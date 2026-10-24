@@ -97,7 +97,6 @@ const IcoSearch = () => (<svg width="15" height="15" viewBox="0 0 20 20" fill="n
 const IcoUser = ({ size = 32, color = "#9B4DAB" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke={color} strokeWidth="1.8" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={color} strokeWidth="1.8" strokeLinecap="round" /></svg>);
 const IcoDoc = ({ size = 32, color = "#CBD5E1" }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoChevron = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 18l6-6-6-6" stroke="#C45E10" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>);
-const IcoBack = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>);
 const IcoWarn = ({ size = 20 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#EF4444" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /><line x1="12" y1="9" x2="12" y2="13" stroke="#EF4444" strokeWidth="1.8" strokeLinecap="round" /><line x1="12" y1="17" x2="12.01" y2="17" stroke="#EF4444" strokeWidth="2.5" strokeLinecap="round" /></svg>);
 
 function SkelRow({ cols = 5 }) {
@@ -270,13 +269,19 @@ export default function Reports() {
   const backToVictims = () => { setView("victims"); setSelectedVictim(null); setSelectedCase(null); setCaseDetail(null); };
   const backToCases   = () => { setView("cases"); setSelectedCase(null); setCaseDetail(null); };
   const crumbs =
-      view === "deleted" ? ["Case Records", "Recently Deleted"]
+      view === "deleted" ? [{ label: "Case Records", onClick: backToVictims }, "Recently Deleted"]
     : view === "cases" && selectedVictim ? [{ label: "Case Records", onClick: backToVictims }, selectedVictim.full_name]
     : view === "reports" && selectedCase ? [{ label: "Case Records", onClick: backToVictims }, { label: selectedVictim?.full_name || "-", onClick: backToCases }, selectedCase.case_number, "Reports"]
     : ["Case Records"];
 
+  // The trail's back button steps up the same hierarchy the trail shows.
+  const onBack =
+      view === "reports" ? backToCases
+    : (view === "cases" || view === "deleted") ? backToVictims
+    : undefined;
+
   return (
-    <AdminLayout breadcrumbs={crumbs}>
+    <AdminLayout breadcrumbs={crumbs} onBack={onBack}>
       <style>{CSS}</style>
       <div style={S.wrap}>
 
@@ -294,7 +299,7 @@ export default function Reports() {
               </button>
             );
           })}
-          <div style={{ position: "absolute", bottom: -1, height: 2.5, borderRadius: 3, background: "#7B2D8B", left: tabInd.left, width: tabInd.width, transition: "left 0.3s cubic-bezier(0.22,1,0.36,1), width 0.3s cubic-bezier(0.22,1,0.36,1)" }} />
+          <div style={{ position: "absolute", bottom: -1, height: 2.5, borderRadius: 3, background: "var(--adm-violet)", left: tabInd.left, width: tabInd.width, transition: "left 0.3s cubic-bezier(0.22,1,0.36,1), width 0.3s cubic-bezier(0.22,1,0.36,1)" }} />
         </div>
 
         <div key={view} className="tab-fade">
@@ -363,10 +368,6 @@ export default function Reports() {
         {/* CASES */}
         {view === "cases" && selectedVictim && (
           <>
-            <button className="back-btn" onClick={() => { setView("victims"); setSelectedVictim(null); }}
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", background: "var(--adm-card)", border: "1.5px solid var(--adm-border)", borderRadius: 8, fontSize: 13.5, fontWeight: 600, color: "var(--adm-text-2)", cursor: "pointer", marginBottom: 16, fontFamily: "'Lexend',sans-serif" }}>
-              <IcoBack /> All Victims
-            </button>
             {/* Victim profile */}
             <div style={{ ...S.card, padding: "20px 24px", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -419,11 +420,6 @@ export default function Reports() {
         {/* REPORTS / CASE DETAIL */}
         {view === "reports" && selectedCase && (
           <>
-            <button className="back-btn" onClick={() => { setView("cases"); setSelectedCase(null); setCaseDetail(null); }}
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", background: "var(--adm-card)", border: "1.5px solid var(--adm-border)", borderRadius: 8, fontSize: 13.5, fontWeight: 600, color: "var(--adm-text-2)", cursor: "pointer", marginBottom: 16, fontFamily: "'Lexend',sans-serif" }}>
-              <IcoBack /> Cases
-            </button>
-
             {detailLoading && <div style={S.card}><div style={{ padding: 24 }}>{[1, 2, 3].map(i => <div key={i} style={{ height: 14, width: "60%", borderRadius: 12, background: "linear-gradient(90deg,var(--adm-border) 25%,var(--adm-border) 50%,var(--adm-border) 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite", marginBottom: 16 }} />)}</div></div>}
 
             {!detailLoading && detailError && <div style={{ textAlign: "center", padding: "48px" }}><IcoWarn size={28} /><p style={{ color: "#64748B", fontFamily: "'Lexend',sans-serif", marginTop: 12 }}>{detailError}</p></div>}
@@ -449,7 +445,7 @@ export default function Reports() {
                 {/* Reports table */}
                 <div style={S.card}>
                   <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", gap: 8, backgroundColor: "var(--adm-muted)" }}>
-                    <div style={{ width: 3, height: 16, borderRadius: 4, backgroundColor: "#7B2D8B" }} />
+                    <div style={{ width: 3, height: 16, borderRadius: 4, backgroundColor: "var(--adm-violet)" }} />
                     <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", textTransform: "uppercase", letterSpacing: "0.5px" }}>Reports / Testimonies</span>
                     <span style={{ fontSize: 11, fontWeight: 600, color: "var(--adm-violet)", background: "var(--adm-violet-bg)", padding: "2px 8px", borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>{caseDetail.reports?.length || 0} total</span>
                   </div>
@@ -575,6 +571,6 @@ const S = {
   td: { padding: "13px 16px", verticalAlign: "middle", fontSize: 13.5, fontFamily: "'Lexend',sans-serif", borderBottom: "1px solid var(--adm-muted)" },
   victimName: { fontSize: 13.5, fontWeight: 600, color: "var(--adm-text)", margin: "0 0 2px", fontFamily: "'Lexend',sans-serif" },
   victimSub: { fontSize: 11.5, color: "var(--adm-text-muted)", margin: 0, fontFamily: "'Lexend',sans-serif" },
-  retryBtn: { padding: "8px 20px", background: "#9B4DAB", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer", fontSize: 13.5, fontWeight: 600, fontFamily: "'Lexend',sans-serif", marginTop: 12 },
+  retryBtn: { padding: "8px 20px", background: "var(--adm-fill-violet)", color: "#fff", border: "none", borderRadius: 4, cursor: "pointer", fontSize: 13.5, fontWeight: 600, fontFamily: "'Lexend',sans-serif", marginTop: 12 },
   toast: { position: "fixed", top: 20, right: 20, zIndex: 999, background: "var(--adm-card)", borderRadius: 4, border: "1px solid", padding: "12px 18px", boxShadow: "0 8px 24px rgba(0,0,0,0.10)", display: "flex", alignItems: "center", gap: 9, fontSize: 13.5, fontWeight: 500, fontFamily: "'Lexend',sans-serif" },
 };

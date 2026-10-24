@@ -660,7 +660,7 @@ function FaceVerify() {
                         <div style={{ ...S.turnCard, ...(settleStraight ? S.turnCardDone : null) }}>
                             {settleStraight
                                 ? <IconTick size={16} color="#047857" />
-                                : <span style={{ ...S.bandDot, background: '#C45E10' }} />}
+                                : <span style={{ ...S.bandDot, background: 'var(--adm-fill-primary-2)' }} />}
                             <span style={{ ...S.turnText, color: settleStraight ? '#047857' : 'var(--adm-text)' }}>
                                 {settleStraight ? 'Looking straight ahead' : 'Turn back to the camera'}
                             </span>
@@ -837,7 +837,7 @@ const S = {
     stepDone: { width: 18, height: 18, borderRadius: '50%', background: '#047857', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
     stepLabelDone: { fontSize: 11.5, fontWeight: 600, color: 'var(--adm-text-muted)', fontFamily: FF },
     stepBar: { flex: 1, height: 2, background: 'var(--adm-border)', borderRadius: 2 },
-    stepCurrent: { width: 18, height: 18, borderRadius: '50%', background: '#C45E10', color: '#fff', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: FF },
+    stepCurrent: { width: 18, height: 18, borderRadius: '50%', background: 'var(--adm-fill-primary-2)', color: '#fff', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontFamily: FF },
     stepLabel: { fontSize: 11.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: FF },
 
     cameraWrap: { position: 'relative', width: '100%', aspectRatio: '4/3', backgroundColor: '#12100E', borderRadius: 12, overflow: 'hidden', marginBottom: 12 },
@@ -869,9 +869,9 @@ const S = {
 
     tips: { listStyle: 'none', margin: '0 0 14px', padding: 0, display: 'flex', flexDirection: 'column', gap: 6 },
     tip: { display: 'flex', alignItems: 'flex-start', gap: 9, fontSize: 12.5, lineHeight: 1.5, color: 'var(--adm-text-2)', fontFamily: FF },
-    tipDot: { width: 5, height: 5, borderRadius: '50%', background: '#F47920', flexShrink: 0, marginTop: 6 },
+    tipDot: { width: 5, height: 5, borderRadius: '50%', background: 'var(--adm-fill-primary-3)', flexShrink: 0, marginTop: 6 },
 
-    primaryBtn: { width: '100%', minHeight: 46, padding: '12px', backgroundColor: '#C45E10', color: '#fff', fontSize: 14.5, fontWeight: 700, border: 'none', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 2px 8px rgba(196,94,16,0.22)', fontFamily: FF },
+    primaryBtn: { width: '100%', minHeight: 46, padding: '12px', backgroundColor: 'var(--adm-fill-primary-2)', color: '#fff', fontSize: 14.5, fontWeight: 700, border: 'none', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, boxShadow: '0 2px 8px rgba(196,94,16,0.22)', fontFamily: FF },
     secondaryBtn: { width: '100%', minHeight: 46, padding: '12px', backgroundColor: 'transparent', color: 'var(--adm-text-2)', fontSize: 14, fontWeight: 600, border: '1.5px solid var(--adm-border)', borderRadius: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, fontFamily: FF },
     spinner: { width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block', flexShrink: 0 },
 

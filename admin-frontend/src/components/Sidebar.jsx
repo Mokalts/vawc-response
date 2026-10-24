@@ -408,11 +408,11 @@ function TopBar({ breadcrumbs, onBack }) {
                     {back && (
                         <button type="button" className="adm-back" onClick={back} aria-label="Go back" title="Go back"
                             style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                     width: 28, height: 28, marginRight: 4, padding: 0, borderRadius: 4,
+                                     width: 32, height: 32, marginRight: 2, marginLeft: -6, padding: 0, borderRadius: 4,
                                      border: 'none', background: 'transparent',
-                                     color: 'var(--adm-text-2)', cursor: 'pointer', flexShrink: 0 }}>
-                            <svg width="15" height="15" fill="none" viewBox="0 0 20 20" aria-hidden="true">
-                                <path d="M12.5 5l-5 5 5 5" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" />
+                                     color: 'var(--adm-text)', cursor: 'pointer', flexShrink: 0 }}>
+                            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         </button>
                     )}
@@ -495,14 +495,14 @@ const S = {
     // Sits on the dark sidebar, so the surface and text are set explicitly
     // rather than inherited from the admin theme tokens.
     burst:      { margin: '0 16px 12px', padding: '10px 12px', borderRadius: 4, background: 'var(--adm-primary-bg)', border: '1px solid var(--adm-border)' },
-    burstDot:   { width: 7, height: 7, borderRadius: '50%', background: '#AD530F', flexShrink: 0, marginTop: 6 },
+    burstDot:   { width: 7, height: 7, borderRadius: '50%', background: 'var(--adm-fill-primary)', flexShrink: 0, marginTop: 6 },
     burstTitle: { margin: 0, fontSize: 12.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: NAVFONT, lineHeight: 1.35 },
     burstText:  { margin: '2px 0 0', fontSize: 11.5, color: 'var(--adm-text-muted)', fontFamily: NAVFONT, lineHeight: 1.45 },
     burstClose: { flexShrink: 0, width: 22, height: 22, lineHeight: '20px', borderRadius: 4, border: 'none', background: 'transparent', color: 'var(--adm-text-muted)', fontSize: 16, cursor: 'pointer', fontFamily: NAVFONT },
 
     adminCard: { display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px' },
     // One avatar for everyone now that the role is not shown beside it.
-    avatar: { width: 34, height: 34, borderRadius: '50%', background: '#AD530F', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font },
+    avatar: { width: 34, height: 34, borderRadius: '50%', background: 'var(--adm-fill-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: '#fff', flexShrink: 0, fontFamily: TEXT.font },
     adminName: { fontSize: 13, fontWeight: 600, color: 'var(--adm-text)', fontFamily: TEXT.font, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
     nav: { flex: 1, padding: '10px 12px 0', position: 'relative' },
     navGroup: { marginBottom: 14 },

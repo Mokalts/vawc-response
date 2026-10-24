@@ -300,7 +300,7 @@ function NewReportsModal({ onClose, onConfirmed }) {
                 {/* Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '18px 24px 14px', borderBottom: '1px solid var(--adm-border)', flexShrink: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ width: 34, height: 34, borderRadius: 4, background: '#C45E10', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ width: 34, height: 34, borderRadius: 4, background: 'var(--adm-fill-primary-2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <IcoBell color="#fff" size={16} />
                         </div>
                         <div>
@@ -797,7 +797,7 @@ export default function Dashboard() {
                     }}>
                         <div style={{
                             width: 38, height: 38, borderRadius: '50%',
-                            background: '#F47920',
+                            background: 'var(--adm-fill-primary-3)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             flexShrink: 0,
                             boxShadow: '0 0 0 4px rgba(244,121,32,0.2)',
@@ -1009,14 +1009,14 @@ const S = {
     dateInput: { padding: '8px 10px', borderRadius: 4, border: '1.5px solid var(--adm-border)', fontSize: 13, color: 'var(--adm-text)', fontFamily: FF, outline: 'none' },
 
     statCard: { backgroundColor: 'var(--adm-card)', borderRadius: 4, padding: '18px 20px', border: '1px solid var(--adm-border)', boxShadow: '0 1px 3px rgba(15,23,42,0.05)', display: 'flex', flexDirection: 'column', gap: 12 },
-    newCard: { borderRadius: 4, padding: '18px 20px', border: '2px solid #F47920', background: '#C45E10', boxShadow: '0 4px 14px rgba(196,94,16,0.24)', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'pointer' },
+    newCard: { borderRadius: 4, padding: '18px 20px', border: '2px solid #F47920', background: 'var(--adm-fill-primary-2)', boxShadow: '0 4px 14px rgba(196,94,16,0.24)', display: 'flex', flexDirection: 'column', gap: 12, cursor: 'pointer' },
     statNum: { margin: '0 0 2px', fontSize: 26, fontWeight: 800, color: 'var(--adm-text)', fontFamily: FF, letterSpacing: '-0.5px' },
     statLabel: { margin: 0, fontSize: 12.5, fontWeight: 500, color: '#64748B', fontFamily: FF },
     statMeta: { display: 'flex', alignItems: 'center', gap: 5, paddingTop: 10, borderTop: '1px solid var(--adm-border)' },
 
     tableCard: { backgroundColor: 'var(--adm-card)', borderRadius: 4, border: '1px solid var(--adm-border)', boxShadow: '0 1px 3px rgba(15,23,42,0.05)', overflow: 'hidden' },
     tableHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid var(--adm-border)', backgroundColor: 'var(--adm-muted)', flexWrap: 'wrap', gap: 10 },
-    cardAccent: { width: 3, height: 16, borderRadius: 4, backgroundColor: '#7B2D8B', flexShrink: 0 },
+    cardAccent: { width: 3, height: 16, borderRadius: 4, backgroundColor: 'var(--adm-violet)', flexShrink: 0 },
     cardTitle: { fontSize: 12.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: FF, textTransform: 'uppercase', letterSpacing: '0.5px' },
     periodTag: { fontSize: 11, fontWeight: 600, color: 'var(--adm-violet)', backgroundColor: 'var(--adm-violet-bg)', padding: '2px 8px', borderRadius: 4, fontFamily: FF },
     td: { padding: '13px 18px', fontSize: 13.5, color: 'var(--adm-text-2)', fontFamily: FF, borderBottom: '1px solid var(--adm-muted)' },

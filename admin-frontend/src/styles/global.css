@@ -30,6 +30,17 @@
     --st-bposrv-bg: #FFFBEB; --st-bposrv-bd: #FDE68A; --st-bposrv-tx: #92400E;
     --st-endorsed-bg: #FEF2F2; --st-endorsed-bd: #FECACA; --st-endorsed-tx: #991B1B;
     --st-closed-bg: #F1F5F9; --st-closed-bd: #CBD5E1; --st-closed-tx: #475569;
+    /* Button fills. Same hue in both themes, 35% less chroma in the
+       dark one, where saturation reads as light. */
+    --adm-fill-primary: #AD530F;
+    --adm-fill-primary-2: #C45E10;
+    --adm-fill-primary-3: #F47920;
+    --adm-fill-violet: #9B4DAB;
+    --adm-fill-violet-deep: #7B2D8B;
+    --adm-fill-green: #059669;
+    --adm-fill-danger: #DC2626;
+    --adm-fill-danger-2: #C62828;
+    --adm-fill-slate: #475569;
     --adm-violet-bg: #F3E5F5;
     --adm-violet-border: #E1BEE7;
     /* The quiet explanatory banner at the top of a panel. */
@@ -66,6 +77,15 @@
     --st-bposrv-bg: #2A2210; --st-bposrv-bd: #4E4120; --st-bposrv-tx: #E0C77A;
     --st-endorsed-bg: #2C1616; --st-endorsed-bd: #4E2727; --st-endorsed-tx: #E39A9A;
     --st-closed-bg: #1A1F26; --st-closed-bd: #2E3845; --st-closed-tx: #A3B0C0;
+    --adm-fill-primary: #91572B;
+    --adm-fill-primary-2: #A46230;
+    --adm-fill-primary-3: #CF7F45;
+    --adm-fill-violet: #905D9B;
+    --adm-fill-violet-deep: #703D7B;
+    --adm-fill-green: #1E7D5F;
+    --adm-fill-danger: #BC4646;
+    --adm-fill-danger-2: #AA4444;
+    --adm-fill-slate: #4D5663;
     --adm-violet-bg: #2A1E30;
     --adm-violet-border: #46304E;
     /* Same reasoning: #B91C1C reads 2.64:1 here, and #F87171 was vivid enough

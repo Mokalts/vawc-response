@@ -37,14 +37,14 @@ const CSS = `
 
 // Lawful VAWC flow (RA 9262 / JMC 2010-2). No CFA, no Summons, no "resolved/settled".
 const STATUS_CONFIG = {
-  submitted: { label: "Submitted", color: "var(--st-submitted-tx)", bg: "var(--st-submitted-bg)", dot: "#EC4899" },
-  under_assessment: { label: "Under Assessment", color: "var(--st-assess-tx)", bg: "var(--st-assess-bg)", dot: "#06B6D4" },
-  awaiting_onsite_visit: { label: "Awaiting Onsite Visit", color: "var(--st-onsite-tx)", bg: "var(--st-onsite-bg)", dot: "#F59E0B" },
-  bpo_applied: { label: "BPO Applied", color: "var(--adm-violet)", bg: "var(--adm-violet-bg)", dot: "#9B4DAB" },
-  bpo_issued: { label: "BPO Issued", color: "var(--st-bpoiss-tx)", bg: "var(--st-bpoiss-bg)", dot: "#F47920" },
-  bpo_served: { label: "BPO Served", color: "var(--st-bposrv-tx)", bg: "var(--st-bposrv-bg)", dot: "#D97706" },
-  endorsed: { label: "Endorsed", color: "var(--st-endorsed-tx)", bg: "var(--st-endorsed-bg)", dot: "#EF4444" },
-  closed: { label: "Assistance Ended", color: "var(--st-closed-tx)", bg: "var(--st-closed-bg)", dot: "#64748B" },
+  submitted: { label: "Submitted", color: "var(--st-submitted-tx)", bg: "var(--st-submitted-bg)", bd: "var(--st-submitted-bd)", dot: "#EC4899" },
+  under_assessment: { label: "Under Assessment", color: "var(--st-assess-tx)", bg: "var(--st-assess-bg)", bd: "var(--st-assess-bd)", dot: "#06B6D4" },
+  awaiting_onsite_visit: { label: "Awaiting Onsite Visit", color: "var(--st-onsite-tx)", bg: "var(--st-onsite-bg)", bd: "var(--st-onsite-bd)", dot: "#F59E0B" },
+  bpo_applied: { label: "BPO Applied", color: "var(--adm-violet)", bg: "var(--adm-violet-bg)", bd: "var(--adm-violet-border)", dot: "#9B4DAB" },
+  bpo_issued: { label: "BPO Issued", color: "var(--st-bpoiss-tx)", bg: "var(--st-bpoiss-bg)", bd: "var(--st-bpoiss-bd)", dot: "#F47920" },
+  bpo_served: { label: "BPO Served", color: "var(--st-bposrv-tx)", bg: "var(--st-bposrv-bg)", bd: "var(--st-bposrv-bd)", dot: "#D97706" },
+  endorsed: { label: "Endorsed", color: "var(--st-endorsed-tx)", bg: "var(--st-endorsed-bg)", bd: "var(--st-endorsed-bd)", dot: "#EF4444" },
+  closed: { label: "Assistance Ended", color: "var(--st-closed-tx)", bg: "var(--st-closed-bg)", bd: "var(--st-closed-bd)", dot: "#64748B" },
 };
 const sCfg = (s) => STATUS_CONFIG[s] || { label: s || "Unknown", color: "#64748B", bg: "var(--adm-border)", dot: "#CBD5E1" };
 // Directly settable via the status picker (assessment/investigation steps only).
@@ -112,24 +112,20 @@ const Spinner = ({ size = 14, color = "#fff" }) => (
 // No coloured bar down the side any more. That means the border is the only
 // thing drawing the edge, so it is --adm-border-strong rather than
 // --adm-border: against the page the lighter one is almost not there.
-const CARD_LEVEL = {
-  // Strong: the one card you came here to act on.
-  raised: { edge: "var(--adm-border-strong)", shadow: "0 10px 25px rgba(15,23,42,0.18)" },
-  // Soft: the record. Present, not competing.
-  flat:   { edge: "var(--adm-border-strong)", shadow: "0 4px 10px rgba(15,23,42,0.09)" },
-  // Inset: filed away. The fill carries it in dark mode, where a shadow on a
-  // dark surface is nearly invisible.
-  sunken: { edge: "var(--adm-border)",        shadow: "inset 0 4px 10px rgba(15,23,42,0.13)", bg: "var(--adm-sunken)" },
-};
+// One treatment for every card. Three depths were three answers to a question
+// nobody asked: a page of cards reads faster when they are all the same
+// object, and the ranking the depths were trying to express is already carried
+// by the order they appear in.
+const CARD_EDGE = "var(--adm-border-strong)";
+const CARD_SHADOW = "0 4px 10px rgba(15,23,42,0.09)";
 
-const Card = ({ title, icon, children, style = {}, headerRight, level = "flat" }) => {
-  const lv = CARD_LEVEL[level] || CARD_LEVEL.flat;
+const Card = ({ title, icon, children, style = {}, headerRight }) => {
   return (
-  <div style={{ background: lv.bg || "var(--adm-card)", borderRadius: 0,
-                border: `1px solid ${lv.edge}`,
-                overflow: "hidden", fontFamily: "'Lexend',sans-serif", boxShadow: lv.shadow, ...style }}>
+  <div style={{ background: "var(--adm-card)", borderRadius: 0,
+                border: `1px solid ${CARD_EDGE}`,
+                overflow: "hidden", fontFamily: "'Lexend',sans-serif", boxShadow: CARD_SHADOW, ...style }}>
     {title && (
-      <div style={{ padding: "14px 20px", borderBottom: `1px solid ${lv.edge}`, display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "var(--adm-muted)" }}>
+      <div style={{ padding: "14px 20px", borderBottom: `1px solid ${CARD_EDGE}`, display: "flex", alignItems: "center", justifyContent: "space-between", backgroundColor: "var(--adm-muted)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           {icon && <span style={{ display: "flex" }}>{icon}</span>}
           <h3 style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", textTransform: "uppercase", letterSpacing: "0.5px" }}>{title}</h3>
@@ -288,7 +284,7 @@ const RespondentModal = ({ current, onClose, onSave, saving }) => {
             </p>}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 20 }}>
           <button className="rd-btn" style={M.cancelBtn} onClick={onClose} disabled={saving}>Cancel</button>
-          <button className="rd-btn" style={{ ...M.saveBtn, background: "#C45E10", opacity: saving || !trimmed ? 0.6 : 1, cursor: saving || !trimmed ? "not-allowed" : "pointer" }}
+          <button className="rd-btn" style={{ ...M.saveBtn, background: "var(--adm-fill-primary-2)", opacity: saving || !trimmed ? 0.6 : 1, cursor: saving || !trimmed ? "not-allowed" : "pointer" }}
             onClick={submit} disabled={saving || !trimmed}>
             {saving && <Spinner />}{saving ? "Saving…" : "Save Name"}
           </button>
@@ -350,7 +346,7 @@ const RespondentDetailsModal = ({ cas, onClose, onSave, saving }) => {
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 20 }}>
           <button className="rd-btn" style={M.cancelBtn} onClick={onClose} disabled={saving}>Cancel</button>
-          <button className="rd-btn" style={{ ...M.saveBtn, background: "#C45E10", opacity: saving || unchanged ? 0.6 : 1, cursor: saving || unchanged ? "not-allowed" : "pointer" }}
+          <button className="rd-btn" style={{ ...M.saveBtn, background: "var(--adm-fill-primary-2)", opacity: saving || unchanged ? 0.6 : 1, cursor: saving || unchanged ? "not-allowed" : "pointer" }}
             onClick={() => (unchanged ? onClose() : onSave(form))} disabled={saving || unchanged}>
             {saving && <Spinner />}{saving ? "Saving…" : "Save Address"}
           </button>
@@ -414,7 +410,7 @@ const RelationshipModal = ({ current, onClose, onSave, saving }) => {
         </p>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 20 }}>
           <button className="rd-btn" style={M.cancelBtn} onClick={onClose} disabled={saving}>Cancel</button>
-          <button className="rd-btn" style={{ ...M.saveBtn, background: "#9B4DAB", opacity: saving || !value ? 0.6 : 1, cursor: saving || !value ? "not-allowed" : "pointer" }}
+          <button className="rd-btn" style={{ ...M.saveBtn, background: "var(--adm-fill-violet)", opacity: saving || !value ? 0.6 : 1, cursor: saving || !value ? "not-allowed" : "pointer" }}
             onClick={submit} disabled={saving || !value}>
             {saving && <Spinner />}{saving ? "Saving…" : "Save"}
           </button>
@@ -607,7 +603,7 @@ const CaseActivityCard = ({ caseId }) => {
   }, [rows, days]);
 
   return (
-    <Card title="Activity" level="sunken" icon={<IcoShield size={16} color="#94A3B8" />}
+    <Card title="Activity" icon={<IcoShield size={16} color="#94A3B8" />}
       headerRight={rows !== null && !error && rows.length > 0 && (
         <select value={days} onChange={e => setDays(Number(e.target.value))} aria-label="How far back"
           style={{ padding: "4px 8px", borderRadius: 4, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 11.5, fontFamily: "'Lexend',sans-serif" }}>
@@ -643,7 +639,7 @@ const CaseActivityCard = ({ caseId }) => {
         <ol className="rd-scroll" style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 12, maxHeight: ACTIVITY_VISIBLE * ACTIVITY_ROW_PX, overflowY: "auto", paddingRight: 8 }}>
           {shown.map(a => (
             <li key={a.id} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-              <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: "50%", background: "#9B4DAB", flexShrink: 0, marginTop: 6 }} />
+              <span aria-hidden="true" style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--adm-fill-violet)", flexShrink: 0, marginTop: 6 }} />
               <div style={{ minWidth: 0, flex: 1 }}>
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", lineHeight: 1.4 }}>
                   {a.label}{a.detail ? <span style={{ fontWeight: 400, color: "var(--adm-text-2)" }}>{" — " + a.detail}</span> : null}
@@ -724,7 +720,7 @@ const CaseTimeline = ({ cas, onUpdateStatus }) => {
       {!isDeleted && canPatch && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
           <button className="rd-btn" onClick={onUpdateStatus}
-            style={{ width: "100%", padding: "10px 0", borderRadius: 8, border: "none", background: "#C45E10", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'Lexend',sans-serif" }}>
+            style={{ width: "100%", padding: "10px 0", borderRadius: 8, border: "none", background: "var(--adm-fill-primary-2)", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: "'Lexend',sans-serif" }}>
             <IcoCheck size={14} color="#fff" /> Update Assessment Status
           </button>
         </div>
@@ -741,13 +737,13 @@ const CaseTimeline = ({ cas, onUpdateStatus }) => {
 
 // ── Case actions (lawful VAWC): BPO, endorsement, close ──
 const inp = { width: "100%", boxSizing: "border-box", padding: "8px 10px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text)", fontSize: 13, fontFamily: "'Lexend',sans-serif", outline: "none" };
-const btnP = { padding: "9px 14px", borderRadius: 8, border: "none", background: "#9B4DAB", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif", display: "inline-flex", alignItems: "center", gap: 7 };
+const btnP = { padding: "9px 14px", borderRadius: 8, border: "none", background: "var(--adm-fill-violet)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif", display: "inline-flex", alignItems: "center", gap: 7 };
 // Small secondary button for undo / revert actions (accidental clicks).
 const btnU = { padding: "4px 9px", borderRadius: 6, border: "1px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" };
 const btnUDanger = { ...btnU, borderColor: "#FECACA", color: "#B91C1C" };
 const lbl = { fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif", marginBottom: 4, display: "block" };
 
-const CaseActions = ({ cas, refetch, showToast }) => {
+const CaseActions = ({ cas, refetch, showToast, onDelete }) => {
   const [busy, setBusy] = useState("");
   const activeBpo = (cas.bpos || []).find(b => ["applied", "issued", "served"].includes(b.status));
   const call = async (key, fn, okMsg) => {
@@ -772,7 +768,7 @@ const CaseActions = ({ cas, refetch, showToast }) => {
   const daysLeft = (b) => b.expires_at ? Math.ceil((new Date(b.expires_at).getTime() - Date.now()) / 86400000) : null;
 
   return (
-    <Card title="Case Actions" level="raised" icon={<IcoShield size={16} color="#C45E10" />}>
+    <Card title="Case Actions" icon={<IcoShield size={16} color="#C45E10" />}>
       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
         {/* Confirm — only while the report is still unclaimed.
@@ -806,7 +802,7 @@ const CaseActions = ({ cas, refetch, showToast }) => {
               );
             })()}
 
-            <button className="rd-btn" style={{ ...btnP, background: "#C45E10", width: "100%", justifyContent: "center" }}
+            <button className="rd-btn" style={{ ...btnP, background: "var(--adm-fill-primary-2)", width: "100%", justifyContent: "center" }}
               disabled={busy === "confirm"}
               onClick={() => call("confirm", () => api.patch(`/admin/cases/${cas.id}/confirm`), "Report confirmed.")}>
               {busy === "confirm" ? <Spinner size={12} /> : "Confirm Report"}
@@ -833,7 +829,7 @@ const CaseActions = ({ cas, refetch, showToast }) => {
                     {b.issued_at && <div style={{ color: "var(--adm-text-muted)", marginTop: 2 }}>Issued {fmtDate(b.issued_at)} · Expires {fmtDate(b.expires_at)}{dl != null && b.status === "issued" ? ` (${dl} day${dl === 1 ? "" : "s"} left)` : ""}</div>}
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 6 }}>
                       {b.status === "applied" && !cas.is_deleted && (
-                        <button className="rd-btn" style={{ ...btnP, background: "#C45E10", padding: "5px 12px", fontSize: 12 }} disabled={busy === "issue" + b.id}
+                        <button className="rd-btn" style={{ ...btnP, background: "var(--adm-fill-primary-2)", padding: "5px 12px", fontSize: 12 }} disabled={busy === "issue" + b.id}
                           onClick={() => call("issue" + b.id, () => api.patch(`/admin/bpos/${b.id}/issue`), "BPO issued (valid 15 days).")}>Issue BPO</button>
                       )}
                       {b.status === "issued" && !cas.is_deleted && (
@@ -913,7 +909,7 @@ const CaseActions = ({ cas, refetch, showToast }) => {
               <div style={{ color: "var(--adm-text-muted)", marginTop: 2 }}>Endorsed {fmtDate(e.date_endorsed)}{e.received_at ? ` · Received ${fmtDate(e.received_at)} by ${e.received_by || "-"}` : ""}</div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 6 }}>
                 {!e.acknowledged && !cas.is_deleted && (
-                  <button className="rd-btn" style={{ ...btnP, background: "#059669", padding: "5px 12px", fontSize: 12 }} disabled={busy === "ack" + e.id}
+                  <button className="rd-btn" style={{ ...btnP, background: "var(--adm-fill-green)", padding: "5px 12px", fontSize: 12 }} disabled={busy === "ack" + e.id}
                     onClick={() => { setAckFor(e); setAckName(""); }}>
                     Mark Acknowledged
                   </button>
@@ -966,7 +962,7 @@ const CaseActions = ({ cas, refetch, showToast }) => {
               {CLOSURE_REASONS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
             </select>
             <input style={{ ...inp, marginBottom: 6 }} placeholder="Optional note" value={close.note} onChange={e => setClose(x => ({ ...x, note: e.target.value }))} />
-            <button className="rd-btn" style={{ ...btnP, background: "#475569", opacity: close.reason ? 1 : 0.5 }} disabled={!close.reason || busy === "close"}
+            <button className="rd-btn" style={{ ...btnP, background: "var(--adm-fill-slate)", opacity: close.reason ? 1 : 0.5 }} disabled={!close.reason || busy === "close"}
               onClick={() => call("close", () => api.patch(`/admin/cases/${cas.id}/close`, { closure_reason: close.reason, closure_note: close.note || null }), "Barangay assistance ended.")}>
               {busy === "close" ? <Spinner size={12} /> : "End Assistance"}
             </button>
@@ -992,6 +988,19 @@ const CaseActions = ({ cas, refetch, showToast }) => {
             )}
           </div>
         )}
+
+        {/* Remove. Last, and visually quiet: it is a filing action, not a
+            judgment on the case, and nothing here is permanent. */}
+        <div>
+          <span style={lbl}>Remove from Case Records</span>
+          <button className="rd-btn" onClick={onDelete}
+            style={{ padding: "8px 16px", borderRadius: 8, border: "1.5px solid var(--st-endorsed-bd)", background: "var(--st-endorsed-bg)", color: "var(--st-endorsed-tx)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+            Delete Case
+          </button>
+          <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
+            Moves the case to Recently Deleted. Nothing is erased and it can be recovered from there.
+          </p>
+        </div>
       </div>
 
       {/* Acknowledgment modal */}
@@ -1266,9 +1275,6 @@ export default function ReportDetail() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
                 <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>{cas.case_number}</h1>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 4, fontSize: 12.5, fontWeight: 600, color: "var(--adm-text-2)", background: "var(--adm-muted)", border: "1px solid var(--adm-border)", fontFamily: "'Lexend',sans-serif" }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: cfg.dot }} />{cas.status_display || cfg.label}
-                </span>
                 {isMinor && (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: "#FEF3C7", color: "#92400E", fontFamily: "'Lexend',sans-serif" }}>
                     Minor
@@ -1279,17 +1285,15 @@ export default function ReportDetail() {
               <p style={{ margin: "0 0 2px", fontSize: 16, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>vs. <span style={{ color: "var(--adm-violet)" }}>{cas.offender_name}</span></p>
               <p style={{ margin: 0, fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Filed {fmt(cas.created_at)}</p>
             </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              {!cas.is_deleted
-                ? <button className="rd-btn" onClick={() => setShowDeleteConfirm(true)}
-                  style={{ padding: "8px 16px", borderRadius: 8, border: "1.5px solid #FECACA", background: "#FEF2F2", color: "#991B1B", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
-                  Delete Case
-                </button>
-                : <button className="rd-btn" onClick={() => setShowRecover(true)}
-                  style={{ padding: "8px 16px", borderRadius: 8, border: "1.5px solid #A7F3D0", background: "#ECFDF5", color: "#065F46", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
-                  Recover Case
-                </button>
-              }
+            {/* The corner Delete used to hold. A status is what the officer
+                looks for first, and it is the one thing on this page that
+                changes between visits. */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, paddingTop: 2 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "7px 14px", borderRadius: 4, fontSize: 13, fontWeight: 700,
+                             color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.bd || "var(--adm-border)"}`, fontFamily: "'Lexend',sans-serif" }}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: cfg.dot, flexShrink: 0 }} />
+                {cas.status_display || cfg.label}
+              </span>
             </div>
           </div>
         </div>
@@ -1477,7 +1481,7 @@ export default function ReportDetail() {
 
             {/* Deletion details - only when soft-deleted */}
             {cas.is_deleted && (
-              <Card title="Deletion Details" level="sunken" icon={<IcoTrash size={16} color="#C62828" />}>
+              <Card title="Deletion Details" icon={<IcoTrash size={16} color="#C62828" />}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "16px 24px" }}>
                   <InfoRow label="Deleted On" value={fmt(cas.deleted_at)} />
                   <InfoRow
@@ -1487,11 +1491,18 @@ export default function ReportDetail() {
                   />
                   <InfoRow label="Recovery Window" value="30 days from deletion" muted />
                 </div>
+                {/* Case Actions does not render for a deleted case, so recovery
+                    lives with the record of the deletion. */}
+                <button className="rd-btn" onClick={() => setShowRecover(true)}
+                  style={{ marginTop: 16, padding: "8px 16px", borderRadius: 8, border: "1.5px solid #A7F3D0", background: "#ECFDF5", color: "#065F46", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                  Recover Case
+                </button>
               </Card>
             )}
             {!cas.is_deleted && (
               <div id="case-actions" style={{ scrollMarginTop: 80 }}>
-                <CaseActions cas={cas} refetch={fetchCase} showToast={showToast} />
+                <CaseActions cas={cas} refetch={fetchCase} showToast={showToast}
+                  onDelete={() => setShowDeleteConfirm(true)} />
               </div>
             )}
 
@@ -1698,7 +1709,7 @@ export default function ReportDetail() {
                       )}
                       {m.sent_sms && (
                         <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#C45E10", background: "#FFF3E0", border: "1px solid #FFCC99", padding: "2px 8px", borderRadius: 4 }}>
-                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#F47920" }} /> SMS
+                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: "var(--adm-fill-primary-3)" }} /> SMS
                         </span>
                       )}
                       {m.sent_by && <span style={{ fontSize: 10.5, color: "var(--adm-text-muted)" }}>by {m.sent_by}</span>}

@@ -241,7 +241,7 @@ const CreateAdminModal = ({ onClose, onCreated }) => {
         <div style={S.createModalFooter}>
           <button onClick={onClose} style={S.cancelBtn}>Cancel</button>
           <button onClick={handleSubmit} disabled={loading} className="adm-primary-btn"
-            style={{ padding: "9px 22px", borderRadius: 8, border: "none", background: "#9B4DAB", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, display: "flex", alignItems: "center", gap: 7, fontFamily: "'Lexend', sans-serif" }}>
+            style={{ padding: "9px 22px", borderRadius: 8, border: "none", background: "var(--adm-fill-violet)", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? 0.7 : 1, display: "flex", alignItems: "center", gap: 7, fontFamily: "'Lexend', sans-serif" }}>
             {loading && <span style={S.spinner} />}
             Create Account
           </button>
@@ -909,7 +909,7 @@ export default function AdminManagement() {
                         <p style={S.emptyTitle}>{search ? "No matches" : "No admin accounts yet"}</p>
                         <p style={S.emptySub}>{search ? `No admins match "${search}". Try a different search.` : "Create the first admin account to get started"}</p>
                         {search ? (
-                          <button onClick={() => setSearch("")} style={{ ...S.newBtn, marginTop: 16, background: "#475569" }}>Clear Search</button>
+                          <button onClick={() => setSearch("")} style={{ ...S.newBtn, marginTop: 16, background: "var(--adm-fill-slate)" }}>Clear Search</button>
                         ) : (
                           <button onClick={() => setShowCreate(true)} style={{ ...S.newBtn, marginTop: 16 }}>Create Admin</button>
                         )}
@@ -1382,7 +1382,7 @@ export default function AdminManagement() {
                     Not accepted
                   </button>
                   <button className="rd-btn" disabled={!!idBusy} onClick={() => decideId(idReview, true)}
-                    style={{ padding: "10px 20px", borderRadius: 6, border: "none", background: "#059669", color: "#fff", fontSize: 13.5, fontWeight: 700, cursor: idBusy ? "not-allowed" : "pointer", opacity: idBusy ? 0.6 : 1, fontFamily: "'Lexend',sans-serif" }}>
+                    style={{ padding: "10px 20px", borderRadius: 6, border: "none", background: "var(--adm-fill-green)", color: "#fff", fontSize: 13.5, fontWeight: 700, cursor: idBusy ? "not-allowed" : "pointer", opacity: idBusy ? 0.6 : 1, fontFamily: "'Lexend',sans-serif" }}>
                     {idBusy ? "Saving…" : "Approve"}
                   </button>
                 </div>
@@ -2137,7 +2137,7 @@ const S2 = {
   // --adm-text, which in dark mode is near-white typing on near-white fill.
   input:      { width: "100%", boxSizing: "border-box", padding: "9px 12px", borderRadius: 8, border: "1.5px solid var(--adm-border)", background: "var(--adm-input)", fontSize: 13.5, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", outline: "none", marginBottom: 8 },
   btnGhost:   { padding: "9px 16px", borderRadius: 6, border: "1.5px solid var(--adm-border)", background: "var(--adm-card)", color: "var(--adm-text-2)", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
-  btnPrimary: { padding: "9px 18px", borderRadius: 6, border: "none", background: "#C45E10", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
+  btnPrimary: { padding: "9px 18px", borderRadius: 6, border: "none", background: "var(--adm-fill-primary-2)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Lexend',sans-serif" },
 };
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
@@ -2145,7 +2145,7 @@ const S = {
   wrap:        { maxWidth: "1200px", fontFamily: "'Lexend', sans-serif" },
   header:      { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20, gap: 12, flexWrap: "wrap" },
   headerSub:   { fontSize: 13, color: "var(--adm-text-muted)", fontFamily: "'Lexend', sans-serif" },
-  newBtn:      { padding: "9px 18px", borderRadius: 4, border: "none", background: "#9B4DAB", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 2px 8px rgba(123,45,139,0.2)", fontFamily: "'Lexend', sans-serif" },
+  newBtn:      { padding: "9px 18px", borderRadius: 4, border: "none", background: "var(--adm-fill-violet)", color: "#fff", fontSize: 13.5, fontWeight: 600, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 2px 8px rgba(123,45,139,0.2)", fontFamily: "'Lexend', sans-serif" },
 
   errorBanner: { display: "flex", alignItems: "center", gap: 10, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 4, padding: "12px 16px", marginBottom: 16 },
   errorText:   { flex: 1, fontSize: 13, color: "#991B1B", fontFamily: "'Lexend', sans-serif" },
