@@ -117,9 +117,13 @@ const Spinner = ({ size = 14, color = "#fff" }) => (
 // thing drawing the edge, so it is --adm-border-strong rather than
 // --adm-border: against the page the lighter one is almost not there.
 const CARD_LEVEL = {
-  raised: { edge: "var(--adm-border-strong)", shadow: "0 1px 2px rgba(15,23,42,0.06), 0 8px 20px rgba(15,23,42,0.10)" },
-  flat:   { edge: "var(--adm-border-strong)", shadow: "0 1px 2px rgba(15,23,42,0.05), 0 2px 8px rgba(15,23,42,0.05)" },
-  sunken: { edge: "var(--adm-border)",        shadow: "none", bg: "var(--adm-sunken)" },
+  // Strong: the one card you came here to act on.
+  raised: { edge: "var(--adm-border-strong)", shadow: "0 10px 25px rgba(15,23,42,0.18)" },
+  // Soft: the record. Present, not competing.
+  flat:   { edge: "var(--adm-border-strong)", shadow: "0 4px 10px rgba(15,23,42,0.09)" },
+  // Inset: filed away. The fill carries it in dark mode, where a shadow on a
+  // dark surface is nearly invisible.
+  sunken: { edge: "var(--adm-border)",        shadow: "inset 0 4px 10px rgba(15,23,42,0.13)", bg: "var(--adm-sunken)" },
 };
 
 const Card = ({ title, icon, children, style = {}, headerRight, level = "flat" }) => {
@@ -1304,44 +1308,6 @@ export default function ReportDetail() {
           <div className="rd-scroll">
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-            {/* ── Complainant Information ── */}
-            <Card title="Complainant Information" icon={<IcoUser size={16} color="#9B4DAB" />}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-                <InfoRow label="Full Name" value={cas.victim_name || [victim.first_name, victim.middle_name, victim.last_name].filter(Boolean).join(" ") || "-"} />
-                <InfoRow label="Date of Birth" value={fmtDate(victim.date_of_birth || victim.birthdate)} />
-                {(victim.date_of_birth || victim.birthdate) && <InfoRow label="Age" value={`${age(victim.date_of_birth || victim.birthdate)} years old`} />}
-                <InfoRow label="Sex" value={victim.sex} />
-                <InfoRow label="Contact Number" value={victim.phone_number || cas.victim_phone} />
-                <InfoRow label="Email" value={victim.email || cas.victim_email} mono />
-                <div style={{ gridColumn: "span 2" }}><InfoRow label="Address" value={victim.address} /></div>
-              </div>
-
-              {/* ── Minor / Guardian section ── */}
-              <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--adm-border)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                  <IcoGuardian size={14} color="#9B4DAB" />
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--adm-text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: "'Lexend',sans-serif" }}>Minor / Guardian</span>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
-                  <InfoRow
-                    label="Victim is Minor"
-                    value={isMinor ? "Yes (Below 18)" : "No"}
-                    muted={!isMinor}
-                  />
-                  <InfoRow
-                    label="Guardian Name"
-                    value={victim.guardian_name || "N/A"}
-                    muted={!victim.guardian_name}
-                  />
-                  <InfoRow
-                    label="Relationship"
-                    value={victim.guardian_relationship || "N/A"}
-                    muted={!victim.guardian_relationship}
-                  />
-                </div>
-              </div>
-            </Card>
-
             {/* Quick nav. The statements are not the only thing worth jumping
                 to - Case Information and Case Actions are further down the
                 same column, and they are where an officer is heading. */}
@@ -1382,6 +1348,45 @@ export default function ReportDetail() {
               </div>
               );
             })()}
+
+            {/* ── Complainant Information ── */}
+            <Card title="Complainant Information" icon={<IcoUser size={16} color="#9B4DAB" />}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <InfoRow label="Full Name" value={cas.victim_name || [victim.first_name, victim.middle_name, victim.last_name].filter(Boolean).join(" ") || "-"} />
+                <InfoRow label="Date of Birth" value={fmtDate(victim.date_of_birth || victim.birthdate)} />
+                {(victim.date_of_birth || victim.birthdate) && <InfoRow label="Age" value={`${age(victim.date_of_birth || victim.birthdate)} years old`} />}
+                <InfoRow label="Sex" value={victim.sex} />
+                <InfoRow label="Contact Number" value={victim.phone_number || cas.victim_phone} />
+                <InfoRow label="Email" value={victim.email || cas.victim_email} mono />
+                <div style={{ gridColumn: "span 2" }}><InfoRow label="Address" value={victim.address} /></div>
+              </div>
+
+              {/* ── Minor / Guardian section ── */}
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--adm-border)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <IcoGuardian size={14} color="#9B4DAB" />
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--adm-text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: "'Lexend',sans-serif" }}>Minor / Guardian</span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
+                  <InfoRow
+                    label="Victim is Minor"
+                    value={isMinor ? "Yes (Below 18)" : "No"}
+                    muted={!isMinor}
+                  />
+                  <InfoRow
+                    label="Guardian Name"
+                    value={victim.guardian_name || "N/A"}
+                    muted={!victim.guardian_name}
+                  />
+                  <InfoRow
+                    label="Relationship"
+                    value={victim.guardian_relationship || "N/A"}
+                    muted={!victim.guardian_relationship}
+                  />
+                </div>
+              </div>
+            </Card>
+
 
             {reports.map((r, idx) => (
               <div key={r.id} id={`report-${reportNo(idx)}`} style={{ scrollMarginTop: 80 }}>
@@ -1478,6 +1483,66 @@ export default function ReportDetail() {
               </div>
             ))}
 
+
+            {/* Deletion details - only when soft-deleted */}
+            {cas.is_deleted && (
+              <Card title="Deletion Details" level="sunken" icon={<IcoTrash size={16} color="#C62828" />}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "16px 24px" }}>
+                  <InfoRow label="Deleted On" value={fmt(cas.deleted_at)} />
+                  <InfoRow
+                    label="Reason"
+                    value={cas.delete_reason || "Not specified"}
+                    muted={!cas.delete_reason}
+                  />
+                  <InfoRow label="Recovery Window" value="30 days from deletion" muted />
+                </div>
+              </Card>
+            )}
+            {!cas.is_deleted && (
+              <div id="case-actions" style={{ scrollMarginTop: 80 }}>
+                <CaseActions cas={cas} refetch={fetchCase} showToast={showToast} />
+              </div>
+            )}
+
+            {!cas.is_deleted && (
+              <Card title="Message to Victim" icon={<IcoClip size={16} color="#F47920" />}>
+                <p style={{ margin: "0 0 10px", fontSize: 12.5, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
+                  Send a note to the victim at any stage - e.g. an update, or the schedule and venue of the hearing. They are notified by email and in their portal.
+                </p>
+                {cas.messages && cas.messages.length > 0 && (
+                  <button className="rd-btn" onClick={() => setShowMessageLogs(true)}
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", marginBottom: 10, padding: "9px 0", borderRadius: 8, border: "1.5px solid #E1BEE7", background: "#F3E5F5", color: "#7B2D8B", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                    <IcoClip size={13} color="#7B2D8B" /> Open message logs ({cas.messages.length})
+                  </button>
+                )}
+                <textarea value={messageText} onChange={e => setMessageText(e.target.value)} rows={4}
+                  /* No background was set, so it fell back to the browser default
+                     white while the text used var(--adm-text) — light on white. */
+                  style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid var(--adm-border)", borderRadius: 8, padding: "10px 12px", fontSize: 13, fontFamily: "'Lexend',sans-serif", color: "var(--adm-text)", background: "var(--adm-input)", outline: "none", resize: "vertical" }} />
+
+                {/* Channel selection */}
+                <div style={{ display: "flex", gap: 18, alignItems: "center", margin: "10px 0 3px" }}>
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--adm-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'Lexend',sans-serif" }}>Send via</span>
+                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--adm-text-2)", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                    <input type="checkbox" checked={sendEmail} onChange={e => setSendEmail(e.target.checked)} style={{ accentColor: "#7B2D8B" }} /> Email
+                  </label>
+                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--adm-text-2)", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                    <input type="checkbox" checked={sendSms} onChange={e => setSendSms(e.target.checked)} style={{ accentColor: "#7B2D8B" }} /> SMS
+                  </label>
+                </div>
+                {sendSms && (
+                  <p style={{ margin: "0 0 6px", fontSize: 11, color: "var(--adm-text-muted)", lineHeight: 1.45, fontFamily: "'Lexend',sans-serif" }}>
+                    SMS uses Semaphore credits; long messages may use more than one credit.
+                  </p>
+                )}
+
+                <button className="rd-btn" onClick={handleSendMessage} disabled={sendingMessage || !messageText.trim() || (!sendEmail && !sendSms)}
+                  style={{ width: "100%", marginTop: 7, padding: "10px 0", borderRadius: 8, border: "none", background: (messageText.trim() && (sendEmail || sendSms)) ? "#C45E10" : "var(--adm-border)", color: (messageText.trim() && (sendEmail || sendSms)) ? "#fff" : "#94A3B8", fontSize: 13.5, fontWeight: 600, cursor: (sendingMessage || !messageText.trim() || (!sendEmail && !sendSms)) ? "not-allowed" : "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                  {sendingMessage ? "Sending…" : "Send Message"}
+                </button>
+              </Card>
+            )}
+
             <div id="case-information" style={{ scrollMarginTop: 80 }}>
             <Card title="Case Information" icon={<IcoClip size={16} color="#9B4DAB" />}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "16px 24px" }}>
@@ -1549,65 +1614,6 @@ export default function ReportDetail() {
               </div>
             </Card>
             </div>
-
-            {/* Deletion details - only when soft-deleted */}
-            {cas.is_deleted && (
-              <Card title="Deletion Details" level="sunken" icon={<IcoTrash size={16} color="#C62828" />}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: "16px 24px" }}>
-                  <InfoRow label="Deleted On" value={fmt(cas.deleted_at)} />
-                  <InfoRow
-                    label="Reason"
-                    value={cas.delete_reason || "Not specified"}
-                    muted={!cas.delete_reason}
-                  />
-                  <InfoRow label="Recovery Window" value="30 days from deletion" muted />
-                </div>
-              </Card>
-            )}
-            {!cas.is_deleted && (
-              <div id="case-actions" style={{ scrollMarginTop: 80 }}>
-                <CaseActions cas={cas} refetch={fetchCase} showToast={showToast} />
-              </div>
-            )}
-
-            {!cas.is_deleted && (
-              <Card title="Message to Victim" icon={<IcoClip size={16} color="#F47920" />}>
-                <p style={{ margin: "0 0 10px", fontSize: 12.5, color: "var(--adm-text-muted)", lineHeight: 1.5, fontFamily: "'Lexend',sans-serif" }}>
-                  Send a note to the victim at any stage - e.g. an update, or the schedule and venue of the hearing. They are notified by email and in their portal.
-                </p>
-                {cas.messages && cas.messages.length > 0 && (
-                  <button className="rd-btn" onClick={() => setShowMessageLogs(true)}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", marginBottom: 10, padding: "9px 0", borderRadius: 8, border: "1.5px solid #E1BEE7", background: "#F3E5F5", color: "#7B2D8B", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
-                    <IcoClip size={13} color="#7B2D8B" /> Open message logs ({cas.messages.length})
-                  </button>
-                )}
-                <textarea value={messageText} onChange={e => setMessageText(e.target.value)} rows={4}
-                  /* No background was set, so it fell back to the browser default
-                     white while the text used var(--adm-text) — light on white. */
-                  style={{ width: "100%", boxSizing: "border-box", border: "1.5px solid var(--adm-border)", borderRadius: 8, padding: "10px 12px", fontSize: 13, fontFamily: "'Lexend',sans-serif", color: "var(--adm-text)", background: "var(--adm-input)", outline: "none", resize: "vertical" }} />
-
-                {/* Channel selection */}
-                <div style={{ display: "flex", gap: 18, alignItems: "center", margin: "10px 0 3px" }}>
-                  <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--adm-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'Lexend',sans-serif" }}>Send via</span>
-                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--adm-text-2)", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
-                    <input type="checkbox" checked={sendEmail} onChange={e => setSendEmail(e.target.checked)} style={{ accentColor: "#7B2D8B" }} /> Email
-                  </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--adm-text-2)", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
-                    <input type="checkbox" checked={sendSms} onChange={e => setSendSms(e.target.checked)} style={{ accentColor: "#7B2D8B" }} /> SMS
-                  </label>
-                </div>
-                {sendSms && (
-                  <p style={{ margin: "0 0 6px", fontSize: 11, color: "var(--adm-text-muted)", lineHeight: 1.45, fontFamily: "'Lexend',sans-serif" }}>
-                    SMS uses Semaphore credits; long messages may use more than one credit.
-                  </p>
-                )}
-
-                <button className="rd-btn" onClick={handleSendMessage} disabled={sendingMessage || !messageText.trim() || (!sendEmail && !sendSms)}
-                  style={{ width: "100%", marginTop: 7, padding: "10px 0", borderRadius: 8, border: "none", background: (messageText.trim() && (sendEmail || sendSms)) ? "#C45E10" : "var(--adm-border)", color: (messageText.trim() && (sendEmail || sendSms)) ? "#fff" : "#94A3B8", fontSize: 13.5, fontWeight: 600, cursor: (sendingMessage || !messageText.trim() || (!sendEmail && !sendSms)) ? "not-allowed" : "pointer", fontFamily: "'Lexend',sans-serif" }}>
-                  {sendingMessage ? "Sending…" : "Send Message"}
-                </button>
-              </Card>
-            )}
 
             {/* The trail, not the work: last in the column you read. */}
             <CaseActivityCard caseId={id} />
