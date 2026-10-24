@@ -362,7 +362,7 @@ function Sidebar() {
 // `breadcrumbs` is the trail AFTER the "Dashboard" home crumb. Each item is a
 // string, or { label, onClick } to make it a clickable step. When a page does
 // not supply it, the trail falls back to the section name derived from the URL.
-function TopBar({ breadcrumbs }) {
+function TopBar({ breadcrumbs, onBack }) {
     const admin = getAdmin();
     const location = useLocation();
     const navigate = useNavigate();
@@ -389,8 +389,18 @@ function TopBar({ breadcrumbs }) {
     return (
         <header style={S.topBar}>
             <div>
-                <h1 style={S.pageTitle}>{pageTitle}</h1>
                 <div style={S.breadcrumb}>
+                    {onBack && (
+                        <button type="button" onClick={onBack} aria-label="Go back" title="Go back"
+                            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                                     width: 26, height: 26, marginRight: 2, padding: 0, borderRadius: 4,
+                                     border: '1px solid var(--adm-border)', background: 'var(--adm-card)',
+                                     color: 'var(--adm-text-2)', cursor: 'pointer', flexShrink: 0 }}>
+                            <svg width="13" height="13" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+                                <path d="M12.5 5l-5 5 5 5" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </button>
+                    )}
                     {crumbs.map((c, i) => {
                         const last = i === crumbs.length - 1;
                         const clickable = !last && typeof c.onClick === 'function';
@@ -432,13 +442,13 @@ function TopBar({ breadcrumbs }) {
 }
 
 // ─── Layout ───────────────────────────────────────────────────────────────────
-export function AdminLayout({ children, breadcrumbs }) {
+export function AdminLayout({ children, breadcrumbs, onBack }) {
     const location = useLocation();
     return (
         <div style={S.layout}>
             <Sidebar />
             <div style={S.content}>
-                <TopBar breadcrumbs={breadcrumbs} />
+                <TopBar breadcrumbs={breadcrumbs} onBack={onBack} />
                 <main style={S.main}>
                     {/* keyed by route so the content re-animates on each page change */}
                     <div key={location.pathname} className="page-enter">{children}</div>
@@ -493,7 +503,7 @@ const S = {
     // Top bar
     topBar: { height: 62, backgroundColor: COLORS.bgCard, borderBottom: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', position: 'sticky', top: 0, zIndex: 50, boxShadow: 'var(--adm-card-shadow)' },
     pageTitle: { margin: 0, fontSize: 17, fontWeight: 700, color: COLORS.textPrimary, fontFamily: TEXT.font, letterSpacing: '-0.2px' },
-    breadcrumb: { display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 },
+    breadcrumb: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' },
     breadCrumb: { fontSize: 11.5, color: '#94A3B8', fontFamily: TEXT.font },
     topDate: { fontSize: 12, color: COLORS.textMuted, fontFamily: TEXT.font },
     topAvatar: { width: 32, height: 32, borderRadius: '50%', background: COLORS.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: TEXT.font, flexShrink: 0 },

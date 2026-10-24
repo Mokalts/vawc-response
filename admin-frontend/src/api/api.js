@@ -80,6 +80,19 @@ api.interceptors.response.use(
             }
         }
 
+        // The session is authenticated but has not passed the face check, and
+        // the only thing that let the UI in was a localStorage flag. That flag
+        // outlives the token - set on one session, still there on the next -
+        // so the page loads and then every guarded call comes back 403 while
+        // the screen sits there looking signed in. Clear it and send them to
+        // the step they actually have to complete.
+        if (status === 403 && /face verification/i.test(error.response?.data?.detail || "")) {
+            localStorage.removeItem("face_verified");
+            if (!window.location.pathname.startsWith("/face")) {
+                window.location.href = "/face-verify";
+            }
+        }
+
         return Promise.reject(error);
     }
 );

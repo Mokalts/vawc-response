@@ -1250,7 +1250,7 @@ export default function ReportDetail() {
   const victimName = cas.victim_name || [victim.first_name, victim.middle_name, victim.last_name].filter(Boolean).join(" ") || "-";
 
   return (
-    <AdminLayout breadcrumbs={[
+    <AdminLayout onBack={() => navigate("/reports")} breadcrumbs={[
       { label: "Case Records", onClick: () => navigate("/reports") },
       // The case number is this page, so it stays plain: a crumb that
       // reloads what you are already looking at is worse than one that
@@ -1266,11 +1266,6 @@ export default function ReportDetail() {
 
         {/* Header */}
         <div style={{ marginBottom: 20 }}>
-          <button onClick={() => navigate("/reports")}
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "var(--adm-muted)", border: "1px solid var(--adm-border)", borderRadius: 4, cursor: "pointer", color: "var(--adm-text-2)", fontSize: 13, fontWeight: 600, padding: "6px 12px", marginBottom: 14, fontFamily: "'Lexend',sans-serif" }}>
-            <svg width="13" height="13" fill="none" viewBox="0 0 20 20"><path d="M12.5 5l-5 5 5 5" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" /></svg>
-            Back to Reports
-          </button>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>

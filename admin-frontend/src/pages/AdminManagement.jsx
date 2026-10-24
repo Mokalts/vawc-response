@@ -864,17 +864,14 @@ export default function AdminManagement() {
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
               <thead>
                 <tr style={{ backgroundColor: "var(--adm-muted)", borderBottom: "1px solid var(--adm-border)" }}>
-                  {["", "Name & Email", "Username", "Employee ID", "Status", "Face 2FA", "Actions"].map((h, i) => (
-                    <th key={i} style={{ ...S.th, textAlign: i === 6 ? "right" : "left" }}>{h}</th>
+                  {["Name & Email", "Username", "Employee ID", "Status", "Face 2FA", "Actions"].map((h, i) => (
+                    <th key={i} style={{ ...S.th, textAlign: i === 5 ? "right" : "left" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {currentAdmin?.is_super_admin && !search && (
                   <tr className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)", background: "var(--adm-muted)" }}>
-                    <td style={{ padding: "12px 16px", width: 52 }}>
-                      <div style={{ ...S.avatar, background: "#C45E10", color: "#fff" }}>{initials(currentAdmin)}</div>
-                    </td>
                     <td style={S.td}>
                       <p style={S.adminName}>{[currentAdmin.first_name, currentAdmin.middle_name, currentAdmin.last_name].filter(Boolean).join(" ")}
                         <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: "#C45E10", background: "var(--adm-primary-bg)", border: "1px solid #FFCC99", padding: "1px 7px", borderRadius: 9999 }}>Super Admin (You)</span>
@@ -903,10 +900,10 @@ export default function AdminManagement() {
                   </tr>
                 )}
                 {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+                  Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={6} />)
                 ) : visibleAdmins.length === 0 ? (
                   <tr>
-                    <td colSpan={7}>
+                    <td colSpan={6}>
                       <div style={S.emptyState}>
                         <div style={S.emptyIcon}><IconUserSolid size={22} color="#94A3B8" /></div>
                         <p style={S.emptyTitle}>{search ? "No matches" : "No admin accounts yet"}</p>
@@ -922,11 +919,6 @@ export default function AdminManagement() {
                 ) : (
                   visibleAdmins.map((a) => (
                     <tr key={a.id} className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)" }}>
-                      <td style={{ padding: "12px 16px", width: 52 }}>
-                        <div style={{ ...S.avatar, background: a.is_active ? "#7B2D8B" : "var(--adm-border)", color: a.is_active ? "#fff" : "#94A3B8" }}>
-                          {initials(a)}
-                        </div>
-                      </td>
                       <td style={S.td}>
                         <p style={S.adminName}>{[a.first_name, a.middle_name, a.last_name].filter(Boolean).join(" ")}</p>
                         <p style={S.adminEmail}>{a.email}</p>
@@ -1501,7 +1493,7 @@ export default function AdminManagement() {
                   <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 580 }}>
                     <thead>
                       <tr style={{ backgroundColor: "#FFF5F5", borderBottom: "1px solid #FECACA" }}>
-                        {["", "Name", "Username", "Deleted On", "Days Left", ""].map((h, i) => (
+                        {["Name", "Username", "Deleted On", "Days Left", ""].map((h, i) => (
                           <th key={i} style={{ ...S.th, textAlign: i === 5 ? "right" : "left", color: "var(--adm-text-muted)" }}>{h}</th>
                         ))}
                       </tr>
@@ -1511,9 +1503,6 @@ export default function AdminManagement() {
                         const days = daysLeft(a.deleted_at);
                         return (
                           <tr key={a.id} style={{ borderBottom: "1px solid #FEF2F2" }}>
-                            <td style={{ padding: "12px 16px", width: 52 }}>
-                              <div style={{ ...S.avatar, background: "var(--adm-border)", color: "var(--adm-text-muted)" }}>{initials(a)}</div>
-                            </td>
                             <td style={S.td}>
                               <p style={{ ...S.adminName, color: "#64748B" }}>{[a.first_name, a.middle_name, a.last_name].filter(Boolean).join(" ")}</p>
                               <p style={S.adminEmail}>{a.email}</p>
