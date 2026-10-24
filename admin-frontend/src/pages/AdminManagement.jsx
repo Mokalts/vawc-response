@@ -273,7 +273,7 @@ const ActiveBadge = ({ active }) => (
   </span>
 );
 const FaceBadge = ({ enrolled }) => (
-  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 4, fontSize: 11.5, fontWeight: 600, background: enrolled ? "#F3E5F5" : "#FFFBEB", color: enrolled ? "#7B2D8B" : "#92400E", fontFamily: "'Lexend', sans-serif" }}>
+  <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 4, fontSize: 11.5, fontWeight: 600, background: enrolled ? "var(--adm-violet-bg)" : "#FFFBEB", color: enrolled ? "#7B2D8B" : "#92400E", fontFamily: "'Lexend', sans-serif" }}>
     <span style={{ width: 8, height: 8, borderRadius: '50%', background: enrolled ? "#9B4DAB" : "#F59E0B" }} />
     {enrolled ? "Enrolled" : "Not Enrolled"}
   </span>
@@ -874,7 +874,7 @@ export default function AdminManagement() {
                   <tr className="adm-row" style={{ borderBottom: "1px solid var(--adm-border)", background: "var(--adm-muted)" }}>
                     <td style={S.td}>
                       <p style={S.adminName}>{[currentAdmin.first_name, currentAdmin.middle_name, currentAdmin.last_name].filter(Boolean).join(" ")}
-                        <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: "#C45E10", background: "var(--adm-primary-bg)", border: "1px solid #FFCC99", padding: "1px 7px", borderRadius: 9999 }}>Super Admin (You)</span>
+                        <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: "#C45E10", background: "var(--adm-primary-bg)", border: "1px solid #FFCC99", padding: "1px 7px", borderRadius: 9999 }}>(You)</span>
                       </p>
                       <p style={S.adminEmail}>{currentAdmin.email}</p>
                     </td>

@@ -29,26 +29,22 @@ const CSS = `
   .msg-log-body::-webkit-scrollbar-thumb { background:var(--adm-border-strong); border-radius:2px; }
   .msg-log-body::-webkit-scrollbar-thumb:hover { background:var(--adm-text-muted); }
 
-  /* Two panes rather than one page. The height is the window less the sticky
-     top bar and this page's own header; below that it falls back to the
-     ordinary page scroll, because two short panes are worse than one. */
-  .rd-panes { display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:stretch; }
-  @media (min-height: 700px) {
-    .rd-panes { height: calc(100vh - 150px); }
-    .rd-panes > div { overflow-y:auto; overflow-x:hidden; padding-right:10px; }
-  }
+  /* One page scroll. The panes each had their own, which meant two
+     scrollbars and a rail that travelled with you; with the back button out
+     of the page body there is nothing left that needed pinning. */
+  .rd-panes { display:grid; grid-template-columns:1fr 340px; gap:20px; align-items:start; }
 `;
 
 // Lawful VAWC flow (RA 9262 / JMC 2010-2). No CFA, no Summons, no "resolved/settled".
 const STATUS_CONFIG = {
-  submitted: { label: "Submitted", color: "#BE185D", bg: "#FDF2F8", dot: "#EC4899" },
-  under_assessment: { label: "Under Assessment", color: "#0E7490", bg: "#ECFEFF", dot: "#06B6D4" },
-  awaiting_onsite_visit: { label: "Awaiting Onsite Visit", color: "#D97706", bg: "#FFFBEB", dot: "#F59E0B" },
-  bpo_applied: { label: "BPO Applied", color: "#7B2D8B", bg: "#F3E5F5", dot: "#9B4DAB" },
-  bpo_issued: { label: "BPO Issued", color: "#C45E10", bg: "#FFF3E0", dot: "#F47920" },
-  bpo_served: { label: "BPO Served", color: "#B45309", bg: "#FFFBEB", dot: "#D97706" },
-  endorsed: { label: "Endorsed", color: "#DC2626", bg: "#FEF2F2", dot: "#EF4444" },
-  closed: { label: "Assistance Ended", color: "#475569", bg: "#F1F5F9", dot: "#64748B" },
+  submitted: { label: "Submitted", color: "var(--st-submitted-tx)", bg: "var(--st-submitted-bg)", dot: "#EC4899" },
+  under_assessment: { label: "Under Assessment", color: "var(--st-assess-tx)", bg: "var(--st-assess-bg)", dot: "#06B6D4" },
+  awaiting_onsite_visit: { label: "Awaiting Onsite Visit", color: "var(--st-onsite-tx)", bg: "var(--st-onsite-bg)", dot: "#F59E0B" },
+  bpo_applied: { label: "BPO Applied", color: "var(--adm-violet)", bg: "var(--adm-violet-bg)", dot: "#9B4DAB" },
+  bpo_issued: { label: "BPO Issued", color: "var(--st-bpoiss-tx)", bg: "var(--st-bpoiss-bg)", dot: "#F47920" },
+  bpo_served: { label: "BPO Served", color: "var(--st-bposrv-tx)", bg: "var(--st-bposrv-bg)", dot: "#D97706" },
+  endorsed: { label: "Endorsed", color: "var(--st-endorsed-tx)", bg: "var(--st-endorsed-bg)", dot: "#EF4444" },
+  closed: { label: "Assistance Ended", color: "var(--st-closed-tx)", bg: "var(--st-closed-bg)", dot: "#64748B" },
 };
 const sCfg = (s) => STATUS_CONFIG[s] || { label: s || "Unknown", color: "#64748B", bg: "var(--adm-border)", dot: "#CBD5E1" };
 // Directly settable via the status picker (assessment/investigation steps only).
@@ -473,8 +469,8 @@ const ENDPOINT_ICON = {
   closed:   <IcoCheck size={10} color="#475569" />,
 };
 const ENDPOINT_NOTE = {
-  endorsed: { title: "Endorsed", body: "Endorsed to the receiving office. It is not complete until acknowledged (see the Endorsements panel).", color: "#DC2626", bg: "#FEF2F2", border: "#FECACA", sub: "#991B1B" },
-  closed:   { title: "Assistance Ended",   body: "The barangay ended its assistance with a recorded reason. The case is not dismissed, resolved or settled — only a court can dismiss a VAWC case.", color: "#475569", bg: "#F1F5F9", border: "#CBD5E1", sub: "#334155" },
+  endorsed: { title: "Endorsed", body: "Endorsed to the receiving office. It is not complete until acknowledged (see the Endorsements panel).", color: "var(--st-endorsed-tx)", bg: "var(--st-endorsed-bg)", border: "var(--st-endorsed-bd)", sub: "#991B1B" },
+  closed:   { title: "Assistance Ended",   body: "The barangay ended its assistance with a recorded reason. The case is not dismissed, resolved or settled — only a court can dismiss a VAWC case.", color: "var(--st-closed-tx)", bg: "var(--st-closed-bg)", border: "var(--st-closed-bd)", sub: "#334155" },
 };
 
 // Shown when a BPO step never happened, so the row reads as "did not apply"
@@ -704,7 +700,7 @@ const CaseTimeline = ({ cas, onUpdateStatus }) => {
     })),
   ];
   return (
-    <Card title="Case Timeline" icon={<IcoCheck size={16} color="#9B4DAB" />}>
+    <Card title="Case Timeline" icon={<IcoCheck size={16} color="var(--adm-violet)" />}>
       <div style={{ display: "flex", flexDirection: "column", marginBottom: 4 }}>
         {rows.map((row, i) => {
           const cfg = sCfg(row.key);
@@ -832,7 +828,7 @@ const CaseActions = ({ cas, refetch, showToast }) => {
                   <div key={b.id} style={{ padding: "8px 10px", borderRadius: 8, border: "1px solid var(--adm-border)", background: "var(--adm-muted)", fontSize: 12, fontFamily: "'Lexend',sans-serif" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                       <strong style={{ color: "var(--adm-text)" }}>{b.bpo_number}</strong>
-                      <span style={{ color: "#7B2D8B", fontWeight: 700, textTransform: "capitalize" }}>{b.status}</span>
+                      <span style={{ color: "var(--adm-violet)", fontWeight: 700, textTransform: "capitalize" }}>{b.status}</span>
                     </div>
                     {b.issued_at && <div style={{ color: "var(--adm-text-muted)", marginTop: 2 }}>Issued {fmtDate(b.issued_at)} · Expires {fmtDate(b.expires_at)}{dl != null && b.status === "issued" ? ` (${dl} day${dl === 1 ? "" : "s"} left)` : ""}</div>}
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 6 }}>
@@ -1280,7 +1276,7 @@ export default function ReportDetail() {
                 )}
                 {cas.is_deleted && <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: "#FEF2F2", color: "#991B1B", fontFamily: "'Lexend',sans-serif" }}><IcoTrash size={11} color="#991B1B" /> Deleted</span>}
               </div>
-              <p style={{ margin: "0 0 2px", fontSize: 16, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>vs. <span style={{ color: "#7B2D8B" }}>{cas.offender_name}</span></p>
+              <p style={{ margin: "0 0 2px", fontSize: 16, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>vs. <span style={{ color: "var(--adm-violet)" }}>{cas.offender_name}</span></p>
               <p style={{ margin: 0, fontSize: 12.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Filed {fmt(cas.created_at)}</p>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
@@ -1300,7 +1296,7 @@ export default function ReportDetail() {
 
         {/* Two-column layout */}
         <div className="rd-panes">
-          <div className="rd-scroll">
+          <div>
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
             {/* Quick nav. The statements are not the only thing worth jumping
@@ -1345,7 +1341,7 @@ export default function ReportDetail() {
             })()}
 
             {/* ── Complainant Information ── */}
-            <Card title="Complainant Information" icon={<IcoUser size={16} color="#9B4DAB" />}>
+            <Card title="Complainant Information" icon={<IcoUser size={16} color="var(--adm-violet)" />}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 <InfoRow label="Full Name" value={cas.victim_name || [victim.first_name, victim.middle_name, victim.last_name].filter(Boolean).join(" ") || "-"} />
                 <InfoRow label="Date of Birth" value={fmtDate(victim.date_of_birth || victim.birthdate)} />
@@ -1359,7 +1355,7 @@ export default function ReportDetail() {
               {/* ── Minor / Guardian section ── */}
               <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--adm-border)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                  <IcoGuardian size={14} color="#9B4DAB" />
+                  <IcoGuardian size={14} color="var(--adm-violet)" />
                   <span style={{ fontSize: 10.5, fontWeight: 700, color: "var(--adm-text-muted)", textTransform: "uppercase", letterSpacing: "0.07em", fontFamily: "'Lexend',sans-serif" }}>Minor / Guardian</span>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
@@ -1385,7 +1381,7 @@ export default function ReportDetail() {
 
             {reports.map((r, idx) => (
               <div key={r.id} id={`report-${reportNo(idx)}`} style={{ scrollMarginTop: 80 }}>
-                <Card title={`Report ${reportNo(idx)}`} icon={<IcoClip size={16} color="#9B4DAB" />}
+                <Card title={`Report ${reportNo(idx)}`} icon={<IcoClip size={16} color="var(--adm-violet)" />}
                   headerRight={
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11.5, fontFamily: "'Lexend',sans-serif" }}>
@@ -1437,7 +1433,7 @@ export default function ReportDetail() {
                       <div>
                         <p style={{ margin: "0 0 4px", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>Date of Incident</p>
                         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <IcoCal size={14} color="#9B4DAB" />
+                          <IcoCal size={14} color="var(--adm-violet)" />
                           <span style={{ fontSize: 13.5, color: "var(--adm-text)", fontWeight: 600, fontFamily: "'Lexend',sans-serif" }}>{fmt(r.incident_date)}</span>
                         </div>
                       </div>
@@ -1506,7 +1502,7 @@ export default function ReportDetail() {
                 </p>
                 {cas.messages && cas.messages.length > 0 && (
                   <button className="rd-btn" onClick={() => setShowMessageLogs(true)}
-                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", marginBottom: 10, padding: "9px 0", borderRadius: 8, border: "1.5px solid #E1BEE7", background: "#F3E5F5", color: "#7B2D8B", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                    style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, width: "100%", marginBottom: 10, padding: "9px 0", borderRadius: 8, border: "1.5px solid var(--adm-violet-border)", background: "var(--adm-violet-bg)", color: "var(--adm-violet)", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
                     <IcoClip size={13} color="#7B2D8B" /> Open message logs ({cas.messages.length})
                   </button>
                 )}
@@ -1539,7 +1535,7 @@ export default function ReportDetail() {
             )}
 
             <div id="case-information" style={{ scrollMarginTop: 80 }}>
-            <Card title="Case Information" icon={<IcoClip size={16} color="#9B4DAB" />}>
+            <Card title="Case Information" icon={<IcoClip size={16} color="var(--adm-violet)" />}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: "16px 24px" }}>
                 <InfoRow label="Case Number" value={cas.case_number} mono />
                 <InfoRow label="Current Status" value={cas.status_display || cfg.label} />
@@ -1615,10 +1611,7 @@ export default function ReportDetail() {
             </div>
           </div>
 
-          {/* The rail scrolls on its own, so it stays where it is while the
-              record moves beside it, and can still be scrolled when it is
-              taller than the window. */}
-          <div className="rd-scroll">
+          <div>
             <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
               <CaseTimeline cas={cas} onUpdateStatus={() => setShowStatusModal(true)} />
 
@@ -1677,7 +1670,7 @@ export default function ReportDetail() {
             <div className="msg-log-body" style={{ overflowY: "auto", padding: "16px 20px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
               {(cas.messages || []).length === 0 ? (
                 <div style={{ textAlign: "center", padding: "36px 0" }}>
-                  <IcoClip size={30} color="#E1BEE7" />
+                  <IcoClip size={30} color="var(--adm-violet-border)" />
                   <p style={{ margin: "10px 0 0", fontSize: 13, color: "var(--adm-text-muted)" }}>No messages yet.</p>
                 </div>
               ) : (cas.messages || []).map((m, i) => {

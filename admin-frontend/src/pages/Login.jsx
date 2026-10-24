@@ -123,8 +123,6 @@ function Login() {
         <div style={S.page}>
             <div style={S.toggleSlot}><ThemeToggle /></div>
             <div style={S.formCard}>
-                {/* Same 3px accent bar the dashboard cards carry */}
-
                 {/* Header */}
                 <div style={S.formHeader}>
                     <div style={S.logoWrap}>

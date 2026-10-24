@@ -110,7 +110,6 @@ export default function Terms() {
                 </nav>
 
                 <article style={S.card}>
-                    <div style={S.accent} aria-hidden="true" />
                     <div style={S.body}>
                         <p style={S.intro}>
                             This portal holds the personal and case data of women and children who have reported
@@ -172,7 +171,6 @@ const S = {
     tocNum:       { width: 20, height: 20, borderRadius: 5, flexShrink: 0, background: 'var(--adm-muted)', color: 'var(--adm-text-2)', fontSize: 10.5, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
 
     card:         { position: 'relative', overflow: 'hidden', background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: RADIUS.lg, boxShadow: 'var(--adm-card-shadow)' },
-    accent:       { position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: COLORS.primary },
     body:         { padding: '28px 30px 26px', fontSize: 14.5, lineHeight: 1.7, color: COLORS.textSecondary, fontFamily: FF, textAlign: 'left' },
     intro:        { margin: '0 0 26px', maxWidth: '70ch', fontSize: 15, lineHeight: 1.72, color: COLORS.textSecondary },
 

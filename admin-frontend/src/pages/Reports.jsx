@@ -6,14 +6,14 @@ import api from "../api/api";
 import { toDate } from '../utils/datetime';
 
 const STATUS_CONFIG = {
-  submitted: { label: "Submitted", color: "#BE185D", bg: "#FDF2F8", dot: "#EC4899" },
-  under_assessment: { label: "Under Assessment", color: "#0E7490", bg: "#ECFEFF", dot: "#06B6D4" },
-  awaiting_onsite_visit: { label: "Awaiting Onsite Visit", color: "#D97706", bg: "#FFFBEB", dot: "#F59E0B" },
-  bpo_applied: { label: "BPO Applied", color: "#7B2D8B", bg: "#F3E5F5", dot: "#9B4DAB" },
-  bpo_issued: { label: "BPO Issued", color: "#C45E10", bg: "#FFF3E0", dot: "#F47920" },
-  bpo_served: { label: "BPO Served", color: "#B45309", bg: "#FFFBEB", dot: "#D97706" },
-  endorsed: { label: "Endorsed", color: "#DC2626", bg: "#FEF2F2", dot: "#EF4444" },
-  closed: { label: "Assistance Ended", color: "#475569", bg: "#F1F5F9", dot: "#64748B" },
+  submitted: { label: "Submitted", color: "var(--st-submitted-tx)", bg: "var(--st-submitted-bg)", dot: "#EC4899" },
+  under_assessment: { label: "Under Assessment", color: "var(--st-assess-tx)", bg: "var(--st-assess-bg)", dot: "#06B6D4" },
+  awaiting_onsite_visit: { label: "Awaiting Onsite Visit", color: "var(--st-onsite-tx)", bg: "var(--st-onsite-bg)", dot: "#F59E0B" },
+  bpo_applied: { label: "BPO Applied", color: "var(--adm-violet)", bg: "var(--adm-violet-bg)", dot: "#9B4DAB" },
+  bpo_issued: { label: "BPO Issued", color: "var(--st-bpoiss-tx)", bg: "var(--st-bpoiss-bg)", dot: "#F47920" },
+  bpo_served: { label: "BPO Served", color: "var(--st-bposrv-tx)", bg: "var(--st-bposrv-bg)", dot: "#D97706" },
+  endorsed: { label: "Endorsed", color: "var(--st-endorsed-tx)", bg: "var(--st-endorsed-bg)", dot: "#EF4444" },
+  closed: { label: "Assistance Ended", color: "var(--st-closed-tx)", bg: "var(--st-closed-bg)", dot: "#64748B" },
 };
 const sCfg = (s) => STATUS_CONFIG[s] || { label: s || "Unknown", color: "#64748B", bg: "var(--adm-border)", dot: "#CBD5E1" };
 
@@ -370,14 +370,14 @@ export default function Reports() {
             {/* Victim profile */}
             <div style={{ ...S.card, padding: "20px 24px", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 4, background: "#F3E5F5", border: "2px solid #E1BEE7", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><IcoUser size={24} color="#9B4DAB" /></div>
+                <div style={{ width: 48, height: 48, borderRadius: 4, background: "var(--adm-violet-bg)", border: "2px solid var(--adm-violet-border)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><IcoUser size={24} color="var(--adm-violet)" /></div>
                 <div style={{ flex: 1 }}>
-                  <h2 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 800, color: "#7B2D8B", fontFamily: "'Lexend',sans-serif" }}>{selectedVictim.full_name}</h2>
+                  <h2 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 800, color: "var(--adm-violet)", fontFamily: "'Lexend',sans-serif" }}>{selectedVictim.full_name}</h2>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 20px" }}>
-                    {[["Email", selectedVictim.email], ["Phone", selectedVictim.phone_number]].map(([l, v]) => v && <span key={l} style={{ fontSize: 12.5, color: "#64748B", fontFamily: "'Lexend',sans-serif" }}><strong style={{ color: "#7B2D8B" }}>{l}:</strong> {v}</span>)}
+                    {[["Email", selectedVictim.email], ["Phone", selectedVictim.phone_number]].map(([l, v]) => v && <span key={l} style={{ fontSize: 12.5, color: "#64748B", fontFamily: "'Lexend',sans-serif" }}><strong style={{ color: "var(--adm-violet)" }}>{l}:</strong> {v}</span>)}
                   </div>
                 </div>
-                <span style={{ padding: "6px 14px", borderRadius: 4, background: "#F3E5F5", color: "#7B2D8B", fontSize: 13, fontWeight: 700, fontFamily: "'Lexend',sans-serif" }}>{selectedVictim.case_count} {selectedVictim.case_count === 1 ? "Case" : "Cases"}</span>
+                <span style={{ padding: "6px 14px", borderRadius: 4, background: "var(--adm-violet-bg)", color: "var(--adm-violet)", fontSize: 13, fontWeight: 700, fontFamily: "'Lexend',sans-serif" }}>{selectedVictim.case_count} {selectedVictim.case_count === 1 ? "Case" : "Cases"}</span>
               </div>
             </div>
             <div style={S.card}>
@@ -399,7 +399,7 @@ export default function Reports() {
                     {!caseLoading && !caseError && cases.length === 0 && <tr><td colSpan={6} style={{ textAlign: "center", padding: "48px" }}><IcoDoc size={36} /><p style={{ fontSize: 14, color: "var(--adm-text-muted)", marginTop: 10, fontFamily: "'Lexend',sans-serif" }}>No confirmed cases.</p></td></tr>}
                     {!caseLoading && !caseError && cases.map(c => (
                       <tr key={c.id} className="row-hover" onClick={() => openDetail(c)}>
-                        <td style={S.td}><span style={{ fontSize: 12, fontWeight: 700, color: "#7B2D8B", background: "#F3E5F5", padding: "3px 8px", borderRadius: 4, fontFamily: "monospace", border: "1px solid #E1BEE7" }}>{c.case_number}</span></td>
+                        <td style={S.td}><span style={{ fontSize: 12, fontWeight: 700, color: "var(--adm-violet)", background: "var(--adm-violet-bg)", padding: "3px 8px", borderRadius: 4, fontFamily: "monospace", border: "1px solid var(--adm-violet-border)" }}>{c.case_number}</span></td>
                         <td style={{ ...S.td, fontWeight: 600, color: "var(--adm-text)" }}>{c.offender_name}</td>
                         <td style={{ ...S.td, textAlign: "center" }}><span style={{ fontSize: 13, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>{c.report_count} {c.report_count === 1 ? "report" : "reports"}</span></td>
                         <td style={{ ...S.td, textAlign: "center" }}><StatusBadge rawStatus={c.status} displayLabel={c.status_display} /></td>
@@ -435,10 +435,10 @@ export default function Reports() {
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
                     <div>
                       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                        <span style={{ fontSize: 11, fontWeight: 700, color: "#7B2D8B", background: "#F3E5F5", padding: "3px 9px", borderRadius: 4, fontFamily: "monospace", border: "1px solid #E1BEE7", letterSpacing: "0.5px" }}>{caseDetail.case_number}</span>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "var(--adm-violet)", background: "var(--adm-violet-bg)", padding: "3px 9px", borderRadius: 4, fontFamily: "monospace", border: "1px solid var(--adm-violet-border)", letterSpacing: "0.5px" }}>{caseDetail.case_number}</span>
                         <StatusBadge rawStatus={caseDetail.status} displayLabel={caseDetail.status_display} />
                       </div>
-                      <h2 style={{ margin: "0 0 6px", fontSize: 17, fontWeight: 800, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>vs. <span style={{ color: "#7B2D8B" }}>{caseDetail.offender_name}</span></h2>
+                      <h2 style={{ margin: "0 0 6px", fontSize: 17, fontWeight: 800, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>vs. <span style={{ color: "var(--adm-violet)" }}>{caseDetail.offender_name}</span></h2>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 20px" }}>
                         {[["Complainant", caseDetail.victim?.full_name], ["Handled by", caseDetail.handled_by], ["Filed", fmtDate(caseDetail.created_at)]].map(([l, v]) => v && <span key={l} style={{ fontSize: 12.5, color: "#64748B", fontFamily: "'Lexend',sans-serif" }}><strong style={{ color: "var(--adm-text-2)" }}>{l}:</strong> {v}</span>)}
                       </div>
@@ -451,7 +451,7 @@ export default function Reports() {
                   <div style={{ padding: "14px 20px", borderBottom: "1px solid var(--adm-border)", display: "flex", alignItems: "center", gap: 8, backgroundColor: "var(--adm-muted)" }}>
                     <div style={{ width: 3, height: 16, borderRadius: 4, backgroundColor: "#7B2D8B" }} />
                     <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif", textTransform: "uppercase", letterSpacing: "0.5px" }}>Reports / Testimonies</span>
-                    <span style={{ fontSize: 11, fontWeight: 600, color: "#7B2D8B", background: "#F3E5F5", padding: "2px 8px", borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>{caseDetail.reports?.length || 0} total</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "var(--adm-violet)", background: "var(--adm-violet-bg)", padding: "2px 8px", borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>{caseDetail.reports?.length || 0} total</span>
                   </div>
                   <div style={{ overflowX: "auto" }}>
                     <table style={S.table}>
@@ -474,7 +474,7 @@ export default function Reports() {
                           .map(([r, idx]) => (
                           <tr key={r.id} className="row-hover" onClick={() => navigate(`/reports/${caseDetail.id}#report-${idx + 1}`)}>
                             <td style={S.td}><span style={{ fontSize: 12, fontWeight: 700, color: "var(--adm-text-2)", background: "var(--adm-border)", padding: "2px 8px", borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>Report {idx + 1}</span></td>
-                            <td style={S.td}>{r.incident_type ? <span style={{ fontSize: 12.5, color: "#4A1259", background: "#F3E5F5", padding: "3px 9px", borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>{r.incident_type}</span> : <span style={{ color: "var(--adm-border-strong)" }}>-</span>}</td>
+                            <td style={S.td}>{r.incident_type ? <span style={{ fontSize: 12.5, color: "#4A1259", background: "var(--adm-violet-bg)", padding: "3px 9px", borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>{r.incident_type}</span> : <span style={{ color: "var(--adm-border-strong)" }}>-</span>}</td>
                             <td style={S.td}><span style={{ fontSize: 13, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>{fmt(r.incident_date)}</span></td>
                             <td style={S.td}><span style={{ fontSize: 13, color: "var(--adm-text-2)", fontFamily: "'Lexend',sans-serif" }}>{truncate(r.address, 35)}</span></td>
                             <td style={S.td}><p style={{ margin: 0, fontSize: 13, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>{fmtDate(r.created_at)}</p><p style={{ margin: 0, fontSize: 11.5, color: "var(--adm-text-muted)", fontFamily: "'Lexend',sans-serif" }}>{fmtTime(r.created_at)}</p></td>
@@ -519,7 +519,7 @@ export default function Reports() {
                     const days = daysLeft(c.deleted_at);
                     return (
                       <tr key={c.id}>
-                        <td style={S.td}><span style={{ fontSize: 12, fontWeight: 700, color: "#7B2D8B", background: "#F3E5F5", padding: "2px 8px", borderRadius: 4, fontFamily: "monospace" }}>{c.case_number}</span></td>
+                        <td style={S.td}><span style={{ fontSize: 12, fontWeight: 700, color: "var(--adm-violet)", background: "var(--adm-violet-bg)", padding: "2px 8px", borderRadius: 4, fontFamily: "monospace" }}>{c.case_number}</span></td>
                         <td style={S.td}><p style={S.victimName}>{c.victim_name}</p><p style={S.victimSub}>{c.victim_email}</p></td>
                         <td style={{ ...S.td, fontWeight: 600, color: "var(--adm-text)" }}>{c.offender_name}</td>
                         <td style={S.td}><p style={{ margin: 0, fontSize: 13, color: "var(--adm-text)", fontFamily: "'Lexend',sans-serif" }}>{fmtDate(c.deleted_at)}</p></td>

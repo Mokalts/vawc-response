@@ -91,14 +91,14 @@ const incidentColor = (t) => {
 };
 
 const STATUS_CFG = {
-    submitted: { label: 'Submitted', color: '#BE185D', bg: '#FDF2F8', dot: '#EC4899' },
-    under_assessment: { label: 'Under Assessment', color: '#0E7490', bg: '#ECFEFF', dot: '#06B6D4' },
-    awaiting_onsite_visit: { label: 'Awaiting Onsite Visit', color: '#92400E', bg: '#FFFBEB', dot: '#F59E0B' },
-    bpo_applied: { label: 'BPO Applied', color: '#7B2D8B', bg: '#F3E5F5', dot: '#9B4DAB' },
-    bpo_issued: { label: 'BPO Issued', color: '#C45E10', bg: '#FFF3E0', dot: '#F47920' },
-    bpo_served: { label: 'BPO Served', color: '#92400E', bg: '#FFFBEB', dot: '#D97706' },
-    endorsed: { label: 'Endorsed', color: '#991B1B', bg: '#FEF2F2', dot: '#EF4444' },
-    closed: { label: 'Assistance Ended', color: '#475569', bg: '#F1F5F9', dot: '#64748B' },
+    submitted: { label: 'Submitted', color: 'var(--st-submitted-tx)', bg: 'var(--st-submitted-bg)', dot: '#EC4899' },
+    under_assessment: { label: 'Under Assessment', color: 'var(--st-assess-tx)', bg: 'var(--st-assess-bg)', dot: '#06B6D4' },
+    awaiting_onsite_visit: { label: 'Awaiting Onsite Visit', color: 'var(--st-onsite-tx)', bg: 'var(--st-onsite-bg)', dot: '#F59E0B' },
+    bpo_applied: { label: 'BPO Applied', color: 'var(--adm-violet)', bg: 'var(--adm-violet-bg)', dot: '#9B4DAB' },
+    bpo_issued: { label: 'BPO Issued', color: 'var(--st-bpoiss-tx)', bg: 'var(--st-bpoiss-bg)', dot: '#F47920' },
+    bpo_served: { label: 'BPO Served', color: 'var(--st-bposrv-tx)', bg: 'var(--st-bposrv-bg)', dot: '#D97706' },
+    endorsed: { label: 'Endorsed', color: 'var(--st-endorsed-tx)', bg: 'var(--st-endorsed-bg)', dot: '#EF4444' },
+    closed: { label: 'Assistance Ended', color: 'var(--st-closed-tx)', bg: 'var(--st-closed-bg)', dot: '#64748B' },
 };
 const sCfg = (s) => STATUS_CFG[s] || { label: s || '-', color: 'var(--adm-text-muted)', bg: 'var(--adm-border)', dot: '#CBD5E1' };
 
@@ -187,7 +187,7 @@ function ReportBriefPanel({ report, onClose, onConfirm, isConfirmed, isConfirmin
         <div style={{ borderTop: '1px solid var(--adm-border)', paddingTop: 12, marginTop: 4, animation: 'slideRight 0.15s ease' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                    <span style={{ fontSize: 11.5, fontWeight: 700, color: '#7B2D8B', background: '#F3E5F5', padding: '2px 7px', borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>{report.case_number}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--adm-violet)', background: 'var(--adm-violet-bg)', padding: '2px 7px', borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>{report.case_number}</span>
                     <StatusBadge rawStatus={report.status} displayLabel={report.status_display} />
                 </div>
                 <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--adm-text-muted)', padding: 2, display: 'flex' }}><IcoX size={13} /></button>
@@ -304,7 +304,7 @@ function NewReportsModal({ onClose, onConfirmed }) {
                             <IcoBell color="#fff" size={16} />
                         </div>
                         <div>
-                            <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#7B2D8B', fontFamily: "'Lexend',sans-serif" }}>New Reports</p>
+                            <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--adm-violet)', fontFamily: "'Lexend',sans-serif" }}>New Reports</p>
                             <p style={{ margin: 0, fontSize: 12, color: 'var(--adm-text-muted)', fontFamily: "'Lexend',sans-serif" }}>
                                 {loading
                                     ? 'Loading…'
@@ -350,7 +350,7 @@ function NewReportsModal({ onClose, onConfirmed }) {
                                     </div>
                                     {done
                                         ? <span style={{ fontSize: 11, fontWeight: 700, color: '#059669', background: '#ECFDF5', padding: '3px 9px', borderRadius: 4, fontFamily: "'Lexend',sans-serif" }}>Confirmed</span>
-                                        : <button onClick={e => { e.stopPropagation(); setSelected(r); }} style={{ padding: '5px 12px', borderRadius: 4, border: '1.5px solid #E1BEE7', background: '#F3E5F5', color: '#7B2D8B', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend',sans-serif", flexShrink: 0 }}>View</button>
+                                        : <button onClick={e => { e.stopPropagation(); setSelected(r); }} style={{ padding: '5px 12px', borderRadius: 4, border: '1.5px solid var(--adm-violet-border)', background: 'var(--adm-violet-bg)', color: 'var(--adm-violet)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend',sans-serif", flexShrink: 0 }}>View</button>
                                     }
                                 </div>
                             </div>
@@ -756,7 +756,7 @@ export default function Dashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                         <PeriodTabs period={period} onChange={(k) => { setPeriod(k); setShowCustom(false); }} />
                         <button className="period-btn" onClick={() => setShowCustom(v => !v)}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 4, border: `1.5px solid ${period === 'custom' ? '#7B2D8B' : 'var(--adm-border)'}`, background: period === 'custom' ? '#F3E5F5' : 'var(--adm-card)', color: period === 'custom' ? '#7B2D8B' : 'var(--adm-text-muted)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend',sans-serif" }}>
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 4, border: `1.5px solid ${period === 'custom' ? '#7B2D8B' : 'var(--adm-border)'}`, background: period === 'custom' ? 'var(--adm-violet-bg)' : 'var(--adm-card)', color: period === 'custom' ? '#7B2D8B' : 'var(--adm-text-muted)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: "'Lexend',sans-serif" }}>
                             <IcoCal size={13} color={period === 'custom' ? '#7B2D8B' : '#94A3B8'} /> Custom
                         </button>
                     </div>
@@ -844,7 +844,7 @@ export default function Dashboard() {
                     {/* Total Reports */}
                     <div style={S.statCard}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <div style={{ width: 42, height: 42, borderRadius: 4, background: '#F3E5F5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <div style={{ width: 42, height: 42, borderRadius: 4, background: 'var(--adm-violet-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                 <IcoClip size={18} color="#7B2D8B" />
                             </div>
                             <div>
@@ -967,7 +967,7 @@ export default function Dashboard() {
                                 {!loading && reports.map(r => (
                                     <tr key={r.id} className="dash-row" onClick={() => navigate(`/reports/${r.id}`)}>
                                         <td style={S.td}>
-                                            <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 700, color: '#7B2D8B', background: '#F3E5F5', fontFamily: 'monospace', border: '1px solid #E1BEE7' }}>
+                                            <span style={{ display: 'inline-block', padding: '2px 8px', borderRadius: 4, fontSize: 12, fontWeight: 700, color: 'var(--adm-violet)', background: 'var(--adm-violet-bg)', fontFamily: 'monospace', border: '1px solid var(--adm-violet-border)' }}>
                                                 {r.case_number || `#${String(r.id).padStart(5, '0')}`}
                                             </span>
                                         </td>
@@ -1018,6 +1018,6 @@ const S = {
     tableHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid var(--adm-border)', backgroundColor: 'var(--adm-muted)', flexWrap: 'wrap', gap: 10 },
     cardAccent: { width: 3, height: 16, borderRadius: 4, backgroundColor: '#7B2D8B', flexShrink: 0 },
     cardTitle: { fontSize: 12.5, fontWeight: 700, color: 'var(--adm-text)', fontFamily: FF, textTransform: 'uppercase', letterSpacing: '0.5px' },
-    periodTag: { fontSize: 11, fontWeight: 600, color: '#7B2D8B', backgroundColor: '#F3E5F5', padding: '2px 8px', borderRadius: 4, fontFamily: FF },
+    periodTag: { fontSize: 11, fontWeight: 600, color: 'var(--adm-violet)', backgroundColor: 'var(--adm-violet-bg)', padding: '2px 8px', borderRadius: 4, fontFamily: FF },
     td: { padding: '13px 18px', fontSize: 13.5, color: 'var(--adm-text-2)', fontFamily: FF, borderBottom: '1px solid var(--adm-muted)' },
 };

@@ -18,6 +18,20 @@
     --adm-danger-text: #B91C1C;
     /* Sits at or below the page, so a card filled with it reads as a well. */
     --adm-sunken: #EFF2F7;
+    /* The violet family, as tokens. The literals were fine on white and
+       glared on the dark page, where a saturated hue reads as a light
+       source rather than as text. */
+/* Status chips, light */
+    --st-submitted-bg: #FDF2F8; --st-submitted-bd: #FBCFE8; --st-submitted-tx: #BE185D;
+    --st-assess-bg: #ECFEFF; --st-assess-bd: #A5F3FC; --st-assess-tx: #0E7490;
+    --st-onsite-bg: #FFFBEB; --st-onsite-bd: #FDE68A; --st-onsite-tx: #92400E;
+    --st-bpoapp-bg: #F3E5F5; --st-bpoapp-bd: #E1BEE7; --st-bpoapp-tx: #7B2D8B;
+    --st-bpoiss-bg: #FFF3E0; --st-bpoiss-bd: #FFCC99; --st-bpoiss-tx: #C45E10;
+    --st-bposrv-bg: #FFFBEB; --st-bposrv-bd: #FDE68A; --st-bposrv-tx: #92400E;
+    --st-endorsed-bg: #FEF2F2; --st-endorsed-bd: #FECACA; --st-endorsed-tx: #991B1B;
+    --st-closed-bg: #F1F5F9; --st-closed-bd: #CBD5E1; --st-closed-tx: #475569;
+    --adm-violet-bg: #F3E5F5;
+    --adm-violet-border: #E1BEE7;
     /* The quiet explanatory banner at the top of a panel. */
     --adm-note-bg: #EFF6FF;
     --adm-note-border: #BFDBFE;
@@ -38,12 +52,25 @@
     --adm-text-2: #B6C0CD;
     --adm-text-muted: #8B95A3;
     --adm-primary-bg: #33251A;
-    /* Lifted: the light-mode violet reads at 2.32:1 on this page, which is
-       not a legible label. This one measures 6.56:1. */
-    --adm-violet: #C77DD6;
+    /* Lifted for legibility, then pulled back for calm. The light-mode violet
+       reads 2.32:1 here; this is 8.21:1 at half the chroma of the first
+       attempt, which was bright enough to read as a light source. */
+    --adm-violet: #C2A0CB;
     --adm-sunken: #12161B;
-    /* Lifted the same way: #B91C1C reads at 2.64:1 here. This is 6.18:1. */
-    --adm-danger-text: #F87171;
+/* Status chips, dark */
+    --st-submitted-bg: #2A1620; --st-submitted-bd: #4A2838; --st-submitted-tx: #F0A8C4;
+    --st-assess-bg: #10242A; --st-assess-bd: #1E4350; --st-assess-tx: #8FD3E4;
+    --st-onsite-bg: #2A2210; --st-onsite-bd: #4E4120; --st-onsite-tx: #E0C77A;
+    --st-bpoapp-bg: #2A1E30; --st-bpoapp-bd: #46304E; --st-bpoapp-tx: #C2A0CB;
+    --st-bpoiss-bg: #2E1F10; --st-bpoiss-bd: #52381C; --st-bpoiss-tx: #E0A868;
+    --st-bposrv-bg: #2A2210; --st-bposrv-bd: #4E4120; --st-bposrv-tx: #E0C77A;
+    --st-endorsed-bg: #2C1616; --st-endorsed-bd: #4E2727; --st-endorsed-tx: #E39A9A;
+    --st-closed-bg: #1A1F26; --st-closed-bd: #2E3845; --st-closed-tx: #A3B0C0;
+    --adm-violet-bg: #2A1E30;
+    --adm-violet-border: #46304E;
+    /* Same reasoning: #B91C1C reads 2.64:1 here, and #F87171 was vivid enough
+       to glare. #E39A9A is 8.9:1 at a third of the chroma. */
+    --adm-danger-text: #E39A9A;
     --adm-note-bg: #16202E;
     --adm-note-border: #2A3B57;
     --adm-note-text: #A9C6F0;

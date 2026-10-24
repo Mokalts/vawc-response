@@ -48,14 +48,14 @@ export const COLORS = {
 
   // Status
   status: {
-    submitted:             { label: "Submitted",             color: "#BE185D", bg: "#FDF2F8", border: "#FBCFE8", dot: "#EC4899" },
-    under_assessment:      { label: "Under Assessment",      color: "#0E7490", bg: "#ECFEFF", border: "#A5F3FC", dot: "#06B6D4" },
-    awaiting_onsite_visit: { label: "Awaiting Onsite Visit", color: "#92400E", bg: "#FFFBEB", border: "#FDE68A", dot: "#F59E0B" },
-    bpo_applied:           { label: "BPO Applied",           color: "#7B2D8B", bg: "#F3E5F5", border: "#E1BEE7", dot: "#9B4DAB" },
-    bpo_issued:            { label: "BPO Issued",            color: "#C45E10", bg: "#FFF3E0", border: "#FFCC99", dot: "#F47920" },
-    bpo_served:            { label: "BPO Served",            color: "#92400E", bg: "#FFFBEB", border: "#FDE68A", dot: "#D97706" },
-    endorsed:              { label: "Endorsed",              color: "#991B1B", bg: "#FEF2F2", border: "#FECACA", dot: "#EF4444" },
-    closed:                { label: "Assistance Ended",                color: "#475569", bg: "#F1F5F9", border: "#CBD5E1", dot: "#64748B" },
+    submitted:             { label: "Submitted",             color: "var(--st-submitted-tx)", bg: "var(--st-submitted-bg)", border: "var(--st-submitted-bd)", dot: "#EC4899" },
+    under_assessment:      { label: "Under Assessment",      color: "var(--st-assess-tx)", bg: "var(--st-assess-bg)", border: "var(--st-assess-bd)", dot: "#06B6D4" },
+    awaiting_onsite_visit: { label: "Awaiting Onsite Visit", color: "var(--st-onsite-tx)", bg: "var(--st-onsite-bg)", border: "var(--st-onsite-bd)", dot: "#F59E0B" },
+    bpo_applied:           { label: "BPO Applied",           color: "var(--st-bpoapp-tx)", bg: "var(--st-bpoapp-bg)", border: "var(--st-bpoapp-bd)", dot: "#9B4DAB" },
+    bpo_issued:            { label: "BPO Issued",            color: "var(--st-bpoiss-tx)", bg: "var(--st-bpoiss-bg)", border: "var(--st-bpoiss-bd)", dot: "#F47920" },
+    bpo_served:            { label: "BPO Served",            color: "var(--st-bposrv-tx)", bg: "var(--st-bposrv-bg)", border: "var(--st-bposrv-bd)", dot: "#D97706" },
+    endorsed:              { label: "Endorsed",              color: "var(--st-endorsed-tx)", bg: "var(--st-endorsed-bg)", border: "var(--st-endorsed-bd)", dot: "#EF4444" },
+    closed:                { label: "Assistance Ended",                color: "var(--st-closed-tx)", bg: "var(--st-closed-bg)", border: "var(--st-closed-bd)", dot: "#64748B" },
   },
 
   // Utility

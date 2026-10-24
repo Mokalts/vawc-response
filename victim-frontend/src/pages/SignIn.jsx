@@ -191,7 +191,6 @@ function SignIn() {
             {/* Card. The brand block sits inside it, matching the admin portal,
                 so the two sign-ins read as one product. */}
             <div style={S.card}>
-                <div style={S.cardAccent} aria-hidden="true" />
 
                 <div style={S.brand}>
                     <div style={S.brandIcon}>
@@ -351,7 +350,6 @@ const S = {
     brandSub: { fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', margin: '5px 0 0', fontFamily: "'Lexend', sans-serif", textTransform: 'uppercase', letterSpacing: '0.055em', whiteSpace: 'nowrap' },
     brandTag: { fontSize: 12.5, color: 'var(--text-muted)', margin: '9px 0 0', fontFamily: "'Lexend', sans-serif" },
     card: { position: 'relative', overflow: 'hidden', backgroundColor: 'var(--surface)', borderRadius: 20, padding: '32px 26px 26px', width: '100%', maxWidth: 420, boxShadow: '0 12px 36px rgba(244,121,32,0.13)', border: '1px solid var(--border)' },
-    cardAccent: { position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: '#F47920' },
     field: { marginBottom: 18 },
     label: { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--accent-text)', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: "'Lexend', sans-serif" },
     input: { width: '100%', boxSizing: 'border-box', padding: '13px 15px', borderRadius: 12, border: '1.5px solid var(--border)', fontSize: 15, color: 'var(--text)', backgroundColor: 'var(--surface-alt)', outline: 'none', fontFamily: "'Lexend', sans-serif" },

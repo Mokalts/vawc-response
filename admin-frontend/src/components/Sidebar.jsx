@@ -38,6 +38,18 @@ if (!document.getElementById('vawc-global-css')) {
             .vawc-nav-sub > * { animation: none; }
         }
         .vawc-logout:hover { background: var(--adm-muted) !important; }
+        /* Same answer to a touch as the victim app's back button: the glyph
+           grows rather than a box appearing under it. */
+        .adm-back { transition: transform 0.18s cubic-bezier(0.22,1,0.36,1), opacity 0.18s ease; }
+        .adm-back:active { transform: scale(1.04); opacity: 0.7; }
+        .adm-crumb { transition: color 0.15s ease, background 0.15s ease; }
+        @media (hover: hover) and (pointer: fine) {
+            .adm-back:hover { transform: scale(1.16); }
+            .adm-crumb:hover { color: var(--adm-text) !important; background: var(--adm-muted); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .adm-back, .adm-back:hover, .adm-back:active { transition: none; transform: none; }
+        }
         .vawc-logout { transition: background 0.15s ease; }
         @keyframes burstPulse {
             0%, 100% { box-shadow: 0 0 0 0 rgba(244,121,32,0.65); }
@@ -377,6 +389,7 @@ function TopBar({ breadcrumbs, onBack }) {
     const pathBase = '/' + location.pathname.split('/')[1];
     const pageTitle = titles[pathBase] || 'VAWC-Response';
     const isDashboard = pathBase === '/dashboard';
+    const back = onBack || (isDashboard ? null : () => navigate(-1));
 
     // Home crumb is always "Dashboard"; the rest is the page-supplied trail
     // (or the section name as a URL fallback). Dashboard itself has no trail.
@@ -390,14 +403,16 @@ function TopBar({ breadcrumbs, onBack }) {
         <header style={S.topBar}>
             <div>
                 <div style={S.breadcrumb}>
-                    {onBack && (
-                        <button type="button" onClick={onBack} aria-label="Go back" title="Go back"
+                    {/* Every page but the Dashboard gets one; without a
+                        destination of its own it simply steps back. */}
+                    {back && (
+                        <button type="button" className="adm-back" onClick={back} aria-label="Go back" title="Go back"
                             style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                                     width: 26, height: 26, marginRight: 2, padding: 0, borderRadius: 4,
-                                     border: '1px solid var(--adm-border)', background: 'var(--adm-card)',
+                                     width: 28, height: 28, marginRight: 4, padding: 0, borderRadius: 4,
+                                     border: 'none', background: 'transparent',
                                      color: 'var(--adm-text-2)', cursor: 'pointer', flexShrink: 0 }}>
-                            <svg width="13" height="13" fill="none" viewBox="0 0 20 20" aria-hidden="true">
-                                <path d="M12.5 5l-5 5 5 5" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+                            <svg width="15" height="15" fill="none" viewBox="0 0 20 20" aria-hidden="true">
+                                <path d="M12.5 5l-5 5 5 5" stroke="currentColor" strokeWidth={1.9} strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         </button>
                     )}
@@ -410,7 +425,8 @@ function TopBar({ breadcrumbs, onBack }) {
                                 <span
                                     onClick={clickable ? c.onClick : undefined}
                                     title={clickable ? `Go to ${c.label}` : undefined}
-                                    style={{ ...S.breadCrumb, color: last ? COLORS.primary : '#94A3B8', fontWeight: last ? 600 : 400, cursor: clickable ? 'pointer' : 'default', whiteSpace: 'nowrap' }}>
+                                    className={clickable ? 'adm-crumb' : undefined}
+                                    style={{ ...S.breadCrumb, color: last ? COLORS.primary : 'var(--adm-text-muted)', fontWeight: last ? 600 : 500, cursor: clickable ? 'pointer' : 'default', whiteSpace: 'nowrap', borderRadius: 3, padding: '2px 4px', margin: '0 -2px' }}>
                                     {c.label}
                                 </span>
                             </span>
@@ -504,7 +520,7 @@ const S = {
     topBar: { height: 62, backgroundColor: COLORS.bgCard, borderBottom: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', position: 'sticky', top: 0, zIndex: 50, boxShadow: 'var(--adm-card-shadow)' },
     pageTitle: { margin: 0, fontSize: 17, fontWeight: 700, color: COLORS.textPrimary, fontFamily: TEXT.font, letterSpacing: '-0.2px' },
     breadcrumb: { display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' },
-    breadCrumb: { fontSize: 11.5, color: '#94A3B8', fontFamily: TEXT.font },
+    breadCrumb: { fontSize: 13, color: 'var(--adm-text-muted)', fontFamily: TEXT.font },
     topDate: { fontSize: 12, color: COLORS.textMuted, fontFamily: TEXT.font },
     topAvatar: { width: 32, height: 32, borderRadius: '50%', background: COLORS.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff', fontFamily: TEXT.font, flexShrink: 0 },
 

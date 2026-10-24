@@ -191,7 +191,7 @@ const S = {
     strong:       { color: 'var(--text)', fontWeight: 600 },
     note: {
         margin: '0.2em 0 0.9em', padding: '0.75em 1em', borderRadius: '0.6em',
-        background: 'var(--surface-alt)', borderLeft: '3px solid var(--border)',
+        background: 'var(--surface-alt)',
     },
     ack:          { marginTop: '1.8em', padding: '1em 1.1em', borderRadius: '0.75em', background: 'var(--bg-warn)', border: '1px solid var(--bd-warn)' },
     ackTitle:     { margin: '0 0 0.35em', fontSize: '0.8em', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--tx-warn)', fontFamily: FF },
