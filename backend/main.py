@@ -154,14 +154,18 @@ def root():
     return {"message": "VAWC-Response API is running."}
 
 
-# Keep-warm endpoint that ALSO touches the database. Rate limited despite being
-# trivial: it is the one public route that reaches Postgres, and on a free Neon
-# plan compute is the budget. A monitor polling it too often is what took this
-# system down once already, and anyone can poll it.
-# Keep-warm endpoint that ALSO touches the database. Point the uptime monitor
-# here (instead of "/") so the free-tier Postgres (Neon) stays awake too — not
-# just the web server. This prevents a slow first login when the DB has
-# auto-suspended after inactivity. Accepts HEAD so uptime monitors get a 200.
+# DIAGNOSTIC ONLY. Do NOT point an uptime monitor here.
+#
+# This is the one public route that reaches Postgres, and on Neon's free plan
+# compute is the budget: 100 CU-hours per project per month, with the compute
+# suspending after five minutes of inactivity. A compute that never suspends
+# costs 0.25 x 730 = 182.5 CU-hours a month, so a monitor polling this every
+# five minutes exhausts the month in about sixteen days however trivial the
+# query is. That has now happened twice.
+#
+# The uptime monitor belongs on "/", which keeps Render's free web instance
+# awake and touches nothing. Letting the database sleep costs a sub-second
+# wake-up on the first query after idle, which is the right trade.
 @app.api_route("/health/db", methods=["GET", "HEAD"], tags=["Health"])
 @limiter.limit("30/minute")
 def health_db(request: Request, db: Session = Depends(get_db)):

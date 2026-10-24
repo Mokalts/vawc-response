@@ -179,12 +179,19 @@ function Sidebar() {
                 .then(r => {
                     setUnread(r.data.unread || 0);
                     setBurstAlert(r.data.multi_alert || null);
+                    window.dispatchEvent(new CustomEvent('vawc:unread', { detail: r.data }));
                 })
                 .catch(() => { });
         };
+        // Every one of these is a query against a database billed by the
+        // hour it stays awake, so: once a minute, never while the tab is in
+        // the background, and once immediately on coming back. The result is
+        // broadcast so the dashboard can read it instead of polling again.
+        const poll = () => { if (!document.hidden) fetch(); };
         fetch();
-        const t = setInterval(fetch, 30000); // poll every 30s for snappier burst detection
-        return () => clearInterval(t);
+        const t = setInterval(poll, 60000);
+        document.addEventListener('visibilitychange', poll);
+        return () => { clearInterval(t); document.removeEventListener('visibilitychange', poll); };
     }, []);
 
     // Burst alert visible only if active AND not dismissed for this newest_at

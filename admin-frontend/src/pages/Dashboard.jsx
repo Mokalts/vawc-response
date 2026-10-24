@@ -706,17 +706,16 @@ export default function Dashboard() {
 
     useEffect(() => { fetchStats(); }, [fetchStats]);
 
-    // Poll for burst detection every 30 seconds while on dashboard
+    // The sidebar is mounted on this page too and already polls this exact
+    // endpoint, so the dashboard listens to its result rather than asking the
+    // database the same question twice a minute.
     useEffect(() => {
-        const t = setInterval(() => {
-            api.get('/admin/cases/unread-count')
-                .then(r => {
-                    setNewCount(r.data.unread || 0);
-                    setBurstAlert(r.data.multi_alert || null);
-                })
-                .catch(() => { });
-        }, 30000);
-        return () => clearInterval(t);
+        const onUnread = (e) => {
+            setNewCount(e.detail?.unread || 0);
+            setBurstAlert(e.detail?.multi_alert || null);
+        };
+        window.addEventListener('vawc:unread', onUnread);
+        return () => window.removeEventListener('vawc:unread', onUnread);
     }, []);
 
     const handleConfirmed = () => { fetchStats(); };
