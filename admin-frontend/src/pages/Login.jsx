@@ -124,7 +124,6 @@ function Login() {
             <div style={S.toggleSlot}><ThemeToggle /></div>
             <div style={S.formCard}>
                 {/* Same 3px accent bar the dashboard cards carry */}
-                <div style={S.cardAccent} aria-hidden="true" />
 
                 {/* Header */}
                 <div style={S.formHeader}>
@@ -233,7 +232,6 @@ const S = {
 
     // Form card
     formCard: { position: 'relative', overflow: 'hidden', backgroundColor: COLORS.bgCard, borderRadius: RADIUS.lg, padding: '34px 30px 28px', width: '100%', maxWidth: '420px', boxShadow: 'var(--adm-card-shadow)', border: `1px solid ${COLORS.border}` },
-    cardAccent: { display: 'none' },
     formHeader: { textAlign: 'center', marginBottom: '26px' },
     logoWrap: { width: '104px', height: '104px', borderRadius: '50%', backgroundColor: '#fff', margin: '0 auto 16px', border: `3px solid ${COLORS.primaryBorder}`, boxShadow: '0 6px 20px rgba(244,121,32,0.18)', overflow: 'hidden', padding: 0, boxSizing: 'border-box' },
     // The seal PNG carries white padding around the artwork, so a plain fit

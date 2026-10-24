@@ -36,7 +36,7 @@ const IcoGo = () => (
 
 const IcoArrow = () => (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M15 18l-6-6 6-6" stroke="var(--accent-text)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
 );
 
@@ -58,7 +58,7 @@ export default function Terms() {
     return (
         <div style={S.page}>
             <header style={S.topBar}>
-                <button style={S.backBtn} onClick={() => navigate(-1)} aria-label="Go back"><IcoArrow /></button>
+                <button className="vh-icon-btn" style={S.backBtn} onClick={() => navigate(-1)} aria-label="Go back"><IcoArrow /></button>
                 <h1 style={S.title}>Terms &amp; Privacy</h1>
                 <ThemeToggle size={44} />
             </header>
@@ -107,7 +107,7 @@ const FF = "'Lexend', sans-serif";
 const S = {
     page:     { minHeight: '100vh', background: 'var(--page-grad)', color: 'var(--text)', display: 'flex', flexDirection: 'column', paddingBottom: 92, fontFamily: FF },
     topBar:   { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', backgroundColor: 'var(--surface)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 },
-    backBtn:  { width: 44, height: 44, borderRadius: 10, backgroundColor: 'var(--surface-tint)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
+    backBtn:  { width: 44, height: 44, borderRadius: 10, backgroundColor: 'transparent', border: 'none', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
     title:    { fontSize: 17, fontWeight: 700, color: 'var(--accent-text)', fontFamily: FF, margin: 0 },
 
     // One reading column. Every block below shares this left edge.
@@ -123,7 +123,7 @@ const S = {
     tocList:  { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '2px 12px' },
     tocLink:  { display: 'flex', alignItems: 'center', gap: 10, minHeight: 44, padding: '4px 8px', borderRadius: 8, color: 'var(--text-body)', textDecoration: 'none', fontSize: 13.5, lineHeight: 1.35, fontFamily: FF },
     tocGo:    { display: 'inline-flex', flexShrink: 0, color: 'var(--accent-text)', opacity: 0.75 },
-    tocNum:   { width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: 'var(--surface-tint)', color: 'var(--accent-text)', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    tocNum:   { width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: 'var(--surface-alt)', color: 'var(--text-body)', fontSize: 11, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
 
     card:     { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 16, padding: 'clamp(20px, 5vw, 34px)', boxShadow: 'var(--card-shadow)' },
 

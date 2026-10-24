@@ -205,7 +205,7 @@ const IcoGo = () => (
     </svg>
 );
 
-const IcoBack   = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="#AD530F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoBack   = () => (<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoArrow  = () => (<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 12H19M13 6L19 12L13 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoFlag   = ({ c='#F47920' }) => (<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><line x1="4" y1="22" x2="4" y2="15" stroke={c} strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoDot    = ({ c='#F47920' }) => (<span style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: c, display: 'inline-block', flexShrink: 0, marginTop: 6 }} />);
@@ -485,7 +485,7 @@ function Awareness() {
 
             {/* Top bar */}
             <header style={S.topBar}>
-                <button className="va-back" style={S.backBtn}
+                <button className="va-back vh-icon-btn" style={S.backBtn}
                     onClick={() => activeSection ? backToTopics() : navigate('/home')}
                     aria-label={activeSection ? 'Bumalik sa mga paksa' : 'Bumalik sa Home'}>
                     <IcoBack />
@@ -701,7 +701,7 @@ const S = {
 
     page:          { minHeight: '100vh', background: 'var(--page-grad)', display: 'flex', flexDirection: 'column', fontFamily: "'Lexend', sans-serif", color: 'var(--text)' },
     topBar:        { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', backgroundColor: 'var(--topbar)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 },
-    backBtn:       { width: 44, height: 44, borderRadius: 12, backgroundColor: 'var(--surface-tint)', border: '1px solid var(--border)', color: 'var(--accent-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
+    backBtn:       { width: 44, height: 44, borderRadius: 12, backgroundColor: 'transparent', border: 'none', color: 'var(--text)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' },
     title:         { fontSize: 17, fontWeight: 700, color: 'var(--accent-text)', fontFamily: "'Lexend', sans-serif" },
     tabsWrapper:   { backgroundColor: 'var(--topbar)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '12px 16px', position: 'sticky', top: 65, zIndex: 99 },
     tabsFadeRight: { position: 'absolute', top: 0, right: 0, width: 40, height: '100%', background: 'linear-gradient(to right, transparent, var(--page))', pointerEvents: 'none' },

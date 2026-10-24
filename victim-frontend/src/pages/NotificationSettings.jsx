@@ -23,7 +23,7 @@ if (!document.getElementById('vawc-notif-css')) {
     document.head.appendChild(s);
 }
 
-const IcoArrow = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#AD530F" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoArrow = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoLock  = () => (<svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#64748B" strokeWidth="1.8"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/></svg>);
 const IcoMail  = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2" stroke="#64748B" strokeWidth="1.8"/><path d="M2 7l10 6 10-6" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoPhone = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="20" rx="2.5" stroke="#64748B" strokeWidth="1.8"/><path d="M11 18.5h2" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round"/></svg>);
@@ -96,7 +96,7 @@ function NotificationSettings() {
 
     const header = (
         <header style={S.topBar}>
-            <button style={S.backBtn} onClick={() => navigate('/profile')} aria-label="Bumalik sa My Profile"><IcoArrow /></button>
+            <button className="vh-icon-btn" style={S.backBtn} onClick={() => navigate('/profile')} aria-label="Bumalik sa My Profile"><IcoArrow /></button>
             <h1 style={S.title}>Notifications</h1>
             <ThemeToggle size={44} />
         </header>
@@ -205,7 +205,7 @@ function NotificationSettings() {
 const S = {
     page:       { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', paddingBottom:92, fontFamily:"'Lexend', sans-serif" },
     topBar:     { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', backgroundColor:'var(--surface)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100 },
-    backBtn:    { width:44, height:44, borderRadius:10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
+    backBtn:    { width:44, height:44, borderRadius:10, backgroundColor: 'transparent', border: 'none', color: 'var(--text)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
     title:      { fontSize:17, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },
     content:    { padding:'20px 18px', display:'flex', flexDirection:'column', gap:18, width:'100%', maxWidth:620, marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' },
     group:      { display:'flex', flexDirection:'column', gap:7 },

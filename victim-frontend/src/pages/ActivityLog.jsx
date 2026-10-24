@@ -15,7 +15,7 @@ if (!document.getElementById('vawc-activity-css')) {
     document.head.appendChild(s);
 }
 
-const IcoArrow = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#AD530F" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoArrow = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoYou   = () => (<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke="#AD530F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="7" r="4" stroke="#AD530F" strokeWidth="2"/></svg>);
 const IcoDesk  = () => (<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 21h18M5 21V8l7-5 7 5v13M10 21v-6h4v6" stroke="#0F766E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoEmpty = () => (<svg width="30" height="30" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--text-muted)" strokeWidth="1.6"/><path d="M12 7v5l3 2" stroke="var(--text-muted)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>);
@@ -58,7 +58,7 @@ function ActivityLog() {
 
     const header = (
         <header style={S.topBar}>
-            <button style={S.backBtn} onClick={() => navigate('/profile')} aria-label="Bumalik sa My Profile"><IcoArrow /></button>
+            <button className="vh-icon-btn" style={S.backBtn} onClick={() => navigate('/profile')} aria-label="Bumalik sa My Profile"><IcoArrow /></button>
             <h1 style={S.title}>Activity</h1>
             <ThemeToggle size={44} />
         </header>
@@ -138,7 +138,7 @@ function ActivityLog() {
 const S = {
     page:       { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', paddingBottom:92, fontFamily:"'Lexend', sans-serif" },
     topBar:     { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', backgroundColor:'var(--surface)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100 },
-    backBtn:    { width:44, height:44, borderRadius:10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
+    backBtn:    { width:44, height:44, borderRadius:10, backgroundColor: 'transparent', border: 'none', color: 'var(--text)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
     title:      { fontSize:17, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },
     content:    { padding:'20px 18px', display:'flex', flexDirection:'column', gap:18, width:'100%', maxWidth:620, marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' },
     intro:      { fontSize:12.5, lineHeight:1.6, color:'var(--text-muted)', fontFamily:"'Lexend', sans-serif", padding:'0 2px' },

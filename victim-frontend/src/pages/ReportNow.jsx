@@ -79,7 +79,7 @@ const ABUSE_OPTS = [
 ];
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
-const IcoArrow  = ({ dir='left', c='#AD530F' }) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d={dir==='left'?"M15 18l-6-6 6-6":"M9 18l6-6-6-6"} stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoArrow  = ({ dir='left', c='currentColor' }) => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d={dir==='left'?"M15 18l-6-6 6-6":"M9 18l6-6-6-6"} stroke={c} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoCheck  = ({ c='#059669', size=16 }) => (<svg width={size} height={size} viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke={c} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoCamera = ({ c='#fff' }) => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="13" r="4" stroke={c} strokeWidth="1.8"/></svg>);
 const IcoImage  = ({ c='#F47920' }) => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke={c} strokeWidth="1.8"/><circle cx="8.5" cy="8.5" r="1.5" stroke={c} strokeWidth="1.8"/><path d="M21 15l-5-5L5 21" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
@@ -549,7 +549,7 @@ function ReportNow() {
     return (
         <div style={S.page}>
             <header style={S.topBar}>
-                <button style={S.backBtn} onClick={() => step>1 ? setStep(step-1) : navigate('/home')}
+                <button className="vh-icon-btn" style={S.backBtn} onClick={() => step>1 ? setStep(step-1) : navigate('/home')}
                     aria-label={step>1 ? 'Bumalik sa nakaraang hakbang' : 'Bumalik sa Home'}>
                     <IcoArrow dir="left" />
                 </button>
@@ -952,7 +952,7 @@ const S = {
     // against it.
     page:         { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', paddingBottom:92, fontFamily:"'Lexend', sans-serif" },
     topBar:       { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', backgroundColor:'var(--surface)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100 },
-    backBtn:      { width:44, height:44, borderRadius: 10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
+    backBtn:      { width:44, height:44, borderRadius: 10, backgroundColor: 'transparent', border: 'none', color: 'var(--text)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
     title:        { fontSize:16, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },
     content:      { padding:'18px 20px', display:'flex', flexDirection:'column', gap:14, maxWidth:680, width:'100%', marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' },
     card:         { backgroundColor:'var(--surface)', borderRadius: 12, padding:'20px', boxShadow:'0 2px 12px rgba(244,121,32,0.06)', border:'1px solid var(--border)' },

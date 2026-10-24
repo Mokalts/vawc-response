@@ -176,7 +176,7 @@ const S = {
     sectionHead:  { display: 'flex', alignItems: 'flex-start', gap: '0.7em', marginBottom: '0.8em' },
     num: {
         width: '1.86em', height: '1.86em', fontSize: '0.8em', flexShrink: 0, borderRadius: '0.5em',
-        background: 'var(--surface-tint)', color: 'var(--accent-text)', fontWeight: 800,
+        background: 'var(--surface-alt)', color: 'var(--text-body)', fontWeight: 800,
         display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontFamily: FF,
     },
     sectionTitle: { margin: 0, fontSize: '1.1em', lineHeight: 1.35, fontWeight: 700, letterSpacing: '-0.01em', color: 'var(--text)', fontFamily: FF, textWrap: 'balance' },

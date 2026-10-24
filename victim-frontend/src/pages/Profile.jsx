@@ -37,7 +37,7 @@ if (!document.getElementById('vawc-profile-css')) {
     document.head.appendChild(s);
 }
 
-const IcoArrow   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#AD530F" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+const IcoArrow   = () => (<svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoEdit    = () => (<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoChevron = ({ c='var(--text-muted)' }) => (<svg className="vp-chev" width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 18l6-6-6-6" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 const IcoKey     = () => (<svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" stroke="#64748B" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>);
@@ -135,7 +135,7 @@ function Profile() {
 
     const header = (
         <header style={S.topBar}>
-            <button style={S.backBtn} onClick={() => navigate('/home')} aria-label="Bumalik sa Home"><IcoArrow /></button>
+            <button className="vh-icon-btn" style={S.backBtn} onClick={() => navigate('/home')} aria-label="Bumalik sa Home"><IcoArrow /></button>
             <h1 style={S.title}>My Profile</h1>
             <ThemeToggle size={44} />
         </header>
@@ -243,7 +243,7 @@ function Profile() {
 const S = {
     page:          { minHeight:'100vh', background:'var(--page-grad)', color:'var(--text)', display:'flex', flexDirection:'column', paddingBottom:92, fontFamily:"'Lexend', sans-serif" },
     topBar:        { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'12px 16px', backgroundColor:'var(--surface)', borderBottom:'1px solid var(--border)', position:'sticky', top:0, zIndex:100 },
-    backBtn:       { width:44, height:44, borderRadius:10, backgroundColor:'var(--surface-tint)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
+    backBtn:       { width:44, height:44, borderRadius:10, backgroundColor: 'transparent', border: 'none', color: 'var(--text)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' },
     title:         { fontSize:17, fontWeight:700, color:'var(--accent-text)', fontFamily:"'Lexend', sans-serif" },
     // Capped and centred to match the Home page, which tops out at 1060px.
     content:       { padding:'20px 18px', display:'flex', flexDirection:'column', gap:16, width:'100%', maxWidth:620, marginLeft:'auto', marginRight:'auto', boxSizing:'border-box' },

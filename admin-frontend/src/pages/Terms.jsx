@@ -169,7 +169,7 @@ const S = {
     tocLabel:     { margin: '0 0 4px 8px', fontSize: 10, fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: COLORS.textMuted, fontFamily: FF },
     tocList:      { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '0 10px' },
     tocLink:      { display: 'flex', alignItems: 'center', gap: 10, minHeight: 40, padding: '4px 8px', borderRadius: RADIUS.md, color: COLORS.textSecondary, textDecoration: 'none', fontSize: 13, lineHeight: 1.35, fontFamily: FF },
-    tocNum:       { width: 20, height: 20, borderRadius: 5, flexShrink: 0, background: COLORS.primaryBg, color: '#AD530F', fontSize: 10.5, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
+    tocNum:       { width: 20, height: 20, borderRadius: 5, flexShrink: 0, background: 'var(--adm-muted)', color: 'var(--adm-text-2)', fontSize: 10.5, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' },
 
     card:         { position: 'relative', overflow: 'hidden', background: COLORS.bgCard, border: `1px solid ${COLORS.border}`, borderRadius: RADIUS.lg, boxShadow: 'var(--adm-card-shadow)' },
     accent:       { position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: COLORS.primary },
@@ -179,7 +179,7 @@ const S = {
     section:      { marginTop: 24, paddingTop: 24, borderTop: `1px solid ${COLORS.border}`, scrollMarginTop: 80 },
     sectionFirst: { marginTop: 0, paddingTop: 0, borderTop: 'none' },
     sectionHead:  { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 },
-    num:          { width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: COLORS.primaryBg, color: '#AD530F', fontSize: 11.5, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontFamily: FF },
+    num:          { width: 22, height: 22, borderRadius: 6, flexShrink: 0, background: 'var(--adm-muted)', color: 'var(--adm-text-2)', fontSize: 11.5, fontWeight: 800, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontFamily: FF },
     sectionTitle: { margin: 0, fontSize: 15.5, lineHeight: 1.35, fontWeight: 700, letterSpacing: '-0.01em', color: COLORS.textPrimary, fontFamily: FF, textWrap: 'balance' },
     list:         { listStyle: 'none', margin: 0, padding: '0 0 0 32px', display: 'flex', flexDirection: 'column', gap: 10, maxWidth: 'calc(72ch + 32px)' },
     item:         { display: 'flex', alignItems: 'flex-start', gap: 11 },

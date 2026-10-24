@@ -60,8 +60,6 @@ if (!document.getElementById('vawc-home-css')) {
             88%, 100% { transform: translateX(420%); }
         }
         @media (prefers-reduced-motion: reduce) { .vh-report-glow { display: none; } }
-        .vh-icon-btn { transition: transform 0.18s cubic-bezier(0.22,1,0.36,1), opacity 0.18s ease; }
-        .vh-icon-btn:active { transform: scale(1.04); opacity: 0.7; }
         .bell-ring { animation: bellRing 0.6s ease; }
         .awareness-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
         @media (max-width: 600px) { .awareness-grid { grid-template-columns: 1fr; } }
@@ -117,7 +115,6 @@ if (!document.getElementById('vawc-home-css')) {
             .vh-hero-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(0,0,0,0.26) !important; background-color: #FFF3E0 !important; }
             .vh-report-btn:hover { background-color: #A83D00 !important; transform: translateY(-2px); box-shadow: 0 10px 22px rgba(204,75,0,0.3) !important; }
             .vh-report-btn:hover .vh-report-arrow { transform: translateX(3px); }
-            .vh-icon-btn:hover { transform: scale(1.14); }
             .vh-card:hover .vh-card-glyph { transform: translateY(-3px) scale(1.04); }
             .vh-card:hover .vh-card-arrow { transform: translateX(3px); }
             .vh-card:hover .vh-card-art { transform: scale(1.03); }

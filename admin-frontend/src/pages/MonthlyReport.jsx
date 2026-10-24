@@ -61,10 +61,12 @@ const CSS = `
     .mr-cell.center { text-align: center; }
     .mr-col-no { width: 12%; } .mr-col-date { width: 13%; } .mr-col-title { width: 12%; } .mr-col-rem { width: 11%; }
     .mr-del { width: 26px; border: none; background: none; color: #DC2626; cursor: pointer; font-size: 15px; line-height: 1; }
-    .mr-delcol { width: 30px; border: none !important; text-align: center; }
+    .mr-delcol { width: 30px; border: none !important; background: transparent !important; text-align: center; }
 
     .mr-addrow { margin-top: 10px; padding: 7px 14px; border-radius: 7px; border: 1.5px dashed #B0B8C4; background: #fff; color: #475569; font-size: 12.5px; font-weight: 600; cursor: pointer; font-family: 'Lexend', sans-serif; }
     .mr-empty { text-align: center; padding: 18px; font-size: 12.5px; color: #475569; font-style: italic; }
+    .mr-undo { display: inline-flex; align-items: center; gap: 8px; margin-left: 10px; padding: 7px 12px; border-radius: 7px; border: 1px solid #CBD5E1; background: #F8FAFC; color: #475569; font-size: 12.5px; font-family: 'Lexend', sans-serif; }
+    .mr-undo-btn { border: none; background: none; padding: 0; color: #AD530F; font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: 'Lexend', sans-serif; text-decoration: underline; }
 
     .mr-signs { display: flex; justify-content: space-between; gap: 40px; margin-top: 46px; }
     .mr-sign { flex: 1; text-align: center; }
@@ -85,7 +87,7 @@ const CSS = `
             margin: 0 !important; box-shadow: none !important;
             padding: 0.5in 0.55in !important;
         }
-        .mr-delcol, .mr-del, .mr-addrow { display: none !important; }
+        .mr-delcol, .mr-del, .mr-addrow, .mr-undo { display: none !important; }
         .mr-cell:focus, .mr-signname:focus { background: transparent !important; }
         .mr-signname { border-bottom: none !important; }
         .mr-table thead { display: table-header-group; }   /* repeat column headers on each page */
@@ -100,6 +102,7 @@ export default function MonthlyReport() {
     const [year, setYear] = useState(now.getFullYear());
     const [month, setMonth] = useState(now.getMonth() + 1); // 1-12
     const [rows, setRows] = useState([]);
+    const [undo, setUndo] = useState(null);   // { row, index, at } | null
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [prepared, setPrepared] = useState({ name: "", title: "Lupon Secretary" });
@@ -127,7 +130,24 @@ export default function MonthlyReport() {
 
     const setCell = (i, k, v) => setRows(rs => rs.map((r, idx) => idx === i ? { ...r, [k]: v } : r));
     const addRow = () => setRows(rs => [...rs, blankRow()]);
-    const delRow = (i) => setRows(rs => rs.filter((_, idx) => idx !== i));
+    // Removing a row threw away something typed by hand with no way back.
+    // The removed row is held for a few seconds so it can be put back where
+    // it was, rather than retyped.
+    const delRow = (i) => {
+        const removed = rows[i];
+        setRows(rs => rs.filter((_, idx) => idx !== i));
+        setUndo({ row: removed, index: i, at: Date.now() });
+    };
+
+    const undoDelete = () => {
+        if (!undo) return;
+        setRows(rs => {
+            const next = [...rs];
+            next.splice(Math.min(undo.index, next.length), 0, undo.row);
+            return next;
+        });
+        setUndo(null);
+    };
 
     const years = [now.getFullYear(), now.getFullYear() - 1, now.getFullYear() - 2, now.getFullYear() - 3];
 
@@ -197,6 +217,12 @@ export default function MonthlyReport() {
                     </table>
 
                     <button className="mr-addrow no-print" onClick={addRow}>+ Add row</button>
+                    {undo && (
+                        <span className="mr-undo no-print">
+                            Row {undo.index + 1} removed.
+                            <button type="button" className="mr-undo-btn" onClick={undoDelete}>Undo</button>
+                        </span>
+                    )}
 
                     <div className="mr-signs">
                         <div className="mr-sign">
