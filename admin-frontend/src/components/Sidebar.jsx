@@ -183,15 +183,43 @@ function Sidebar() {
                 })
                 .catch(() => { });
         };
-        // Every one of these is a query against a database billed by the
-        // hour it stays awake, so: once a minute, never while the tab is in
-        // the background, and once immediately on coming back. The result is
-        // broadcast so the dashboard can read it instead of polling again.
-        const poll = () => { if (!document.hidden) fetch(); };
+        // Every one of these is a query against a database that is billed
+        // for the hours it stays awake, and it stays awake for five minutes
+        // after the last one. So no interval short enough to be useful is
+        // also cheap: polling has to stop, not slow down.
+        //
+        // It stops five minutes after the last thing the officer did and
+        // resumes the moment they touch the page or come back to the tab. A
+        // portal left open overnight therefore asks nothing, and the database
+        // sleeps. The result is broadcast so the dashboard can read it rather
+        // than repeat the request.
+        const IDLE_MS = 5 * 60 * 1000;
+        let lastActive = Date.now();
+        const touch = () => { lastActive = Date.now(); };
+
+        const poll = () => {
+            if (document.hidden) return;
+            if (Date.now() - lastActive > IDLE_MS) return;
+            fetch();
+        };
+        // Coming back to the tab is itself activity, and deserves a fresh
+        // count immediately rather than on the next tick.
+        const wake = () => { if (!document.hidden) { touch(); fetch(); } };
+
         fetch();
         const t = setInterval(poll, 60000);
-        document.addEventListener('visibilitychange', poll);
-        return () => { clearInterval(t); document.removeEventListener('visibilitychange', poll); };
+        document.addEventListener('visibilitychange', wake);
+        window.addEventListener('focus', wake);
+        for (const ev of ['pointerdown', 'keydown', 'scroll'])
+            window.addEventListener(ev, touch, { passive: true });
+
+        return () => {
+            clearInterval(t);
+            document.removeEventListener('visibilitychange', wake);
+            window.removeEventListener('focus', wake);
+            for (const ev of ['pointerdown', 'keydown', 'scroll'])
+                window.removeEventListener(ev, touch);
+        };
     }, []);
 
     // Burst alert visible only if active AND not dismissed for this newest_at
