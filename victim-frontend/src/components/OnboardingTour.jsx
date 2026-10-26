@@ -39,35 +39,53 @@ export default function OnboardingTour({ steps = [], run = false, onClose }) {
 
     const step = steps[index] || null;
 
-    const measure = useCallback(() => {
-        if (!step) return;
-        if (!step.target) { setRect(null); return; }
-        const el = document.querySelector(step.target);
-        if (!el) { setRect(null); return; }
-        const r = el.getBoundingClientRect();
-        setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
-    }, [step]);
-
-    // On step change: scroll target into view, then measure (immediately + after scroll settles)
+    // Find the target, put it on screen, then keep the spotlight on it.
+    //
+    // Two assumptions in the old version do not hold on an iPhone. It waited
+    // 360ms for a smooth scroll to finish, which on iOS it often has not, and
+    // it relied on scroll events to stay aligned, which iOS Safari does not
+    // fire during momentum scrolling -- silent for exactly the stretch where
+    // the box was wrong. So it drew the spotlight over whatever had been in
+    // that position before the page moved.
+    //
+    // Polling instead of listening removes both. It also covers a target that
+    // has not rendered yet when its step begins, and iOS resizing the viewport
+    // under a fixed element as the URL bar collapses. The state is written
+    // only when the box has actually moved, so a still page does not re-render.
     useLayoutEffect(() => {
         if (!active || !step) return;
-        if (step.target) {
-            const el = document.querySelector(step.target);
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        measure();
-        const t = setTimeout(measure, 360);
-        return () => clearTimeout(t);
-    }, [active, index, step, measure]);
+        let el = null;
+        let last = '';
+        let scrolled = false;
 
-    // Keep aligned on resize / scroll
-    useEffect(() => {
-        if (!active) return;
-        const h = () => measure();
-        window.addEventListener('resize', h);
-        window.addEventListener('scroll', h, true);
-        return () => { window.removeEventListener('resize', h); window.removeEventListener('scroll', h, true); };
-    }, [active, measure]);
+        const read = () => {
+            if (!el || !el.isConnected) el = step.target ? document.querySelector(step.target) : null;
+            if (!el) {
+                if (last !== 'none') { last = 'none'; setRect(null); }
+                return;
+            }
+            // Instant, and once per step: a smooth scroll means the first
+            // measurement is of a page still in motion.
+            if (!scrolled) { scrolled = true; el.scrollIntoView({ behavior: 'auto', block: 'center' }); }
+            const r = el.getBoundingClientRect();
+            const key = Math.round(r.top) + ',' + Math.round(r.left) + ','
+                      + Math.round(r.width) + ',' + Math.round(r.height);
+            if (key !== last) {
+                last = key;
+                setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+            }
+        };
+
+        read();
+        const t = setInterval(read, 100);
+        window.addEventListener('resize', read);
+        window.addEventListener('scroll', read, true);
+        return () => {
+            clearInterval(t);
+            window.removeEventListener('resize', read);
+            window.removeEventListener('scroll', read, true);
+        };
+    }, [active, index, step]);
 
     // Compute tooltip position from the real tooltip size (runs before paint → no flash)
     useLayoutEffect(() => {
