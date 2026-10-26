@@ -255,3 +255,15 @@ button:not(:disabled):active,
         transition: none !important;
     }
 }
+
+/* iOS Safari zooms the whole page in when a form control with a font smaller
+   than 16px is focused, and it never zooms back out. The first thing anyone
+   touches in this app is the sign-in field at 15px, so from the very first tap
+   the app is zoomed and has to be panned sideways -- which is what made the
+   steps on Home look broken. They were not broken, they were off-screen.
+
+   16px on touch devices removes the trigger, and is the right size for a phone
+   regardless. Inline styles set these per field, so this has to win. */
+@media (pointer: coarse) {
+    input, textarea, select { font-size: 16px !important; }
+}
