@@ -1123,17 +1123,19 @@ export default function ReportDetail() {
   const handleSendMessage = async () => {
     const msg = messageText.trim();
     if (!msg) { showToast("Message cannot be empty.", false); return; }
-    if (!sendEmail && !sendSms) { showToast("Select at least one channel (Email or SMS).", false); return; }
+    if (!willEmail && !willSms) { showToast("Select at least one channel she still accepts.", false); return; }
     setSendingMessage(true);
     try {
-      const res = await api.patch(`/admin/cases/${id}/message`, { message: msg, send_email: sendEmail, send_sms: sendSms });
+      const res = await api.patch(`/admin/cases/${id}/message`, { message: msg, send_email: willEmail, send_sms: willSms });
       const nowIso = new Date().toISOString();
       setCas(c => ({
         ...c,
         admin_message: msg,
         admin_message_at: nowIso,
         messages: [
-          { id: `tmp-${Date.now()}`, message: msg, sent_email: sendEmail, sent_sms: sendSms, sent_by: currentAdmin.username, created_at: nowIso },
+          // From the server's answer, not from the checkboxes: the row has
+          // to show what went out, not what was asked for.
+          { id: `tmp-${Date.now()}`, message: msg, sent_email: !!res.data?.sent_email, sent_sms: !!res.data?.sent_sms, sent_by: currentAdmin.username, created_at: nowIso },
           ...(c.messages || []),
         ],
       }));
@@ -1282,6 +1284,12 @@ export default function ReportDetail() {
   const reportNo = (idx) => reports.length - idx;
   const cfg = sCfg(cas.status);
   const isMinor = victim.is_minor || false;
+  // Her notification settings, which the desk cannot override. Absent on an
+  // older server, so the default is to allow and let the server decide.
+  const acceptsEmail = victim.accepts_email !== false;
+  const acceptsSms   = victim.accepts_sms !== false;
+  const willEmail = sendEmail && acceptsEmail && !!cas.victim_email;
+  const willSms   = sendSms   && acceptsSms   && !!cas.victim_phone;
   const victimName = cas.victim_name || [victim.first_name, victim.middle_name, victim.last_name].filter(Boolean).join(" ") || "-";
 
   return (
@@ -1555,21 +1563,30 @@ export default function ReportDetail() {
                 {/* Channel selection */}
                 <div style={{ display: "flex", gap: 18, alignItems: "center", margin: "10px 0 3px" }}>
                   <span style={{ fontSize: 11.5, fontWeight: 700, color: "var(--adm-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'Lexend',sans-serif" }}>Send via</span>
-                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--adm-text-2)", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
-                    <input type="checkbox" checked={sendEmail} onChange={e => setSendEmail(e.target.checked)} style={{ accentColor: "#7B2D8B" }} /> Email
+                  <label title={acceptsEmail ? undefined : "She has turned off email for desk messages"}
+                    style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: acceptsEmail ? "var(--adm-text-2)" : "var(--adm-text-muted)", cursor: acceptsEmail ? "pointer" : "not-allowed", fontFamily: "'Lexend',sans-serif" }}>
+                    <input type="checkbox" checked={sendEmail && acceptsEmail} disabled={!acceptsEmail} onChange={e => setSendEmail(e.target.checked)} style={{ accentColor: "var(--adm-fill-neutral)" }} /> Email
                   </label>
-                  <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--adm-text-2)", cursor: "pointer", fontFamily: "'Lexend',sans-serif" }}>
-                    <input type="checkbox" checked={sendSms} onChange={e => setSendSms(e.target.checked)} style={{ accentColor: "#7B2D8B" }} /> SMS
+                  <label title={acceptsSms ? undefined : "She has turned off SMS for desk messages"}
+                    style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: acceptsSms ? "var(--adm-text-2)" : "var(--adm-text-muted)", cursor: acceptsSms ? "pointer" : "not-allowed", fontFamily: "'Lexend',sans-serif" }}>
+                    <input type="checkbox" checked={sendSms && acceptsSms} disabled={!acceptsSms} onChange={e => setSendSms(e.target.checked)} style={{ accentColor: "var(--adm-fill-neutral)" }} /> SMS
                   </label>
                 </div>
-                {sendSms && (
+                {/* Her settings, not a server fault. Saying so plainly stops an
+                    officer from reading a greyed box as something broken. */}
+                {(!acceptsEmail || !acceptsSms) && (
                   <p style={{ margin: "0 0 6px", fontSize: 11, color: "var(--adm-text-muted)", lineHeight: 1.45, fontFamily: "'Lexend',sans-serif" }}>
-                    SMS uses Semaphore credits; long messages may use more than one credit.
+                    She has turned off {!acceptsEmail && !acceptsSms ? "email and SMS" : (!acceptsSms ? "SMS" : "email")} for desk messages. The message is still saved to the case.
+                  </p>
+                )}
+                {willSms && (
+                  <p style={{ margin: "0 0 6px", fontSize: 11, color: "var(--adm-text-muted)", lineHeight: 1.45, fontFamily: "'Lexend',sans-serif" }}>
+                    The text goes out through the desk's own phone, so it needs signal and load to arrive.
                   </p>
                 )}
 
-                <button className="rd-btn" onClick={handleSendMessage} disabled={sendingMessage || !messageText.trim() || (!sendEmail && !sendSms)}
-                  style={{ width: "100%", marginTop: 7, padding: "10px 0", borderRadius: 8, border: "none", background: (messageText.trim() && (sendEmail || sendSms)) ? "#C45E10" : "var(--adm-border)", color: (messageText.trim() && (sendEmail || sendSms)) ? "#fff" : "#94A3B8", fontSize: 13.5, fontWeight: 600, cursor: (sendingMessage || !messageText.trim() || (!sendEmail && !sendSms)) ? "not-allowed" : "pointer", fontFamily: "'Lexend',sans-serif" }}>
+                <button className="rd-btn" onClick={handleSendMessage} disabled={sendingMessage || !messageText.trim() || (!willEmail && !willSms)}
+                  style={{ width: "100%", marginTop: 7, padding: "10px 0", borderRadius: 8, border: "none", background: (messageText.trim() && (willEmail || willSms)) ? "var(--adm-fill-primary-2)" : "var(--adm-border)", color: (messageText.trim() && (sendEmail || sendSms)) ? "#fff" : "#94A3B8", fontSize: 13.5, fontWeight: 600, cursor: (sendingMessage || !messageText.trim() || (!sendEmail && !sendSms)) ? "not-allowed" : "pointer", fontFamily: "'Lexend',sans-serif" }}>
                   {sendingMessage ? "Sending…" : "Send Message"}
                 </button>
               </Card>

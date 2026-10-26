@@ -259,6 +259,11 @@ def _decrypt_case(c: Case, include_reports: bool = False) -> dict:
             "is_minor":             getattr(c.user, "is_minor",              False),
             "guardian_name":        getattr(c.user, "guardian_name",         None),
             "guardian_relationship":getattr(c.user, "guardian_relationship", None),
+            # Which channels she still accepts for desk messages. The panel
+            # shows these so an officer knows before writing, rather than
+            # finding out from a toast after pressing Send.
+            "accepts_email":        _wants(c.user, "notify_desk_messages"),
+            "accepts_sms":          _wants(c.user, "notify_desk_messages", "notify_sms"),
         },
     }
     if include_reports:
@@ -895,8 +900,14 @@ def send_case_message(
     victim = case.user
     victim_email = getattr(victim, "email", None)
     victim_phone = getattr(victim, "phone_number", None)
-    will_email = bool(payload.send_email and victim_email)
-    will_sms   = bool(payload.send_sms and victim_phone)
+    # Decided once. These drive the record, the sending and the reply, so
+    # the three can no longer disagree: the case file used to say a message
+    # went out by SMS whenever the box was ticked, even when the server knew
+    # it would not send it because she has that channel turned off.
+    accepts_email = _wants(victim, "notify_desk_messages")
+    accepts_sms   = _wants(victim, "notify_desk_messages", "notify_sms")
+    will_email = bool(payload.send_email and victim_email and accepts_email)
+    will_sms   = bool(payload.send_sms and victim_phone and accepts_sms)
 
     # Append to the immutable message log (audit trail)
     db.add(CaseMessage(
@@ -913,12 +924,12 @@ def send_case_message(
     sent = []
 
     declined = []
-    if payload.send_email and victim_email and not _wants(victim, "notify_desk_messages"):
+    if payload.send_email and victim_email and not accepts_email:
         declined.append("email")
-    if payload.send_sms and victim_phone and not _wants(victim, "notify_desk_messages", "notify_sms"):
+    if payload.send_sms and victim_phone and not accepts_sms:
         declined.append("SMS")
 
-    if payload.send_email and victim_email and _wants(victim, "notify_desk_messages"):
+    if will_email:
         threading.Thread(
             target=_send_message_email,
             args=(victim_email, _full_name(victim), case.case_number, msg),
@@ -926,7 +937,7 @@ def send_case_message(
         ).start()
         sent.append("email")
 
-    if payload.send_sms and victim_phone and _wants(victim, "notify_desk_messages", "notify_sms"):
+    if will_sms:
         sms_text = f"VAWC-Response (Case {case.case_number}): {msg}"
         threading.Thread(target=send_sms, args=(victim_phone, sms_text), daemon=True).start()
         sent.append("SMS")
@@ -935,7 +946,14 @@ def send_case_message(
     if declined:
         channels += (" - she has turned off " + " and ".join(declined)
                      + " for messages, so it is saved to the case but not sent")
-    return {"message": f"Message saved and sent via {channels}.", "admin_message": msg}
+    # The caller needs the outcome, not its own request echoed back, or the
+    # row it adds to the log on screen repeats the same wrong claim.
+    return {
+        "message": f"Message saved and sent via {channels}.",
+        "admin_message": msg,
+        "sent_email": will_email,
+        "sent_sms": will_sms,
+    }
 
 
 # ── DELETE /admin/cases/{case_id}/messages/{message_id} — remove a log entry ───
