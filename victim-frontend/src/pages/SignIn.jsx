@@ -182,9 +182,13 @@ function SignIn() {
             {/* Success banners */}
             {(accountCreated || recovered) && (
                 <div style={{ width: '100%', maxWidth: 420, marginBottom: 16 }}>
+                    {/* This lands after the code has been verified, not after
+                        registering, so the account really is ready. What is
+                        left is the sign-in, and saying how little is left
+                        reads better than announcing something already done. */}
                     <InfoBox variant="success" icon={<IcoCheck c="#059669" />}
-                        title={accountCreated ? "Account Created!" : "Account Recovered!"}
-                        text={accountCreated ? "Your account has been verified. You can now sign in." : "Your account has been restored. You can now sign in."} />
+                        title={accountCreated ? "One step away" : "Account Recovered!"}
+                        text={accountCreated ? "Your account is verified. Sign in below to start using VAWC-Response." : "Your account has been restored. You can now sign in."} />
                 </div>
             )}
 
