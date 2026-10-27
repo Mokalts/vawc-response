@@ -351,7 +351,12 @@ const S = {
     },
     suggestText: { fontSize: 12.5, color: 'var(--text)', lineHeight: 1.5 },
 
-    mapWrap:     { position: 'relative', border: '1.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' },
+    // zIndex is what matters here, not the position. Leaflet gives its panes
+    // z-index 400 and its controls 1000, and `position: relative` with
+    // z-index auto does NOT open a stacking context, so those numbers were
+    // competing with the page itself and painting over the bottom navbar,
+    // which sits at 200. A z-index here traps them inside this box.
+    mapWrap:     { position: 'relative', zIndex: 0, border: '1.5px solid var(--border)', borderRadius: 10, overflow: 'hidden' },
     mapHint:     {
         position: 'absolute', bottom: 10, left: 10,
         background: 'rgba(255,255,255,0.92)', padding: '5px 10px', borderRadius: 9999,
