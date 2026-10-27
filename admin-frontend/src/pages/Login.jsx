@@ -20,7 +20,24 @@ if (!document.getElementById('vawc-admin-login-css')) {
         .al-pwwrap:focus-within { border-color: #F47920 !important; background: var(--adm-input) !important; box-shadow: 0 0 0 3px rgba(244,121,32,0.14); }
         .al-btn:hover:not([disabled]) { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 10px 24px rgba(196,94,16,0.32) !important; }
         .al-btn { transition: all 0.18s ease; }
-    `;
+    
+        /* One column on a narrow window, two from 1024px up, where a 420px
+           card alone leaves most of the screen saying nothing. The panel is
+           second in the DOM and moved left from here, so the headings stay in
+           order and the form is reached first. */
+        .al-split { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .al-form { width: 100%; max-width: 420px; }
+        .al-intro { display: none; }
+        @media (min-width: 1024px) {
+            .al-split {
+                display: grid; grid-template-columns: 1.05fr 1fr;
+                gap: 64px; align-items: center;
+                max-width: 1120px; margin: 0 auto;
+            }
+            .al-intro { display: block; order: -1; }
+            .al-form { justify-self: center; }
+        }
+`;
     document.head.appendChild(s);
 }
 
@@ -122,6 +139,9 @@ function Login() {
     return (
         <div style={S.page}>
             <div style={S.toggleSlot}><ThemeToggle /></div>
+
+            <div className="al-split">
+            <div className="al-form">
             <div style={S.formCard}>
                 {/* Header */}
                 <div style={S.formHeader}>
@@ -130,7 +150,10 @@ function Login() {
                              style={S.logoImg}
                              onError={(e) => { e.target.style.display = 'none'; }} />
                     </div>
-                    <h2 style={S.formTitle}>VAWC-Response</h2>
+                    {/* The page had no h1 at all, which leaves a screen reader
+                        with nothing to anchor to and makes the panel's h2 a
+                        heading under nothing. This is the page's subject. */}
+                    <h1 style={S.formTitle}>VAWC-Response</h1>
                     <p style={S.formSub}>Barangay Palanginan · Admin Portal</p>
                 </div>
 
@@ -214,6 +237,39 @@ function Login() {
 
                 <p style={S.footerText}>Admin access only · Unauthorized access is prohibited</p>
             </div>
+            </div>
+
+            {/* Shown from 1024px up. Not an introduction to the service, which
+                the people signing in here already run: the standard the
+                account is held to, in this portal's own words from its Terms.
+                Second in the DOM on purpose, so the form keeps the h1 and the
+                first tab stop. */}
+            <aside className="al-intro" aria-label="About this portal">
+                <div style={S.introSealWrap}>
+                    <img src="/barangay-logo.png" alt="" aria-hidden="true" style={S.introSealImg}
+                         onError={(e) => { e.target.style.display = 'none'; }} />
+                </div>
+                <p style={S.introKicker}>Barangay Palanginan VAW Desk</p>
+                <h2 style={S.introTitle}>Access is a duty, not a convenience.</h2>
+                <p style={S.introLead}>
+                    This portal holds the personal and case data of women and children
+                    who have reported violence. Everything done here is recorded against
+                    the account that did it.
+                </p>
+                <ul style={S.introList}>
+                    {[
+                        'Open a case record only when you have a duty to act on it.',
+                        'Face recognition is a second step, not a formality. Do not bypass or delegate it.',
+                        'The barangay records and monitors a case. It does not mediate, because Republic Act 9262 prohibits it.',
+                    ].map((t) => (
+                        <li key={t} style={S.introItem}>
+                            <span aria-hidden="true" style={S.introDot} />
+                            <span>{t}</span>
+                        </li>
+                    ))}
+                </ul>
+            </aside>
+            </div>
         </div>
     );
 }
@@ -229,6 +285,18 @@ const S = {
     toggleSlot: { position: 'absolute', top: 20, right: 20 },
 
     // Form card
+    // The seal is a raster with an opaque white ground, so on the dark
+    // theme a bare <img> is a white square. The same round white frame
+    // the card gives it reads as deliberate in both themes.
+    introSealWrap: { width: 72, height: 72, borderRadius: '50%', backgroundColor: '#fff', marginBottom: 22, border: `3px solid ${COLORS.primaryBorder}`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    introSealImg:  { width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scale(1.16) translateY(1%)', transformOrigin: 'center' },
+    introKicker: { margin: '0 0 10px', fontSize: 10.5, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--adm-text-muted)', fontFamily: FF },
+    introTitle:  { margin: '0 0 12px', fontSize: 30, lineHeight: 1.2, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--adm-text)', fontFamily: FF },
+    introLead:   { margin: '0 0 22px', fontSize: 15, lineHeight: 1.7, color: 'var(--adm-text-2)', maxWidth: '46ch', fontFamily: FF },
+    introList:   { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 13 },
+    introItem:   { display: 'flex', gap: 11, alignItems: 'flex-start', fontSize: 14, lineHeight: 1.65, color: 'var(--adm-text-2)', maxWidth: '46ch', fontFamily: FF },
+    introDot:    { width: 7, height: 7, borderRadius: '50%', background: 'var(--adm-fill-primary)', flexShrink: 0, marginTop: 8 },
+
     formCard: { position: 'relative', overflow: 'hidden', backgroundColor: COLORS.bgCard, borderRadius: RADIUS.lg, padding: '34px 30px 28px', width: '100%', maxWidth: '420px', boxShadow: 'var(--adm-card-shadow)', border: `1px solid ${COLORS.border}` },
     formHeader: { textAlign: 'center', marginBottom: '26px' },
     logoWrap: { width: '104px', height: '104px', borderRadius: '50%', backgroundColor: '#fff', margin: '0 auto 16px', border: `3px solid ${COLORS.primaryBorder}`, boxShadow: '0 6px 20px rgba(244,121,32,0.18)', overflow: 'hidden', padding: 0, boxSizing: 'border-box' },

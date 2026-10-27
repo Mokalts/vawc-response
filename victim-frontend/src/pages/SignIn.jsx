@@ -1,3 +1,4 @@
+import ArtAbout from '../components/ArtAbout';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import api from "../api";
@@ -28,7 +29,27 @@ if (!document.getElementById('vawc-victim-css')) {
             .vi-btn:hover:not([disabled]) { background: #AD530F !important; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(244,121,32,0.3) !important; }
             .vi-link:hover { color: #AD530F !important; }
         }
-        `;
+        
+        /* The sign-in uses the width it is given: one column on a phone, two
+           from 1024px up, where a 420px card alone leaves most of the screen
+           saying nothing. The panel is second in the DOM and moved left from
+           here, so the headings stay in order and the form is reached first. */
+        .vs-split { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        /* The card keeps the width it had before the split existed. Without
+           this it shrink-wraps to its content and comes out ~100px narrower
+           on a tablet than it used to be. */
+        .vs-form { width: 100%; max-width: 420px; }
+        .vs-intro { display: none; }
+        @media (min-width: 1024px) {
+            .vs-split {
+                display: grid; grid-template-columns: 1.05fr 1fr;
+                gap: 64px; align-items: center;
+                max-width: 1120px; margin: 0 auto;
+            }
+            .vs-intro { display: block; order: -1; }
+            .vs-form { justify-self: center; width: 100%; max-width: 420px; }
+        }
+`;
     document.head.appendChild(s);
 }
 
@@ -178,6 +199,9 @@ function SignIn() {
             <div style={{ position: 'fixed', top: 14, right: 14, zIndex: 50 }}>
                 <ThemeToggle size={44} />
             </div>
+
+            <div className="vs-split">
+            <div className="vs-form">
 
             {/* Success banners */}
             {(accountCreated || recovered) && (
@@ -329,6 +353,33 @@ function SignIn() {
                 </p>
                 <SOSButton variant="compact" />
             </div>
+            </div>
+
+            {/* Shown from 1024px up, where there is room for it. Second in the
+                DOM on purpose: the form keeps the h1 and the first tab stop,
+                and this takes the h2. */}
+            <aside className="vs-intro" aria-label="About VAWC-Response">
+                <ArtAbout aria-hidden="true" focusable="false" style={S.introArt} />
+                <h2 style={S.introTitle}>You are not alone.</h2>
+                <p style={S.introLead}>
+                    VAWC-Response is the reporting system of Barangay Palanginan, Iba,
+                    Zambales for cases of violence against women and children under
+                    Republic Act 9262.
+                </p>
+                <ul style={S.introList}>
+                    {[
+                        'Your report goes straight to the barangay VAWC Desk.',
+                        'What you write is confidential. Only the officers handling your case can read it.',
+                        'You can follow what happens next, and leave this site at any moment with Quick Exit.',
+                    ].map((t) => (
+                        <li key={t} style={S.introItem}>
+                            <span aria-hidden="true" style={S.introDot} />
+                            <span>{t}</span>
+                        </li>
+                    ))}
+                </ul>
+            </aside>
+            </div>
 
             {/* RA 10173 Data Privacy notice */}
             <TermsModal open={termsOpen} onAccept={handleTermsAccept} onDecline={handleTermsDecline} />
@@ -349,6 +400,13 @@ const S = {
     // at 375px; uppercase plus wide tracking wrapped it awkwardly.
     brandSub: { fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', margin: '5px 0 0', fontFamily: "'Lexend', sans-serif", textTransform: 'uppercase', letterSpacing: '0.055em', whiteSpace: 'nowrap' },
     brandTag: { fontSize: 12.5, color: 'var(--text-muted)', margin: '9px 0 0', fontFamily: "'Lexend', sans-serif" },
+    introArt:   { width: '100%', maxWidth: 330, height: 'auto', display: 'block', marginBottom: 30 },
+    introTitle: { margin: '0 0 12px', fontSize: 30, lineHeight: 1.2, fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text)', fontFamily: "'Lexend', sans-serif" },
+    introLead:  { margin: '0 0 22px', fontSize: 15, lineHeight: 1.7, color: 'var(--text-body)', maxWidth: '46ch', fontFamily: "'Lexend', sans-serif" },
+    introList:  { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 13 },
+    introItem:  { display: 'flex', gap: 11, alignItems: 'flex-start', fontSize: 14, lineHeight: 1.65, color: 'var(--text-body)', maxWidth: '46ch', fontFamily: "'Lexend', sans-serif" },
+    introDot:   { width: 7, height: 7, borderRadius: '50%', background: 'var(--accent-text)', flexShrink: 0, marginTop: 8 },
+
     card: { position: 'relative', overflow: 'hidden', backgroundColor: 'var(--surface)', borderRadius: 20, padding: '32px 26px 26px', width: '100%', maxWidth: 420, boxShadow: '0 12px 36px rgba(244,121,32,0.13)', border: '1px solid var(--border)' },
     field: { marginBottom: 18 },
     label: { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--accent-text)', marginBottom: 7, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: "'Lexend', sans-serif" },

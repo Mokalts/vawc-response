@@ -1,3 +1,4 @@
+import ArtAbout from '../components/ArtAbout';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ReactComponent as ArtSigns } from '../assets/awareness/signs.svg';
@@ -144,30 +145,6 @@ const Svg = ({ size = 22, children }) => (
 const IcoAlert  = ({ size }) => (<Svg size={size}><circle cx="10.5" cy="10.5" r="7" /><path d="M20.5 20.5l-5-5" /><path d="M10.5 7.4v3.6M10.5 13.7h.01" /></Svg>);
 // Your Remedies — a checklist of actions she can take
 const IcoDoc    = ({ size }) => (<Svg size={size}><path d="M10.5 6.8h9.5M10.5 12h9.5M10.5 17.2h9.5" /><path d="M3.6 6.6l1.5 1.5 2.6-2.8M3.6 11.8l1.5 1.5 2.6-2.8M3.6 17l1.5 1.5 2.6-2.8" /></Svg>);
-// What the app does, drawn rather than listed: a report leaving a phone,
-// under the shield that is the barangay holding it. Authored here so the home
-// page does not reuse the illustration style of the awareness pages.
-const ArtAbout = (props) => (
-    <svg viewBox="0 0 220 150" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
-        {/* phone */}
-        <rect x="63" y="22" width="94" height="112" rx="10" fill="var(--surface)" stroke="var(--text)" strokeWidth="3" />
-        <rect x="74" y="36" width="72" height="8" rx="4" fill="#FFD9B3" />
-        <rect x="74" y="52" width="54" height="6" rx="3" fill="var(--border-soft)" />
-        <rect x="74" y="64" width="62" height="6" rx="3" fill="var(--border-soft)" />
-        <rect x="74" y="76" width="40" height="6" rx="3" fill="var(--border-soft)" />
-        {/* the send action */}
-        <rect x="74" y="96" width="72" height="22" rx="6" fill="#AD530F" />
-        <path d="M100 107h20m0 0-5-5m5 5-5 5" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-        {/* shield over the phone: the desk holding what she sent */}
-        <path d="M156 14l24 9v22c0 15-10 27-24 32-14-5-24-17-24-32V23l24-9z" fill="#FFF3E0" stroke="#AD530F" strokeWidth="3" strokeLinejoin="round" />
-        <path d="M147 44l7 7 14-14" stroke="#AD530F" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round" />
-        {/* the three stages, as a track */}
-        <path d="M30 140h160" stroke="var(--border)" strokeWidth="3" strokeLinecap="round" />
-        <circle cx="40" cy="140" r="7" fill="#AD530F" />
-        <circle cx="110" cy="140" r="7" fill="#AD530F" />
-        <circle cx="180" cy="140" r="7" fill="var(--border)" stroke="#AD530F" strokeWidth="3" />
-    </svg>
-);
 
 // Seek Support — a place that holds care
 const IcoHands  = ({ size }) => (<Svg size={size}><path d="M12 21.5s7-5.4 7-10.3A7 7 0 105 11.2c0 4.9 7 10.3 7 10.3z" /><path d="M14.2 9.5a1.75 1.75 0 00-2.2.35 1.75 1.75 0 00-2.2-.35 1.75 1.75 0 00-.3 2.4L12 14.6l2.5-2.7a1.75 1.75 0 00-.3-2.4z" /></Svg>);
