@@ -34,8 +34,14 @@ if (!document.getElementById('vawc-global-css')) {
         .vawc-nav-sub > *:nth-child(4) { animation-delay: 0.11s }
         .vawc-nav-sub > *:nth-child(5) { animation-delay: 0.14s }
         .vawc-nav-sub > *:nth-child(6) { animation-delay: 0.17s }
+        /* Out is quicker than in, and all at once. Arriving is worth drawing
+           the eye to; leaving is not, and a staggered exit over six items
+           outlasts the gesture that asked for it. Declared after the delays
+           above so the shorthand clears them. */
+        @keyframes navLift { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-6px); } }
+        .vawc-nav-sub.is-closing > * { animation: navLift 0.15s cubic-bezier(0.4,0,1,1) both; }
         @media (prefers-reduced-motion: reduce) {
-            .vawc-nav-sub > * { animation: none; }
+            .vawc-nav-sub > *, .vawc-nav-sub.is-closing > * { animation: none; }
         }
         .vawc-logout:hover { background: var(--adm-muted) !important; }
         /* Same answer to a touch as the victim app's back button: the glyph
@@ -170,6 +176,15 @@ function Sidebar() {
     useEffect(() => {
         if (location.pathname === '/admin-management') setExpanded(true);
     }, [location.pathname]);
+    // The submenu has to stay in the DOM while it animates out, so this lags
+    // behind `expanded` on the way closed. Opening is immediate; closing waits
+    // for the 150ms exit, plus a frame.
+    const [subMounted, setSubMounted] = useState(expanded);
+    useEffect(() => {
+        if (expanded) { setSubMounted(true); return; }
+        const t = setTimeout(() => setSubMounted(false), 170);
+        return () => clearTimeout(t);
+    }, [expanded]);
     // The nav item that matches the current route (exact, or a detail sub-route like /reports/:id).
     const activePath = (NAV.find(n => location.pathname === n.path || location.pathname.startsWith(n.path + '/')) || {}).path;
 
@@ -364,8 +379,8 @@ function Sidebar() {
                         {/* The rule lines up under the parent's icon, so the
                             sections read as hanging off it rather than as five
                             more items in the menu. */}
-                        {group.items.some(i => i.expandable) && expanded && (
-                            <div className="vawc-nav-sub" style={{ display: 'flex', flexDirection: 'column', gap: 1, margin: '8px 0 10px', marginLeft: 22, paddingLeft: 12, borderLeft: '1px solid var(--adm-border)' }}>
+                        {group.items.some(i => i.expandable) && subMounted && (
+                            <div className={`vawc-nav-sub${expanded ? '' : ' is-closing'}`} style={{ display: 'flex', flexDirection: 'column', gap: 1, margin: '8px 0 10px', marginLeft: 22, paddingLeft: 12, borderLeft: '1px solid var(--adm-border)' }}>
                                 {ADMIN_SECTIONS.filter(x => !x.superOnly || isSuper).map(sec => {
                                     const on = activePath === '/admin-management' && activeSection === sec.key;
                                     return (
