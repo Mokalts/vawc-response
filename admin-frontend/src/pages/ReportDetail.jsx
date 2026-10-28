@@ -82,9 +82,13 @@ const ENDORSE_OFFICES = [
   { id: "cmswdo", label: "C/MSWDO" },
   { id: "court", label: "Court" },
   { id: "pao", label: "PAO" },
-  { id: "medical", label: "Medical / Hospital" },
   { id: "others", label: "Others" },
 ];
+// "medical" is deliberately absent: the desk could not name a case that would
+// be endorsed to a hospital, and an option nobody picks is an option that gets
+// picked by accident. It stays in the backend enum and in
+// ENDORSEMENT_OFFICE_DISPLAY, so any endorsement already filed under it keeps
+// its proper label instead of showing a raw key.
 // RA 9262 abuse forms (values match backend VALID_INCIDENT_TYPES).
 const INCIDENT_TYPES = [
   { id: "physical", label: "Physical" },
