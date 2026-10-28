@@ -82,13 +82,23 @@ const ENDORSE_OFFICES = [
   { id: "cmswdo", label: "C/MSWDO" },
   { id: "court", label: "Court" },
   { id: "pao", label: "PAO" },
-  { id: "others", label: "Others" },
 ];
-// "medical" is deliberately absent: the desk could not name a case that would
-// be endorsed to a hospital, and an option nobody picks is an option that gets
-// picked by accident. It stays in the backend enum and in
-// ENDORSEMENT_OFFICE_DISPLAY, so any endorsement already filed under it keeps
-// its proper label instead of showing a raw key.
+// "medical" and "others" are deliberately absent.
+//
+// Medical, because the desk could not name a case that would be endorsed to a
+// hospital, and an option nobody picks is an option that gets picked by
+// accident.
+//
+// Others, because nothing ever filled the office name that was supposed to go
+// with it. The column (`to_office_other`) exists, the backend accepts it and
+// the display code falls back to it, but the form never had a box for it, so
+// picking Others filed a case as endorsed to "Others" and left no way to say
+// where it actually went. An endorsement that cannot name its receiving office
+// is worse than no option at all in a case file.
+//
+// Both stay in the backend enum and in ENDORSEMENT_OFFICE_DISPLAY, so any
+// endorsement already filed under either keeps its proper label instead of
+// showing a raw key.
 // RA 9262 abuse forms (values match backend VALID_INCIDENT_TYPES).
 const INCIDENT_TYPES = [
   { id: "physical", label: "Physical" },
